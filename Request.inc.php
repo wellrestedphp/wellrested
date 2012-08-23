@@ -92,7 +92,7 @@ namespace wellrested;
             throw new Exception('Property ' . $name . ' does not exist.');
         }
 
-    }
+    } // __get()
 
     public function getBody() {
         return $this->body;
