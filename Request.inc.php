@@ -164,6 +164,6 @@ namespace wellrested;
 
     } // getRequest()
 
-}
+} // Request
 
 ?>

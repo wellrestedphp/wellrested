@@ -2,6 +2,13 @@
 
 namespace wellrested;
 
+/*******************************************************************************
+ * Route
+ *
+ * @package WellRESTed
+ *
+ ******************************************************************************/
+
 class Route {
 
     const RE_SLUG = '[0-9a-zA-Z\-_]+';
@@ -14,27 +21,25 @@ class Route {
     public $pattern;
     public $handler;
     public $handlerPath;
-
-
-
+    public $uriTemplate;
 
     public function __construct($pattern, $handler, $handlerPath=null) {
+
         $this->pattern = $pattern;
         $this->handler = $handler;
         $this->handlerPath = $handlerPath;
-    }
+
+    } // __construct
 
     static public function newFromUriTemplate($uriTemplate, $handler, $handlerPath=null, $variables=null) {
 
         $pattern = '';
 
         if ($uriTemplate[0] === '/') {
-            $uriTemplate = substr($uriTemplate, 1);
+            $parts = explode('/', substr($uriTemplate, 1));
+        } else {
+            $parts = explode('/', $uriTemplate);
         }
-
-        $parts = explode('/', $uriTemplate);
-
-        // TODO: Look up what characters are legal in Level 1 template expressions.
 
         $expressionPattern = '/{([a-zA-Z]+)}/';
 
@@ -69,10 +74,12 @@ class Route {
         $pattern = '/^' . $pattern . '$/';
 
         $klass = __CLASS__;
-        return new $klass($pattern, $handler, $handlerPath);
+        $route = new $klass($pattern, $handler, $handlerPath);
+        $route->uriTemplate = $uriTemplate;
+        return $route;
 
-    }
+    } // newFromUriTemplate()
 
-}
+} // Route
 
 ?>

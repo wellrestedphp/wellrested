@@ -5,6 +5,13 @@ namespace wellrested;
 require_once(dirname(__FILE__) . '/Request.inc.php');
 require_once(dirname(__FILE__) . '/Route.inc.php');
 
+/*******************************************************************************
+ * Router
+ *
+ * @package WellRESTed
+ *
+ ******************************************************************************/
+
 class Router {
 
     protected $routes;
@@ -27,7 +34,7 @@ class Router {
 
         $this->routes[] = new Route($pattern, $handler, $handlerPath);
 
-    }
+    } // addRoute()
 
     public function addUriTemplate($uriTemplate, $handler, $handlerPath=null, $variables=null) {
 
@@ -37,7 +44,7 @@ class Router {
 
         $this->routes[] = Route::newFromUriTemplate($uriTemplate, $handler, $handlerPath, $variables);
 
-    }
+    } // addUriTemplate()
 
     public function getRequestHandler($request=null) {
 
@@ -63,8 +70,8 @@ class Router {
 
         return false;
 
-    }
+    } // getRequestHandler()
 
-}
+} // Router
 
 ?>

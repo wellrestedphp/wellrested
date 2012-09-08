@@ -5,12 +5,42 @@ namespace wellrested;
 require_once(dirname(__FILE__) . '/Request.inc.php');
 require_once(dirname(__FILE__) . '/Response.inc.php');
 
+/*******************************************************************************
+ * Handler
+ *
+ * @package WellRESTed
+ *
+ ******************************************************************************/
+
+/**
+ * @property Response response  The Response to the request
+ */
 class Handler {
 
+    /**
+     * The HTTP request to respond to.
+     * @var Request
+     */
     protected $request;
+
+    /**
+     * The HTTP response to send based on the request.
+     * @var Response
+     */
     protected $response;
+
+    /**
+     * Matches array from the preg_match() call used to find this Handler.
+     * @var array
+     */
     protected $matches;
 
+    /**
+     * Create a new Handler for a specific request.
+     *
+     * @param Request $request
+     * @param array $matches
+     */
     public function __construct($request, $matches=null) {
 
         $this->request = $request;
@@ -25,9 +55,33 @@ class Handler {
 
     }
 
+    // -------------------------------------------------------------------------
+    // !Accessors
+
+    public function __get($name) {
+
+        switch ($name) {
+        case 'response':
+            return $this->getResponse();
+        default:
+            throw new Exception('Property ' . $name . ' does not exist.');
+        }
+
+    } // __get()
+
+    public function getResponse() {
+        return $this->response;
+    }
+
+    /**
+     * Prepare the Response. Override this method if your subclass needs to
+     * repond to any non-standard HTTP methods. Otherwise, override the
+     * get, post, put, etc. methods.
+     */
     protected function buildResponse() {
 
         switch ($this->request->method) {
+
         case 'GET':
             $this->get();
             break;
@@ -60,35 +114,66 @@ class Handler {
 
     }
 
-    public function getResponse() {
-        return $this->response;
-    }
+    // -------------------------------------------------------------------------
+    // !HTTP Methods
 
+    // Each of these methods corresponds to a standard HTTP method. Each method
+    // has no arguments and returns nothing, but should affect the instance's
+    // response member.
+    //
+    // By default, the methods will provide a 405 Method Not Allowed header.
+
+    /**
+     * Method for handling HTTP GET requests.
+     */
     protected function get() {
         $this->response->statusCode = 405;
     }
 
+    /**
+     * Method for handling HTTP HEAD requests.
+     */
     protected function head() {
-        $this->response->statusCode = 405;
+
+        // The default function calls the instance's get() method, then sets
+        // the resonse's body member to an empty string.
+
+        $this->get();
+
+        if ($this->response->statusCode == 200) {
+            $this->response->setBody('', false);
+        }
+
     }
 
+    /**
+     * Method for handling HTTP POST requests.
+     */
     protected function post() {
         $this->response->statusCode = 405;
     }
 
+    /**
+     * Method for handling HTTP PUT requests.
+     */
     protected function put() {
         $this->response->statusCode = 405;
     }
 
+    /**
+     * Method for handling HTTP PATCH requests.
+     */
     protected function patch() {
         $this->response->statusCode = 405;
     }
 
+    /**
+     * Method for handling HTTP OPTION requests.
+     */
     protected function options() {
         $this->response->statusCode = 405;
     }
 
-}
-
+} // Handler
 
 ?>

@@ -49,7 +49,7 @@ class Response {
              $this->headers = array();
         }
 
-    }
+    } // __construct()
 
     // -------------------------------------------------------------------------
     // !Accessors
@@ -76,7 +76,7 @@ class Response {
             throw new Exception('Property ' . $name . ' does not exist or is read only.');
         }
 
-    } // __get()
+    } // __set()
 
     public function getBody() {
         return $this->body;
@@ -92,12 +92,17 @@ class Response {
      * of the new body string.
      *
      * @param string $value
+     * @param bool $setContentLenght  Automatically add a Content-length header
      */
-    public function setBody($value) {
-        $this->body = $value;
-        $this->setHeader('Content-Length', strlen($value));
-    }
+    public function setBody($value, $setContentLength=true) {
 
+        $this->body = $value;
+
+        if ($setContentLength === true) {
+            $this->setHeader('Content-Length', strlen($value));
+        }
+
+    } // setBody()
 
     /**
      * Add or update a header to a given value
@@ -117,7 +122,6 @@ class Response {
      */
     public function hasHeader($header) {
         return isset($this->headers[$header]);
-
     }
 
     /**
@@ -172,10 +176,8 @@ class Response {
             print $this->body;
         }
 
-        exit;
+    } // respond()
 
-    }
-
-}
+} // Response
 
 ?>
