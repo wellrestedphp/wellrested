@@ -55,7 +55,7 @@ class Router {
                     require_once($route->handlerPath);
                 }
 
-                return $handler = new $route->handler($matches);
+                return $handler = new $route->handler($request, $matches);
 
             }
 

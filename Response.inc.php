@@ -34,12 +34,21 @@ class Response {
      * HTTP status code
      * @var int
      */
-    public $statusCode = 500;
+    public $statusCode;
 
     // -------------------------------------------------------------------------
 
-    public function __construct() {
-        $this->headers = array();
+    public function __construct($statusCode=500, $body='', $headers=null) {
+
+        $this->statusCode = $statusCode;
+        $this->body = $body;
+
+        if (is_array($headers)) {
+            $this->headers = $headers;
+        } else {
+             $this->headers = array();
+        }
+
     }
 
     // -------------------------------------------------------------------------

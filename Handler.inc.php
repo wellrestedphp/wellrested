@@ -11,43 +11,81 @@ class Handler {
     protected $response;
     protected $matches;
 
-    public function __construct($matches=null) {
+    public function __construct($request, $matches=null) {
+
+        $this->request = $request;
 
         if (is_null($matches)) {
             $matches = array();
         }
         $this->matches = $matches;
 
-        $this->request = Request::getRequest();
         $this->response = new Response();
+        $this->buildResponse();
 
     }
 
-    public function respond() {
+    protected function buildResponse() {
 
         switch ($this->request->method) {
         case 'GET':
+            $this->get();
+            break;
 
         case 'HEAD':
+            $this->head();
+            break;
 
         case 'POST':
+            $this->post();
+            break;
 
         case 'PUT':
+            $this->put();
+            break;
 
         case 'DELETE':
+            $this->delete();
+            break;
 
         case 'PATCH':
+            $this->patch();
+            break;
 
         case 'OPTIONS':
-
+            $this->options();
+            break;
 
         }
 
-        $this->response->body = 'Do stuff' . "\n";
-        $this->response->body = print_r($this->matches, true);
-        $this->response->statusCode = 200;
-        $this->response->respond();
+    }
 
+    public function getResponse() {
+        return $this->response;
+    }
+
+    protected function get() {
+        $this->response->statusCode = 405;
+    }
+
+    protected function head() {
+        $this->response->statusCode = 405;
+    }
+
+    protected function post() {
+        $this->response->statusCode = 405;
+    }
+
+    protected function put() {
+        $this->response->statusCode = 405;
+    }
+
+    protected function patch() {
+        $this->response->statusCode = 405;
+    }
+
+    protected function options() {
+        $this->response->statusCode = 405;
     }
 
 }
