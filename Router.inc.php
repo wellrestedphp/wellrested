@@ -57,6 +57,7 @@ class Router {
                     require_once($route->handlerPath);
                 }
 
+                // TODO: Need to rethink this plan. May not have a $request yet.
                 return $handler = new $klass($request, $matches);
 
             }

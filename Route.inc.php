@@ -71,9 +71,6 @@ class Route {
 
         $pattern = '';
 
-        // REGEX for idenifying Level 1 URI Templates, like /foo/{bar}
-        $expressionPattern = '/{([a-zA-Z]+)}/';
-
         // Explode the template into an array of path segments.
         if ($uriTemplate[0] === '/') {
             $parts = explode('/', substr($uriTemplate, 1));
