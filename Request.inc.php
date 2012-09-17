@@ -89,7 +89,7 @@ namespace wellrested;
         case 'query':
             return $this->getQuery();
         default:
-            throw new Exception('Property ' . $name . ' does not exist.');
+            throw new \Exception('Property ' . $name . ' does not exist.');
         }
 
     } // __get()
@@ -118,13 +118,12 @@ namespace wellrested;
         return $this->query;
     }
 
-
     // -------------------------------------------------------------------------
 
     /**
      * Set instance members based on the HTTP request sent to the server.
      */
-    public function readHttpRequest() {
+    protected function readHttpRequest() {
 
         $this->body = file_get_contents("php://input");
 

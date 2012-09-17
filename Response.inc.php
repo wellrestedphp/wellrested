@@ -62,7 +62,7 @@ class Response {
         case 'headers':
             return $this->getHeaders();
         default:
-            throw new Exception('Property ' . $name . ' does not exist.');
+            throw new \Exception('Property ' . $name . ' does not exist.');
         }
 
     } // __get()
@@ -71,9 +71,10 @@ class Response {
 
         switch ($name) {
         case 'body':
-            return $this->setBody($value);
+            $this->setBody($value);
+            break;
         default:
-            throw new Exception('Property ' . $name . ' does not exist or is read only.');
+            throw new \Exception('Property ' . $name . ' does not exist or is read only.');
         }
 
     } // __set()
@@ -92,7 +93,7 @@ class Response {
      * of the new body string.
      *
      * @param string $value
-     * @param bool $setContentLenght  Automatically add a Content-length header
+     * @param bool $setContentLength  Automatically add a Content-length header
      */
     public function setBody($value, $setContentLength=true) {
 
@@ -118,7 +119,7 @@ class Response {
      * Return if the response contains a header with the given key.
      *
      * @param string $header
-     * @param bool
+     * @return bool
      */
     public function hasHeader($header) {
         return isset($this->headers[$header]);
@@ -128,7 +129,7 @@ class Response {
      * Return the value of a given header, or false if it does not exist.
      *
      * @param string $header
-     * @return string|false
+     * @return string|bool
      */
     public function getHeader($header) {
 
@@ -164,6 +165,7 @@ class Response {
     public function respond($headersOnly = false) {
 
         // Output the HTTP status code.
+        // TODO: Available in 5.4+. PHP.net has a good alternative in the comments.
         http_response_code($this->statusCode);
 
         // Output each header.

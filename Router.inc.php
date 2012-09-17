@@ -8,6 +8,9 @@ require_once(dirname(__FILE__) . '/Route.inc.php');
 /*******************************************************************************
  * Router
  *
+ * A Router uses a table of Routes to find the appropriate Handler for a
+ * request.
+ *
  * @package WellRESTed
  *
  ******************************************************************************/
@@ -16,53 +19,45 @@ class Router {
 
     protected $routes;
 
-    public $handlerPathPattern = '%s.inc.php';
-
+    /**
+     * Create a new Router.
+     */
     public function __construct() {
         $this->routes = array();
     }
 
-    protected function getHandlerPath($handler) {
-        return sprintf($this->handlerPathPattern, $handler);
-    }
-
-    public function addRoute($pattern, $handler, $handlerPath=null) {
-
-        if (is_null($handlerPath)) {
-            $handlerPath = $this->getHandlerPath($handler);
-        }
-
-        $this->routes[] = new Route($pattern, $handler, $handlerPath);
-
+    /**
+     * Append a new Route instance to the Router's route table.
+     * @param $route
+     */
+    public function addRoute(Route $route) {
+        $this->routes[] = $route;
     } // addRoute()
 
-    public function addUriTemplate($uriTemplate, $handler, $handlerPath=null, $variables=null) {
+    /**
+     * @param string $requestPath
+     * @return Handler
+     */
+    public function getRequestHandler($requestPath=null) {
 
-        if (is_null($handlerPath)) {
-            $handlerPath = $this->getHandlerPath($handler);
-        }
-
-        $this->routes[] = Route::newFromUriTemplate($uriTemplate, $handler, $handlerPath, $variables);
-
-    } // addUriTemplate()
-
-    public function getRequestHandler($request=null) {
-
-        if (is_null($request)) {
+        if (is_null($requestPath)) {
             $request = Request::getRequest();
+            $path = $request->path;
+        } else {
+            $path = $requestPath;
         }
-
-        $path = $request->path;
 
         foreach ($this->routes as $route) {
 
             if (preg_match($route->pattern, $path, $matches)) {
 
-                if (!class_exists($route->handler)) {
+                $klass = $route->handler;
+
+                if (!class_exists($klass)) {
                     require_once($route->handlerPath);
                 }
 
-                return $handler = new $route->handler($request, $matches);
+                return $handler = new $klass($request, $matches);
 
             }
 

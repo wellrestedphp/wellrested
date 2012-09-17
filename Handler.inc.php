@@ -8,6 +8,8 @@ require_once(dirname(__FILE__) . '/Response.inc.php');
 /*******************************************************************************
  * Handler
  *
+ * A Handler issues a response for a given resource.
+ *
  * @package WellRESTed
  *
  ******************************************************************************/
@@ -33,22 +35,22 @@ class Handler {
      * Matches array from the preg_match() call used to find this Handler.
      * @var array
      */
-    protected $matches;
+    protected $args;
 
     /**
      * Create a new Handler for a specific request.
      *
      * @param Request $request
-     * @param array $matches
+     * @param array $args
      */
-    public function __construct($request, $matches=null) {
+    public function __construct($request, $args=null) {
 
         $this->request = $request;
 
-        if (is_null($matches)) {
-            $matches = array();
+        if (is_null($args)) {
+            $args = array();
         }
-        $this->matches = $matches;
+        $this->args = $args;
 
         $this->response = new Response();
         $this->buildResponse();
@@ -64,11 +66,14 @@ class Handler {
         case 'response':
             return $this->getResponse();
         default:
-            throw new Exception('Property ' . $name . ' does not exist.');
+            throw new \Exception('Property ' . $name . ' does not exist.');
         }
 
     } // __get()
 
+    /**
+     * @return Response
+     */
     public function getResponse() {
         return $this->response;
     }
@@ -157,6 +162,13 @@ class Handler {
      * Method for handling HTTP PUT requests.
      */
     protected function put() {
+        $this->response->statusCode = 405;
+    }
+
+    /**
+     * Method for handling HTTP DELETE requests.
+     */
+    protected function delete() {
         $this->response->statusCode = 405;
     }
 
