@@ -3,6 +3,7 @@
 namespace wellrested;
 
 require_once(dirname(__FILE__) . '/Request.inc.php');
+require_once(dirname(__FILE__) . '/Response.inc.php');
 require_once(dirname(__FILE__) . '/Route.inc.php');
 
 /*******************************************************************************
@@ -35,17 +36,16 @@ class Router {
     } // addRoute()
 
     /**
-     * @param string $requestPath
-     * @return Handler
+     * @param Request $request
+     * @return Response
      */
-    public function getRequestHandler($requestPath=null) {
+    public function getResponse($request=null) {
 
-        if (is_null($requestPath)) {
+        if (is_null($request)) {
             $request = Request::getRequest();
-            $path = $request->path;
-        } else {
-            $path = $requestPath;
         }
+
+        $path = $request->path;
 
         foreach ($this->routes as $route) {
 
@@ -57,16 +57,28 @@ class Router {
                     require_once($route->handlerPath);
                 }
 
-                // TODO: Need to rethink this plan. May not have a $request yet.
-                return $handler = new $klass($request, $matches);
+                $handler = new $klass($request, $matches);
+                return $handler->response;
 
             }
 
         }
 
-        return false;
+        return $this->getNoRouteResponse($request);
 
     } // getRequestHandler()
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    protected function getNoRouteResponse(Request $request) {
+
+        $response = new Response(404);
+        $response->body = 'No resource at ' . $request->uri;
+        return $response;
+
+    }
 
 } // Router
 

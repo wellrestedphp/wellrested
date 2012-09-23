@@ -38,15 +38,18 @@ class Response {
 
     // -------------------------------------------------------------------------
 
-    public function __construct($statusCode=500, $body='', $headers=null) {
+    public function __construct($statusCode=500, $body=null, $headers=null) {
 
         $this->statusCode = $statusCode;
-        $this->body = $body;
 
         if (is_array($headers)) {
             $this->headers = $headers;
         } else {
              $this->headers = array();
+        }
+
+        if (!is_null($body)) {
+            $this->body = $body;
         }
 
     } // __construct()
