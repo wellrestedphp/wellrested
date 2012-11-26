@@ -229,7 +229,7 @@ class Request {
     /**
      * Set instance members based on the HTTP request sent to the server.
      */
-    protected function readHttpRequest() {
+    public function readHttpRequest() {
 
         $this->body = file_get_contents("php://input");
         $this->headers = apache_request_headers();
