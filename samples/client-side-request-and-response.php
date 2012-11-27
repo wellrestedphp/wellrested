@@ -11,14 +11,20 @@
 require_once('../Request.inc.php');
 require_once('../Response.inc.php');
 
+$thisRequest = \wellrested\Request::getRequest();
+
 // Create a new empty request.
 $rqst = new \wellrested\Request();
 
 // Set some of the information for it.
-$rqst->path = 'https://www.google.com/search';
-$rqst->query = array('q' => 'rest api');
+$rqst->hostname = $thisRequest->hostname;
+$rqst->path = '/wellrested/samples/server-side-request-and-response.php';
+$rqst->method = 'PUT';
+$rqst->body = 'This is the body';
 
-print $rqst->uri;
+$resp = $rqst->request();
 
+print 'Response code: ' . $resp->statusCode . "\n";
+print 'Response body: ' . $resp->body . "\n";
 
 ?>
