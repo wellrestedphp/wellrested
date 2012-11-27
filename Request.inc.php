@@ -162,6 +162,21 @@ class Request {
     }
 
     /**
+     * Set the method for the request.
+     *
+     * @param string $method
+     * @throws \InvalidArgumentException
+     */
+    public function setMethod($method) {
+
+        if (!is_string($method)) {
+            throw new \InvalidArgumentException('method must be a string.');
+        }
+
+        $this->method = $method;
+    }
+
+    /**
      * Set the path and pathParts members.
      *
      * @param string $path
