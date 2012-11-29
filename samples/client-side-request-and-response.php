@@ -13,23 +13,19 @@
 require_once('../Request.inc.php');
 require_once('../Response.inc.php');
 
-// Get a Request instance describing the request made to this script.
-$thisRequest = \wellrested\Request::getRequest();
-
-// Create a new empty request.
+// Make a custom request to talk to the server.
 $rqst = new \wellrested\Request();
-$rqst->hostname = $thisRequest->hostname;
-$rqst->path = '/wellrested/samples/client-side-endpoint.php';
 
-// Uncomment this to get a cURL exception.
-//$rqst->uri = 'http://not-a-real.domain';
+// Use the client-site-endpoint.php script
+$rqst->hostname = $_SERVER['HTTP_HOST'];
+$rqst->path = '/wellrested/samples/client-side-endpoint.php';
 
 // Issue the request, and read the response returned by the server.
 try {
     $resp = $rqst->request();
 } catch (\wellrested\exceptions\CurlException $e) {
 
-    // Create new response to send to output to the browser.
+    // Explain the cURL error and provide an error status code.
     $myResponse = new \wellrested\Response();
     $myResponse->statusCode = 500;
     $myResponse->setHeader('Content-Type', 'text/plain');

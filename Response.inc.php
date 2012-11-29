@@ -168,12 +168,11 @@ class Response {
     // -------------------------------------------------------------------------
 
     /**
-     * Output the response to the client. This function also terminates the
-     * script to prevent and additional output from contaminating the response.
+     * Output the response to the client.
      *
      * @param bool $headersOnly  Do not include the body, only the headers.
      */
-    public function respond($headersOnly = false) {
+    public function respond($headersOnly=false) {
 
         // Output the HTTP status code.
         header($this->getStatusLine($this->statusCode));
