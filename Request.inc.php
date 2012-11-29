@@ -87,14 +87,6 @@ class Request {
     protected $query;
 
     /**
-     * The string value of the full URI. This is reconstructed from the
-     * components if requested when unset.
-     *
-     * @var string
-     */
-    protected $uri = null;
-
-    /**
      * Singleton instance derived from reading info from Apache.
      *
      * @var Request
@@ -252,11 +244,13 @@ class Request {
      */
     public function getUri() {
 
-        // Construct the URI if it is unset.
-        if (!is_null($this->uri)) {
-            $this->rebuildUri();
+        $uri = $this->protocol . '://' . $this->hostname . $this->path;
+
+        if ($this->query) {
+            $uri .= '?' . http_build_query($this->query);
         }
-        return $this->uri;
+
+        return $uri;
 
     }
 
@@ -270,17 +264,32 @@ class Request {
     }
 
     /**
+     * Add or update a header to a given value
+     *
+     * @param string $header
+     * @param string $value
+     */
+    public function setHeader($header, $value) {
+        $this->headers[$header] = $value;
+    }
+
+    /**
+     * Return if the response contains a header with the given key.
+     *
+     * @param string $header
+     * @return bool
+     */
+    public function hasHeader($header) {
+        return isset($this->headers[$header]);
+    }
+
+    /**
      * Set the hostname for the request and update the URI.
      *
      * @param string $hostname
      */
     public function setHostname($hostname) {
-
         $this->hostname = $hostname;
-
-        // Update the URI member.
-        $this->rebuildUri();
-
     }
 
     /**
@@ -305,12 +314,8 @@ class Request {
      * @param string $path
      */
     public function setPath($path) {
-
         $this->path = $path;
         $this->pathParts = explode('/', substr($path, 1));
-
-        // Update the URI member.
-        $this->rebuildUri();
     }
 
     /**
@@ -319,12 +324,7 @@ class Request {
      * @param string $protocol
      */
     public function setProtocol($protocol) {
-
         $this->protocol = $protocol;
-
-        // Update the URI member.
-        $this->rebuildUri();
-
     }
 
     /**
@@ -344,9 +344,6 @@ class Request {
             throw new \InvalidArgumentException('Unable to parse query string.');
         }
 
-        // Update the URI member.
-        $this->rebuildUri();
-
     }
 
     /**
@@ -357,7 +354,6 @@ class Request {
      */
     public function setUri($uri) {
 
-        $this->uri = $uri;
         $parsed = parse_url($uri);
 
         $host = isset($parsed['host']) ? $parsed['host'] : '';
@@ -368,21 +364,6 @@ class Request {
 
         $query = isset($parsed['query']) ? $parsed['query'] : '';
         $this->setQuery($query);
-
-    }
-
-    /**
-     * Build the URI member from the other members (path, query, etc.)
-     */
-    protected function rebuildUri() {
-
-        $uri = $this->protocol . '://' . $this->hostname . $this->path;
-
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
-        }
-
-        $this->uri = $uri;
 
     }
 
