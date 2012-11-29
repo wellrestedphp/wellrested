@@ -2,10 +2,12 @@
 
 namespace wellrested;
 
+require_once(dirname(__FILE__) . '/Message.inc.php');
 require_once(dirname(__FILE__) . '/Response.inc.php');
 require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
 
 // !TODO: Include port in the URI
+// !TODO: This and Response both have protocol members, but they are different.
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -17,10 +19,6 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
  * Second, you can create a custom Request and use it to obtain a Response
  * from a server through cURL.
  *
- * @property string body       Entity body of the request
- * @property array headers     Associative array of HTTP headers
- * @property array hostname    The Hostname for the request (e.g., google.com)
- * @property string method     HTTP method or verb for the request
  * @property string path       Path component of the URI for the request
  * @property string pathParts  Fragments of the path, delimited by slashes
  * @property array query       Associative array of query parameters
@@ -28,21 +26,7 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
  *
  * @package WellRESTed
  */
-class Request {
-
-    /**
-     * Entity body of the request
-     *
-     * @var string
-     */
-    protected $body;
-
-    /**
-     * Associative array of HTTP headers
-     *
-     * @var array
-     */
-    protected $headers;
+class Request extends Message {
 
     /**
      * The Hostname for the request (e.g., www.google.com)
@@ -73,13 +57,6 @@ class Request {
     protected $pathParts;
 
     /**
-     * Protocal for the request (e.g., http, https)
-     *
-     * @var string
-     */
-    protected $protocol = 'http';
-
-    /**
      * Associative array of query parameters
      *
      * @var array
@@ -94,6 +71,12 @@ class Request {
      */
     static protected $theRequest;
 
+    /**
+     * Protocal for the request (e.g., http, https)
+     *
+     * @var string
+     */
+    public $protocol = 'http';
 
     // -------------------------------------------------------------------------
     // !Accessors
@@ -106,10 +89,6 @@ class Request {
     public function __get($name) {
 
         switch ($name) {
-            case 'body':
-                return $this->getBody();
-            case 'headers':
-                return $this->getHeaders();
             case 'hostname':
                 return $this->getHostname();
             case 'method':
@@ -118,14 +97,12 @@ class Request {
                 return $this->getPath();
             case 'pathParts':
                 return $this->getPathParts();
-            case 'protocol':
-                return $this->getProtocol();
             case 'query':
                 return $this->getQuery();
             case 'uri':
                 return $this->getUri();
             default:
-                throw new \Exception('Property ' . $name . ' does not exist.');
+                return parent::__get($name);
         }
 
     } // __get()
@@ -138,9 +115,6 @@ class Request {
     public function __set($name, $value) {
 
         switch ($name) {
-            case 'body':
-                $this->setBody($value);
-                return;
             case 'hostname':
                 $this->setHostname($value);
                 return;
@@ -150,9 +124,6 @@ class Request {
             case 'path':
                 $this->setPath($value);
                 return;
-            case 'protocol':
-                $this->setProtocol($value);
-                return;
             case 'query':
                 $this->setQuery($value);
                 return;
@@ -160,41 +131,26 @@ class Request {
                 $this->setUri($value);
                 return;
             default:
-                throw new \Exception('Property ' . $name . 'does not exist.');
+                parent::__set($name, $value);
         }
 
     }
 
     /**
-     * Return the body payload of the instance.
-     *
      * @return string
-     */
-    public function getBody() {
-        return $this->body;
-    }
-
-    /**
-     * Return an associative array of all set headers.
-     *
-     * @return array
-     */
-    public function getHeaders() {
-        return $this->headers;
-    }
-
-    /**
-     * Return the hostname set for the instance.
-     *
-     * @return array
      */
     public function getHostname() {
         return $this->hostname;
     }
 
     /**
-     * Return the HTTP method (e.g., GET, POST, PUT, DELETE)
-     *
+     * @param string $hostname
+     */
+    public function setHostname($hostname) {
+        $this->hostname = $hostname;
+    }
+
+    /**
      * @return string
      */
     public function getMethod() {
@@ -202,12 +158,10 @@ class Request {
     }
 
     /**
-     * Return the protocol (e.g., http, https)
-     *
-     * @return string
+     * @param string $method
      */
-    public function getProtocol() {
-        return $this->protocol;
+    public function setMethod($method) {
+        $this->method = $method;
     }
 
     /**
@@ -217,6 +171,16 @@ class Request {
      */
     public function getPath() {
         return $this->path;
+    }
+
+    /**
+     * Set the path and pathParts members.
+     *
+     * @param string $path
+     */
+    public function setPath($path) {
+        $this->path = $path;
+        $this->pathParts = explode('/', substr($path, 1));
     }
 
     /**
@@ -238,96 +202,9 @@ class Request {
     }
 
     /**
-     * Return the full URI includeing protocol, hostname, path, and query.
+     * Set the query. The value passed can be a query string of key-value pairs
+     * joined by ampersands or it can be an associative array.
      *
-     * @return array
-     */
-    public function getUri() {
-
-        $uri = $this->protocol . '://' . $this->hostname . $this->path;
-
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
-        }
-
-        return $uri;
-
-    }
-
-    /**
-     * Set the body for the request.
-     *
-     * @param string $body
-     */
-    public function setBody($body) {
-        $this->body = $body;
-    }
-
-    /**
-     * Add or update a header to a given value
-     *
-     * @param string $header
-     * @param string $value
-     */
-    public function setHeader($header, $value) {
-        $this->headers[$header] = $value;
-    }
-
-    /**
-     * Return if the response contains a header with the given key.
-     *
-     * @param string $header
-     * @return bool
-     */
-    public function hasHeader($header) {
-        return isset($this->headers[$header]);
-    }
-
-    /**
-     * Set the hostname for the request and update the URI.
-     *
-     * @param string $hostname
-     */
-    public function setHostname($hostname) {
-        $this->hostname = $hostname;
-    }
-
-    /**
-     * Set the method for the request.
-     *
-     * @param string $method
-     * @throws \InvalidArgumentException
-     */
-    public function setMethod($method) {
-
-        if (!is_string($method)) {
-            throw new \InvalidArgumentException('method must be a string.');
-        }
-
-        $this->method = $method;
-
-    }
-
-    /**
-     * Set the path and pathParts members.
-     *
-     * @param string $path
-     */
-    public function setPath($path) {
-        $this->path = $path;
-        $this->pathParts = explode('/', substr($path, 1));
-    }
-
-    /**
-     * Set the protocol for the request and update the URI.
-     *
-     * @param string $protocol
-     */
-    public function setProtocol($protocol) {
-        $this->protocol = $protocol;
-    }
-
-    /**
      * @param string|array $query
      * @throws \InvalidArgumentException
      */
@@ -347,8 +224,25 @@ class Request {
     }
 
     /**
-     * Set the URI for the Request. This method also sets the path, pathParts,
-     * and query.
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
+    public function getUri() {
+
+        $uri = $this->protocol . '://' . $this->hostname . $this->path;
+
+        if ($this->query) {
+            $uri .= '?' . http_build_query($this->query);
+        }
+
+        return $uri;
+
+    }
+
+    /**
+     * Set the URI for the Request. This sets the other members, such as path,
+     * hostname, etc.
      *
      * @param string $uri
      */
