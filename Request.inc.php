@@ -8,12 +8,14 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
 // !TODO: Include port in the URI
 
 /**
- * A Request instance contains information relating to the current HTTP request
- * a client sent to the server.
+ * A Request instance represents an HTTP request. This class has two main uses:
  *
- * Since the main use for this class is to provide info about the one specific
- * request, the class exposes the static getRequest() method for obtaining a
- * singleton Request instance.
+ * First, you can access a singleton instance via the getRequest() method that
+ * represents the request sent to the server. The instance will contain the URI,
+ * headers, body, etc.
+ *
+ * Second, you can create a custom Request and use it to obtain a Response
+ * from a server through cURL.
  *
  * @property string body       Entity body of the request
  * @property array headers     Associative array of HTTP headers
@@ -22,7 +24,7 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
  * @property string path       Path component of the URI for the request
  * @property string pathParts  Fragments of the path, delimited by slashes
  * @property array query       Associative array of query parameters
- * @property array uri         Full URI, including protocol, hostname, path, and query
+ * @property array uri         Full URI (protocol, hostname, path, etc.)
  *
  * @package WellRESTed
  */
