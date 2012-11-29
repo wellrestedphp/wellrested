@@ -18,7 +18,7 @@ $rqst = new \wellrested\Request();
 
 // Use the client-site-endpoint.php script
 $rqst->hostname = $_SERVER['HTTP_HOST'];
-$rqst->path = '/wellrested/samples/client-side-endpoint.php';
+$rqst->path = '/wellrested/samples/server-side-response.php';
 
 // Issue the request, and read the response returned by the server.
 try {
