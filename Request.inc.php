@@ -2,7 +2,10 @@
 
 namespace wellrested;
 
-require_once(dirname(__FILE__)  . '/Response.inc.php');
+require_once(dirname(__FILE__) . '/Response.inc.php');
+require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
+
+// !TODO: Include port in the URI
 
 /**
  * A Request instance contains information relating to the current HTTP request
@@ -14,10 +17,12 @@ require_once(dirname(__FILE__)  . '/Response.inc.php');
  *
  * @property string body       Entity body of the request
  * @property array headers     Associative array of HTTP headers
+ * @property array hostname    The Hostname for the request (e.g., google.com)
  * @property string method     HTTP method or verb for the request
  * @property string path       Path component of the URI for the request
  * @property string pathParts  Fragments of the path, delimited by slashes
  * @property array query       Associative array of query parameters
+ * @property array uri         Full URI, including protocol, hostname, path, and query
  *
  * @package WellRESTed
  */
@@ -49,7 +54,7 @@ class Request {
      *
      * @var string
      */
-    protected $method;
+    protected $method = 'GET';
 
     /**
      * Path component of the URI for the request
@@ -166,38 +171,83 @@ class Request {
 
     }
 
+    /**
+     * Return the body payload of the instance.
+     *
+     * @return string
+     */
     public function getBody() {
         return $this->body;
     }
 
+    /**
+     * Return an associative array of all set headers.
+     *
+     * @return array
+     */
     public function getHeaders() {
         return $this->headers;
     }
 
+    /**
+     * Return the hostname set for the instance.
+     *
+     * @return array
+     */
     public function getHostname() {
         return $this->hostname;
     }
 
+    /**
+     * Return the HTTP method (e.g., GET, POST, PUT, DELETE)
+     *
+     * @return string
+     */
     public function getMethod() {
         return $this->method;
     }
 
+    /**
+     * Return the protocol (e.g., http, https)
+     *
+     * @return string
+     */
     public function getProtocol() {
-        return $this->rotocol;
+        return $this->protocol;
     }
 
+    /**
+     * Return the path part of the URI as a string.
+     *
+     * @return string
+     */
     public function getPath() {
         return $this->path;
     }
 
+    /**
+     * Return an array of the sections of the path delimited by slashes.
+     *
+     * @return array
+     */
     public function getPathParts() {
         return $this->pathParts;
     }
 
+    /**
+     * Return an associative array representing the query.
+     *
+     * @return array
+     */
     public function getQuery() {
         return $this->query;
     }
 
+    /**
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
     public function getUri() {
 
         // Construct the URI if it is unset.
@@ -216,7 +266,6 @@ class Request {
     public function setBody($body) {
         $this->body = $body;
     }
-
 
     /**
      * Set the hostname for the request and update the URI.
@@ -320,7 +369,6 @@ class Request {
 
     }
 
-
     /**
      * Build the URI member from the other members (path, query, etc.)
      */
@@ -336,15 +384,28 @@ class Request {
 
     }
 
-
     // -------------------------------------------------------------------------
 
+    /**
+     * Make a cURL request out of the instance and return a Response.
+     *
+     * @return Response
+     * @throws exceptions\CurlException
+     */
     public function request() {
 
         $ch = curl_init();
+
+        // Set the URL.
         curl_setopt($ch, CURLOPT_URL, $this->uri);
+
+        // Include headers in the response.
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+
+        // Return the response from curl_exec().
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
+        // Set the method. Include the body, if needed.
         switch ($this->method) {
 
             case 'GET':
@@ -368,20 +429,35 @@ class Request {
 
         }
 
+        // Make the cURL request.
         $result = curl_exec($ch);
 
-        $resp = new Response();
-
-        if ($result !== false) {
-
-            $resp->body = $result;
-            $resp->statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-            // TODO: Read headers
-
+        // Throw an exception in the event of a cURL error.
+        if ($result === false) {
+            $error = curl_error($ch);
+            $errno = curl_errno($ch);
+            curl_close($ch);
+            throw new exceptions\CurlException($error, $errno);
         }
 
-        // TODO: Account for error
+        // Make a reponse to populate and return with data obtained via cURL.
+        $resp = new Response();
+
+        $resp->statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        // Split the result into headers and body.
+        list ($headers, $body) = explode("\r\n\r\n", $result, 2);
+
+        // Set the body. Do not auto-add the Content-length header.
+        $resp->setBody($body, false);
+
+        // Iterate over the headers line by line and add each one.
+        foreach (explode("\r\n", $headers) as $header) {
+            if (strpos($header, ':')) {
+                list ($headerName, $headerValue) = explode(':', $header, 2);
+                $resp->setHeader($headerName, ltrim($headerValue));
+            }
+        }
 
         curl_close($ch);
 
@@ -394,13 +470,13 @@ class Request {
      */
     public function readHttpRequest() {
 
-        $this->body = file_get_contents("php://input");
+        $this->setBody(file_get_contents("php://input"), false);
         $this->headers = apache_request_headers();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->hostname = $_SERVER['HTTP_HOST'];
 
-    } // readHttpRequest()
+    }
 
     /**
      * Return a reference to the singleton instance of the Request derived
@@ -409,7 +485,7 @@ class Request {
      * @return Request
      * @static
      */
-    static public function getRequest() {
+     public static function getRequest() {
 
         if (!isset(self::$theRequest)) {
 
@@ -423,7 +499,7 @@ class Request {
 
         return self::$theRequest;
 
-    } // getRequest()
+    }
 
 } // Request
 
