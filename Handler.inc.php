@@ -60,6 +60,11 @@ class Handler {
     // -------------------------------------------------------------------------
     // !Accessors
 
+    /**
+     * @param $name
+     * @return Response
+     * @throws \Exception
+     */
     public function __get($name) {
 
         switch ($name) {

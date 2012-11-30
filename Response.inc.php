@@ -15,27 +15,45 @@ require_once(dirname(__FILE__) . '/Message.inc.php');
  ******************************************************************************/
 
 /**
- * @property string body  Entity body of the response
- * @property array headers  Associative array of headers
+ * @property string reasonPhrase  Text explanation of status code.
+ * @property int statusCode  HTTP status code
+ * @property string statusLine  HTTP status line, e.g. "HTTP/1.1 200 OK"
  */
 class Response extends Message {
 
     /**
      * The protocol. Set this to the protocol you wish to use, such as
-     * "HTTP/1.1". If unset, the class uses $_SERVER['SERVER_PROTOCOL']
+     * "HTTP/1.1". The default is $_SERVER['SERVER_PROTOCOL'] or HTTP/1.1
      *
      * @var string
      */
     public $protocol;
 
     /**
+     * Text explanation of the HTTP Status Code. You only need to set this if
+     * you are using nonstandard status codes. Otherwise, the instance will
+     * set the when you update the status code.
+     *
+     * @var string
+     */
+    protected $reasonPhrase;
+
+    /**
      * HTTP status code
      * @var int
      */
-    public $statusCode;
+    protected $statusCode;
 
     // -------------------------------------------------------------------------
 
+    /**
+     * Create a new Response instance, optionally passing a status code, body,
+     * and headers.
+     *
+     * @param int $statusCode
+     * @param string $body
+     * @param array $headers
+     */
     public function __construct($statusCode=500, $body=null, $headers=null) {
 
         $this->statusCode = $statusCode;
@@ -50,10 +68,56 @@ class Response extends Message {
             $this->body = $body;
         }
 
+        if (isset($_SERVER['SERVER_PROTOCOL'])) {
+            $this->protocol = $_SERVER['SERVER_PROTOCOL'];
+        } else {
+            $this->protocol = 'HTTP/1.1';
+        }
+
     } // __construct()
 
     // -------------------------------------------------------------------------
     // !Accessors
+
+    /**
+     * @param string $name
+     * @return array|string
+     * @throws \Exception
+     */
+    public function __get($name) {
+
+        switch ($name) {
+            case 'reasonPhrase':
+                return $this->getReasonPhrase();
+            case 'statusCode':
+                return $this->getStatusCode();
+            case 'statusLine':
+                return $this->getStatusLine();
+            default:
+                return parent::__get($name);
+        }
+
+    } // __get()
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @throws \Exception
+     */
+    public function __set($name, $value) {
+
+        switch ($name) {
+            case 'reasonPhrase':
+                $this->setReasonPhrase($value);
+                return;
+            case 'statusCode':
+                $this->setStatusCode($value);
+                return;
+            default:
+                parent::__set($name, $value);
+        }
+
+    }
 
     /**
      * Provide a new entity body for the respone.
@@ -71,7 +135,104 @@ class Response extends Message {
             $this->setHeader('Content-Length', strlen($value));
         }
 
+    }
+
+    /**
+     * @return string
+     */
+    public function getReasonPhrase() {
+        return $this->reasonPhrase;
+    }
+
+    /**
+     * @param string $statusCodeMessage
+     */
+    public function setReasonPhrase($statusCodeMessage) {
+        $this->reasonPhrase = $statusCodeMessage;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode() {
+        return $this->statusCode;
     } // setBody()
+
+    /**
+     * @param int $statusCode
+     * @param string $reasonPhrase
+     * @throws \InvalidArgumentException
+     * @return void
+     */
+    public function setStatusCode($statusCode, $reasonPhrase=null) {
+
+        $this->statusCode = (int) $statusCode;
+
+        if (is_null($reasonPhrase)) {
+
+            switch ($this->statusCode) {
+                case 100: $text = 'Continue'; break;
+                case 101: $text = 'Switching Protocols'; break;
+                case 200: $text = 'OK'; break;
+                case 201: $text = 'Created'; break;
+                case 202: $text = 'Accepted'; break;
+                case 203: $text = 'Non-Authoritative Information'; break;
+                case 204: $text = 'No Content'; break;
+                case 205: $text = 'Reset Content'; break;
+                case 206: $text = 'Partial Content'; break;
+                case 300: $text = 'Multiple Choices'; break;
+                case 301: $text = 'Moved Permanently'; break;
+                case 302: $text = 'Moved Temporarily'; break;
+                case 303: $text = 'See Other'; break;
+                case 304: $text = 'Not Modified'; break;
+                case 305: $text = 'Use Proxy'; break;
+                case 400: $text = 'Bad Request'; break;
+                case 401: $text = 'Unauthorized'; break;
+                case 402: $text = 'Payment Required'; break;
+                case 403: $text = 'Forbidden'; break;
+                case 404: $text = 'Not Found'; break;
+                case 405: $text = 'Method Not Allowed'; break;
+                case 406: $text = 'Not Acceptable'; break;
+                case 407: $text = 'Proxy Authentication Required'; break;
+                case 408: $text = 'Request Time-out'; break;
+                case 409: $text = 'Conflict'; break;
+                case 410: $text = 'Gone'; break;
+                case 411: $text = 'Length Required'; break;
+                case 412: $text = 'Precondition Failed'; break;
+                case 413: $text = 'Request Entity Too Large'; break;
+                case 414: $text = 'Request-URI Too Large'; break;
+                case 415: $text = 'Unsupported Media Type'; break;
+                case 500: $text = 'Internal Server Error'; break;
+                case 501: $text = 'Not Implemented'; break;
+                case 502: $text = 'Bad Gateway'; break;
+                case 503: $text = 'Service Unavailable'; break;
+                case 504: $text = 'Gateway Time-out'; break;
+                case 505: $text = 'HTTP Version not supported'; break;
+                default:  $text = 'Nonstandard'; break;
+            }
+
+            $this->reasonPhrase = $text;
+
+        } else {
+
+            if (is_string($reasonPhrase)) {
+                $this->reasonPhrase = $reasonPhrase;
+            } else {
+                throw new \InvalidArgumentException('$reasonPhrase must be a string (or null to use standard HTTP Reason-Phrase');
+            }
+
+        }
+
+    }
+
+    /**
+     * Return HTTP status line, e.g. HTTP/1.1 200 OK.
+     *
+     * @return string
+     */
+    protected function getStatusLine() {
+        return $this->protocol . ' ' . $this->statusCode . ' ' . $this->reasonPhrase;
+    }
 
     // -------------------------------------------------------------------------
 
@@ -83,7 +244,7 @@ class Response extends Message {
     public function respond($headersOnly=false) {
 
         // Output the HTTP status code.
-        header($this->getStatusLine($this->statusCode));
+        header($this->statusLine);
 
         // Output each header.
         foreach ($this->headers as $header => $value) {
@@ -96,69 +257,6 @@ class Response extends Message {
         }
 
     } // respond()
-
-    /**
-     * Return HTTP status line, e.g. HTTP/1.1 200 OK.
-     *
-     * @return string
-     * @throws \UnexpectedValueException
-     */
-     protected function getStatusLine() {
-
-        switch ($this->statusCode) {
-            case 100: $text = 'Continue'; break;
-            case 101: $text = 'Switching Protocols'; break;
-            case 200: $text = 'OK'; break;
-            case 201: $text = 'Created'; break;
-            case 202: $text = 'Accepted'; break;
-            case 203: $text = 'Non-Authoritative Information'; break;
-            case 204: $text = 'No Content'; break;
-            case 205: $text = 'Reset Content'; break;
-            case 206: $text = 'Partial Content'; break;
-            case 300: $text = 'Multiple Choices'; break;
-            case 301: $text = 'Moved Permanently'; break;
-            case 302: $text = 'Moved Temporarily'; break;
-            case 303: $text = 'See Other'; break;
-            case 304: $text = 'Not Modified'; break;
-            case 305: $text = 'Use Proxy'; break;
-            case 400: $text = 'Bad Request'; break;
-            case 401: $text = 'Unauthorized'; break;
-            case 402: $text = 'Payment Required'; break;
-            case 403: $text = 'Forbidden'; break;
-            case 404: $text = 'Not Found'; break;
-            case 405: $text = 'Method Not Allowed'; break;
-            case 406: $text = 'Not Acceptable'; break;
-            case 407: $text = 'Proxy Authentication Required'; break;
-            case 408: $text = 'Request Time-out'; break;
-            case 409: $text = 'Conflict'; break;
-            case 410: $text = 'Gone'; break;
-            case 411: $text = 'Length Required'; break;
-            case 412: $text = 'Precondition Failed'; break;
-            case 413: $text = 'Request Entity Too Large'; break;
-            case 414: $text = 'Request-URI Too Large'; break;
-            case 415: $text = 'Unsupported Media Type'; break;
-            case 500: $text = 'Internal Server Error'; break;
-            case 501: $text = 'Not Implemented'; break;
-            case 502: $text = 'Bad Gateway'; break;
-            case 503: $text = 'Service Unavailable'; break;
-            case 504: $text = 'Gateway Time-out'; break;
-            case 505: $text = 'HTTP Version not supported'; break;
-            default:
-                throw new \UnexpectedValueException('Unknown http status code "' . $this->statusCode . '"');
-                break;
-        }
-
-        if (isset($this->protocol)) {
-            $protocol = $this->protocol;
-        } elseif (isset($_SERVER['SERVER_PROTOCOL'])) {
-            $protocol = $_SERVER['SERVER_PROTOCOL'];
-        } else {
-            $protocol = 'HTTP/1.1';
-        }
-
-        return $protocol . ' ' . $this->statusCode . ' ' . $text;
-
-    }
 
 } // Response
 

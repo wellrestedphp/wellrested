@@ -19,6 +19,8 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
  * Second, you can create a custom Request and use it to obtain a Response
  * from a server through cURL.
  *
+ * @property string hostname   Hostname part of the URI
+ * @property string method     HTTP method (GET, POST, PUT, DELETE, etc.)
  * @property string path       Path component of the URI for the request
  * @property string pathParts  Fragments of the path, delimited by slashes
  * @property array query       Associative array of query parameters
