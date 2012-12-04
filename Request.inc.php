@@ -6,8 +6,7 @@ require_once(dirname(__FILE__) . '/Message.inc.php');
 require_once(dirname(__FILE__) . '/Response.inc.php');
 require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
 
-// !TODO: Include port in the URI
-// !TODO: This and Response both have protocol members, but they are different.
+// TODO: Include port in the URI
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -72,13 +71,6 @@ class Request extends Message {
      * @static
      */
     static protected $theRequest;
-
-    /**
-     * Protocal for the request (e.g., http, https)
-     *
-     * @var string
-     */
-    public $protocol = 'http';
 
     // -------------------------------------------------------------------------
     // !Accessors
@@ -232,7 +224,7 @@ class Request extends Message {
      */
     public function getUri() {
 
-        $uri = $this->protocol . '://' . $this->hostname . $this->path;
+        $uri = strtolower($this->protocol) . '://' . $this->hostname . $this->path;
 
         if ($this->query) {
             $uri .= '?' . http_build_query($this->query);

@@ -22,14 +22,6 @@ require_once(dirname(__FILE__) . '/Message.inc.php');
 class Response extends Message {
 
     /**
-     * The protocol. Set this to the protocol you wish to use, such as
-     * "HTTP/1.1". The default is $_SERVER['SERVER_PROTOCOL'] or HTTP/1.1
-     *
-     * @var string
-     */
-    public $protocol;
-
-    /**
      * Text explanation of the HTTP Status Code. You only need to set this if
      * you are using nonstandard status codes. Otherwise, the instance will
      * set the when you update the status code.
@@ -231,7 +223,11 @@ class Response extends Message {
      * @return string
      */
     protected function getStatusLine() {
-        return $this->protocol . ' ' . $this->statusCode . ' ' . $this->reasonPhrase;
+        return sprintf('%s/%s %s %s',
+                    strtoupper($this->protocol),
+                    $this->protocolVersion,
+                    $this->statusCode,
+                    $this->reasonPhrase);
     }
 
     // -------------------------------------------------------------------------

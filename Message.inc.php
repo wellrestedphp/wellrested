@@ -24,6 +24,18 @@ abstract class Message {
      */
     protected $headers;
 
+    /**
+     * Name of the protocol to use.
+     * @var string
+     */
+    protected $protocol = 'HTTP';
+
+    /**
+     * Version of the protocol to use.
+     * @var string
+     */
+    protected $protocolVersion = '1.1';
+
     // -------------------------------------------------------------------------
     // !Accessors
 
@@ -39,6 +51,10 @@ abstract class Message {
                 return $this->getBody();
             case 'headers':
                 return $this->getHeaders();
+            case 'protocol':
+                return $this->getProtocol();
+            case 'protocolVersion':
+                return $this->getProtocolVersion();
             default:
                 throw new \Exception('Property ' . $name . ' does not exist.');
         }
@@ -47,7 +63,7 @@ abstract class Message {
 
     /**
      * @param string $name
-     * @param mixed $value
+     * @param $value
      * @throws \Exception
      */
     public function __set($name, $value) {
@@ -55,6 +71,12 @@ abstract class Message {
         switch ($name) {
             case 'body':
                 $this->setBody($value);
+                return;
+            case 'protocol':
+                $this->setProtocol($value);
+                return;
+            case 'protocolVersion':
+                $this->setProtocolVersion($value);
                 return;
             default:
                 throw new \Exception('Property ' . $name . 'does not exist or is read-only.');
@@ -109,6 +131,7 @@ abstract class Message {
      * Add or update a header to a given value
      *
      * @param string $header
+     * @param $value
      * @param string $value
      */
     public function setHeader($header, $value) {
@@ -118,7 +141,7 @@ abstract class Message {
     /**
      * Return if the response contains a header with the given key.
      *
-     * @param string $header
+     * @param $header
      * @return bool
      */
     public function hasHeader($header) {
@@ -134,6 +157,40 @@ abstract class Message {
         if ($this->hasHeader($header)) {
             unset($this->headers[$header]);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol() {
+        return $this->protocol;
+    }
+
+    /**
+     * @param $protocol
+     */
+    public function setProtocol($protocol) {
+
+        if (strpos($protocol, '/') === false) {
+            list($this->protocol, $this->protocolVersion) = explode('/', $protocol, 2);
+        } else {
+            $this->protocol = $protocol;
+        }
+
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocolVersion() {
+        return $this->protocolVersion;
+    }
+
+    /**
+     * @param string $protocolVersion
+     */
+    public function setProtocolVersion($protocolVersion) {
+        $this->protocolVersion = $protocolVersion;
     }
 
 }
