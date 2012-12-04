@@ -80,6 +80,6 @@ class Router {
 
     }
 
-} // Router
+}
 
 ?>

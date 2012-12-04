@@ -66,7 +66,7 @@ class Response extends Message {
             $this->protocol = 'HTTP/1.1';
         }
 
-    } // __construct()
+    }
 
     // -------------------------------------------------------------------------
     // !Accessors
@@ -89,7 +89,7 @@ class Response extends Message {
                 return parent::__get($name);
         }
 
-    } // __get()
+    }
 
     /**
      * @param string $name
@@ -148,7 +148,7 @@ class Response extends Message {
      */
     public function getStatusCode() {
         return $this->statusCode;
-    } // setBody()
+    }
 
     /**
      * @param int $statusCode
@@ -252,8 +252,8 @@ class Response extends Message {
             print $this->body;
         }
 
-    } // respond()
+    }
 
-} // Response
+}
 
 ?>

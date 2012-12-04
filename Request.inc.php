@@ -99,7 +99,7 @@ class Request extends Message {
                 return parent::__get($name);
         }
 
-    } // __get()
+    }
 
     /**
      * @param string $name
@@ -372,6 +372,6 @@ class Request extends Message {
 
     }
 
-} // Request
+}
 
 ?>

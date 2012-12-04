@@ -74,7 +74,7 @@ class Handler {
             throw new \Exception('Property ' . $name . ' does not exist.');
         }
 
-    } // __get()
+    }
 
     /**
      * @return Response
@@ -191,6 +191,6 @@ class Handler {
         $this->response->statusCode = 405;
     }
 
-} // Handler
+}
 
 ?>

@@ -123,8 +123,8 @@ class Route {
         $route = new $klass($pattern, $handler, $handlerPath);
         return $route;
 
-    } // newFromUriTemplate()
+    }
 
-} // Route
+}
 
 ?>
