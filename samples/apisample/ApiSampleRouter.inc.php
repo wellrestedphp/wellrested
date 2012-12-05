@@ -1,7 +1,12 @@
 <?php
 
+namespace apisample;
+
 require_once(dirname(__FILE__) . '/../../Router.inc.php');
 
+/**
+ * Loads and instantiates handlers based on URI.
+ */
 class ApiSampleRouter extends \wellrested\Router {
 
     public function __construct() {
@@ -9,16 +14,16 @@ class ApiSampleRouter extends \wellrested\Router {
         parent::__construct();
 
         $this->addTemplate('/articles/',
-                '\handlers\ArticleCollectionHandler',
+                'ArticleCollectionHandler',
                 'ArticleCollectionHandler.inc.php');
 
         $this->addTemplate('/articles/{id}',
-                '\handlers\ArticleItemHandler',
+                'ArticleItemHandler',
                 'ArticleItemHandler.inc.php',
                 array('id' => \wellrested\Route::RE_NUM));
 
         $this->addTemplate('/articles/{slug}',
-                '\handlers\ArticleItemHandler',
+                'ArticleItemHandler',
                 'ArticleItemHandler.inc.php',
                 array('slug' => \wellrested\Route::RE_SLUG));
 
@@ -28,6 +33,7 @@ class ApiSampleRouter extends \wellrested\Router {
 
         // Customize as needed based on your server.
         $template = '/wellrested/samples/apisample' . $template;
+        $handlerClassName = '\apisample\handlers\\' . $handlerClassName;
         $handlerFilePath = dirname(__FILE__) . '/handlers/' . $handlerFilePath;
 
         $this->addRoute(\wellrested\Route::newFromUriTemplate(

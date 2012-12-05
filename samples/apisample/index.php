@@ -2,7 +2,7 @@
 
 require_once('ApiSampleRouter.inc.php');
 
-$router = new ApiSampleRouter();
+$router = new \apisample\ApiSampleRouter();
 $response = $router->getResponse();
 $response->respond();
 exit;

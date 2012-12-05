@@ -1,16 +1,25 @@
 <?php
 
-namespace handlers;
+namespace apisample\handlers;
 
 require_once(dirname(__FILE__) . '/../../../Handler.inc.php');
 require_once(dirname(__FILE__) . '/../data/ArticlesControler.inc.php');
 
+/**
+ * Handler class for one specific article.
+ *
+ * When instantiated by the Router, this class should receive an id or slug
+ * argument to identify the article.
+ */
 class ArticleItemHandler extends \wellrested\Handler {
 
+    /**
+     * Respond to a GET request.
+     */
     protected function get() {
 
         // Read the list of articles.
-        $articles = new \ArticlesControler();
+        $articles = new \apisample\data\ArticlesControler();
 
         $article = false;
 
@@ -41,6 +50,9 @@ class ArticleItemHandler extends \wellrested\Handler {
 
     }
 
+    /**
+     * Respond to a PUT request.
+     */
     protected function put() {
 
         // Read the request body, and ensure it is in the proper format.
@@ -141,6 +153,9 @@ class ArticleItemHandler extends \wellrested\Handler {
 
     }
 
+    /**
+     * Respond to a DELETE request.
+     */
     protected function delete() {
 
         // Read the list of articles.

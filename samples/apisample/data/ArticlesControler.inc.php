@@ -1,5 +1,10 @@
 <?php
 
+namespace apisample\data;
+
+/**
+ * Simple class for reading and writing articles to a text file.
+ */
 class ArticlesControler {
 
     public $data;
