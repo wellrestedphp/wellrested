@@ -1,6 +1,6 @@
 <?php
 
-namespace apisample\data;
+namespace apisample;
 
 /**
  * Simple class for reading and writing articles to a text file.
@@ -11,7 +11,7 @@ class ArticlesControler {
     protected $path;
 
     public function __construct() {
-        $this->path = dirname(__FILE__) . '/articles.json';
+        $this->path = dirname(__FILE__) . '/data/articles.json';
         $this->load();
     }
 

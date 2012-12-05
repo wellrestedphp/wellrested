@@ -3,7 +3,7 @@
 namespace apisample\handlers;
 
 require_once(dirname(__FILE__) . '/../../../Handler.inc.php');
-require_once(dirname(__FILE__) . '/../data/ArticlesControler.inc.php');
+require_once(dirname(__FILE__) . '/../ArticlesControler.inc.php');
 
 /**
  * Handler class for one specific article.
@@ -19,7 +19,7 @@ class ArticleItemHandler extends \wellrested\Handler {
     protected function get() {
 
         // Read the list of articles.
-        $articles = new \apisample\data\ArticlesControler();
+        $articles = new \apisample\ArticlesControler();
 
         $article = false;
 
@@ -89,7 +89,7 @@ class ArticleItemHandler extends \wellrested\Handler {
         }
 
         // Read the list of articles.
-        $articles = new \apisample\data\ArticlesControler();
+        $articles = new \apisample\ArticlesControler();
 
         $oldArticle = false;
 
@@ -159,7 +159,7 @@ class ArticleItemHandler extends \wellrested\Handler {
     protected function delete() {
 
         // Read the list of articles.
-        $articles = new \apisample\data\ArticlesControler();
+        $articles = new \apisample\ArticlesControler();
 
         $article = false;
 

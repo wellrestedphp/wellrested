@@ -3,7 +3,7 @@
 namespace apisample\handlers;
 
 require_once(dirname(__FILE__) . '/../../../Handler.inc.php');
-require_once(dirname(__FILE__) . '/../data/ArticlesControler.inc.php');
+require_once(dirname(__FILE__) . '/../ArticlesControler.inc.php');
 
 /**
  * Handler class for a list of articles.
@@ -16,7 +16,7 @@ class ArticleCollectionHandler extends \wellrested\Handler {
     protected function get() {
 
         // Display the list of articles.
-        $articles = new \apisample\data\ArticlesControler();
+        $articles = new \apisample\ArticlesControler();
 
         if (isset($articles->data)) {
 
@@ -73,7 +73,7 @@ class ArticleCollectionHandler extends \wellrested\Handler {
         }
 
         // Ensure slug is not a duplicate.
-        $articles = new \apisample\data\ArticlesControler();
+        $articles = new \apisample\ArticlesControler();
         if ($articles->getArticleBySlug($article['slug']) !== false) {
             $this->response->statusCode = 409;
             $this->response->setHeader('Content-type', 'text/plain');
