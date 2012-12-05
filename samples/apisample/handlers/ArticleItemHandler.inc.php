@@ -89,7 +89,7 @@ class ArticleItemHandler extends \wellrested\Handler {
         }
 
         // Read the list of articles.
-        $articles = new \ArticlesControler();
+        $articles = new \apisample\data\ArticlesControler();
 
         $oldArticle = false;
 
@@ -159,7 +159,7 @@ class ArticleItemHandler extends \wellrested\Handler {
     protected function delete() {
 
         // Read the list of articles.
-        $articles = new \ArticlesControler();
+        $articles = new \apisample\data\ArticlesControler();
 
         $article = false;
 
