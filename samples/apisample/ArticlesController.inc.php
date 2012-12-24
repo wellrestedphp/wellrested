@@ -5,7 +5,7 @@ namespace apisample;
 /**
  * Simple class for reading and writing articles to a text file.
  */
-class ArticlesControler {
+class ArticlesController {
 
     public $data;
     protected $path;

@@ -13,7 +13,7 @@ $rqst->uri = 'https://www.google.com/search?q=my+search+terms';
 
 // You could also set the members individually, like this:
 //$rqst->protocol = 'https';
-//$rqst->hostname = ['www.google.com';
+//$rqst->hostname = 'www.google.com';
 //$rqst->path = '/search';
 //$rqst->query = array('q' => 'my search terms');
 
