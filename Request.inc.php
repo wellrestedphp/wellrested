@@ -6,6 +6,7 @@ require_once(dirname(__FILE__) . '/Message.inc.php');
 require_once(dirname(__FILE__) . '/Response.inc.php');
 require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
 
+// TODO: Ensure header names are case insensitive
 // TODO: Include port in the URI
 
 /**
