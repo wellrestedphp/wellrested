@@ -25,6 +25,15 @@ abstract class Message {
     protected $headers;
 
     /**
+     * Associative array of lowercase header field names as keys with
+     * corresponding case sensitive field names from the $headers array as
+     * values.
+     *
+     * @var array
+     */
+    protected $headerLookup;
+
+    /**
      * Name of the protocol to use.
      * @var string
      */
@@ -114,13 +123,21 @@ abstract class Message {
     /**
      * Return the value of a given header, or false if it does not exist.
      *
-     * @param string $header
+     * @param string $name
      * @return string|bool
      */
-    public function getHeader($header) {
+    public function getHeader($name) {
 
-        if ($this->hasHeader($header)) {
-            return $this->headers[$header];
+        $lowerName = strtolower($name);
+
+        if (isset($this->headerLookup[$lowerName])) {
+
+            $realName = $this->headerLookup[$lowerName];
+
+            if (isset($this->headers[$realName])) {
+                return $this->headers[$realName];
+            }
+
         }
 
         return false;
@@ -130,33 +147,63 @@ abstract class Message {
     /**
      * Add or update a header to a given value
      *
-     * @param string $header
+     * @param string name
      * @param $value
      * @param string $value
      */
-    public function setHeader($header, $value) {
-        $this->headers[$header] = $value;
+    public function setHeader($name, $value) {
+
+        $lowerName = strtolower($name);
+
+        // Check if a mapping already exists for this header.
+        // Remove it, if needed.
+        if (isset($this->headerLookup[$lowerName])
+                && $this->headerLookup[$lowerName] !== $name) {
+
+            unset($this->headers[$this->headerLookup[$lowerName]]);
+
+        }
+
+        // Store the actual header.
+        $this->headers[$name] = $value;
+
+        // Store a mapping to the user's prefered case.
+        $this->headerLookup[$lowerName] = $name;
+
     }
 
     /**
      * Return if the response contains a header with the given key.
      *
-     * @param $header
+     * @param $name
      * @return bool
      */
-    public function hasHeader($header) {
-        return isset($this->headers[$header]);
+    public function hasHeader($name) {
+        $lowerName = strtolower($name);
+        return isset($this->headerLookup[$lowerName]);
     }
 
     /**
      * Remove a header. This method does nothing if the header does not exist.
      *
-     * @param string $header
+     * @param string $name
      */
-    public function unsetHeader($header) {
-        if ($this->hasHeader($header)) {
-            unset($this->headers[$header]);
+    public function unsetHeader($name) {
+
+        $lowerName = strtolower($name);
+
+        if (isset($this->headerLookup[$lowerName])) {
+
+            $realName = $this->headerLookup[$lowerName];
+
+            if (isset($this->headers[$realName])) {
+                unset($this->headers[$realName]);
+            }
+
+            unset($this->headerLookup[$lowerName]);
+
         }
+
     }
 
     /**

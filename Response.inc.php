@@ -4,8 +4,6 @@ namespace wellrested;
 
 require_once(dirname(__FILE__) . '/Message.inc.php');
 
-// TODO: Ensure header names are case insensitive
-
 /*******************************************************************************
  * Response
  *
