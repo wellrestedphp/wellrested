@@ -343,6 +343,12 @@ class Request extends Message {
 
         $this->setBody(file_get_contents("php://input"), false);
         $this->headers = apache_request_headers();
+
+        // Add case insensitive headers to the lookup table.
+        foreach ($this->headers as $key => $value) {
+            $this->headerLookup[strtolower($key)] = $key;
+        }
+
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->hostname = $_SERVER['HTTP_HOST'];
