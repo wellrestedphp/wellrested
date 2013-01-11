@@ -8,8 +8,8 @@
  */
 
 // Include the Well RESTed Request and Response class files.
-require_once('../Request.inc.php');
-require_once('../Response.inc.php');
+require_once('../Request.php');
+require_once('../Response.php');
 
 // Read the request sent to the server as the singleton instance.
 $rqst = \pjdietz\WellRESTed\Request::getRequest();

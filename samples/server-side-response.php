@@ -4,7 +4,7 @@
  * Create and output a response from the server.
  */
 
-require_once('../Response.inc.php');
+require_once('../Response.php');
 
 // Create a new Response instance.
 $resp = new \pjdietz\WellRESTed\Response();

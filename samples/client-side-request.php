@@ -5,7 +5,7 @@
  */
 
 // Include the Well RESTed Request and Response class files.
-require_once('../Request.inc.php');
+require_once('../Request.php');
 
 // Make a requst to Google in one line:
 $rqst = new \pjdietz\WellRESTed\Request();

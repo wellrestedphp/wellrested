@@ -2,7 +2,7 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Message.inc.php');
+require_once(dirname(__FILE__) . '/Message.php');
 
 /*******************************************************************************
  * Response

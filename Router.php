@@ -2,9 +2,9 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Request.inc.php');
-require_once(dirname(__FILE__) . '/Response.inc.php');
-require_once(dirname(__FILE__) . '/Route.inc.php');
+require_once(dirname(__FILE__) . '/Request.php');
+require_once(dirname(__FILE__) . '/Response.php');
+require_once(dirname(__FILE__) . '/Route.php');
 
 /*******************************************************************************
  * Router

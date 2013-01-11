@@ -2,9 +2,9 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Message.inc.php');
-require_once(dirname(__FILE__) . '/Response.inc.php');
-require_once(dirname(__FILE__) . '/exceptions/CurlException.inc.php');
+require_once(dirname(__FILE__) . '/Message.php');
+require_once(dirname(__FILE__) . '/Response.php');
+require_once(dirname(__FILE__) . '/exceptions/CurlException.php');
 
 // TODO: Include port in the URI
 

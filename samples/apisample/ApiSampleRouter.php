@@ -6,7 +6,7 @@ use pjdietz\WellRESTed\Router;
 use pjdietz\WellRESTed\Route;
 
 
-require_once(dirname(__FILE__) . '/../../Router.inc.php');
+require_once(dirname(__FILE__) . '/../../Router.php');
 
 /**
  * Loads and instantiates handlers based on URI.
@@ -19,7 +19,7 @@ class ApiSampleRouter extends Router {
 
         $this->addTemplate('/articles/',
                 'ArticleCollectionHandler',
-                'ArticleCollectionHandler.inc.php');
+                'ArticleCollectionHandler.php');
 
         $this->addTemplate('/articles/{id}',
                 'ArticleItemHandler',

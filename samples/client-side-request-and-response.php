@@ -10,8 +10,8 @@
  */
 
 // Include the Well RESTed Request and Response class files.
-require_once('../Request.inc.php');
-require_once('../Response.inc.php');
+require_once('../Request.php');
+require_once('../Response.php');
 
 // Make a custom request to talk to the server.
 $rqst = new \pjdietz\WellRESTed\Request();

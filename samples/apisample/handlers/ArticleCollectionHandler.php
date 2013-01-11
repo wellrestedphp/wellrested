@@ -2,8 +2,8 @@
 
 namespace apisample\handlers;
 
-require_once(dirname(__FILE__) . '/../../../Handler.inc.php');
-require_once(dirname(__FILE__) . '/../ArticlesController.inc.php');
+require_once(dirname(__FILE__) . '/../../../Handler.php');
+require_once(dirname(__FILE__) . '/../ArticlesController.php');
 
 /**
  * Handler class for a list of articles.

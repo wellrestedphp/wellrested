@@ -1,6 +1,6 @@
 <?php
 
-require_once('ApiSampleRouter.inc.php');
+require_once('ApiSampleRouter.php');
 
 $router = new \apisample\ApiSampleRouter();
 $response = $router->getResponse();
