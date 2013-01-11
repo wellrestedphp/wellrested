@@ -47,7 +47,7 @@ class Route {
      * @param $handler
      * @param $handlerPath
      */
-    public function __construct($pattern, $handler, $handlerPath) {
+    public function __construct($pattern, $handler, $handlerPath=null) {
 
         $this->pattern = $pattern;
         $this->handler = $handler;

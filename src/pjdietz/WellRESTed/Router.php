@@ -53,7 +53,8 @@ class Router {
 
                 $klass = $route->handler;
 
-                if (!class_exists($klass)) {
+                // Autoload, if needed.
+                if (!class_exists($klass) && is_string($route->handlerPath)) {
                     require_once($route->handlerPath);
                 }
 
