@@ -1,6 +1,6 @@
 <?php
 
-namespace wellrested\exceptions;
+namespace pjdietz\WellRESTed\exceptions;
 
 require_once(dirname(__FILE__) . '/WellrestedException.inc.php');
 

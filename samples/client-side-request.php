@@ -8,7 +8,7 @@
 require_once('../Request.inc.php');
 
 // Make a requst to Google in one line:
-$rqst = new \wellrested\Request();
+$rqst = new \pjdietz\WellRESTed\Request();
 $rqst->uri = 'https://www.google.com/search?q=my+search+terms';
 
 // You could also set the members individually, like this:

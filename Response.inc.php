@@ -1,6 +1,6 @@
 <?php
 
-namespace wellrested;
+namespace pjdietz\WellRESTed;
 
 require_once(dirname(__FILE__) . '/Message.inc.php');
 

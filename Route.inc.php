@@ -1,6 +1,6 @@
 <?php
 
-namespace wellrested;
+namespace pjdietz\WellRESTed;
 
 /*******************************************************************************
  * Route

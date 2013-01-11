@@ -1,6 +1,6 @@
 <?php
 
-namespace wellrested\exceptions;
+namespace pjdietz\WellRESTed\exceptions;
 
 /**
  * Top level class for custom exceptions thrown by Well RESTed.

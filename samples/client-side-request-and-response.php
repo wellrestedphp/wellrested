@@ -14,7 +14,7 @@ require_once('../Request.inc.php');
 require_once('../Response.inc.php');
 
 // Make a custom request to talk to the server.
-$rqst = new \wellrested\Request();
+$rqst = new \pjdietz\WellRESTed\Request();
 
 // Use the client-site-endpoint.php script
 $rqst->hostname = $_SERVER['HTTP_HOST'];

@@ -11,7 +11,7 @@ require_once(dirname(__FILE__) . '/../ArticlesController.inc.php');
  * When instantiated by the Router, this class should receive an id or slug
  * argument to identify the article.
  */
-class ArticleItemHandler extends \wellrested\Handler {
+class ArticleItemHandler extends \pjdietz\WellRESTed\Handler {
 
     /**
      * Respond to a GET request.

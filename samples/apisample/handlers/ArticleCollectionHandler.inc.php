@@ -8,7 +8,7 @@ require_once(dirname(__FILE__) . '/../ArticlesController.inc.php');
 /**
  * Handler class for a list of articles.
  */
-class ArticleCollectionHandler extends \wellrested\Handler {
+class ArticleCollectionHandler extends \pjdietz\WellRESTed\Handler {
 
     /**
      * Respond to a GET request.

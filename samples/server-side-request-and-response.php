@@ -12,7 +12,7 @@ require_once('../Request.inc.php');
 require_once('../Response.inc.php');
 
 // Read the request sent to the server as the singleton instance.
-$rqst = \wellrested\Request::getRequest();
+$rqst = \pjdietz\WellRESTed\Request::getRequest();
 
 // Alternatively, you can create a new Request and call readHttpRequest().
 // $rqst = new \wellrested\Request();

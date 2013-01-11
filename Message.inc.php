@@ -1,6 +1,6 @@
 <?php
 
-namespace wellrested;
+namespace pjdietz\WellRESTed;
 
 /**
  * Common base class for the Request and Response classes.
