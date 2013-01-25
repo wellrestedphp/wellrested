@@ -1,6 +1,6 @@
 <?php
 
-namespace apisample;
+namespace ApiSample;
 
 /**
  * Simple class for reading and writing articles to a text file.

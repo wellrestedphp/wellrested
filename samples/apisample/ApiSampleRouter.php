@@ -1,6 +1,6 @@
 <?php
 
-namespace apisample;
+namespace ApiSample;
 
 use pjdietz\WellRESTed\Router;
 use pjdietz\WellRESTed\Route;
@@ -18,38 +18,30 @@ class ApiSampleRouter extends Router
 
         $this->addTemplate(
             '/articles/',
-            'ArticleCollectionHandler',
-            'ArticleCollectionHandler.php'
+            'ArticleCollectionHandler'
         );
-
         $this->addTemplate(
             '/articles/{id}',
             'ArticleItemHandler',
-            'ArticleItemHandler.inc.php',
             array('id' => Route::RE_NUM)
         );
-
         $this->addTemplate(
             '/articles/{slug}',
             'ArticleItemHandler',
-            'ArticleItemHandler.inc.php',
             array('slug' => Route::RE_SLUG)
         );
-
     }
 
-    public function addTemplate($template, $handlerClassName, $handlerFilePath, $variables = null)
+    public function addTemplate($template, $handlerClassName, $variables = null)
     {
         // Customize as needed based on your server.
         $template = '/wellrested/samples/apisample' . $template;
         $handlerClassName = '\apisample\handlers\\' . $handlerClassName;
-        $handlerFilePath = dirname(__FILE__) . '/handlers/' . $handlerFilePath;
 
         $this->addRoute(
             Route::newFromUriTemplate(
                 $template,
                 $handlerClassName,
-                $handlerFilePath,
                 $variables
             )
         );

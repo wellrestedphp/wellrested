@@ -55,12 +55,6 @@ class Router
             if (preg_match($route->pattern, $path, $matches)) {
 
                 $klass = $route->handler;
-
-                // Autoload, if needed.
-                if (is_string($route->handlerPath) && !class_exists($klass)) {
-                    require_once($route->handlerPath);
-                }
-
                 $handler = new $klass($request, $matches);
                 return $handler->response;
 

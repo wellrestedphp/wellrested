@@ -1,6 +1,6 @@
 <?php
 
-namespace apisample\handlers;
+namespace ApiSample\Handlers;
 
 use \pjdietz\WellRESTed\Handler;
 

@@ -40,22 +40,13 @@ class Route
     public $handler;
 
     /**
-     * The path to the source file defing the handler class.
-     *
-     * @var string
-     */
-    public $handlerPath;
-
-    /**
      * @param $pattern
      * @param $handler
-     * @param $handlerPath
      */
-    public function __construct($pattern, $handler, $handlerPath = null)
+    public function __construct($pattern, $handler)
     {
         $this->pattern = $pattern;
         $this->handler = $handler;
-        $this->handlerPath = $handlerPath;
     }
 
     /**
@@ -63,7 +54,6 @@ class Route
      *
      * @param string $uriTemplate
      * @param string $handler
-     * @param string $handlerPath
      * @param array $variables
      * @throws \Exception
      * @return Route
@@ -71,7 +61,6 @@ class Route
     static public function newFromUriTemplate(
         $uriTemplate,
         $handler,
-        $handlerPath = null,
         $variables = null
     ) {
 
@@ -133,7 +122,7 @@ class Route
         $pattern = '/^' . $pattern . '$/';
 
         $klass = __CLASS__;
-        $route = new $klass($pattern, $handler, $handlerPath);
+        $route = new $klass($pattern, $handler);
         return $route;
 
     }
