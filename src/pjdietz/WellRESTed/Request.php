@@ -2,10 +2,6 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Message.php');
-require_once(dirname(__FILE__) . '/Response.php');
-require_once(dirname(__FILE__) . '/exceptions/CurlException.php');
-
 // TODO: Include port in the URI
 
 /**
@@ -27,8 +23,8 @@ require_once(dirname(__FILE__) . '/exceptions/CurlException.php');
  *
  * @package WellRESTed
  */
-class Request extends Message {
-
+class Request extends Message
+{
     /**
      * The Hostname for the request (e.g., www.google.com)
      *
@@ -80,8 +76,8 @@ class Request extends Message {
      * @return array|string
      * @throws \Exception
      */
-    public function __get($name) {
-
+    public function __get($name)
+    {
         switch ($name) {
             case 'hostname':
                 return $this->getHostname();
@@ -98,7 +94,6 @@ class Request extends Message {
             default:
                 return parent::__get($name);
         }
-
     }
 
     /**
@@ -106,8 +101,8 @@ class Request extends Message {
      * @param mixed $value
      * @throws \Exception
      */
-    public function __set($name, $value) {
-
+    public function __set($name, $value)
+    {
         switch ($name) {
             case 'hostname':
                 $this->setHostname($value);
@@ -127,34 +122,37 @@ class Request extends Message {
             default:
                 parent::__set($name, $value);
         }
-
     }
 
     /**
      * @return string
      */
-    public function getHostname() {
+    public function getHostname()
+    {
         return $this->hostname;
     }
 
     /**
      * @param string $hostname
      */
-    public function setHostname($hostname) {
+    public function setHostname($hostname)
+    {
         $this->hostname = $hostname;
     }
 
     /**
      * @return string
      */
-    public function getMethod() {
+    public function getMethod()
+    {
         return $this->method;
     }
 
     /**
      * @param string $method
      */
-    public function setMethod($method) {
+    public function setMethod($method)
+    {
         $this->method = $method;
     }
 
@@ -163,7 +161,8 @@ class Request extends Message {
      *
      * @return string
      */
-    public function getPath() {
+    public function getPath()
+    {
         return $this->path;
     }
 
@@ -172,7 +171,8 @@ class Request extends Message {
      *
      * @param string $path
      */
-    public function setPath($path) {
+    public function setPath($path)
+    {
         $this->path = $path;
         $this->pathParts = explode('/', substr($path, 1));
     }
@@ -182,7 +182,8 @@ class Request extends Message {
      *
      * @return array
      */
-    public function getPathParts() {
+    public function getPathParts()
+    {
         return $this->pathParts;
     }
 
@@ -191,7 +192,8 @@ class Request extends Message {
      *
      * @return array
      */
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->query;
     }
 
@@ -202,8 +204,8 @@ class Request extends Message {
      * @param string|array $query
      * @throws \InvalidArgumentException
      */
-    public function setQuery($query) {
-
+    public function setQuery($query)
+    {
         if (is_string($query)) {
             $qs = $query;
             parse_str($qs, $query);
@@ -214,7 +216,6 @@ class Request extends Message {
         } else {
             throw new \InvalidArgumentException('Unable to parse query string.');
         }
-
     }
 
     /**
@@ -222,8 +223,8 @@ class Request extends Message {
      *
      * @return array
      */
-    public function getUri() {
-
+    public function getUri()
+    {
         $uri = strtolower($this->protocol) . '://' . $this->hostname . $this->path;
 
         if ($this->query) {
@@ -231,7 +232,6 @@ class Request extends Message {
         }
 
         return $uri;
-
     }
 
     /**
@@ -240,8 +240,8 @@ class Request extends Message {
      *
      * @param string $uri
      */
-    public function setUri($uri) {
-
+    public function setUri($uri)
+    {
         $parsed = parse_url($uri);
 
         $host = isset($parsed['host']) ? $parsed['host'] : '';
@@ -252,7 +252,6 @@ class Request extends Message {
 
         $query = isset($parsed['query']) ? $parsed['query'] : '';
         $this->setQuery($query);
-
     }
 
     // -------------------------------------------------------------------------
@@ -263,8 +262,8 @@ class Request extends Message {
      * @return Response
      * @throws exceptions\CurlException
      */
-    public function request() {
-
+    public function request()
+    {
         $ch = curl_init();
 
         // Set the URL.
@@ -333,14 +332,13 @@ class Request extends Message {
         curl_close($ch);
 
         return $resp;
-
     }
 
     /**
      * Set instance members based on the HTTP request sent to the server.
      */
-    public function readHttpRequest() {
-
+    public function readHttpRequest()
+    {
         $this->setBody(file_get_contents("php://input"), false);
         $this->headers = apache_request_headers();
 
@@ -352,7 +350,6 @@ class Request extends Message {
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->hostname = $_SERVER['HTTP_HOST'];
-
     }
 
     /**
@@ -362,8 +359,8 @@ class Request extends Message {
      * @return Request
      * @static
      */
-     public static function getRequest() {
-
+    public static function getRequest()
+    {
         if (!isset(self::$theRequest)) {
 
             $klass = __CLASS__;
@@ -375,9 +372,6 @@ class Request extends Message {
         }
 
         return self::$theRequest;
-
     }
 
 }
-
-?>

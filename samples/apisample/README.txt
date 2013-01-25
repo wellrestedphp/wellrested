@@ -1,12 +1,9 @@
-The apisample directory contains a mini API project that demonstrates the
-main features of Well RESTEd.
+The apisample directory contains a mini API project that demonstrates the main features of Well RESTEd.
 
 Resources
 ---------
 
-For this sample project, the only resources
-are "articles", which are kind of like little mini blog posts or news feed
-items. Each article contains the following fields:
+For this sample project, the only resources are "articles", which are kind of like little mini blog posts or news feed items. Each article contains the following fields:
 
     articleId: Numeric unique identifier for the article
     slug: A human readable unique identifier for the article

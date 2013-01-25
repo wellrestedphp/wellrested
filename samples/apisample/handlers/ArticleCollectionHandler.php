@@ -2,18 +2,19 @@
 
 namespace apisample\handlers;
 
-require_once(dirname(__FILE__) . '/../../../Handler.php');
-require_once(dirname(__FILE__) . '/../ArticlesController.php');
+use \pjdietz\WellRESTed\Handler;
 
 /**
  * Handler class for a list of articles.
  */
-class ArticleCollectionHandler extends \pjdietz\WellRESTed\Handler {
+class ArticleCollectionHandler extends Handler
+{
 
     /**
      * Respond to a GET request.
      */
-    protected function get() {
+    protected function get()
+    {
 
         // Display the list of articles.
         $articles = new \apisample\ArticlesController();
@@ -37,7 +38,8 @@ class ArticleCollectionHandler extends \pjdietz\WellRESTed\Handler {
     /**
      * Respond to a POST request.
      */
-    protected function post() {
+    protected function post()
+    {
 
         // Read the request body, and ensure it is in the proper format.
         $article = json_decode($this->request->body, true);
@@ -100,5 +102,3 @@ class ArticleCollectionHandler extends \pjdietz\WellRESTed\Handler {
     }
 
 }
-
-?>

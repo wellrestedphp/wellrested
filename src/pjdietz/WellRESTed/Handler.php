@@ -2,9 +2,6 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Request.php');
-require_once(dirname(__FILE__) . '/Response.php');
-
 /*******************************************************************************
  * Handler
  *
@@ -17,22 +14,26 @@ require_once(dirname(__FILE__) . '/Response.php');
 /**
  * @property Response response  The Response to the request
  */
-class Handler {
+class Handler
+{
 
     /**
      * The HTTP request to respond to.
+     *
      * @var Request
      */
     protected $request;
 
     /**
      * The HTTP response to send based on the request.
+     *
      * @var Response
      */
     protected $response;
 
     /**
      * Matches array from the preg_match() call used to find this Handler.
+     *
      * @var array
      */
     protected $args;
@@ -43,8 +44,8 @@ class Handler {
      * @param Request $request
      * @param array $args
      */
-    public function __construct($request, $args=null) {
-
+    public function __construct($request, $args = null)
+    {
         $this->request = $request;
 
         if (is_null($args)) {
@@ -54,7 +55,6 @@ class Handler {
 
         $this->response = new Response();
         $this->buildResponse();
-
     }
 
     // -------------------------------------------------------------------------
@@ -65,21 +65,21 @@ class Handler {
      * @return Response
      * @throws \Exception
      */
-    public function __get($name) {
-
+    public function __get($name)
+    {
         switch ($name) {
-        case 'response':
-            return $this->getResponse();
-        default:
-            throw new \Exception('Property ' . $name . ' does not exist.');
+            case 'response':
+                return $this->getResponse();
+            default:
+                throw new \Exception('Property ' . $name . ' does not exist.');
         }
-
     }
 
     /**
      * @return Response
      */
-    public function getResponse() {
+    public function getResponse()
+    {
         return $this->response;
     }
 
@@ -88,40 +88,39 @@ class Handler {
      * repond to any non-standard HTTP methods. Otherwise, override the
      * get, post, put, etc. methods.
      */
-    protected function buildResponse() {
-
+    protected function buildResponse()
+    {
         switch ($this->request->method) {
 
-        case 'GET':
-            $this->get();
-            break;
+            case 'GET':
+                $this->get();
+                break;
 
-        case 'HEAD':
-            $this->head();
-            break;
+            case 'HEAD':
+                $this->head();
+                break;
 
-        case 'POST':
-            $this->post();
-            break;
+            case 'POST':
+                $this->post();
+                break;
 
-        case 'PUT':
-            $this->put();
-            break;
+            case 'PUT':
+                $this->put();
+                break;
 
-        case 'DELETE':
-            $this->delete();
-            break;
+            case 'DELETE':
+                $this->delete();
+                break;
 
-        case 'PATCH':
-            $this->patch();
-            break;
+            case 'PATCH':
+                $this->patch();
+                break;
 
-        case 'OPTIONS':
-            $this->options();
-            break;
+            case 'OPTIONS':
+                $this->options();
+                break;
 
         }
-
     }
 
     // -------------------------------------------------------------------------
@@ -136,15 +135,16 @@ class Handler {
     /**
      * Method for handling HTTP GET requests.
      */
-    protected function get() {
+    protected function get()
+    {
         $this->response->statusCode = 405;
     }
 
     /**
      * Method for handling HTTP HEAD requests.
      */
-    protected function head() {
-
+    protected function head()
+    {
         // The default function calls the instance's get() method, then sets
         // the resonse's body member to an empty string.
 
@@ -153,44 +153,46 @@ class Handler {
         if ($this->response->statusCode == 200) {
             $this->response->setBody('', false);
         }
-
     }
 
     /**
      * Method for handling HTTP POST requests.
      */
-    protected function post() {
+    protected function post()
+    {
         $this->response->statusCode = 405;
     }
 
     /**
      * Method for handling HTTP PUT requests.
      */
-    protected function put() {
+    protected function put()
+    {
         $this->response->statusCode = 405;
     }
 
     /**
      * Method for handling HTTP DELETE requests.
      */
-    protected function delete() {
+    protected function delete()
+    {
         $this->response->statusCode = 405;
     }
 
     /**
      * Method for handling HTTP PATCH requests.
      */
-    protected function patch() {
+    protected function patch()
+    {
         $this->response->statusCode = 405;
     }
 
     /**
      * Method for handling HTTP OPTION requests.
      */
-    protected function options() {
+    protected function options()
+    {
         $this->response->statusCode = 405;
     }
 
 }
-
-?>

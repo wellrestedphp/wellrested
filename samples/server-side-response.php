@@ -4,14 +4,15 @@
  * Create and output a response from the server.
  */
 
-require_once('../Response.php');
+// Include the autoload script.
+require_once('../vendor/autoload.php');
+
+use \pjdietz\WellRESTed\Response;
 
 // Create a new Response instance.
-$resp = new \pjdietz\WellRESTed\Response();
+$resp = new Response();
 $resp->statusCode = 200;
 $resp->setHeader('Content-Type', 'text/plain');
 $resp->body = 'This is a response.';
 $resp->respond();
 exit;
-
-?>

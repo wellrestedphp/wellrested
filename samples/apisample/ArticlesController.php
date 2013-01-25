@@ -5,60 +5,57 @@ namespace apisample;
 /**
  * Simple class for reading and writing articles to a text file.
  */
-class ArticlesController {
-
+class ArticlesController
+{
     public $data;
     protected $path;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->path = dirname(__FILE__) . '/data/articles.json';
         $this->load();
     }
 
-    public function load() {
-
+    public function load()
+    {
         if (file_exists($this->path)) {
             $data = file_get_contents($this->path);
             $this->data = json_decode($data, true);
         }
-
     }
 
-    public function save() {
-
+    public function save()
+    {
         if (is_writable($this->path)) {
             $data = json_encode($this->data);
             return file_put_contents($this->path, $data);
         }
 
         return false;
-
     }
 
-    public function getArticleById($id) {
-
+    public function getArticleById($id)
+    {
         foreach ($this->data as $article) {
             if ($article['articleId'] == $id) {
                 return $article;
             }
         }
         return false;
-
     }
 
-    public function getArticleBySlug($slug) {
-
+    public function getArticleBySlug($slug)
+    {
         foreach ($this->data as $article) {
             if ($article['slug'] == $slug) {
                 return $article;
             }
         }
         return false;
-
     }
 
-    public function addArticle($newArticle) {
-
+    public function addArticle($newArticle)
+    {
         $validatedArticle = array(
             'articleId' => $this->getNewId(),
             'slug' => $newArticle['slug'],
@@ -69,11 +66,10 @@ class ArticlesController {
         $this->data[] = $validatedArticle;
 
         return $validatedArticle;
-
     }
 
-    public function updateArticle($newArticle) {
-
+    public function updateArticle($newArticle)
+    {
         foreach ($this->data as &$oldArticle) {
 
             if ($oldArticle['articleId'] == $newArticle['articleId']) {
@@ -86,11 +82,10 @@ class ArticlesController {
         }
 
         return false;
-
     }
 
-    public function removeArticle($id) {
-
+    public function removeArticle($id)
+    {
         foreach ($this->data as $index => $article) {
             if ($article['articleId'] == $id) {
                 unset($this->data[$index]);
@@ -99,12 +94,10 @@ class ArticlesController {
         }
 
         return false;
-
     }
 
-
-    protected function getNewId() {
-
+    protected function getNewId()
+    {
         $maxId = 0;
 
         foreach ($this->data as $article) {
@@ -112,9 +105,6 @@ class ArticlesController {
         }
 
         return $maxId + 1;
-
     }
 
 }
-
-?>

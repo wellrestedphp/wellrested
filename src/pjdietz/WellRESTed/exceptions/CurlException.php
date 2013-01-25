@@ -1,8 +1,6 @@
 <?php
 
-namespace pjdietz\WellRESTed\exceptions;
-
-require_once(dirname(__FILE__) . '/WellrestedException.php');
+namespace pjdietz\WellRESTed\Exceptions;
 
 /**
  * Exception related to a cURL operation. The message and code should correspond

@@ -7,15 +7,17 @@
  * with JSON descrition of the original request.
  */
 
-// Include the Well RESTed Request and Response class files.
-require_once('../Request.php');
-require_once('../Response.php');
+// Include the autoload script.
+require_once('../vendor/autoload.php');
+
+use \pjdietz\WellRESTed\Request;
+use \pjdietz\WellRESTed\Response;
 
 // Read the request sent to the server as the singleton instance.
-$rqst = \pjdietz\WellRESTed\Request::getRequest();
+$rqst = Request::getRequest();
 
 // Alternatively, you can create a new Request and call readHttpRequest().
-// $rqst = new \wellrested\Request();
+// $rqst = new Request();
 // $rqst->readHttpRequest();
 
 // Read some info from the request and store it to an associative array.
@@ -28,7 +30,7 @@ $rtn = array(
 );
 
 // Create a new Response instance.
-$resp = new \wellrested\Response();
+$resp = new Response();
 
 // Set the status code to 200 OK.
 $resp->statusCode = 200;
@@ -42,5 +44,3 @@ $resp->body = json_encode($rtn);
 
 // Output the response.
 $resp->respond();
-
-?>

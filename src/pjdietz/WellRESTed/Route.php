@@ -9,8 +9,8 @@ namespace pjdietz\WellRESTed;
  *
  ******************************************************************************/
 
-class Route {
-
+class Route
+{
     const RE_SLUG = '[0-9a-zA-Z\-_]+';
     const RE_NUM = '[0-9]+';
     const RE_ALPHA = '[a-zA-Z]+';
@@ -20,24 +20,28 @@ class Route {
 
     /**
      * Regular Expression to use to validate a template variable.
+     *
      * @var string
      */
     static public $defaultVariablePattern = self::RE_SLUG;
 
     /**
      * Regular expression used to match a Request URI path component
+     *
      * @var string
      */
     public $pattern;
 
     /**
      * Name of the Handler class to use
+     *
      * @var string
      */
     public $handler;
 
     /**
      * The path to the source file defing the handler class.
+     *
      * @var string
      */
     public $handlerPath;
@@ -47,13 +51,12 @@ class Route {
      * @param $handler
      * @param $handlerPath
      */
-    public function __construct($pattern, $handler, $handlerPath=null) {
-
+    public function __construct($pattern, $handler, $handlerPath = null)
+    {
         $this->pattern = $pattern;
         $this->handler = $handler;
         $this->handlerPath = $handlerPath;
-
-    } // __construct
+    }
 
     /**
      * Create a new Route using a URI template to generate the pattern.
@@ -65,9 +68,12 @@ class Route {
      * @throws \Exception
      * @return Route
      */
-    static public function newFromUriTemplate($uriTemplate, $handler,
-                                                $handlerPath=null,
-                                                $variables=null) {
+    static public function newFromUriTemplate(
+        $uriTemplate,
+        $handler,
+        $handlerPath = null,
+        $variables = null
+    ) {
 
         $pattern = '';
 
@@ -83,8 +89,12 @@ class Route {
             $pattern .= '\/';
 
             // Is this part an expression or a literal?
-            if (preg_match(self::URI_TEMPLATE_EXPRESSION_RE,
-                $part, $matches)) {
+            if (preg_match(
+                self::URI_TEMPLATE_EXPRESSION_RE,
+                $part,
+                $matches
+            )
+            ) {
 
                 // This part of the path is an expresion.
 
@@ -102,8 +112,11 @@ class Route {
                         $variablePattern = self::$defaultVariablePattern;
                     }
 
-                    $pattern .= sprintf('(?<%s>%s)', $variableName,
-                        $variablePattern);
+                    $pattern .= sprintf(
+                        '(?<%s>%s)',
+                        $variableName,
+                        $variablePattern
+                    );
 
                 } else {
                     // Not sure why this would happen.
@@ -126,5 +139,3 @@ class Route {
     }
 
 }
-
-?>

@@ -2,8 +2,7 @@
 
 namespace apisample\handlers;
 
-require_once(dirname(__FILE__) . '/../../../Handler.php');
-require_once(dirname(__FILE__) . '/../ArticlesController.php');
+use \pjdietz\WellRESTed\Handler;
 
 /**
  * Handler class for one specific article.
@@ -11,12 +10,14 @@ require_once(dirname(__FILE__) . '/../ArticlesController.php');
  * When instantiated by the Router, this class should receive an id or slug
  * argument to identify the article.
  */
-class ArticleItemHandler extends \pjdietz\WellRESTed\Handler {
+class ArticleItemHandler extends Handler
+{
 
     /**
      * Respond to a GET request.
      */
-    protected function get() {
+    protected function get()
+    {
 
         // Read the list of articles.
         $articles = new \apisample\ArticlesController();
@@ -53,7 +54,8 @@ class ArticleItemHandler extends \pjdietz\WellRESTed\Handler {
     /**
      * Respond to a PUT request.
      */
-    protected function put() {
+    protected function put()
+    {
 
         // Read the request body, and ensure it is in the proper format.
         $article = json_decode($this->request->body, true);
@@ -156,7 +158,8 @@ class ArticleItemHandler extends \pjdietz\WellRESTed\Handler {
     /**
      * Respond to a DELETE request.
      */
-    protected function delete() {
+    protected function delete()
+    {
 
         // Read the list of articles.
         $articles = new \apisample\ArticlesController();
@@ -199,5 +202,3 @@ class ArticleItemHandler extends \pjdietz\WellRESTed\Handler {
     }
 
 }
-
-?>

@@ -8,8 +8,8 @@ namespace pjdietz\WellRESTed;
  * @property string body       Entity body of the message
  * @property array headers     Associative array of HTTP headers
  */
-abstract class Message {
-
+abstract class Message
+{
     /**
      * Entity body of the message
      *
@@ -35,12 +35,14 @@ abstract class Message {
 
     /**
      * Name of the protocol to use.
+     *
      * @var string
      */
     protected $protocol = 'HTTP';
 
     /**
      * Version of the protocol to use.
+     *
      * @var string
      */
     protected $protocolVersion = '1.1';
@@ -53,8 +55,8 @@ abstract class Message {
      * @return array|string
      * @throws \Exception
      */
-    public function __get($name) {
-
+    public function __get($name)
+    {
         switch ($name) {
             case 'body':
                 return $this->getBody();
@@ -67,7 +69,6 @@ abstract class Message {
             default:
                 throw new \Exception('Property ' . $name . ' does not exist.');
         }
-
     }
 
     /**
@@ -75,8 +76,8 @@ abstract class Message {
      * @param $value
      * @throws \Exception
      */
-    public function __set($name, $value) {
-
+    public function __set($name, $value)
+    {
         switch ($name) {
             case 'body':
                 $this->setBody($value);
@@ -90,7 +91,6 @@ abstract class Message {
             default:
                 throw new \Exception('Property ' . $name . 'does not exist or is read-only.');
         }
-
     }
 
     /**
@@ -98,7 +98,8 @@ abstract class Message {
      *
      * @return string
      */
-    public function getBody() {
+    public function getBody()
+    {
         return $this->body;
     }
 
@@ -107,7 +108,8 @@ abstract class Message {
      *
      * @param string $body
      */
-    public function setBody($body) {
+    public function setBody($body)
+    {
         $this->body = $body;
     }
 
@@ -116,7 +118,8 @@ abstract class Message {
      *
      * @return array
      */
-    public function getHeaders() {
+    public function getHeaders()
+    {
         return $this->headers;
     }
 
@@ -126,8 +129,8 @@ abstract class Message {
      * @param string $name
      * @return string|bool
      */
-    public function getHeader($name) {
-
+    public function getHeader($name)
+    {
         $lowerName = strtolower($name);
 
         if (isset($this->headerLookup[$lowerName])) {
@@ -141,7 +144,6 @@ abstract class Message {
         }
 
         return false;
-
     }
 
     /**
@@ -151,17 +153,16 @@ abstract class Message {
      * @param $value
      * @param string $value
      */
-    public function setHeader($name, $value) {
-
+    public function setHeader($name, $value)
+    {
         $lowerName = strtolower($name);
 
         // Check if a mapping already exists for this header.
         // Remove it, if needed.
         if (isset($this->headerLookup[$lowerName])
-                && $this->headerLookup[$lowerName] !== $name) {
-
+            && $this->headerLookup[$lowerName] !== $name
+        ) {
             unset($this->headers[$this->headerLookup[$lowerName]]);
-
         }
 
         // Store the actual header.
@@ -169,7 +170,6 @@ abstract class Message {
 
         // Store a mapping to the user's prefered case.
         $this->headerLookup[$lowerName] = $name;
-
     }
 
     /**
@@ -178,7 +178,8 @@ abstract class Message {
      * @param $name
      * @return bool
      */
-    public function hasHeader($name) {
+    public function hasHeader($name)
+    {
         $lowerName = strtolower($name);
         return isset($this->headerLookup[$lowerName]);
     }
@@ -188,8 +189,8 @@ abstract class Message {
      *
      * @param string $name
      */
-    public function unsetHeader($name) {
-
+    public function unsetHeader($name)
+    {
         $lowerName = strtolower($name);
 
         if (isset($this->headerLookup[$lowerName])) {
@@ -203,43 +204,42 @@ abstract class Message {
             unset($this->headerLookup[$lowerName]);
 
         }
-
     }
 
     /**
      * @return string
      */
-    public function getProtocol() {
+    public function getProtocol()
+    {
         return $this->protocol;
     }
 
     /**
      * @param $protocol
      */
-    public function setProtocol($protocol) {
-
+    public function setProtocol($protocol)
+    {
         if (strpos($protocol, '/') === false) {
             list($this->protocol, $this->protocolVersion) = explode('/', $protocol, 2);
         } else {
             $this->protocol = $protocol;
         }
-
     }
 
     /**
      * @return string
      */
-    public function getProtocolVersion() {
+    public function getProtocolVersion()
+    {
         return $this->protocolVersion;
     }
 
     /**
      * @param string $protocolVersion
      */
-    public function setProtocolVersion($protocolVersion) {
+    public function setProtocolVersion($protocolVersion)
+    {
         $this->protocolVersion = $protocolVersion;
     }
 
 }
-
-?>

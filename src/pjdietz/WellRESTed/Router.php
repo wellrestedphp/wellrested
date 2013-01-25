@@ -2,10 +2,6 @@
 
 namespace pjdietz\WellRESTed;
 
-require_once(dirname(__FILE__) . '/Request.php');
-require_once(dirname(__FILE__) . '/Response.php');
-require_once(dirname(__FILE__) . '/Route.php');
-
 /*******************************************************************************
  * Router
  *
@@ -16,31 +12,38 @@ require_once(dirname(__FILE__) . '/Route.php');
  *
  ******************************************************************************/
 
-class Router {
-
+class Router
+{
+    /**
+     * Array of \WellRESTed\Route objects
+     * @var array
+     */
     protected $routes;
 
     /**
      * Create a new Router.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->routes = array();
     }
 
     /**
      * Append a new Route instance to the Router's route table.
+     *
      * @param $route
      */
-    public function addRoute(Route $route) {
+    public function addRoute(Route $route)
+    {
         $this->routes[] = $route;
-    } // addRoute()
+    }
 
     /**
      * @param Request $request
      * @return Response
      */
-    public function getResponse($request=null) {
-
+    public function getResponse($request = null)
+    {
         if (is_null($request)) {
             $request = Request::getRequest();
         }
@@ -54,7 +57,7 @@ class Router {
                 $klass = $route->handler;
 
                 // Autoload, if needed.
-                if (!class_exists($klass) && is_string($route->handlerPath)) {
+                if (is_string($route->handlerPath) && !class_exists($klass)) {
                     require_once($route->handlerPath);
                 }
 
@@ -66,21 +69,17 @@ class Router {
         }
 
         return $this->getNoRouteResponse($request);
-
-    } // getRequestHandler()
+    }
 
     /**
      * @param Request $request
      * @return Response
      */
-    protected function getNoRouteResponse(Request $request) {
-
+    protected function getNoRouteResponse(Request $request)
+    {
         $response = new Response(404);
         $response->body = 'No resource at ' . $request->uri;
         return $response;
-
     }
 
 }
-
-?>
