@@ -1,9 +1,12 @@
 # Composer
 vendor/
 
-# Doxygen
-docs/html
+# Generated documentation
+docs/
+
+# OSX
+.DS_Store
+.AppleDouble
 
 # PhpStorm
 workspace.xml
-

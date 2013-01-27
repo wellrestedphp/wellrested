@@ -307,7 +307,7 @@ class Request extends Message
             $error = curl_error($ch);
             $errno = curl_errno($ch);
             curl_close($ch);
-            throw new exceptions\CurlException($error, $errno);
+            throw new Exceptions\CurlException($error, $errno);
         }
 
         // Make a reponse to populate and return with data obtained via cURL.
