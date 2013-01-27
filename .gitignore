@@ -1,6 +1,9 @@
 # Composer
 vendor/
 
+# Doxygen
+docs/html
+
 # PhpStorm
 workspace.xml
 
