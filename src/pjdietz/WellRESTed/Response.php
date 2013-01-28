@@ -59,13 +59,6 @@ class Response extends Message
         if (!is_null($body)) {
             $this->body = $body;
         }
-
-        if (isset($_SERVER['SERVER_PROTOCOL'])) {
-            $this->protocol = $_SERVER['SERVER_PROTOCOL'];
-        } else {
-            $this->protocol = 'HTTP/1.1';
-        }
-
     }
 
     // -------------------------------------------------------------------------

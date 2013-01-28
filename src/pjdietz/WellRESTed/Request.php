@@ -299,6 +299,9 @@ class Request extends Message
 
         }
 
+        // Add headers.
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headerLines);
+
         // Make the cURL request.
         $result = curl_exec($ch);
 

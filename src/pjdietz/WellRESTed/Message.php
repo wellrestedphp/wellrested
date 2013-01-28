@@ -62,6 +62,8 @@ abstract class Message
                 return $this->getBody();
             case 'headers':
                 return $this->getHeaders();
+            case 'headerLines':
+                return $this->getHeaderLines();
             case 'protocol':
                 return $this->getProtocol();
             case 'protocolVersion':
@@ -121,6 +123,20 @@ abstract class Message
     public function getHeaders()
     {
         return $this->headers;
+    }
+
+    /**
+     * Return an array containing one string for each header as "field: value"
+     *
+     * @return string
+     */
+    public function getHeaderLines()
+    {
+        $lines = array();
+        foreach ($this->headers as $field => $value) {
+            $lines[] = sprintf('%s: %s', $field, $value);
+        }
+        return $lines;
     }
 
     /**
