@@ -1,14 +1,18 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
-/*******************************************************************************
- * Route
+/**
+ * A Route connects a URI pattern to a Handler.
  *
  * @package WellRESTed
- *
- ******************************************************************************/
-
+ */
 class Route
 {
     const RE_SLUG = '[0-9a-zA-Z\-_]+';
@@ -40,6 +44,8 @@ class Route
     public $handler;
 
     /**
+     * Create a new Route
+     *
      * @param $pattern
      * @param $handler
      */

@@ -1,21 +1,23 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
-/*******************************************************************************
+/**
  * Router
  *
  * A Router uses a table of Routes to find the appropriate Handler for a
  * request.
- *
- * @package WellRESTed
- *
- ******************************************************************************/
-
+ */
 class Router
 {
     /**
-     * Array of \WellRESTed\Route objects
+     * Array of Route objects
      * @var array
      */
     protected $routes;
@@ -31,7 +33,7 @@ class Router
     /**
      * Append a new Route instance to the Router's route table.
      *
-     * @param $route
+     * @param Route $route
      */
     public function addRoute(Route $route)
     {

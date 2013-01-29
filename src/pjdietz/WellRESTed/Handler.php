@@ -1,22 +1,20 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
-/*******************************************************************************
- * Handler
- *
+/**
  * A Handler issues a response for a given resource.
  *
- * @package WellRESTed
- *
- ******************************************************************************/
-
-/**
- * @property Response response  The Response to the request
+ * @property-read Response response  The Response to the request
  */
 class Handler
 {
-
     /**
      * The HTTP request to respond to.
      *
@@ -61,17 +59,14 @@ class Handler
     // !Accessors
 
     /**
-     * @param $name
-     * @return Response
-     * @throws \Exception
+     * @param string $propertyName
+     * @return mixed
      */
-    public function __get($name)
+    public function __get($propertyName)
     {
-        switch ($name) {
-            case 'response':
-                return $this->getResponse();
-            default:
-                throw new \Exception('Property ' . $name . ' does not exist.');
+        $method = 'get' . ucfirst($propertyName);
+        if (method_exists($this, $method)) {
+            return $this->{$method}();
         }
     }
 
@@ -134,6 +129,8 @@ class Handler
 
     /**
      * Method for handling HTTP GET requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function get()
     {
@@ -142,6 +139,8 @@ class Handler
 
     /**
      * Method for handling HTTP HEAD requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function head()
     {
@@ -157,6 +156,8 @@ class Handler
 
     /**
      * Method for handling HTTP POST requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function post()
     {
@@ -165,6 +166,8 @@ class Handler
 
     /**
      * Method for handling HTTP PUT requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function put()
     {
@@ -173,6 +176,8 @@ class Handler
 
     /**
      * Method for handling HTTP DELETE requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function delete()
     {
@@ -181,6 +186,8 @@ class Handler
 
     /**
      * Method for handling HTTP PATCH requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function patch()
     {
@@ -189,6 +196,8 @@ class Handler
 
     /**
      * Method for handling HTTP OPTION requests.
+     *
+     * This method should modify the instance's response member.
      */
     protected function options()
     {

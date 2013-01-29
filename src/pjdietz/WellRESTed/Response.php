@@ -1,21 +1,20 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
-/*******************************************************************************
- * Response
- *
+/**
  * A Response instance allows you to build an HTTP response and send it when
  * finished.
  *
- * @package WellRESTed
- *
- ******************************************************************************/
-
-/**
  * @property string reasonPhrase  Text explanation of status code.
  * @property int statusCode  HTTP status code
- * @property string statusLine  HTTP status line, e.g. "HTTP/1.1 200 OK"
+ * @property-read string statusLine  HTTP status line, e.g. "HTTP/1.1 200 OK"
  */
 class Response extends Message
 {
@@ -59,55 +58,10 @@ class Response extends Message
         if (!is_null($body)) {
             $this->body = $body;
         }
-
-        if (isset($_SERVER['SERVER_PROTOCOL'])) {
-            $this->protocol = $_SERVER['SERVER_PROTOCOL'];
-        } else {
-            $this->protocol = 'HTTP/1.1';
-        }
-
     }
 
     // -------------------------------------------------------------------------
     // !Accessors
-
-    /**
-     * @param string $name
-     * @return array|string
-     * @throws \Exception
-     */
-    public function __get($name)
-    {
-        switch ($name) {
-            case 'reasonPhrase':
-                return $this->getReasonPhrase();
-            case 'statusCode':
-                return $this->getStatusCode();
-            case 'statusLine':
-                return $this->getStatusLine();
-            default:
-                return parent::__get($name);
-        }
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @throws \Exception
-     */
-    public function __set($name, $value)
-    {
-        switch ($name) {
-            case 'reasonPhrase':
-                $this->setReasonPhrase($value);
-                return;
-            case 'statusCode':
-                $this->setStatusCode($value);
-                return;
-            default:
-                parent::__set($name, $value);
-        }
-    }
 
     /**
      * Provide a new entity body for the respone.
@@ -152,9 +106,8 @@ class Response extends Message
 
     /**
      * @param int $statusCode
-     * @param string $reasonPhrase
+     * @param string|null $reasonPhrase
      * @throws \InvalidArgumentException
-     * @return void
      */
     public function setStatusCode($statusCode, $reasonPhrase = null)
     {

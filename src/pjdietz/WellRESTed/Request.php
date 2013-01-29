@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
 // TODO: Include port in the URI
@@ -14,12 +20,12 @@ namespace pjdietz\WellRESTed;
  * Second, you can create a custom Request and use it to obtain a Response
  * from a server through cURL.
  *
- * @property string hostname   Hostname part of the URI
- * @property string method     HTTP method (GET, POST, PUT, DELETE, etc.)
- * @property string path       Path component of the URI for the request
- * @property string pathParts  Fragments of the path, delimited by slashes
- * @property array query       Associative array of query parameters
- * @property array uri         Full URI (protocol, hostname, path, etc.)
+ * @property string hostname  Hostname part of the URI
+ * @property string method  HTTP method (GET, POST, PUT, DELETE, etc.)
+ * @property string path  Path component of the URI for the request
+ * @property-read string pathParts  Fragments of the path, delimited by slashes
+ * @property array query  Associative array of query parameters
+ * @property array uri  Full URI (protocol, hostname, path, etc.)
  *
  * @package WellRESTed
  */
@@ -72,59 +78,6 @@ class Request extends Message
     // !Accessors
 
     /**
-     * @param string $name
-     * @return array|string
-     * @throws \Exception
-     */
-    public function __get($name)
-    {
-        switch ($name) {
-            case 'hostname':
-                return $this->getHostname();
-            case 'method':
-                return $this->getMethod();
-            case 'path':
-                return $this->getPath();
-            case 'pathParts':
-                return $this->getPathParts();
-            case 'query':
-                return $this->getQuery();
-            case 'uri':
-                return $this->getUri();
-            default:
-                return parent::__get($name);
-        }
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @throws \Exception
-     */
-    public function __set($name, $value)
-    {
-        switch ($name) {
-            case 'hostname':
-                $this->setHostname($value);
-                return;
-            case 'method':
-                $this->setMethod($value);
-                return;
-            case 'path':
-                $this->setPath($value);
-                return;
-            case 'query':
-                $this->setQuery($value);
-                return;
-            case 'uri':
-                $this->setUri($value);
-                return;
-            default:
-                parent::__set($name, $value);
-        }
-    }
-
-    /**
      * @return string
      */
     public function getHostname()
@@ -138,6 +91,19 @@ class Request extends Message
     public function setHostname($hostname)
     {
         $this->hostname = $hostname;
+    }
+
+    /**
+     * @return bool
+     */
+    public function issetHostName()
+    {
+        return isset($this->hostname);
+    }
+
+    public function unsetHostname()
+    {
+        unset($this->hostname);
     }
 
     /**

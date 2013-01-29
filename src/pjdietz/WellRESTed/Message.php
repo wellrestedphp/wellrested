@@ -1,12 +1,20 @@
 <?php
 
+/**
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2013 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
 /**
  * Common base class for the Request and Response classes.
  *
- * @property string body       Entity body of the message
- * @property array headers     Associative array of HTTP headers
+ * @property string body  Entity body of the message
+ * @property-read array headers  Associative array of HTTP headers
+ * @property string protocol  The protocol, e.g. HTTP
+ * @property string protocolVersion  The version of the protocol
  */
 abstract class Message
 {
@@ -51,45 +59,49 @@ abstract class Message
     // !Accessors
 
     /**
-     * @param string $name
-     * @return array|string
-     * @throws \Exception
+     * @param string $propertyName
+     * @return mixed
      */
-    public function __get($name)
+    public function __get($propertyName)
     {
-        switch ($name) {
-            case 'body':
-                return $this->getBody();
-            case 'headers':
-                return $this->getHeaders();
-            case 'protocol':
-                return $this->getProtocol();
-            case 'protocolVersion':
-                return $this->getProtocolVersion();
-            default:
-                throw new \Exception('Property ' . $name . ' does not exist.');
+        $method = 'get' . ucfirst($propertyName);
+        if (method_exists($this, $method)) {
+            return $this->{$method}();
         }
     }
 
     /**
-     * @param string $name
+     * @param string $propertyName
      * @param $value
-     * @throws \Exception
      */
-    public function __set($name, $value)
+    public function __set($propertyName, $value)
     {
-        switch ($name) {
-            case 'body':
-                $this->setBody($value);
-                return;
-            case 'protocol':
-                $this->setProtocol($value);
-                return;
-            case 'protocolVersion':
-                $this->setProtocolVersion($value);
-                return;
-            default:
-                throw new \Exception('Property ' . $name . 'does not exist or is read-only.');
+        $method = 'set' . ucfirst($propertyName);
+        if (method_exists($this, $method)) {
+            $this->{$method}($value);
+        }
+    }
+
+    /**
+     * @param string $propertyName
+     * @return mixed
+     */
+    public function __isset($propertyName)
+    {
+        $method = 'isset' . ucfirst($propertyName);
+        if (method_exists($this, $method)) {
+            return $this->{$method}();
+        }
+    }
+
+    /**
+     * @param string $propertyName
+     */
+    public function __unset($propertyName)
+    {
+        $method = 'unset' . ucfirst($propertyName);
+        if (method_exists($this, $method)) {
+            $this->{$method}();
         }
     }
 
@@ -111,6 +123,19 @@ abstract class Message
     public function setBody($body)
     {
         $this->body = $body;
+    }
+
+    /**
+     * @return bool
+     */
+    public function issetBody()
+    {
+        return isset($this->body);
+    }
+
+    public function unsetBody()
+    {
+        unset($this->body);
     }
 
     /**
@@ -178,7 +203,7 @@ abstract class Message
      * @param $name
      * @return bool
      */
-    public function hasHeader($name)
+    public function issetHeader($name)
     {
         $lowerName = strtolower($name);
         return isset($this->headerLookup[$lowerName]);
@@ -215,6 +240,18 @@ abstract class Message
     }
 
     /**
+     * Set the protocol for the message.
+     *
+     * The value is expected to be the name of the protocol only. If the
+     * version is included, the version is striped and set as the
+     * protocolVersion property.
+     *
+     * <code>
+     * $instance->protocol = 'HTTP1/1';
+     * print $instance->protocol; // 'HTTP';
+     * print $instance->protocolVersion; // '1.1';
+     * </code>
+     *
      * @param $protocol
      */
     public function setProtocol($protocol)
@@ -224,6 +261,19 @@ abstract class Message
         } else {
             $this->protocol = $protocol;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function issetProtocol()
+    {
+        return isset($this->protocol);
+    }
+
+    public function unsetProtocol()
+    {
+        unset($this->protocol);
     }
 
     /**
@@ -242,4 +292,16 @@ abstract class Message
         $this->protocolVersion = $protocolVersion;
     }
 
+    /**
+     * @return bool
+     */
+    public function issetProtocolVersion()
+    {
+        return isset($this->protocolVersion);
+    }
+
+    public function unsetProtocolVersion()
+    {
+        unset($this->protocolVersion);
+    }
 }
