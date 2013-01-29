@@ -149,6 +149,20 @@ abstract class Message
     }
 
     /**
+     * Return an array containing one string for each header as "field: value"
+     *
+     * @return string
+     */
+    public function getHeaderLines()
+    {
+        $lines = array();
+        foreach ($this->headers as $field => $value) {
+            $lines[] = sprintf('%s: %s', $field, $value);
+        }
+        return $lines;
+    }
+
+    /**
      * Return the value of a given header, or false if it does not exist.
      *
      * @param string $name
