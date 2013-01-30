@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRested\Route
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -8,24 +10,35 @@
 
 namespace pjdietz\WellRESTed;
 
+use \Exception;
+
 /**
  * A Route connects a URI pattern to a Handler.
- *
- * @package WellRESTed
  */
 class Route
 {
+    /**
+     * Regular expression matching URL friendly characters (i.e., letters,
+     * digits, hyphen and underscore)
+     */
     const RE_SLUG = '[0-9a-zA-Z\-_]+';
+
+    /** Regular expression matching digitis */
     const RE_NUM = '[0-9]+';
+
+    /** Regular expression matching letters */
     const RE_ALPHA = '[a-zA-Z]+';
+
+    /** Regular expression matching letters and digits */
     const RE_ALPHANUM = '[0-9a-zA-Z]+';
 
+    /** Regular expression matching a URI template variable (e.g., {id}) */
     const URI_TEMPLATE_EXPRESSION_RE = '/{([a-zA-Z]+)}/';
 
     /**
-     * Regular Expression to use to validate a template variable.
+     * Default regular expression used to match template variable
      *
-     * @var string
+     * @property string
      */
     static public $defaultVariablePattern = self::RE_SLUG;
 
@@ -61,7 +74,7 @@ class Route
      * @param string $uriTemplate
      * @param string $handler
      * @param array $variables
-     * @throws \Exception
+     * @throws Exception
      * @return Route
      */
     static public function newFromUriTemplate(
@@ -84,12 +97,7 @@ class Route
             $pattern .= '\/';
 
             // Is this part an expression or a literal?
-            if (preg_match(
-                self::URI_TEMPLATE_EXPRESSION_RE,
-                $part,
-                $matches
-            )
-            ) {
+            if (preg_match(self::URI_TEMPLATE_EXPRESSION_RE, $part, $matches)) {
 
                 // This part of the path is an expresion.
 
@@ -115,7 +123,7 @@ class Route
 
                 } else {
                     // Not sure why this would happen.
-                    throw new \Exception('Invalid URI Template.');
+                    throw new Exception('Invalid URI Template.');
                 }
 
             } else {

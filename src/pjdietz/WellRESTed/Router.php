@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRESTed\Router
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -18,6 +20,7 @@ class Router
 {
     /**
      * Array of Route objects
+     *
      * @var array
      */
     protected $routes;
@@ -41,6 +44,8 @@ class Router
     }
 
     /**
+     * Return the Response built by the Handler based on the Request
+     *
      * @param Request $request
      * @return Response
      */
@@ -68,6 +73,8 @@ class Router
     }
 
     /**
+     * Prepare a Resonse indicating a 404 Not Found error
+     *
      * @param Request $request
      * @return Response
      */

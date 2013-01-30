@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRESTed\Message
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -56,9 +58,11 @@ abstract class Message
     protected $protocolVersion = '1.1';
 
     // -------------------------------------------------------------------------
-    // !Accessors
+    // Accessors
 
     /**
+     * Magic accessor method
+     *
      * @param string $propertyName
      * @return mixed
      */
@@ -71,6 +75,8 @@ abstract class Message
     }
 
     /**
+     * Magic accessor method
+     *
      * @param string $propertyName
      * @param $value
      */
@@ -83,6 +89,8 @@ abstract class Message
     }
 
     /**
+     * Magic accessor method
+     *
      * @param string $propertyName
      * @return mixed
      */
@@ -95,6 +103,8 @@ abstract class Message
     }
 
     /**
+     * Magic accessor method
+     *
      * @param string $propertyName
      */
     public function __unset($propertyName)
@@ -126,6 +136,8 @@ abstract class Message
     }
 
     /**
+     * Return if the body is set
+     *
      * @return bool
      */
     public function issetBody()
@@ -133,6 +145,9 @@ abstract class Message
         return isset($this->body);
     }
 
+    /**
+     * Unset the body property
+     */
     public function unsetBody()
     {
         unset($this->body);
@@ -246,6 +261,8 @@ abstract class Message
     }
 
     /**
+     * Return the protocol (e.g., HTTP)
+     *
      * @return string
      */
     public function getProtocol()
@@ -278,6 +295,8 @@ abstract class Message
     }
 
     /**
+     * Return if the protocol property is set.
+     *
      * @return bool
      */
     public function issetProtocol()
@@ -285,12 +304,17 @@ abstract class Message
         return isset($this->protocol);
     }
 
+    /**
+     * Unset the protocol property.
+     */
     public function unsetProtocol()
     {
         unset($this->protocol);
     }
 
     /**
+     * Return the version portion of the protocol. For HTTP/1.1, this is 1.1
+     *
      * @return string
      */
     public function getProtocolVersion()
@@ -299,6 +323,8 @@ abstract class Message
     }
 
     /**
+     * Assign a new protocol version
+     *
      * @param string $protocolVersion
      */
     public function setProtocolVersion($protocolVersion)
@@ -307,6 +333,8 @@ abstract class Message
     }
 
     /**
+     * Return if the version portion of the protocol is set.
+     *
      * @return bool
      */
     public function issetProtocolVersion()
@@ -314,6 +342,9 @@ abstract class Message
         return isset($this->protocolVersion);
     }
 
+    /**
+     * Unset the version portion of the protocol.
+     */
     public function unsetProtocolVersion()
     {
         unset($this->protocolVersion);

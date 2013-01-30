@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRESTed\Request
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -26,8 +28,6 @@ namespace pjdietz\WellRESTed;
  * @property-read string pathParts  Fragments of the path, delimited by slashes
  * @property array query  Associative array of query parameters
  * @property array uri  Full URI (protocol, hostname, path, etc.)
- *
- * @package WellRESTed
  */
 class Request extends Message
 {
@@ -75,9 +75,11 @@ class Request extends Message
     static protected $theRequest;
 
     // -------------------------------------------------------------------------
-    // !Accessors
+    // Accessors
 
     /**
+     * Return the hostname portion of the URI
+     *
      * @return string
      */
     public function getHostname()
@@ -86,6 +88,8 @@ class Request extends Message
     }
 
     /**
+     * Assign the hostname portion of the URI
+     *
      * @param string $hostname
      */
     public function setHostname($hostname)
@@ -94,6 +98,8 @@ class Request extends Message
     }
 
     /**
+     * Return if the hostname portion of the URI is set.
+     *
      * @return bool
      */
     public function issetHostName()
@@ -101,12 +107,17 @@ class Request extends Message
         return isset($this->hostname);
     }
 
+    /**
+     * Unset the hostname portion of the URI.
+     */
     public function unsetHostname()
     {
         unset($this->hostname);
     }
 
     /**
+     * Return the method (e.g., GET, POST, PUT, DELETE)
+     *
      * @return string
      */
     public function getMethod()
@@ -115,6 +126,8 @@ class Request extends Message
     }
 
     /**
+     * Assign the method (e.g., GET, POST, PUT, DELETE)
+     *
      * @param string $method
      */
     public function setMethod($method)

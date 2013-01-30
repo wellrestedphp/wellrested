@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRESTed\Response
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -8,13 +10,15 @@
 
 namespace pjdietz\WellRESTed;
 
+use \InvalidArgumentException;
+
 /**
  * A Response instance allows you to build an HTTP response and send it when
  * finished.
  *
- * @property string reasonPhrase  Text explanation of status code.
- * @property int statusCode  HTTP status code
- * @property-read string statusLine  HTTP status line, e.g. "HTTP/1.1 200 OK"
+ * @property string reasonPhrase Text explanation of status code.
+ * @property int statusCode HTTP status code
+ * @property-read string statusLine HTTP status line, e.g. "HTTP/1.1 200 OK"
  */
 class Response extends Message
 {
@@ -61,7 +65,7 @@ class Response extends Message
     }
 
     // -------------------------------------------------------------------------
-    // !Accessors
+    // Accessors
 
     /**
      * Provide a new entity body for the respone.
@@ -81,6 +85,8 @@ class Response extends Message
     }
 
     /**
+     * Return the portion of the status line explaining the status.
+     *
      * @return string
      */
     public function getReasonPhrase()
@@ -89,6 +95,8 @@ class Response extends Message
     }
 
     /**
+     * Assign an explaination for the status code. Not normally needed.
+     *
      * @param string $statusCodeMessage
      */
     public function setReasonPhrase($statusCodeMessage)
@@ -97,6 +105,8 @@ class Response extends Message
     }
 
     /**
+     * Return the status code.
+     *
      * @return int
      */
     public function getStatusCode()
@@ -105,9 +115,11 @@ class Response extends Message
     }
 
     /**
+     * Set the status code and optionally the reason phrase explaining it.
+     *
      * @param int $statusCode
      * @param string|null $reasonPhrase
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setStatusCode($statusCode, $reasonPhrase = null)
     {
@@ -239,7 +251,7 @@ class Response extends Message
             if (is_string($reasonPhrase)) {
                 $this->reasonPhrase = $reasonPhrase;
             } else {
-                throw new \InvalidArgumentException('$reasonPhrase must be a string (or null to use standard HTTP Reason-Phrase');
+                throw new InvalidArgumentException('$reasonPhrase must be a string (or null to use standard HTTP Reason-Phrase');
             }
 
         }

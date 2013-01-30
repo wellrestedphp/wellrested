@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * pjdietz\WellRESTed\Handler
+ *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2013 by PJ Dietz
  * @license MIT
@@ -11,7 +13,7 @@ namespace pjdietz\WellRESTed;
 /**
  * A Handler issues a response for a given resource.
  *
- * @property-read Response response  The Response to the request
+ * @property-read Response response The Response to the request
  */
 class Handler
 {
@@ -56,9 +58,11 @@ class Handler
     }
 
     // -------------------------------------------------------------------------
-    // !Accessors
+    // Accessors
 
     /**
+     * Magic function for properties
+     *
      * @param string $propertyName
      * @return mixed
      */
@@ -71,6 +75,8 @@ class Handler
     }
 
     /**
+     * Return the instance's Reponse
+     *
      * @return Response
      */
     public function getResponse()
@@ -119,7 +125,7 @@ class Handler
     }
 
     // -------------------------------------------------------------------------
-    // !HTTP Methods
+    // HTTP Methods
 
     // Each of these methods corresponds to a standard HTTP method. Each method
     // has no arguments and returns nothing, but should affect the instance's
