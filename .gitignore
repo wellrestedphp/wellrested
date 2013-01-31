@@ -4,6 +4,10 @@ vendor/
 # Generated documentation
 docs/
 
+# Previewing the README.md
+README.html
+preview
+
 # OSX
 .DS_Store
 .AppleDouble
