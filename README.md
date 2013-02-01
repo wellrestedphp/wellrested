@@ -20,9 +20,11 @@ Install
 Include the following to your composer.json file's **require** property.
 
 ```json
+{
     "require": {
         "pjdietz/wellrested": "dev-master"
     }
+}
 ```
 
 Use Composer to download and install WellRESTed.
