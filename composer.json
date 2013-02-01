@@ -1,8 +1,8 @@
 {
-    "name": "pjdietz/WellRESTed",
+    "name": "pjdietz/wellrested",
     "description": "Simple PHP Library for RESTful APIs",
     "keywords": ["php", "rest", "restful", "api"],
-    "homepage": "https://github.com/pjdietz/WellRESTed",
+    "homepage": "https://github.com/pjdietz/wellrested",
     "type": "library",
     "authors": [
         {
