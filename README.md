@@ -3,6 +3,36 @@ WellRESTed
 
 WellRESted provides classes to help you create RESTful APIs and work with HTTP requests and responses.
 
+
+
+Requirements
+------------
+
+- PHP 5.3
+- [Composer](http://getcomposer.org/) for autoloading
+- [PHP cURL](http://php.net/manual/en/book.curl.php) for making requests
+
+
+
+Install
+-------
+
+Include the following to your composer.json file's **require** property.
+
+```json
+    "require": {
+        "pjdietz/wellrested": "dev-master"
+    }
+```
+
+Use Composer to download and install WellRESTed.
+
+```bash
+$ curl -s https://getcomposer.org/installer | php
+$ php composer.phar install
+```
+
+
 Examples
 --------
 
@@ -88,4 +118,5 @@ class MyRouter extends \pjdietz\WellRESTed\Router
 More explamples
 ---------------
 
-For more examples, see the project [pjdietz/WellRESTed-Samples](https://github.com/pjdietz/WellRESTed-Samples).
+For more examples, see the project [pjdietz/wellRrested-samples](https://github.com/pjdietz/wellrested-samples).
+
