@@ -17,7 +17,7 @@ Requirements
 Install
 -------
 
-Include the following to your composer.json file's **require** property.
+Add an entry for "pjdietz/wellrested" in your composer.json file's **require** property. If you are not already using Composer, create a file in your project called **composer.json** with the following content:
 
 ```json
 {
@@ -27,7 +27,7 @@ Include the following to your composer.json file's **require** property.
 }
 ```
 
-Use Composer to download and install WellRESTed.
+Use Composer to download and install WellRESTed. Run these commands from the directory containing the composer.json file.
 
 ```bash
 $ curl -s https://getcomposer.org/installer | php
