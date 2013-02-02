@@ -22,7 +22,7 @@ Add an entry for "pjdietz/wellrested" to your composer.json file's **require** p
 ```json
 {
     "require": {
-        "pjdietz/wellrested": "dev-master"
+        "pjdietz/wellrested": "1.*"
     }
 }
 ```
@@ -43,7 +43,7 @@ Examples
 
 ### Responses
 
-Use a Response instance to build a response and send output. The Request class makes it easy to set the status code, add headers, and set the response body.
+Use a Response instance to build a response and send output. The Response class makes it easy to set the status code, add headers, and set the response body.
 
 ```php
 $resp = new \pjdietz\WellRESTed\Response();
@@ -56,9 +56,9 @@ exit;
 
 ### Requests
 
-Use the Request class read information about the request sent to the server. You can ready the headers, method, and message body.
+Use the Request class to read information about the request sent to the server. You can read the headers, method, and message body.
 
-Request provides a singlton instance representing the request sent to the current script.
+Request provides a singleton instance representing the request sent to the current script.
 
 ```php
 $rqst = \pjdietz\WellRESTed\Request::getRequest();
@@ -92,7 +92,7 @@ if ($resp->statusCode === 201) {
 
 WellRESTed also provides several classes to facilitate working with resource-based URIs. You can create your own regular expressions to match the URIs, or you can use URI templates.
 
-Here's an example of a Router subclass which examines the request URI, compares it against a series of URI templates, and matches the request to a particular Handler class.
+Here's an example of a Router subclass. The subclass examines a request URI, compares it against a series of URI templates, and matches the request to a particular Handler class.
 
 For more information on URI templates, see [RFC 6570](http://tools.ietf.org/html/rfc6570).
 
@@ -107,7 +107,7 @@ class MyRouter extends \pjdietz\WellRESTed\Router
         parent::__construct();
 
         // Match any request to the URI "/things/"
-        // Send it to a handler to collections of thing objects.
+        // Send it to a handler for collections of thing objects.
         $this->addRoute(Route::newFromUriTemplate('/things/', 'ThingCollectionHandler'));
 
         // Match any request to "/things/" followed by a variable.
@@ -122,7 +122,13 @@ class MyRouter extends \pjdietz\WellRESTed\Router
 
 ```
 
-More explamples
+More Examples
 ---------------
 
 For more examples, see the project [pjdietz/wellrested-samples](https://github.com/pjdietz/wellrested-samples).
+
+
+Copyright and License
+---------------------
+Copyright © 2013 by PJ Dietz
+Licensed under the [MIT license](http://opensource.org/licenses/MIT)
