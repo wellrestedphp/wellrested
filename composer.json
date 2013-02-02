@@ -3,6 +3,7 @@
     "description": "Simple PHP Library for RESTful APIs",
     "keywords": ["rest", "restful", "api", "curl", "http"],
     "homepage": "https://github.com/pjdietz/wellrested",
+    "license": "MIT",
     "type": "library",
     "authors": [
         {
