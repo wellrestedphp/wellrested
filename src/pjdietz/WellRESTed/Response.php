@@ -19,10 +19,10 @@ use \InvalidArgumentException;
  * @property string reasonPhrase Text explanation of status code.
  * @property int statusCode HTTP status code
  * @property-read string statusLine HTTP status line, e.g. "HTTP/1.1 200 OK"
+ * @property-read bool success True if the status code is 2xx
  */
 class Response extends Message
 {
-
     /**
      * Text explanation of the HTTP Status Code. You only need to set this if
      * you are using nonstandard status codes. Otherwise, the instance will
@@ -92,6 +92,16 @@ class Response extends Message
     public function getReasonPhrase()
     {
         return $this->reasonPhrase;
+    }
+
+    /**
+     * Return true if the status code is in the 2xx range.
+     *
+     * @return bool
+     */
+    public function getSuccess()
+    {
+        return $this->statusCode >= 200 &&  $this->statusCode < 300;
     }
 
     /**

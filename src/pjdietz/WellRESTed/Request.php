@@ -75,6 +75,23 @@ class Request extends Message
     static protected $theRequest;
 
     // -------------------------------------------------------------------------
+
+    /**
+     * Create a new Request instance.
+     *
+     * @param string|null $uri
+     * @param string $method
+     */
+    public function __construct($uri = null, $method = 'GET')
+    {
+        if (!is_null($uri)) {
+            $this->setUri($uri);
+        }
+
+        $this->method = $method;
+    }
+
+    // -------------------------------------------------------------------------
     // Accessors
 
     /**
