@@ -63,7 +63,7 @@ abstract class Message
     public function __construct()
     {
         $this->headers = array();
-        $this->headerLines = array();
+        $this->headerLookup = array();
     }
 
     // -------------------------------------------------------------------------
