@@ -51,12 +51,12 @@ class Response extends Message
      */
     public function __construct($statusCode = 500, $body = null, $headers = null)
     {
+        parent::__construct();
+
         $this->statusCode = $statusCode;
 
         if (is_array($headers)) {
             $this->headers = $headers;
-        } else {
-            $this->headers = array();
         }
 
         if (!is_null($body)) {

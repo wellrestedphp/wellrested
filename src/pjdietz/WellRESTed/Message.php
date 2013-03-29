@@ -15,6 +15,7 @@ namespace pjdietz\WellRESTed;
  *
  * @property string body  Entity body of the message
  * @property-read array headers  Associative array of HTTP headers
+ * @property-read array headerLines  Numeric array of HTTP headers
  * @property string protocol  The protocol, e.g. HTTP
  * @property string protocolVersion  The version of the protocol
  */
@@ -56,6 +57,14 @@ abstract class Message
      * @var string
      */
     protected $protocolVersion = '1.1';
+
+    // -------------------------------------------------------------------------
+
+    public function __construct()
+    {
+        $this->headers = array();
+        $this->headerLines = array();
+    }
 
     // -------------------------------------------------------------------------
     // Accessors

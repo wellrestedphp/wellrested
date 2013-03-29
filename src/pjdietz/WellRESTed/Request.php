@@ -84,6 +84,8 @@ class Request extends Message
      */
     public function __construct($uri = null, $method = 'GET')
     {
+        parent::__construct();
+
         if (!is_null($uri)) {
             $this->setUri($uri);
         }
