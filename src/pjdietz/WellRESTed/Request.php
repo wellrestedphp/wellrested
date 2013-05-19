@@ -36,35 +36,35 @@ class Request extends Message
      *
      * @var string
      */
-    protected $hostname;
+    private $hostname;
 
     /**
      * HTTP method or verb for the request
      *
      * @var string
      */
-    protected $method = 'GET';
+    private $method = 'GET';
 
     /**
      * Path component of the URI for the request
      *
      * @var string
      */
-    protected $path = '/';
+    private $path = '/';
 
     /**
      * Array of fragments of the path, delimited by slashes
      *
      * @var array
      */
-    protected $pathParts;
+    private $pathParts;
 
     /**
      * Associative array of query parameters
      *
      * @var array
      */
-    protected $query;
+    private $query;
 
     /**
      * Singleton instance derived from reading info from Apache.
@@ -363,13 +363,9 @@ class Request extends Message
     public static function getRequest()
     {
         if (!isset(self::$theRequest)) {
-
-            $klass = __CLASS__;
-            $request = new $klass();
+            $request = new Request();
             $request->readHttpRequest();
-
             self::$theRequest = $request;
-
         }
 
         return self::$theRequest;

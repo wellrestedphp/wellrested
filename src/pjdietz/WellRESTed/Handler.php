@@ -15,7 +15,7 @@ namespace pjdietz\WellRESTed;
  *
  * @property-read Response response The Response to the request
  */
-class Handler
+abstract class Handler
 {
     /**
      * The HTTP request to respond to.
@@ -72,6 +72,7 @@ class Handler
         if (method_exists($this, $method)) {
             return $this->{$method}();
         }
+        return null;
     }
 
     /**
@@ -140,7 +141,7 @@ class Handler
      */
     protected function get()
     {
-        $this->response->statusCode = 405;
+        $this->respondWithMethodNotAllowed();
     }
 
     /**
@@ -167,7 +168,7 @@ class Handler
      */
     protected function post()
     {
-        $this->response->statusCode = 405;
+        $this->respondWithMethodNotAllowed();
     }
 
     /**
@@ -177,7 +178,7 @@ class Handler
      */
     protected function put()
     {
-        $this->response->statusCode = 405;
+        $this->respondWithMethodNotAllowed();
     }
 
     /**
@@ -187,7 +188,7 @@ class Handler
      */
     protected function delete()
     {
-        $this->response->statusCode = 405;
+        $this->respondWithMethodNotAllowed();
     }
 
     /**
@@ -197,7 +198,7 @@ class Handler
      */
     protected function patch()
     {
-        $this->response->statusCode = 405;
+        $this->respondWithMethodNotAllowed();
     }
 
     /**
@@ -206,6 +207,14 @@ class Handler
      * This method should modify the instance's response member.
      */
     protected function options()
+    {
+        $this->respondWithMethodNotAllowed();
+    }
+
+    /**
+     * Provide a default response for unsupported methods.
+     */
+    protected function respondWithMethodNotAllowed()
     {
         $this->response->statusCode = 405;
     }

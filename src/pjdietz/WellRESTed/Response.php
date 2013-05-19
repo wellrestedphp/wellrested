@@ -30,14 +30,14 @@ class Response extends Message
      *
      * @var string
      */
-    protected $reasonPhrase;
+    private $reasonPhrase;
 
     /**
      * HTTP status code
      *
      * @var int
      */
-    protected $statusCode;
+    private $statusCode;
 
     // -------------------------------------------------------------------------
 

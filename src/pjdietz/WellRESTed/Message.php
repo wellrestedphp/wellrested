@@ -81,6 +81,7 @@ abstract class Message
         if (method_exists($this, $method)) {
             return $this->{$method}();
         }
+        return null;
     }
 
     /**
@@ -101,7 +102,7 @@ abstract class Message
      * Magic accessor method
      *
      * @param string $propertyName
-     * @return mixed
+     * @return boolean
      */
     public function __isset($propertyName)
     {
@@ -109,6 +110,7 @@ abstract class Message
         if (method_exists($this, $method)) {
             return $this->{$method}();
         }
+        return false;
     }
 
     /**

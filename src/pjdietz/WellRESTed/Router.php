@@ -58,15 +58,14 @@ class Router
         $path = $request->path;
 
         foreach ($this->routes as $route) {
-
             if (preg_match($route->pattern, $path, $matches)) {
-
-                $klass = $route->handler;
-                $handler = new $klass($request, $matches);
-                return $handler->response;
-
+                if (is_subclass_of($route->handler, '\pjdietz\WellRESTed\Handler')) {
+                    $handler = new $route->handler($request, $matches);
+                    return $handler->response;
+                } else {
+                    return $this->getNoRouteResponse($request);
+                }
             }
-
         }
 
         return $this->getNoRouteResponse($request);
