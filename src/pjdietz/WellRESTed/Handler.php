@@ -15,8 +15,15 @@ namespace pjdietz\WellRESTed;
  *
  * @property-read Response response The Response to the request
  */
-abstract class Handler
+abstract class Handler implements HandlerInterface
 {
+    /**
+     * Matches array from the preg_match() call used to find this Handler.
+     *
+     * @var array
+     */
+    protected $args;
+
     /**
      * The HTTP request to respond to.
      *
@@ -30,32 +37,6 @@ abstract class Handler
      * @var Response
      */
     protected $response;
-
-    /**
-     * Matches array from the preg_match() call used to find this Handler.
-     *
-     * @var array
-     */
-    protected $args;
-
-    /**
-     * Create a new Handler for a specific request.
-     *
-     * @param Request $request
-     * @param array $args
-     */
-    public function __construct($request, $args = null)
-    {
-        $this->request = $request;
-
-        if (is_null($args)) {
-            $args = array();
-        }
-        $this->args = $args;
-
-        $this->response = new Response();
-        $this->buildResponse();
-    }
 
     // -------------------------------------------------------------------------
     // Accessors
@@ -76,12 +57,46 @@ abstract class Handler
     }
 
     /**
+     * @param array $args
+     */
+    public function setArguments(array $args)
+    {
+        $this->args = $args;
+    }
+
+    /**
+     * @return array
+     */
+    public function getArguments()
+    {
+        return $this->args;
+    }
+
+    /**
+     * @param \pjdietz\WellRESTed\Request $request
+     */
+    public function setRequest($request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * @return \pjdietz\WellRESTed\Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
      * Return the instance's Reponse
      *
      * @return Response
      */
     public function getResponse()
     {
+        $this->response = new Response();
+        $this->buildResponse();
         return $this->response;
     }
 

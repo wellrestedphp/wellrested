@@ -36,9 +36,9 @@ class Router
     /**
      * Append a new Route instance to the Router's route table.
      *
-     * @param Route $route
+     * @param RouteInterface $route
      */
-    public function addRoute(Route $route)
+    public function addRoute(RouteInterface $route)
     {
         $this->routes[] = $route;
     }
@@ -58,10 +58,15 @@ class Router
         $path = $request->path;
 
         foreach ($this->routes as $route) {
-            if (preg_match($route->pattern, $path, $matches)) {
-                if (is_subclass_of($route->handler, '\pjdietz\WellRESTed\Handler')) {
-                    $handler = new $route->handler($request, $matches);
-                    return $handler->response;
+            /** @var RouteInterface $route */
+            if (preg_match($route->getPattern(), $path, $matches)) {
+                $handlerClassName = $route->getHandler();
+                if (is_subclass_of($handlerClassName, '\pjdietz\WellRESTed\HandlerInterface')) {
+                    /** @var HandlerInterface $handler */
+                    $handler = new $handlerClassName();
+                    $handler->setRequest($request);
+                    $handler->setArguments($matches);
+                    return $handler->getResponse();
                 } else {
                     return $this->getNoRouteResponse($request);
                 }

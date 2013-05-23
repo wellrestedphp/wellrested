@@ -15,7 +15,7 @@ use \Exception;
 /**
  * A Route connects a URI pattern to a Handler.
  */
-class Route
+class Route implements RouteInterface
 {
     /**
      * Regular expression matching URL friendly characters (i.e., letters,
@@ -47,14 +47,14 @@ class Route
      *
      * @var string
      */
-    public $pattern;
+    private $pattern;
 
     /**
      * Name of the Handler class to use
      *
      * @var string
      */
-    public $handler;
+    private $handler;
 
     /**
      * Create a new Route
@@ -66,6 +66,38 @@ class Route
     {
         $this->pattern = $pattern;
         $this->handler = $handler;
+    }
+
+    /**
+     * @param string $handler
+     */
+    public function setHandler($handler)
+    {
+        $this->handler = $handler;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHandler()
+    {
+        return $this->handler;
+    }
+
+    /**
+     * @param string $pattern
+     */
+    public function setPattern($pattern)
+    {
+        $this->pattern = $pattern;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPattern()
+    {
+        return $this->pattern;
     }
 
     /**
