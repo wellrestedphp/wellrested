@@ -4,6 +4,7 @@ namespace pjdietz\WellRESTed;
 
 /**
  * Interface for a route to relate a pattern for matching a URI to a handler class.
+ * @package pjdietz\WellRESTed
  */
 interface RouteInterface
 {

@@ -21,7 +21,7 @@ use \InvalidArgumentException;
  * @property-read string statusLine HTTP status line, e.g. "HTTP/1.1 200 OK"
  * @property-read bool success True if the status code is 2xx
  */
-class Response extends Message
+class Response extends Message implements ResponseInterface
 {
     /**
      * Text explanation of the HTTP Status Code. You only need to set this if

@@ -29,7 +29,7 @@ namespace pjdietz\WellRESTed;
  * @property array query  Associative array of query parameters
  * @property array uri  Full URI (protocol, hostname, path, etc.)
  */
-class Request extends Message
+class Request extends Message implements RequestInterface
 {
     /**
      * The Hostname for the request (e.g., www.google.com)

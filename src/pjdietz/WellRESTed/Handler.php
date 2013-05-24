@@ -73,9 +73,9 @@ abstract class Handler implements HandlerInterface
     }
 
     /**
-     * @param \pjdietz\WellRESTed\Request $request
+     * @param RequestInterface $request
      */
-    public function setRequest($request)
+    public function setRequest(RequestInterface $request)
     {
         $this->request = $request;
     }
@@ -91,7 +91,7 @@ abstract class Handler implements HandlerInterface
     /**
      * Return the instance's Reponse
      *
-     * @return Response
+     * @return ResponseInterface
      */
     public function getResponse()
     {
