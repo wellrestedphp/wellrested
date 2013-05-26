@@ -10,7 +10,7 @@
 
 namespace pjdietz\WellRESTed\Exceptions;
 
-use \Exception;
+use Exception;
 
 /**
  * Top level class for custom exceptions thrown by Well RESTed.

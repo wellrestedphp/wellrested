@@ -10,33 +10,26 @@
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
+use pjdietz\WellRESTed\Interfaces\RouterInterface;
+
 /**
  * A Handler issues a response for a given resource.
  *
- * @property-read Response response The Response to the request
+ * @property-read ResponseInterface response The Response to the request
  */
 abstract class Handler implements HandlerInterface
 {
-    /**
-     * Matches array from the preg_match() call used to find this Handler.
-     *
-     * @var array
-     */
+    /** @var array  Matches array from the preg_match() call used to find this Handler */
     protected $args;
-
-    /**
-     * The HTTP request to respond to.
-     *
-     * @var Request
-     */
+    /** @var RequestInterface  The HTTP request to respond to. */
     protected $request;
-
-    /**
-     * The HTTP response to send based on the request.
-     *
-     * @var Response
-     */
+    /** @var ResponseInterface  The HTTP response to send based on the request. */
     protected $response;
+    /** @var RouterInterface  The router that dispatched this handler */
+    protected $router;
 
     // -------------------------------------------------------------------------
     // Accessors
@@ -56,43 +49,43 @@ abstract class Handler implements HandlerInterface
         return null;
     }
 
-    /**
-     * @param array $args
-     */
+    /** @param array $args */
     public function setArguments(array $args)
     {
         $this->args = $args;
     }
 
-    /**
-     * @return array
-     */
+    /** @return array */
     public function getArguments()
     {
         return $this->args;
     }
 
-    /**
-     * @param RequestInterface $request
-     */
-    public function setRequest(RequestInterface $request)
-    {
-        $this->request = $request;
-    }
-
-    /**
-     * @return \pjdietz\WellRESTed\Request
-     */
+    /** @return RequestInterface */
     public function getRequest()
     {
         return $this->request;
     }
 
-    /**
-     * Return the instance's Reponse
-     *
-     * @return ResponseInterface
-     */
+    /** @param RequestInterface $request */
+    public function setRequest(RequestInterface $request)
+    {
+        $this->request = $request;
+    }
+
+    /** @return RouterInterface */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
+    /** @param RouterInterface $router */
+    public function setRouter(RouterInterface $router)
+    {
+        $this->router = $router;
+    }
+
+    /** @return ResponseInterface */
     public function getResponse()
     {
         $this->response = new Response();
@@ -107,7 +100,7 @@ abstract class Handler implements HandlerInterface
      */
     protected function buildResponse()
     {
-        switch ($this->request->method) {
+        switch ($this->request->getMethod()) {
 
             case 'GET':
                 $this->get();
@@ -160,6 +153,14 @@ abstract class Handler implements HandlerInterface
     }
 
     /**
+     * Provide a default response for unsupported methods.
+     */
+    protected function respondWithMethodNotAllowed()
+    {
+        $this->response->setStatusCode(405);
+    }
+
+    /**
      * Method for handling HTTP HEAD requests.
      *
      * This method should modify the instance's response member.
@@ -171,8 +172,8 @@ abstract class Handler implements HandlerInterface
 
         $this->get();
 
-        if ($this->response->statusCode == 200) {
-            $this->response->setBody('', false);
+        if ($this->response->getStatusCode() == 200) {
+            $this->response->setBody('');
         }
     }
 
@@ -224,14 +225,6 @@ abstract class Handler implements HandlerInterface
     protected function options()
     {
         $this->respondWithMethodNotAllowed();
-    }
-
-    /**
-     * Provide a default response for unsupported methods.
-     */
-    protected function respondWithMethodNotAllowed()
-    {
-        $this->response->statusCode = 405;
     }
 
 }

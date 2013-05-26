@@ -10,7 +10,7 @@
 
 namespace pjdietz\WellRESTed;
 
-// TODO: Include port in the URI
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -31,40 +31,7 @@ namespace pjdietz\WellRESTed;
  */
 class Request extends Message implements RequestInterface
 {
-    /**
-     * The Hostname for the request (e.g., www.google.com)
-     *
-     * @var string
-     */
-    private $hostname;
-
-    /**
-     * HTTP method or verb for the request
-     *
-     * @var string
-     */
-    private $method = 'GET';
-
-    /**
-     * Path component of the URI for the request
-     *
-     * @var string
-     */
-    private $path = '/';
-
-    /**
-     * Array of fragments of the path, delimited by slashes
-     *
-     * @var array
-     */
-    private $pathParts;
-
-    /**
-     * Associative array of query parameters
-     *
-     * @var array
-     */
-    private $query;
+    // TODO: Include port in the URI
 
     /**
      * Singleton instance derived from reading info from Apache.
@@ -73,6 +40,16 @@ class Request extends Message implements RequestInterface
      * @static
      */
     static protected $theRequest;
+    /** @var string  The Hostname for the request (e.g., www.google.com) */
+    private $hostname;
+    /** @var string  HTTP method or verb for the request */
+    private $method = 'GET';
+    /** @var string   Path component of the URI for the request */
+    private $path = '/';
+    /** @var array Array of fragments of the path, delimited by slashes */
+    private $pathParts;
+    /**@var array Associative array of query parameters */
+    private $query;
 
     // -------------------------------------------------------------------------
 
@@ -95,6 +72,62 @@ class Request extends Message implements RequestInterface
 
     // -------------------------------------------------------------------------
     // Accessors
+
+    /**
+     * Set the URI for the Request. This sets the other members, such as path,
+     * hostname, etc.
+     *
+     * @param string $uri
+     */
+    public function setUri($uri)
+    {
+        $parsed = parse_url($uri);
+
+        $host = isset($parsed['host']) ? $parsed['host'] : '';
+        $this->setHostname($host);
+
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        $this->setPath($path);
+
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $this->setQuery($query);
+    }
+
+    /**
+     * Return a reference to the singleton instance of the Request derived
+     * from the server's information about the request sent to the script.
+     *
+     * @return Request
+     * @static
+     */
+    public static function getRequest()
+    {
+        if (!isset(self::$theRequest)) {
+            $request = new Request();
+            $request->readHttpRequest();
+            self::$theRequest = $request;
+        }
+
+        return self::$theRequest;
+    }
+
+    /**
+     * Set instance members based on the HTTP request sent to the server.
+     */
+    public function readHttpRequest()
+    {
+        $this->setBody(file_get_contents("php://input"), false);
+        $this->headers = apache_request_headers();
+
+        // Add case insensitive headers to the lookup table.
+        foreach ($this->headers as $key => $value) {
+            $this->headerLookup[strtolower($key)] = $key;
+        }
+
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->uri = $_SERVER['REQUEST_URI'];
+        $this->hostname = $_SERVER['HTTP_HOST'];
+    }
 
     /**
      * Return the hostname portion of the URI
@@ -195,6 +228,8 @@ class Request extends Message implements RequestInterface
         return $this->query;
     }
 
+    // -------------------------------------------------------------------------
+
     /**
      * Set the query. The value passed can be a query string of key-value pairs
      * joined by ampersands or it can be an associative array.
@@ -231,28 +266,6 @@ class Request extends Message implements RequestInterface
 
         return $uri;
     }
-
-    /**
-     * Set the URI for the Request. This sets the other members, such as path,
-     * hostname, etc.
-     *
-     * @param string $uri
-     */
-    public function setUri($uri)
-    {
-        $parsed = parse_url($uri);
-
-        $host = isset($parsed['host']) ? $parsed['host'] : '';
-        $this->setHostname($host);
-
-        $path = isset($parsed['path']) ? $parsed['path'] : '';
-        $this->setPath($path);
-
-        $query = isset($parsed['query']) ? $parsed['query'] : '';
-        $this->setQuery($query);
-    }
-
-    // -------------------------------------------------------------------------
 
     /**
      * Make a cURL request out of the instance and return a Response.
@@ -333,42 +346,6 @@ class Request extends Message implements RequestInterface
         curl_close($ch);
 
         return $resp;
-    }
-
-    /**
-     * Set instance members based on the HTTP request sent to the server.
-     */
-    public function readHttpRequest()
-    {
-        $this->setBody(file_get_contents("php://input"), false);
-        $this->headers = apache_request_headers();
-
-        // Add case insensitive headers to the lookup table.
-        foreach ($this->headers as $key => $value) {
-            $this->headerLookup[strtolower($key)] = $key;
-        }
-
-        $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->uri = $_SERVER['REQUEST_URI'];
-        $this->hostname = $_SERVER['HTTP_HOST'];
-    }
-
-    /**
-     * Return a reference to the singleton instance of the Request derived
-     * from the server's information about the request sent to the script.
-     *
-     * @return Request
-     * @static
-     */
-    public static function getRequest()
-    {
-        if (!isset(self::$theRequest)) {
-            $request = new Request();
-            $request->readHttpRequest();
-            self::$theRequest = $request;
-        }
-
-        return self::$theRequest;
     }
 
 }

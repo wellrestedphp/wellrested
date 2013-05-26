@@ -10,7 +10,8 @@
 
 namespace pjdietz\WellRESTed;
 
-use \InvalidArgumentException;
+use InvalidArgumentException;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 
 /**
  * A Response instance allows you to build an HTTP response and send it when
@@ -31,12 +32,7 @@ class Response extends Message implements ResponseInterface
      * @var string
      */
     private $reasonPhrase;
-
-    /**
-     * HTTP status code
-     *
-     * @var int
-     */
+    /** @var int  HTTP status code */
     private $statusCode;
 
     // -------------------------------------------------------------------------
@@ -84,24 +80,10 @@ class Response extends Message implements ResponseInterface
         }
     }
 
-    /**
-     * Return the portion of the status line explaining the status.
-     *
-     * @return string
-     */
+    /** @return string  Portion of the status line explaining the status. */
     public function getReasonPhrase()
     {
         return $this->reasonPhrase;
-    }
-
-    /**
-     * Return true if the status code is in the 2xx range.
-     *
-     * @return bool
-     */
-    public function getSuccess()
-    {
-        return $this->statusCode >= 200 &&  $this->statusCode < 300;
     }
 
     /**
@@ -114,11 +96,13 @@ class Response extends Message implements ResponseInterface
         $this->reasonPhrase = $statusCodeMessage;
     }
 
-    /**
-     * Return the status code.
-     *
-     * @return int
-     */
+    /** @return bool  True if the status code is in the 2xx range. */
+    public function getSuccess()
+    {
+        return $this->statusCode >= 200 && $this->statusCode < 300;
+    }
+
+    /** @return int */
     public function getStatusCode()
     {
         return $this->statusCode;
@@ -269,24 +253,6 @@ class Response extends Message implements ResponseInterface
     }
 
     /**
-     * Return HTTP status line, e.g. HTTP/1.1 200 OK.
-     *
-     * @return string
-     */
-    protected function getStatusLine()
-    {
-        return sprintf(
-            '%s/%s %s %s',
-            strtoupper($this->protocol),
-            $this->protocolVersion,
-            $this->statusCode,
-            $this->reasonPhrase
-        );
-    }
-
-    // -------------------------------------------------------------------------
-
-    /**
      * Output the response to the client.
      *
      * @param bool $headersOnly  Do not include the body, only the headers.
@@ -305,6 +271,20 @@ class Response extends Message implements ResponseInterface
         if (!$headersOnly && isset($this->body)) {
             print $this->body;
         }
+    }
+
+    // -------------------------------------------------------------------------
+
+    /** @return string  HTTP status line, e.g. HTTP/1.1 200 OK. */
+    protected function getStatusLine()
+    {
+        return sprintf(
+            '%s/%s %s %s',
+            strtoupper($this->protocol),
+            $this->protocolVersion,
+            $this->statusCode,
+            $this->reasonPhrase
+        );
     }
 
 }

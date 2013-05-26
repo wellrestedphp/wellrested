@@ -21,20 +21,10 @@ namespace pjdietz\WellRESTed;
  */
 abstract class Message
 {
-    /**
-     * Entity body of the message
-     *
-     * @var string
-     */
+    /** @var string  Entity body of the message */
     protected $body;
-
-    /**
-     * Associative array of HTTP headers
-     *
-     * @var array
-     */
+    /** @var array Associative array of HTTP headers */
     protected $headers;
-
     /**
      * Associative array of lowercase header field names as keys with
      * corresponding case sensitive field names from the $headers array as
@@ -43,19 +33,9 @@ abstract class Message
      * @var array
      */
     protected $headerLookup;
-
-    /**
-     * Name of the protocol to use.
-     *
-     * @var string
-     */
+    /** @var string Name of the protocol to use. */
     protected $protocol = 'HTTP';
-
-    /**
-     * Version of the protocol to use.
-     *
-     * @var string
-     */
+    /** @var string Version of the protocol to use. */
     protected $protocolVersion = '1.1';
 
     // -------------------------------------------------------------------------
@@ -156,9 +136,7 @@ abstract class Message
         return isset($this->body);
     }
 
-    /**
-     * Unset the body property
-     */
+    /** Unset the body property */
     public function unsetBody()
     {
         unset($this->body);
@@ -315,9 +293,7 @@ abstract class Message
         return isset($this->protocol);
     }
 
-    /**
-     * Unset the protocol property.
-     */
+    /** Unset the protocol property. */
     public function unsetProtocol()
     {
         unset($this->protocol);
@@ -353,9 +329,7 @@ abstract class Message
         return isset($this->protocolVersion);
     }
 
-    /**
-     * Unset the version portion of the protocol.
-     */
+    /** Unset the version portion of the protocol. */
     public function unsetProtocolVersion()
     {
         unset($this->protocolVersion);

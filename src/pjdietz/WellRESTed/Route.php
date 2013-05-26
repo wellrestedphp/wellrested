@@ -10,7 +10,8 @@
 
 namespace pjdietz\WellRESTed;
 
-use \Exception;
+use pjdietz\WellRESTed\Exceptions\WellRESTedException;
+use pjdietz\WellRESTed\Interfaces\RouteInterface;
 
 /**
  * A Route connects a URI pattern to a Handler.
@@ -22,33 +23,26 @@ class Route implements RouteInterface
      * digits, hyphen and underscore)
      */
     const RE_SLUG = '[0-9a-zA-Z\-_]+';
-
     /** Regular expression matching digitis */
     const RE_NUM = '[0-9]+';
-
     /** Regular expression matching letters */
     const RE_ALPHA = '[a-zA-Z]+';
-
     /** Regular expression matching letters and digits */
     const RE_ALPHANUM = '[0-9a-zA-Z]+';
-
     /** Regular expression matching a URI template variable (e.g., {id}) */
     const URI_TEMPLATE_EXPRESSION_RE = '/{([a-zA-Z]+)}/';
-
     /**
      * Default regular expression used to match template variable
      *
      * @property string
      */
     static public $defaultVariablePattern = self::RE_SLUG;
-
     /**
      * Regular expression used to match a Request URI path component
      *
      * @var string
      */
     private $pattern;
-
     /**
      * Name of the Handler class to use
      *
@@ -69,44 +63,12 @@ class Route implements RouteInterface
     }
 
     /**
-     * @param string $handler
-     */
-    public function setHandler($handler)
-    {
-        $this->handler = $handler;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHandler()
-    {
-        return $this->handler;
-    }
-
-    /**
-     * @param string $pattern
-     */
-    public function setPattern($pattern)
-    {
-        $this->pattern = $pattern;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPattern()
-    {
-        return $this->pattern;
-    }
-
-    /**
      * Create a new Route using a URI template to generate the pattern.
      *
      * @param string $uriTemplate
      * @param string $handler
      * @param array $variables
-     * @throws Exception
+     * @throws WellRESTedException
      * @return Route
      */
     static public function newFromUriTemplate(
@@ -155,7 +117,7 @@ class Route implements RouteInterface
 
                 } else {
                     // Not sure why this would happen.
-                    throw new Exception('Invalid URI Template.');
+                    throw new WellRESTedException('Invalid URI Template.');
                 }
 
             } else {
@@ -171,6 +133,38 @@ class Route implements RouteInterface
         $route = new $klass($pattern, $handler);
         return $route;
 
+    }
+
+    /**
+     * @return string
+     */
+    public function getHandler()
+    {
+        return $this->handler;
+    }
+
+    /**
+     * @param string $handler
+     */
+    public function setHandler($handler)
+    {
+        $this->handler = $handler;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPattern()
+    {
+        return $this->pattern;
+    }
+
+    /**
+     * @param string $pattern
+     */
+    public function setPattern($pattern)
+    {
+        $this->pattern = $pattern;
     }
 
 }
