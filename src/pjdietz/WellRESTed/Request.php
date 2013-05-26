@@ -10,6 +10,7 @@
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Exceptions\CurlException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
@@ -31,8 +32,6 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
  */
 class Request extends Message implements RequestInterface
 {
-    // TODO: Include port in the URI
-
     /**
      * Singleton instance derived from reading info from Apache.
      *
@@ -48,6 +47,8 @@ class Request extends Message implements RequestInterface
     private $path = '/';
     /** @var array Array of fragments of the path, delimited by slashes */
     private $pathParts;
+    /** @var int */
+    private $port = 80;
     /**@var array Associative array of query parameters */
     private $query;
 
@@ -72,26 +73,6 @@ class Request extends Message implements RequestInterface
 
     // -------------------------------------------------------------------------
     // Accessors
-
-    /**
-     * Set the URI for the Request. This sets the other members, such as path,
-     * hostname, etc.
-     *
-     * @param string $uri
-     */
-    public function setUri($uri)
-    {
-        $parsed = parse_url($uri);
-
-        $host = isset($parsed['host']) ? $parsed['host'] : '';
-        $this->setHostname($host);
-
-        $path = isset($parsed['path']) ? $parsed['path'] : '';
-        $this->setPath($path);
-
-        $query = isset($parsed['query']) ? $parsed['query'] : '';
-        $this->setQuery($query);
-    }
 
     /**
      * Return a reference to the singleton instance of the Request derived
@@ -127,6 +108,51 @@ class Request extends Message implements RequestInterface
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->uri = $_SERVER['REQUEST_URI'];
         $this->hostname = $_SERVER['HTTP_HOST'];
+    }
+
+    /**
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
+    public function getUri()
+    {
+        $uri = strtolower($this->protocol) . '://' . $this->hostname;
+
+        if ($this->port !== 80) {
+            $uri .= ':' . $this->port;
+        }
+
+        $uri .= $this->path;
+
+        if ($this->query) {
+            $uri .= '?' . http_build_query($this->query);
+        }
+
+        return $uri;
+    }
+
+    /**
+     * Set the URI for the Request. This sets the other members: hostname,
+     * path, port, and query.
+     *
+     * @param string $uri
+     */
+    public function setUri($uri)
+    {
+        $parsed = parse_url($uri);
+
+        $host = isset($parsed['host']) ? $parsed['host'] : '';
+        $this->setHostname($host);
+
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        $this->setPath($path);
+
+        $port = isset($parsed['port']) ? (int)$parsed['port'] : 80;
+        $this->setPort($port);
+
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $this->setQuery($query);
     }
 
     /**
@@ -218,6 +244,18 @@ class Request extends Message implements RequestInterface
         return $this->pathParts;
     }
 
+    /** @return int */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /** @param int $port */
+    public function setPort($port)
+    {
+        $this->port = $port;
+    }
+
     /**
      * Return an associative array representing the query.
      *
@@ -227,8 +265,6 @@ class Request extends Message implements RequestInterface
     {
         return $this->query;
     }
-
-    // -------------------------------------------------------------------------
 
     /**
      * Set the query. The value passed can be a query string of key-value pairs
@@ -251,67 +287,55 @@ class Request extends Message implements RequestInterface
         }
     }
 
-    /**
-     * Return the full URI includeing protocol, hostname, path, and query.
-     *
-     * @return array
-     */
-    public function getUri()
-    {
-        $uri = strtolower($this->protocol) . '://' . $this->hostname . $this->path;
-
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
-        }
-
-        return $uri;
-    }
+    // -------------------------------------------------------------------------
 
     /**
      * Make a cURL request out of the instance and return a Response.
      *
+     * @param array|null $curlOpts  Associative array of options to set using curl_setopt_array before making the request.
+     * @throws Exceptions\CurlException
      * @return Response
-     * @throws exceptions\CurlException
      */
-    public function request()
+    public function request($curlOpts = null)
     {
         $ch = curl_init();
 
-        // Set the URL.
-        curl_setopt($ch, CURLOPT_URL, $this->uri);
-
-        // Include headers in the response.
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-
-        // Return the response from curl_exec().
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $options = array(
+            CURLOPT_URL => $this->getUri(),
+            CURLOPT_PORT => $this->port,
+            CURLOPT_HEADER => 1,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_HTTPHEADER => $this->getHeaderLines()
+        );
 
         // Set the method. Include the body, if needed.
         switch ($this->method) {
-
             case 'GET':
-                curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                $options[CURLOPT_HTTPGET] = 1;
                 break;
-
             case 'POST':
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+                $options[CURLOPT_POST] = 1;
+                $options[CURLOPT_POSTFIELDS] = $this->body;
                 break;
-
             case 'PUT':
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+                $options[CURLOPT_CUSTOMREQUEST] = 'PUT';
+                $options[CURLOPT_POSTFIELDS] = $this->body;
                 break;
-
             default:
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->method);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+                $options[CURLOPT_CUSTOMREQUEST] = $this->method;
+                $options[CURLOPT_POSTFIELDS] = $this->body;
                 break;
-
         }
 
-        // Add headers.
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headerLines);
+        // Override cURL options with the user options passed in.
+        if ($curlOpts) {
+            foreach ($curlOpts as $optKey => $optValue) {
+                $options[$optKey] = $optValue;
+            }
+        }
+
+        // Set the cURL options.
+        curl_setopt_array($ch, $options);
 
         // Make the cURL request.
         $result = curl_exec($ch);
@@ -321,7 +345,7 @@ class Request extends Message implements RequestInterface
             $error = curl_error($ch);
             $errno = curl_errno($ch);
             curl_close($ch);
-            throw new Exceptions\CurlException($error, $errno);
+            throw new CurlException($error, $errno);
         }
 
         // Make a reponse to populate and return with data obtained via cURL.
