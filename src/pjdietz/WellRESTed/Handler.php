@@ -101,35 +101,29 @@ abstract class Handler implements HandlerInterface
     protected function buildResponse()
     {
         switch ($this->request->getMethod()) {
-
             case 'GET':
                 $this->get();
                 break;
-
             case 'HEAD':
                 $this->head();
                 break;
-
             case 'POST':
                 $this->post();
                 break;
-
             case 'PUT':
                 $this->put();
                 break;
-
             case 'DELETE':
                 $this->delete();
                 break;
-
             case 'PATCH':
                 $this->patch();
                 break;
-
             case 'OPTIONS':
                 $this->options();
                 break;
-
+            default:
+                $this->respondWithMethodNotAllowed();
         }
     }
 
@@ -150,14 +144,6 @@ abstract class Handler implements HandlerInterface
     protected function get()
     {
         $this->respondWithMethodNotAllowed();
-    }
-
-    /**
-     * Provide a default response for unsupported methods.
-     */
-    protected function respondWithMethodNotAllowed()
-    {
-        $this->response->setStatusCode(405);
     }
 
     /**
@@ -224,7 +210,40 @@ abstract class Handler implements HandlerInterface
      */
     protected function options()
     {
-        $this->respondWithMethodNotAllowed();
+        if ($this->addAllowHeader()) {
+            $this->response->setStatusCode(200);
+        } else {
+            $this->response->setStatusCode(405);
+        }
+    }
+
+    /**
+     * Provide a default response for unsupported methods.
+     */
+    protected function respondWithMethodNotAllowed()
+    {
+        $this->response->setStatusCode(405);
+        $this->addAllowHeader();
+    }
+
+    /** @return array of method names supported by the handler. */
+    protected function getAllowedMethods()
+    {
+    }
+
+    /**
+     * Add an Allow: header using the methods returned by getAllowedMethods()
+     *
+     * @return bool  The header was added.
+     */
+    protected function addAllowHeader()
+    {
+        $methods = $this->getAllowedMethods();
+        if ($methods) {
+            $this->response->setHeader('Allow', join($methods, ', '));
+            return true;
+        }
+        return false;
     }
 
 }
