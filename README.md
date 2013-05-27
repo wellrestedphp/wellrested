@@ -40,7 +40,7 @@ Examples
 
 ### Routing
 
-WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a Router instance and load it up with some Routes. Each Route is simply a mapping of a URI pattern to a classname. The classname represents the Handler class which the router will dispatch at the time it recieves a request for the given URI. The handlers are never loaded unless they are needed.
+WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a Router instance and load it up with some Routes. Each Route is simply a mapping of a URI pattern to a class name. The class name represents the Handler class which the router will dispatch at the time it receives a request for the given URI. The handlers are never loaded unless they are needed.
 
 Here's an example of a Router that will handle two URIs:
 
@@ -69,7 +69,7 @@ class ThingCollectionHandler extends \pjdietz\WellRESTed\Handler
         // Read some things from the database, cache, whatever.
         // ...read this into the variable $data
 
-        // Set the values for the instance's reponse member. This is what the
+        // Set the values for the instance's response member. This is what the
         // Router will eventually use to output a response to the client.
         $this->response->setStatusCode(200);
         $this->response->setHeader('Content-Type', 'application/json');
@@ -81,14 +81,14 @@ class ThingCollectionHandler extends \pjdietz\WellRESTed\Handler
         // Read from the instance's request member and store a new Thing.
         // ...
 
-        // Build a reponse to send to the client.
+        // Build a response to send to the client.
         $this->response->setStatusCode(201);
         $this->response->setBody('You added a thing!');
     }
 }
 ```
 
-This Handler works with the second endpoint, **/things/{id}**. The pattern for this endpoing has the variable **{id}** in it. The Handler can access path variables through its **args** member, which is an associative array of variables from the URI.
+This Handler works with the second endpoint, **/things/{id}**. The pattern for this endpoint has the variable **{id}** in it. The Handler can access path variables through its **args** member, which is an associative array of variables from the URI.
 
 ```php
 class ThingItemHandler extends \pjdietz\WellRESTed\Handler
@@ -139,7 +139,7 @@ if ($rqst->getMethod() === 'PUT') {
 }
 ```
 
-The Request class can also make a request to another server and provide the response as a Respones object. (This feature requires [PHP cURL](http://php.net/manual/en/book.curl.php).)
+The Request class can also make a request to another server and provide the response as a Response object. (This feature requires [PHP cURL](http://php.net/manual/en/book.curl.php).)
 
 ```php
 // Prepare a request.
@@ -161,7 +161,7 @@ if ($resp->getStatusCode() === 201) {
 
 ### Routing from a Handler
 
-One more fun thing you can do with WellRESTed is use your API from inside your API. WellRESTed makes this easy becuase each dispatched Handler keeps a reference to the Router that dispatched it.
+One more fun thing you can do with WellRESTed is use your API from inside your API. WellRESTed makes this easy because each dispatched Handler keeps a reference to the Router that dispatched it.
 
 Suppose you have an endpoint that needs to look up information using another endpoint. Now that you've seen that you can create and work with your own requests and responses, we'll look at how to use them in the context of a handler.
 
