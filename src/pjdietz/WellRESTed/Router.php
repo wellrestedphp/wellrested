@@ -70,11 +70,10 @@ class Router implements RouterInterface
                     $handler->setRouter($this);
                     return $handler->getResponse();
                 } else {
-                    return $this->getNoRouteResponse($request);
+                    return $this->getInternalServerErrorResponse($request);
                 }
             }
         }
-
         return $this->getNoRouteResponse($request);
     }
 
@@ -88,6 +87,14 @@ class Router implements RouterInterface
     {
         $response = new Response(404);
         $response->body = 'No resource at ' . $request->getPath();
+        return $response;
+    }
+
+    /** Prepare a response indicating a 500 Internal Server Error */
+    protected function getInternalServerErrorResponse(RequestInterface $request)
+    {
+        $response = new Response(500);
+        $response->body = 'Server error at ' . $request->getPath();
         return $response;
     }
 

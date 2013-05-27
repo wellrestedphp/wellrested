@@ -173,7 +173,7 @@ abstract class Handler implements HandlerInterface
         $this->get();
 
         if ($this->response->getStatusCode() == 200) {
-            $this->response->setBody('');
+            $this->response->setBody('', false);
         }
     }
 
