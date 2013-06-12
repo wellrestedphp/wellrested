@@ -1,3 +1,6 @@
+### v1.2.1
+- Allow Request to read request headers without apache_request_headers().
+
 ### v1.2.0
 2013-05-27
 **Warning** Some of the changes in this update will break backward compatibility.

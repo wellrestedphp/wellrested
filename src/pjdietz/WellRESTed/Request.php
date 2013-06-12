@@ -75,6 +75,29 @@ class Request extends Message implements RequestInterface
     // Accessors
 
     /**
+     * Set the URI for the Request. This sets the other members: hostname,
+     * path, port, and query.
+     *
+     * @param string $uri
+     */
+    public function setUri($uri)
+    {
+        $parsed = parse_url($uri);
+
+        $host = isset($parsed['host']) ? $parsed['host'] : '';
+        $this->setHostname($host);
+
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        $this->setPath($path);
+
+        $port = isset($parsed['port']) ? (int) $parsed['port'] : 80;
+        $this->setPort($port);
+
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $this->setQuery($query);
+    }
+
+    /**
      * Return a reference to the singleton instance of the Request derived
      * from the server's information about the request sent to the script.
      *
@@ -98,7 +121,7 @@ class Request extends Message implements RequestInterface
     public function readHttpRequest()
     {
         $this->setBody(file_get_contents("php://input"), false);
-        $this->headers = apache_request_headers();
+        $this->headers = self::getRequestHeaders();
 
         // Add case insensitive headers to the lookup table.
         foreach ($this->headers as $key => $value) {
@@ -110,49 +133,36 @@ class Request extends Message implements RequestInterface
         $this->hostname = $_SERVER['HTTP_HOST'];
     }
 
-    /**
-     * Return the full URI includeing protocol, hostname, path, and query.
-     *
-     * @return array
-     */
-    public function getUri()
+    /** @return array all request headers from the current request. */
+    public static function getRequestHeaders()
     {
-        $uri = strtolower($this->protocol) . '://' . $this->hostname;
-
-        if ($this->port !== 80) {
-            $uri .= ':' . $this->port;
+        if (function_exists('apache_request_headers')) {
+            return apache_request_headers();
         }
 
-        $uri .= $this->path;
+        // If apache_request_headers is not available, use this, based on replacement code from
+        // the PHP manual.
 
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
+        $arh = array();
+        $rx_http = '/\AHTTP_/';
+        foreach ($_SERVER as $key => $val) {
+            if (preg_match($rx_http, $key)) {
+                $arh_key = preg_replace($rx_http, '', $key);
+                // do some nasty string manipulations to restore the original letter case
+                // this should work in most cases
+                $rx_matches = explode('_', $arh_key);
+                if (count($rx_matches) > 0 and strlen($arh_key) > 2) {
+                    foreach ($rx_matches as $ak_key => $ak_val) {
+                        $rx_matches[$ak_key] = ucfirst(
+                            $ak_val
+                        );
+                    }
+                    $arh_key = implode('-', $rx_matches);
+                }
+                $arh[$arh_key] = $val;
+            }
         }
-
-        return $uri;
-    }
-
-    /**
-     * Set the URI for the Request. This sets the other members: hostname,
-     * path, port, and query.
-     *
-     * @param string $uri
-     */
-    public function setUri($uri)
-    {
-        $parsed = parse_url($uri);
-
-        $host = isset($parsed['host']) ? $parsed['host'] : '';
-        $this->setHostname($host);
-
-        $path = isset($parsed['path']) ? $parsed['path'] : '';
-        $this->setPath($path);
-
-        $port = isset($parsed['port']) ? (int)$parsed['port'] : 80;
-        $this->setPort($port);
-
-        $query = isset($parsed['query']) ? $parsed['query'] : '';
-        $this->setQuery($query);
+        return $arh;
     }
 
     /**
@@ -287,8 +297,6 @@ class Request extends Message implements RequestInterface
         }
     }
 
-    // -------------------------------------------------------------------------
-
     /**
      * Make a cURL request out of the instance and return a Response.
      *
@@ -370,6 +378,30 @@ class Request extends Message implements RequestInterface
         curl_close($ch);
 
         return $resp;
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
+    public function getUri()
+    {
+        $uri = strtolower($this->protocol) . '://' . $this->hostname;
+
+        if ($this->port !== 80) {
+            $uri .= ':' . $this->port;
+        }
+
+        $uri .= $this->path;
+
+        if ($this->query) {
+            $uri .= '?' . http_build_query($this->query);
+        }
+
+        return $uri;
     }
 
 }
