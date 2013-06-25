@@ -51,7 +51,7 @@ $myRouter->addRoute(Route::newFromUriTemplate('/things/', 'ThingCollectionHandle
 $myRouter->addRoute(Route::newFromUriTemplate('/things/{id}', 'ThingItemHandler'));
 
 // Determine and output the response.
-$response = $router->getResponse();
+$response = $myRouter->getResponse();
 $response->respond();
 ```
 
