@@ -362,7 +362,9 @@ class Request extends Message implements RequestInterface
         $resp->statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         // Split the result into headers and body.
-        list ($headers, $body) = explode("\r\n\r\n", $result, 2);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headers = substr($result, 0, $headerSize);
+        $body = substr($result, $headerSize);
 
         // Set the body. Do not auto-add the Content-length header.
         $resp->setBody($body, false);
