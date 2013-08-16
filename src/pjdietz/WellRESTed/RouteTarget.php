@@ -10,8 +10,8 @@
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
+use pjdietz\WellRESTed\Interfaces\RoutableInterface;
 use pjdietz\WellRESTed\Interfaces\RouterInterface;
 use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
 
@@ -25,7 +25,7 @@ abstract class RouteTarget implements RouteTargetInterface
 {
     /** @var array  Matches array from the preg_match() call used to find this Handler */
     protected $args;
-    /** @var RequestInterface  The HTTP request to respond to. */
+    /** @var RoutableInterface  The HTTP request to respond to. */
     protected $request;
     /** @var ResponseInterface  The HTTP response to send based on the request. */
     protected $response;
@@ -44,14 +44,14 @@ abstract class RouteTarget implements RouteTargetInterface
         return $this->args;
     }
 
-    /** @return RequestInterface */
+    /** @return RoutableInterface */
     public function getRequest()
     {
         return $this->request;
     }
 
-    /** @param RequestInterface $request */
-    public function setRequest(RequestInterface $request)
+    /** @param RoutableInterface $request */
+    public function setRequest(RoutableInterface $request)
     {
         $this->request = $request;
     }

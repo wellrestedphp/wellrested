@@ -11,8 +11,8 @@
 namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
+use pjdietz\WellRESTed\Interfaces\RoutableInterface;
 
 /**
  * A Handler issues a response for a given resource.
@@ -22,10 +22,10 @@ use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 abstract class Handler extends RouteTarget implements HandlerInterface
 {
     /**
-     * @param RequestInterface $request
+     * @param RoutableInterface $request
      * @return ResponseInterface
      */
-    public function getResponse(RequestInterface $request = null)
+    public function getResponse(RoutableInterface $request = null)
     {
         if (!is_null($request)) {
             $this->request = $request;

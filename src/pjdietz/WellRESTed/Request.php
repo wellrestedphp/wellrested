@@ -12,6 +12,7 @@ namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Exceptions\CurlException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\RoutableInterface;
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -30,7 +31,7 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
  * @property array query  Associative array of query parameters
  * @property array uri  Full URI (protocol, hostname, path, etc.)
  */
-class Request extends Message implements RequestInterface
+class Request extends Message implements RequestInterface, RoutableInterface
 {
     /**
      * Singleton instance derived from reading info from Apache.
@@ -51,6 +52,8 @@ class Request extends Message implements RequestInterface
     private $port = 80;
     /**@var array Associative array of query parameters */
     private $query;
+    /** @var int internal count of the number of times routers have dispatched this instance */
+    private $routeDepth = 0;
 
     // -------------------------------------------------------------------------
 
@@ -72,30 +75,6 @@ class Request extends Message implements RequestInterface
     }
 
     // -------------------------------------------------------------------------
-    // Accessors
-
-    /**
-     * Set the URI for the Request. This sets the other members: hostname,
-     * path, port, and query.
-     *
-     * @param string $uri
-     */
-    public function setUri($uri)
-    {
-        $parsed = parse_url($uri);
-
-        $host = isset($parsed['host']) ? $parsed['host'] : '';
-        $this->setHostname($host);
-
-        $path = isset($parsed['path']) ? $parsed['path'] : '';
-        $this->setPath($path);
-
-        $port = isset($parsed['port']) ? (int) $parsed['port'] : 80;
-        $this->setPort($port);
-
-        $query = isset($parsed['query']) ? $parsed['query'] : '';
-        $this->setQuery($query);
-    }
 
     /**
      * Return a reference to the singleton instance of the Request derived
@@ -113,24 +92,6 @@ class Request extends Message implements RequestInterface
         }
 
         return self::$theRequest;
-    }
-
-    /**
-     * Set instance members based on the HTTP request sent to the server.
-     */
-    public function readHttpRequest()
-    {
-        $this->setBody(file_get_contents("php://input"), false);
-        $this->headers = self::getRequestHeaders();
-
-        // Add case insensitive headers to the lookup table.
-        foreach ($this->headers as $key => $value) {
-            $this->headerLookup[strtolower($key)] = $key;
-        }
-
-        $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->uri = $_SERVER['REQUEST_URI'];
-        $this->hostname = $_SERVER['HTTP_HOST'];
     }
 
     /** @return array all request headers from the current request. */
@@ -163,6 +124,24 @@ class Request extends Message implements RequestInterface
             }
         }
         return $arh;
+    }
+
+    /**
+     * Set instance members based on the HTTP request sent to the server.
+     */
+    public function readHttpRequest()
+    {
+        $this->setBody(file_get_contents("php://input"), false);
+        $this->headers = self::getRequestHeaders();
+
+        // Add case insensitive headers to the lookup table.
+        foreach ($this->headers as $key => $value) {
+            $this->headerLookup[strtolower($key)] = $key;
+        }
+
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->uri = $_SERVER['REQUEST_URI'];
+        $this->hostname = $_SERVER['HTTP_HOST'];
     }
 
     /**
@@ -298,6 +277,67 @@ class Request extends Message implements RequestInterface
     }
 
     /**
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
+    public function getUri()
+    {
+        $uri = strtolower($this->protocol) . '://' . $this->hostname;
+
+        if ($this->port !== 80) {
+            $uri .= ':' . $this->port;
+        }
+
+        $uri .= $this->path;
+
+        if ($this->query) {
+            $uri .= '?' . http_build_query($this->query);
+        }
+
+        return $uri;
+    }
+
+    /**
+     * Set the URI for the Request. This sets the other members: hostname,
+     * path, port, and query.
+     *
+     * @param string $uri
+     */
+    public function setUri($uri)
+    {
+        $parsed = parse_url($uri);
+
+        $host = isset($parsed['host']) ? $parsed['host'] : '';
+        $this->setHostname($host);
+
+        $path = isset($parsed['path']) ? $parsed['path'] : '';
+        $this->setPath($path);
+
+        $port = isset($parsed['port']) ? (int) $parsed['port'] : 80;
+        $this->setPort($port);
+
+        $query = isset($parsed['query']) ? $parsed['query'] : '';
+        $this->setQuery($query);
+    }
+
+    // -------------------------------------------------------------------------
+
+    /** @return int The number of times a router has dispatched this Routable */
+    public function getRouteDepth()
+    {
+        return $this->routeDepth;
+    }
+
+    /** Increase the instance's internal count of its depth in nested route tables */
+    public function incrementRouteDepth()
+    {
+        $this->routeDepth++;
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
      * Make a cURL request out of the instance and return a Response.
      *
      * @param array|null $curlOpts  Associative array of options to set using curl_setopt_array before making the request.
@@ -380,30 +420,6 @@ class Request extends Message implements RequestInterface
         curl_close($ch);
 
         return $resp;
-    }
-
-    // -------------------------------------------------------------------------
-
-    /**
-     * Return the full URI includeing protocol, hostname, path, and query.
-     *
-     * @return array
-     */
-    public function getUri()
-    {
-        $uri = strtolower($this->protocol) . '://' . $this->hostname;
-
-        if ($this->port !== 80) {
-            $uri .= ':' . $this->port;
-        }
-
-        $uri .= $this->path;
-
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
-        }
-
-        return $uri;
     }
 
 }

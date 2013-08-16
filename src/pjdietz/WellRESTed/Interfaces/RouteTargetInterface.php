@@ -22,11 +22,11 @@ interface RouteTargetInterface
     /** @param array $args  Associative array used to obtain a response */
     public function setArguments(array $args);
 
-    /** @return RequestInterface  Request used to obtain a response */
+    /** @return RoutableInterface  Request used to obtain a response */
     public function getRequest();
 
-    /** @param RequestInterface $request  Request used to obtain a response */
-    public function setRequest(RequestInterface $request);
+    /** @param RoutableInterface $request  Request used to obtain a response */
+    public function setRequest(RoutableInterface $request);
 
     /** @return RouterInterface  Reference to the router used to dispatch this handler */
     public function getRouter();
@@ -37,8 +37,8 @@ interface RouteTargetInterface
     /**
      * Return the response for the given request.
      *
-     * @param RequestInterface $request
+     * @param RoutableInterface $request
      * @return ResponseInterface
      */
-    public function getResponse(RequestInterface $request = null);
+    public function getResponse(RoutableInterface $request = null);
 }
