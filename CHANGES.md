@@ -1,3 +1,9 @@
+### v1.3.0
+- Allow Routers to dispatch additional Routers.
+
+### v1.2.2
+- Fix issue with 100 Continue status codes, etc. where r\n\r\n appears within the list of headers
+
 ### v1.2.1
 - Allow Request to read request headers without apache_request_headers().
 
