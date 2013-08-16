@@ -44,36 +44,36 @@ class Route implements RouteInterface
      */
     private $pattern;
     /**
-     * Name of the Handler class to use
+     * Name of the RouteTarget class to dispatch when the pattern is matched.
      *
      * @var string
      */
-    private $handler;
+    private $target;
 
     /**
      * Create a new Route
      *
-     * @param $pattern
-     * @param $handler
+     * @param string $pattern Regex string to match against the request path
+     * @param string $target String name of the RouteTargetInterface to dispatch
      */
-    public function __construct($pattern, $handler)
+    public function __construct($pattern, $target)
     {
         $this->pattern = $pattern;
-        $this->handler = $handler;
+        $this->target = $target;
     }
 
     /**
      * Create a new Route using a URI template to generate the pattern.
      *
      * @param string $uriTemplate
-     * @param string $handler
+     * @param string $target
      * @param array $variables
      * @throws WellRESTedException
      * @return Route
      */
     static public function newFromUriTemplate(
         $uriTemplate,
-        $handler,
+        $target,
         $variables = null
     ) {
 
@@ -129,26 +129,7 @@ class Route implements RouteInterface
 
         $pattern = '/^' . $pattern . '$/';
 
-        $klass = __CLASS__;
-        $route = new $klass($pattern, $handler);
-        return $route;
-
-    }
-
-    /**
-     * @return string
-     */
-    public function getHandler()
-    {
-        return $this->handler;
-    }
-
-    /**
-     * @param string $handler
-     */
-    public function setHandler($handler)
-    {
-        $this->handler = $handler;
+        return new self($pattern, $target);
     }
 
     /**
@@ -165,6 +146,38 @@ class Route implements RouteInterface
     public function setPattern($pattern)
     {
         $this->pattern = $pattern;
+    }
+
+    /** @return string  fully qualified name of the RouteTargetInterface to dispatch */
+    public function getTarget()
+    {
+        return $this->target;
+    }
+
+    /** @param string $target fully qualified name of the RouteTargetInterface to dispatch */
+    public function setTarget($target)
+    {
+        $this->target = $target;
+    }
+
+    /**
+     * @return string
+     * @deprecated 1.3.0
+     * @see \pjdietz\WellRESTed\Route::getTarget()
+     */
+    public function getHandler()
+    {
+        return $this->getTarget();
+    }
+
+    /**
+     * @param string $handler
+     * @deprecated 1.3.0
+     * @see \pjdietz\WellRESTed\Route::setTarget()
+     */
+    public function setHandler($handler)
+    {
+        $this->setTarget($handler);
     }
 
 }

@@ -15,16 +15,17 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RouteInterface;
 use pjdietz\WellRESTed\Interfaces\RouterInterface;
+use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
 
 /**
  * Router
  *
  * A Router uses a table of Routes to find the appropriate Handler for a request.
  */
-class Router implements RouterInterface
+class Router extends RouteTarget implements RouterInterface
 {
     /** @var string  Fully qualified name for the interface for handlers */
-    const HANDLER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface';
+    const ROUTE_TARGET_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\RouteTargetInterface';
     /** @var array  Array of Route objects */
     private $routes;
 
@@ -61,19 +62,36 @@ class Router implements RouterInterface
         foreach ($this->routes as $route) {
             /** @var RouteInterface $route */
             if (preg_match($route->getPattern(), $path, $matches)) {
-                $handlerClassName = $route->getHandler();
-                if (is_subclass_of($handlerClassName, self::HANDLER_INTERFACE)) {
-                    /** @var HandlerInterface $handler */
-                    $handler = new $handlerClassName();
-                    $handler->setRequest($request);
-                    $handler->setArguments($matches);
-                    $handler->setRouter($this);
-                    return $handler->getResponse();
+                $targetClassName = $route->getTarget();
+                if (is_subclass_of($targetClassName, self::ROUTE_TARGET_INTERFACE)) {
+
+                    /** @var RouteTargetInterface $target */
+                    $target = new $targetClassName();
+                    $target->setRequest($request);
+
+                    // If this instance already had argument, merge the matches with them.
+                    $myArguments = $this->getArguments();
+                    if (!is_null($myArguments)) {
+                        $matches = array_merge($myArguments, $matches);
+                    }
+                    $target->setArguments($matches);
+
+                    // If this instance already had a top-level router, pass it along.
+                    // Otherwise, pass itself as the top-level router.
+                    if (isset($this->router)) {
+                        $target->setRouter($this->router);
+                    } else {
+                        $target->setRouter($this);
+                    }
+
+                    return $target->getResponse();
+
                 } else {
                     return $this->getInternalServerErrorResponse($request);
                 }
             }
         }
+
         return $this->getNoRouteResponse($request);
     }
 

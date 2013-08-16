@@ -14,13 +14,6 @@ namespace pjdietz\WellRESTed\Interfaces;
  * The RouterInterface provides a mechanism for obtaining a response given a request.
  * @package pjdietz\WellRESTed
  */
-interface RouterInterface
+interface RouterInterface extends RouteTargetInterface
 {
-    /**
-     * Return the response for the given request.
-     *
-     * @param RequestInterface $request
-     * @return ResponseInterface
-     */
-    public function getResponse(RequestInterface $request = null);
 }

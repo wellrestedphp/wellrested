@@ -23,8 +23,8 @@ interface RouteInterface
     public function setPattern($pattern);
 
     /** @return string Fully qualified name of the class the route will dispatch. */
-    public function getHandler();
+    public function getTarget();
 
     /** @param string $className  Fully qualified name of the class the route will dispatch. */
-    public function setHandler($className);
+    public function setTarget($className);
 }

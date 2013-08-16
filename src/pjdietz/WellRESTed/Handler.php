@@ -13,81 +13,23 @@ namespace pjdietz\WellRESTed;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Interfaces\RouterInterface;
 
 /**
  * A Handler issues a response for a given resource.
  *
  * @property-read ResponseInterface response The Response to the request
  */
-abstract class Handler implements HandlerInterface
+abstract class Handler extends RouteTarget implements HandlerInterface
 {
-    /** @var array  Matches array from the preg_match() call used to find this Handler */
-    protected $args;
-    /** @var RequestInterface  The HTTP request to respond to. */
-    protected $request;
-    /** @var ResponseInterface  The HTTP response to send based on the request. */
-    protected $response;
-    /** @var RouterInterface  The router that dispatched this handler */
-    protected $router;
-
-    // -------------------------------------------------------------------------
-    // Accessors
-
     /**
-     * Magic function for properties
-     *
-     * @param string $propertyName
-     * @return mixed
+     * @param RequestInterface $request
+     * @return ResponseInterface
      */
-    public function __get($propertyName)
+    public function getResponse(RequestInterface $request = null)
     {
-        $method = 'get' . ucfirst($propertyName);
-        if (method_exists($this, $method)) {
-            return $this->{$method}();
+        if (!is_null($request)) {
+            $this->request = $request;
         }
-        return null;
-    }
-
-    /** @param array $args */
-    public function setArguments(array $args)
-    {
-        $this->args = $args;
-    }
-
-    /** @return array */
-    public function getArguments()
-    {
-        return $this->args;
-    }
-
-    /** @return RequestInterface */
-    public function getRequest()
-    {
-        return $this->request;
-    }
-
-    /** @param RequestInterface $request */
-    public function setRequest(RequestInterface $request)
-    {
-        $this->request = $request;
-    }
-
-    /** @return RouterInterface */
-    public function getRouter()
-    {
-        return $this->router;
-    }
-
-    /** @param RouterInterface $router */
-    public function setRouter(RouterInterface $router)
-    {
-        $this->router = $router;
-    }
-
-    /** @return ResponseInterface */
-    public function getResponse()
-    {
         $this->response = new Response();
         $this->buildResponse();
         return $this->response;
@@ -126,15 +68,6 @@ abstract class Handler implements HandlerInterface
                 $this->respondWithMethodNotAllowed();
         }
     }
-
-    // -------------------------------------------------------------------------
-    // HTTP Methods
-
-    // Each of these methods corresponds to a standard HTTP method. Each method
-    // has no arguments and returns nothing, but should affect the instance's
-    // response member.
-    //
-    // By default, the methods will provide a 405 Method Not Allowed header.
 
     /**
      * Method for handling HTTP GET requests.
