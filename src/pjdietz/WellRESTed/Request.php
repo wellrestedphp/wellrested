@@ -31,7 +31,7 @@ use pjdietz\WellRESTed\Interfaces\RoutableInterface;
  * @property array query  Associative array of query parameters
  * @property array uri  Full URI (protocol, hostname, path, etc.)
  */
-class Request extends Message implements RequestInterface, RoutableInterface
+class Request extends Message implements RoutableInterface
 {
     /**
      * Singleton instance derived from reading info from Apache.
