@@ -24,6 +24,10 @@ use pjdietz\WellRESTed\Interfaces\ResponseInterface;
  */
 class Response extends Message implements ResponseInterface
 {
+    const CHUNK_SIZE = 1048576;
+
+    /** @var string Path to a file to read and output as the body. */
+    private $bodyFilePath;
     /**
      * Text explanation of the HTTP Status Code. You only need to set this if
      * you are using nonstandard status codes. Otherwise, the instance will
@@ -78,6 +82,18 @@ class Response extends Message implements ResponseInterface
         if ($setContentLength === true) {
             $this->setHeader('Content-Length', strlen($value));
         }
+    }
+
+    /** @param string $bodyFilePath  Path to a file to read and output as the body */
+    public function setBodyFilePath($bodyFilePath)
+    {
+        $this->bodyFilePath = $bodyFilePath;
+    }
+
+    /** @return string  Path to a file to read and output as the body */
+    public function getBodyFilePath()
+    {
+        return $this->bodyFilePath;
     }
 
     /** @return string  Portion of the status line explaining the status. */
@@ -268,8 +284,12 @@ class Response extends Message implements ResponseInterface
         }
 
         // Output the entity body.
-        if (!$headersOnly && isset($this->body)) {
-            print $this->body;
+        if (!$headersOnly) {
+            if (isset($this->bodyFilePath) && $this->bodyFilePath && file_exists($this->bodyFilePath)) {
+                $this->outputBodyFile();
+            } else {
+                print $this->body;
+            }
         }
     }
 
@@ -287,4 +307,18 @@ class Response extends Message implements ResponseInterface
         );
     }
 
+    /** Output the contents of a file */
+    private function outputBodyFile()
+    {
+        $handle = fopen($this->getBodyFilePath(), 'rb');
+        if ($handle === false) {
+            return;
+        }
+        while (!feof($handle)) {
+            $buffer = fread($handle, self::CHUNK_SIZE);
+            print $buffer;
+            ob_flush();
+            flush();
+        }
+    }
 }
