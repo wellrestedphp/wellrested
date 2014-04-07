@@ -53,7 +53,7 @@ class Response extends Message implements ResponseInterface
     {
         parent::__construct();
 
-        $this->statusCode = $statusCode;
+        $this->setStatusCode($statusCode);
 
         if (is_array($headers)) {
             $this->headers = $headers;
@@ -122,6 +122,18 @@ class Response extends Message implements ResponseInterface
     public function getStatusCode()
     {
         return $this->statusCode;
+    }
+
+    /** @return string  HTTP status line, e.g. HTTP/1.1 200 OK. */
+    public function getStatusLine()
+    {
+        return sprintf(
+            '%s/%s %s %s',
+            strtoupper($this->protocol),
+            $this->protocolVersion,
+            $this->statusCode,
+            $this->reasonPhrase
+        );
     }
 
     /**
@@ -294,18 +306,6 @@ class Response extends Message implements ResponseInterface
     }
 
     // -------------------------------------------------------------------------
-
-    /** @return string  HTTP status line, e.g. HTTP/1.1 200 OK. */
-    protected function getStatusLine()
-    {
-        return sprintf(
-            '%s/%s %s %s',
-            strtoupper($this->protocol),
-            $this->protocolVersion,
-            $this->statusCode,
-            $this->reasonPhrase
-        );
-    }
 
     /** Output the contents of a file */
     private function outputBodyFile()
