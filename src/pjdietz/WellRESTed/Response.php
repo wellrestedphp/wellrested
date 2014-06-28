@@ -288,7 +288,7 @@ class Response extends Message implements ResponseInterface
     public function respond($headersOnly = false)
     {
         // Output the HTTP status code.
-        header($this->statusLine);
+        header($this->getStatusLine());
 
         // Output each header.
         foreach ($this->headers as $header => $value) {

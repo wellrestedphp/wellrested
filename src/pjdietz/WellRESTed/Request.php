@@ -139,9 +139,9 @@ class Request extends Message implements RoutableInterface
             $this->headerLookup[strtolower($key)] = $key;
         }
 
-        $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->uri = $_SERVER['REQUEST_URI'];
-        $this->hostname = $_SERVER['HTTP_HOST'];
+        $this->setMethod($_SERVER['REQUEST_METHOD']);
+        $this->setUri($_SERVER['REQUEST_URI']);
+        $this->setHostname($_SERVER['HTTP_HOST']);
     }
 
     /**
