@@ -50,63 +50,6 @@ abstract class Message
     // Accessors
 
     /**
-     * Magic accessor method
-     *
-     * @param string $propertyName
-     * @return mixed
-     */
-    public function __get($propertyName)
-    {
-        $method = 'get' . ucfirst($propertyName);
-        if (method_exists($this, $method)) {
-            return $this->{$method}();
-        }
-        return null;
-    }
-
-    /**
-     * Magic accessor method
-     *
-     * @param string $propertyName
-     * @param $value
-     */
-    public function __set($propertyName, $value)
-    {
-        $method = 'set' . ucfirst($propertyName);
-        if (method_exists($this, $method)) {
-            $this->{$method}($value);
-        }
-    }
-
-    /**
-     * Magic accessor method
-     *
-     * @param string $propertyName
-     * @return boolean
-     */
-    public function __isset($propertyName)
-    {
-        $method = 'isset' . ucfirst($propertyName);
-        if (method_exists($this, $method)) {
-            return $this->{$method}();
-        }
-        return false;
-    }
-
-    /**
-     * Magic accessor method
-     *
-     * @param string $propertyName
-     */
-    public function __unset($propertyName)
-    {
-        $method = 'unset' . ucfirst($propertyName);
-        if (method_exists($this, $method)) {
-            $this->{$method}();
-        }
-    }
-
-    /**
      * Return the body payload of the instance.
      *
      * @return string
