@@ -10,7 +10,7 @@
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RoutableInterface;
 
@@ -19,17 +19,24 @@ use pjdietz\WellRESTed\Interfaces\RoutableInterface;
  *
  * @property-read ResponseInterface response The Response to the request
  */
-abstract class Handler extends RouteTarget implements HandlerInterface
+abstract class Handler implements DispatcherInterface
 {
+    /** @var array  Matches array from the preg_match() call used to find this Handler */
+    protected $args;
+    /** @var RoutableInterface  The HTTP request to respond to. */
+    protected $request;
+    /** @var ResponseInterface  The HTTP response to send based on the request. */
+    protected $response;
+
     /**
      * @param RoutableInterface $request
+     * @param array|null $args
      * @return ResponseInterface
      */
-    public function getResponse(RoutableInterface $request = null)
+    public function getResponse(RoutableInterface $request = null, $args = null)
     {
-        if (!is_null($request)) {
-            $this->request = $request;
-        }
+        $this->request = $request;
+        $this->args = $args;
         $this->response = new Response();
         $this->buildResponse();
         return $this->response;

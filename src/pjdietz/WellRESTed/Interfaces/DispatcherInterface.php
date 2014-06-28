@@ -10,8 +10,9 @@ interface DispatcherInterface {
 
     /**
      * @param RoutableInterface $request The request to build a responce for.
+     * @param array|null $args Optional associate array of arguments.
      * @return ResponseInterface|null
      */
-    public function getResponse(RoutableInterface $request);
+    public function getResponse(RoutableInterface $request, $args = null);
 
 }

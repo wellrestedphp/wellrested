@@ -13,7 +13,7 @@ use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
 abstract class BaseRoute implements DispatcherInterface
 {
     /** @var string  Fully qualified name for the interface for handlers */
-    const ROUTE_TARGET_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\RouteTargetInterface';
+    const DISPATCHER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\DispatcherInterface';
 
     /** @var string */
     private $targetClassName;
@@ -26,15 +26,15 @@ abstract class BaseRoute implements DispatcherInterface
         $this->targetClassName = $targetClassName;
     }
 
-    protected function getTarget(RoutableInterface $routable)
+    protected function getTarget()
     {
-        if (is_subclass_of($this->targetClassName, self::ROUTE_TARGET_INTERFACE)) {
+        if (is_subclass_of($this->targetClassName, self::DISPATCHER_INTERFACE)) {
             /** @var RouteTargetInterface $target */
             $target = new $this->targetClassName();
-            $target->setRequest($routable);
             return $target;
+        } else {
+            throw new \UnexpectedValueException("Target class must implement DispatcherInterface");
         }
-        return null;
     }
 
 }

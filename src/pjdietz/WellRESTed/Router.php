@@ -10,10 +10,9 @@
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RoutableInterface;
-use pjdietz\WellRESTed\Interfaces\RouteInterface;
-use pjdietz\WellRESTed\Interfaces\RouterInterface;
 use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
 
 /**
@@ -21,14 +20,8 @@ use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
  *
  * A Router uses a table of Routes to find the appropriate Handler for a request.
  */
-class Router extends RouteTarget implements RouterInterface
+class Router extends RouteTarget implements DispatcherInterface
 {
-    /** @var string  Fully qualified name for the interface for handlers */
-    const ROUTE_TARGET_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\RouteTargetInterface';
-    /** @var int  Default maximum number of levels of routing. */
-    const MAX_DEPTH = 10;
-    /** @var int maximum levels of routing before the router raises an error. */
-    protected $maxDepth = self::MAX_DEPTH;
     /** @var array  Array of Route objects */
     private $routes;
 
@@ -39,24 +32,6 @@ class Router extends RouteTarget implements RouterInterface
     }
 
     /**
-     * Append a new Route instance to the Router's route table.
-     *
-     * @param RouteInterface $route
-     */
-    public function addRoute(RouteInterface $route)
-    {
-        $this->routes[] = $route;
-    }
-
-    /**
-     * @return int maximum levels of routing before the router raises an error.
-     */
-    public function getMaxDepth()
-    {
-        return $this->maxDepth;
-    }
-
-    /**
      * Return the response built by the handler based on the request
      *
      * @param RoutableInterface $request
@@ -64,14 +39,19 @@ class Router extends RouteTarget implements RouterInterface
      */
     public function getResponse(RoutableInterface $request = null)
     {
+        // Use the singleton if the caller did not pass a request.
+        if (is_null($reqs))
+
         // Set the instance's request, if the called passed one.
         if (!is_null($request)) {
             $this->request = $request;
         }
+
         // If the instance does not have a request, use the singleton.
         if (is_null($this->request)) {
             $this->request = Request::getRequest();
         }
+
         // Reference the request and path.
         $request = $this->request;
         $request->incrementRouteDepth();
@@ -115,6 +95,16 @@ class Router extends RouteTarget implements RouterInterface
         }
 
         return $this->getNoRouteResponse($request);
+    }
+
+    /**
+     * Append a new Route instance to the Router's route table.
+     *
+     * @param RouteInterface $route
+     */
+    public function addRoute(DispatcherInterface $route)
+    {
+        $this->routes[] = $route;
     }
 
     /**

@@ -33,15 +33,13 @@ class StaticRoute extends BaseRoute
     // ------------------------------------------------------------------------
     /* DispatcherInterface */
 
-    public function getResponse(RoutableInterface $request)
+    public function getResponse(RoutableInterface $request, $args = null)
     {
         $requestPath = $request->getPath();
         foreach ($this->paths as $path) {
             if ($path === $requestPath) {
-                $target = $this->getTarget($request);
-                if ($target) {
-                    return $target->getResponse($request);
-                }
+                $target = $this->getTarget();
+                return $target->getResponse($request, $args);
             }
         }
         return null;

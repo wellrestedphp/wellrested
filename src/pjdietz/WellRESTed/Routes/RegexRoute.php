@@ -21,14 +21,15 @@ class RegexRoute extends BaseRoute
     // ------------------------------------------------------------------------
     /* DispatcherInterface */
 
-    public function getResponse(RoutableInterface $request)
+    public function getResponse(RoutableInterface $request, $args = null)
     {
         if (preg_match($this->getPattern(), $request->getPath(), $matches)) {
-            $target = $this->getTarget($request);
-            if ($target) {
-                $target->setArguments($matches);
-                return $target->getResponse($request);
+            $target = $this->getTarget();
+            if (is_null($args)) {
+                $args = array();
             }
+            $args = array_merge($args, $matches);
+            return $target->getResponse($request, $args);
         }
         return null;
     }
