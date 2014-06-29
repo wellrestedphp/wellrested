@@ -17,9 +17,9 @@ namespace pjdietz\WellRESTed\Interfaces;
 interface HandlerInterface {
 
     /**
-     * @param RequestInterface $request The request to build a responce for.
-     * @param array|null $args Optional associate array of arguments.
-     * @return ResponseInterface|null
+     * @param RequestInterface $request The request to build a response for.
+     * @param array|null $args Optional map of arguments.
+     * @return ResponseInterface|null A response, or null if this handler will not handle.
      */
     public function getResponse(RequestInterface $request, array $args = null);
 
