@@ -11,7 +11,6 @@
 namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Exceptions\CurlException;
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\RoutableInterface;
 
 /**

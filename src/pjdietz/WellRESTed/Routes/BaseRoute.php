@@ -3,8 +3,6 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
-use pjdietz\WellRESTed\Interfaces\RoutableInterface;
-use pjdietz\WellRESTed\Interfaces\RouteTargetInterface;
 
 /**
  * Base class for Routes.
@@ -26,10 +24,14 @@ abstract class BaseRoute implements DispatcherInterface
         $this->targetClassName = $targetClassName;
     }
 
+    /**
+     * @return DispatcherInterface
+     * @throws \UnexpectedValueException
+     */
     protected function getTarget()
     {
         if (is_subclass_of($this->targetClassName, self::DISPATCHER_INTERFACE)) {
-            /** @var RouteTargetInterface $target */
+            /** @var DispatcherInterface $target */
             $target = new $this->targetClassName();
             return $target;
         } else {

@@ -37,7 +37,7 @@ class Router implements DispatcherInterface
      * @param null $args
      * @return ResponseInterface
      */
-    public function getResponse(RoutableInterface $request = null, $args = null)
+    public function getResponse(RoutableInterface $request, $args = null)
     {
         // Use the singleton if the caller did not pass a request.
         if (is_null($request)) {
@@ -56,13 +56,32 @@ class Router implements DispatcherInterface
     }
 
     /**
-     * Append a new Route instance to the Router's route table.
+     * Append a new route to the route route table.
      *
      * @param DispatcherInterface $route
      */
     public function addRoute(DispatcherInterface $route)
     {
         $this->routes[] = $route;
+    }
+
+    /**
+     * Append a series of routes.
+     *
+     * @param array $routes List array of DispatcherInterface instances
+     */
+    public function addRoutes(array $routes)
+    {
+        foreach ($routes as $route) {
+            if ($route instanceof DispatcherInterface) {
+                $this->addRoute($route);
+            }
+        }
+    }
+
+    public function respond() {
+        $response = $this->getResponse(Request::getRequest());
+        $response->respond();
     }
 
     /**
