@@ -1,8 +1,7 @@
 WellRESTed
 ==========
 
-WellRESTed provides classes to help you create RESTful APIs and work with HTTP requests and responses.
-
+WellRESTed is a microframework for creating RESTful APIs in PHP. It provides a lightwight yet powerful routing system and classes to make working with HTTP requests and responses clean and easy.
 
 Requirements
 ------------
@@ -20,7 +19,7 @@ Add an entry for "pjdietz/wellrested" to your composer.json file's **require** p
 ```json
 {
     "require": {
-        "pjdietz/wellrested": "1.*"
+        "pjdietz/wellrested": "2.*"
     }
 }
 ```
@@ -40,92 +39,115 @@ Examples
 
 ### Routing
 
-WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a Router instance and load it up with some Routes. Each Route is simply a mapping of a URI pattern to a class name. The class name represents the Handler class which the router will dispatch at the time it receives a request for the given URI. The handlers are never loaded unless they are needed.
+WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a Router instance and load it up with some Routes. Each Route is simply a mapping of a URI pattern to a class name. The class name represents the Handler (any class implementing `HandlerInterface`) which the router will dispatch at the time it receives a request for the given URI. **The handlers are never loaded unless they are needed.**
 
 Here's an example of a Router that will handle two URIs:
 
 ```php
 // Build the router.
 $myRouter = new Router();
-$myRouter->addRoute(Route::newFromUriTemplate('/things/', 'ThingCollectionHandler'));
-$myRouter->addRoute(Route::newFromUriTemplate('/things/{id}', 'ThingItemHandler'));
-
-// Determine and output the response.
-$response = $myRouter->getResponse();
-$response->respond();
+$myRouter->addRoutes(array(
+    new StaticRoute("/", "\\myapi\\Handlers\\RootHandler")),
+    new StaticRoute("/cats/", "\\myapi\\Handlers\\CatCollectionHandler")),
+    new TemplateRoute("/cats/{id}/", "\\myapi\\Handlers\\CatItemHandler"))
+);
+$myRouter->respond();
 ```
 
-When you create your Handler subclass, you will provide a method for each HTTP verb you would like the endpoint to support. For example, if `/things/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
+### Building Routes with JSON
+
+WellRESTed also provides a class to construct routes for you based on a JSON description. Here's an example.
+
+```php
+$json = <<<'JSON'
+{
+    "handlerNamespace": "\\myapi\\Handlers",
+    "routes": [
+        {
+            "path": "/",
+            "handler": "RootHandler"
+        },
+        {
+            "path": "/cats/",
+            "handler": "CatCollectionHandler"
+        },
+        {
+            "tempalte": "/cats/{id}",
+            "handler": "CatItemHandler"
+        }
+    ]
+}
+JSON;
+
+$builder = new RouteBuilder();
+$routes = $builder->buildRoutesFromJson($json);
+
+$router = new Router();
+$router->addRoutes($routes);
+$router->respond();
+```
+
+Notice that when you build routes through JSON, you can provide a `handlerNamespace` to be affixed to the front of every `handler`.
+
+### Handlers
+
+Any class that implements `HandlerInterface` may be the handler for a route. This could be a class that builds the actual response, or it could another `Router`.
+
+For most cases, you'll want to use a subclass of the `Handler` class, which provides methods for responding based on HTTP method. When you create your Handler subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
 
 If your endpoint should reject particular verbs, no worries. The Handler base class defines the default verb-handling methods to respond with a **405 Method Not Allowed** status.
 
 Here's a simple Handler that matches the first endpoint, `/things/`.
 
 ```php
-class ThingCollectionHandler extends \pjdietz\WellRESTed\Handler
+class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 {
     protected function get()
     {
         // Read some things from the database, cache, whatever.
-        // ...read this into the variable $data
+        // ...read this into the variable $cat
 
         // Set the values for the instance's response member. This is what the
         // Router will eventually use to output a response to the client.
         $this->response->setStatusCode(200);
         $this->response->setHeader('Content-Type', 'application/json');
-        $this->response->setBody(json_encode($data));
+        $this->response->setBody(json_encode($cat));
     }
 
     protected function post()
     {
-        // Read from the instance's request member and store a new Thing.
-        // ...
+        // Read from the instance's request member and store a new cat.
+        $cat = json_decode($this->request->getBody());
+        // ...store $cat to database...
 
         // Build a response to send to the client.
         $this->response->setStatusCode(201);
-        $this->response->setBody('You added a thing!');
+        $this->response->setBody('You added a new cat!');
     }
 }
 ```
 
-This Handler works with the second endpoint, `/things/{id}`. The pattern for this endpoint has the variable `{id}` in it. The Handler can access path variables through its `args` member, which is an associative array of variables from the URI.
+This Handler works with the endpoint, `/cats/{id}`. The template for this endpoint has the variable `{id}` in it. The Handler can access path variables through its `args` member, which is an associative array of variables from the URI.
 
 ```php
 class ThingItemHandler extends \pjdietz\WellRESTed\Handler
 {
     protected function get()
     {
-        // Lookup a Thing ($thing) based on $this->args['id']
-        // ...
+        // Lookup a cat ($cat) based on $this->args['id']
+        // ...do lookup here...
 
-        if ($thing) {
-            // The Thing exists! Let's output a representation.
+        if ($cat) {
+            // The cat exists! Let's output a representation.
             $this->response->setStatusCode(200);
             $this->response->setHeader('Content-Type', 'application/json');
-            $this->response->setBody(json_encode($thing));
+            $this->response->setBody(json_encode($cat));
         } else {
             // The ID did not match anything.
             $this->response->setStatusCode(404);
             $this->response->setHeader('Content-Type', 'text/plain');
-            $this->response->setBody('No thing with id ' . $this->args['id']);
+            $this->response->setBody('No cat with id ' . $this->args['id']);
         }
-    }
-}
-```
-
-As of version 1.3.0, you can have a Router dispatch other Routers. This is useful for breaking your endpoints into smaller route tables. Here's an example:
-
-```php
-/**
- * Top-level router that dispatches all traffic to /cat/... to CatRouter and all
- * traffic to /dog/... to DogRouter.
- */
-class TopRouter extends \pjdietz\WellRESTed\Router
-{
-    public function __construct()
-    {
-        $this->addRoute(new Route('/^\/cat\//', 'CatRouter'));
-        $this->addRoute(new Route('/^\/dog\//', 'DogRouter'));
     }
 }
 ```
@@ -133,7 +155,7 @@ class TopRouter extends \pjdietz\WellRESTed\Router
 
 ### Requests and Responses
 
-You've already seen a Response in use in the examples above. You can also use Responses outside of Handlers. Let's take a look at creating a new Response, setting a header, supplying the body, and outputting.
+You've already seen a `Response` in use in the examples above. You can also use `Response`s outside of `Handler`s. Let's take a look at creating a new `Response`, setting a header, supplying the body, and outputting.
 
 ```php
 $resp = new \pjdietz\WellRESTed\Response();
@@ -144,10 +166,10 @@ $resp->respond();
 exit;
 ```
 
-The Request class goes hand-in-hand with the Response class. Again, this is used in the Handler class to read the information from the request being handled. From outside the context of a Handler, you can also use the Request class to read info for the request sent to the server.
+The `Request` class goes hand-in-hand with the `Response` class. Again, this is used in the Handler class to read the information from the request being handled. From outside the context of a `Handler`, you can also use the `Request` class to read info for the request sent to the server.
 
 ```php
-// Call the static method getRequest() to get a reference to the Request
+// Call the static method Request::getRequest() to get a reference to the Request
 // singleton that represents the request made to the server.
 $rqst = \pjdietz\WellRESTed\Request::getRequest();
 
@@ -178,42 +200,13 @@ if ($resp->getStatusCode() === 201) {
 ```
 
 
-### Routing from a Handler
-
-One more fun thing you can do with WellRESTed is use your API from inside your API. WellRESTed makes this easy because each dispatched Handler or Router keeps a reference to the top-level Router.
-
-Suppose you have an endpoint that needs to look up information using another endpoint. Now that you've seen that you can create and work with your own requests and responses, we'll look at how to use them in the context of a handler.
-
-```php
-class NestedHandler extends \pjdietz\WellRESTed\Handler
-{
-    protected function get()
-    {
-        // To build this response, we need some of the info from the /things/ representation.
-        // Create a Request instance to query this API.
-        $rqst = new Request();
-        $rqst->setPath('/things/');
-
-        // Use this handler's reference to the router that dispatched it.
-        $router = $this->getRouter();
-
-        // Pass the request for /things/ to the router to get a response.
-        $resp = $router->getResponse($rqst);
-
-        // Read the status code, headers, body, etc. on the response.
-        // ...
-    }
-}
-```
-
-
 More Examples
 ---------------
 
-For more examples, see the project [pjdietz/wellrested-samples](https://github.com/pjdietz/wellrested-samples).
+For more examples, see the project [pjdietz/wellrested-samples](https://github.com/pjdietz/wellrested-samples). **Not yet updated for version 2.0**
 
 
 Copyright and License
 ---------------------
-Copyright © 2013 by PJ Dietz
+Copyright © 2014 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
