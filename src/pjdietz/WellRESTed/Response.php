@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Response
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
@@ -16,11 +16,6 @@ use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 /**
  * A Response instance allows you to build an HTTP response and send it when
  * finished.
- *
- * @property string reasonPhrase Text explanation of status code.
- * @property int statusCode HTTP status code
- * @property-read string statusLine HTTP status line, e.g. "HTTP/1.1 200 OK"
- * @property-read bool success True if the status code is 2xx
  */
 class Response extends Message implements ResponseInterface
 {

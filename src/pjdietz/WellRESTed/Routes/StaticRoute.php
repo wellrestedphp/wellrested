@@ -3,7 +3,7 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
-use pjdietz\WellRESTed\Interfaces\RoutableInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * Class StaticRoute
@@ -31,9 +31,9 @@ class StaticRoute extends BaseRoute
     }
 
     // ------------------------------------------------------------------------
-    /* DispatcherInterface */
+    /* HandlerInterface */
 
-    public function getResponse(RoutableInterface $request, $args = null)
+    public function getResponse(RequestInterface $request, array $args = null)
     {
         $requestPath = $request->getPath();
         foreach ($this->paths as $path) {

@@ -4,36 +4,41 @@
  * pjdietz\WellRESTed\Handler
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Interfaces\RoutableInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
- * A Handler issues a response for a given resource.
+ * Responds to a request based on the HTTP method.
  *
- * @property-read ResponseInterface response The Response to the request
+ * To use Handler, create a subclass and implement the methods for any HTTP
+ * verbs you would like to support. (get() for GET, post() for POST, etc).
+ *
+ * - Access the request via the protected member $this->request
+ * - Access a map of arguments via $this->args (e.g., URI path variables)
+ * - Modify $this->response to provide the response the instance will return
  */
-abstract class Handler implements DispatcherInterface
+abstract class Handler implements HandlerInterface
 {
-    /** @var array  Matches array from the preg_match() call used to find this Handler */
+    /** @var array  Map of variables to suppliement the request, usually path variables. */
     protected $args;
-    /** @var RoutableInterface  The HTTP request to respond to. */
+    /** @var RequestInterface  The HTTP request to respond to. */
     protected $request;
     /** @var ResponseInterface  The HTTP response to send based on the request. */
     protected $response;
 
     /**
-     * @param RoutableInterface $request
+     * @param RequestInterface $request
      * @param array|null $args
      * @return ResponseInterface
      */
-    public function getResponse(RoutableInterface $request = null, $args = null)
+    public function getResponse(RequestInterface $request, array $args = null)
     {
         $this->request = $request;
         $this->args = $args;
@@ -95,9 +100,7 @@ abstract class Handler implements DispatcherInterface
     {
         // The default function calls the instance's get() method, then sets
         // the resonse's body member to an empty string.
-
         $this->get();
-
         if ($this->response->getStatusCode() == 200) {
             $this->response->setBody('', false);
         }

@@ -2,16 +2,16 @@
 
 namespace pjdietz\WellRESTed\Routes;
 
-use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 
 /**
  * Base class for Routes.
  * @package pjdietz\WellRESTed\Routes
  */
-abstract class BaseRoute implements DispatcherInterface
+abstract class BaseRoute implements HandlerInterface
 {
     /** @var string  Fully qualified name for the interface for handlers */
-    const DISPATCHER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\DispatcherInterface';
+    const DISPATCHER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface';
 
     /** @var string */
     private $targetClassName;
@@ -25,17 +25,17 @@ abstract class BaseRoute implements DispatcherInterface
     }
 
     /**
-     * @return DispatcherInterface
+     * @return HandlerInterface
      * @throws \UnexpectedValueException
      */
     protected function getTarget()
     {
         if (is_subclass_of($this->targetClassName, self::DISPATCHER_INTERFACE)) {
-            /** @var DispatcherInterface $target */
+            /** @var HandlerInterface $target */
             $target = new $this->targetClassName();
             return $target;
         } else {
-            throw new \UnexpectedValueException("Target class must implement DispatcherInterface");
+            throw new \UnexpectedValueException("Target class must implement HandlerInterface");
         }
     }
 

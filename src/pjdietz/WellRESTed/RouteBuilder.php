@@ -1,21 +1,39 @@
 <?php
 
+/**
+ * pjdietz\WellRESTed\RouteBuilder
+ *
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2014 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
+use pjdietz\WellRESTed\Exceptions\ParseException;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Routes\RegexRoute;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 use pjdietz\WellRESTed\Routes\TemplateRoute;
 use stdClass;
-use UnexpectedValueException;
 
+/**
+ * Class for facilitating constructing Routers.
+ */
 class RouteBuilder
 {
     private $handlerNamespace;
     private $templateVariablePatterns;
     private $defaultVariablePattern;
 
-    public function getRoutes($data)
+    /**
+     * Contruct and return an array of routes.
+     *
+     * @param $data
+     * @return array
+     * @throws Exceptions\ParseException
+     */
+    public function buildRoutes($data)
     {
         // Locate the list of routes. This should be one of these:
         // - If $data is an object, $data->routes
@@ -26,7 +44,7 @@ class RouteBuilder
             $dataRoutes = $data->routes;
             $this->readConfiguration($data);
         } else {
-            throw new UnexpectedValueException("Unable to parse. Missing array of routes.");
+            throw new ParseException("Unable to parse. Missing array of routes.");
         }
 
         // Build a route instance and append it to the list.
@@ -37,10 +55,14 @@ class RouteBuilder
         return $routes;
     }
 
+    public function buildRoutesFromJson($json) {
+        return $this->buildRoutes(json_decode($json));
+    }
+
     /**
      * @param stdClass|array $item
-     * @return DispatcherInterface
-     * @throws \UnexpectedValueException Parse error
+     * @return HandlerInterface
+     * @throws Exceptions\ParseException
      */
     protected function buildRoute($item)
     {
@@ -51,7 +73,7 @@ class RouteBuilder
                 $handler = $this->getHandlerNamespace() . "\\" . $handler;
             }
         } else {
-            throw new UnexpectedValueException("Unable to parse. Route is missing a handler.");
+            throw new ParseException("Unable to parse. Route is missing a handler.");
         }
 
         // Static Route

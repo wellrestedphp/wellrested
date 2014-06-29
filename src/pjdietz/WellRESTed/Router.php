@@ -4,22 +4,22 @@
  * pjdietz\WellRESTed\Router
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\DispatcherInterface;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Interfaces\RoutableInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * Router
  *
  * A Router uses a table of Routes to find the appropriate Handler for a request.
  */
-class Router implements DispatcherInterface
+class Router implements HandlerInterface
 {
     /** @var array  Array of Route objects */
     private $routes;
@@ -33,11 +33,11 @@ class Router implements DispatcherInterface
     /**
      * Return the response built by the handler based on the request
      *
-     * @param RoutableInterface $request
-     * @param null $args
+     * @param RequestInterface $request
+     * @param array|null $args
      * @return ResponseInterface
      */
-    public function getResponse(RoutableInterface $request, $args = null)
+    public function getResponse(RequestInterface $request, array $args = null)
     {
         // Use the singleton if the caller did not pass a request.
         if (is_null($request)) {
@@ -45,7 +45,7 @@ class Router implements DispatcherInterface
         }
 
         foreach ($this->routes as $route) {
-            /** @var DispatcherInterface $route */
+            /** @var HandlerInterface $route */
             $responce = $route->getResponse($request, $args);
             if ($responce) {
                 return $responce;
@@ -58,9 +58,9 @@ class Router implements DispatcherInterface
     /**
      * Append a new route to the route route table.
      *
-     * @param DispatcherInterface $route
+     * @param HandlerInterface $route
      */
-    public function addRoute(DispatcherInterface $route)
+    public function addRoute(HandlerInterface $route)
     {
         $this->routes[] = $route;
     }
@@ -68,12 +68,12 @@ class Router implements DispatcherInterface
     /**
      * Append a series of routes.
      *
-     * @param array $routes List array of DispatcherInterface instances
+     * @param array $routes List array of HandlerInterface instances
      */
     public function addRoutes(array $routes)
     {
         foreach ($routes as $route) {
-            if ($route instanceof DispatcherInterface) {
+            if ($route instanceof HandlerInterface) {
                 $this->addRoute($route);
             }
         }
@@ -87,10 +87,10 @@ class Router implements DispatcherInterface
     /**
      * Prepare a resonse indicating a 404 Not Found error
      *
-     * @param RoutableInterface $request
+     * @param RequestInterface $request
      * @return ResponseInterface
      */
-    protected function getNoRouteResponse(RoutableInterface $request)
+    protected function getNoRouteResponse(RequestInterface $request)
     {
         $response = new Response(404);
         $response->setBody('No resource at ' . $request->getPath());
@@ -100,11 +100,11 @@ class Router implements DispatcherInterface
     /**
      * Prepare a response indicating a 500 Internal Server Error
      *
-     * @param RoutableInterface $request
+     * @param RequestInterface $request
      * @param string $message Optional additional message.
      * @return ResponseInterface
      */
-    protected function getInternalServerErrorResponse(RoutableInterface $request, $message = '')
+    protected function getInternalServerErrorResponse(RequestInterface $request, $message = '')
     {
         $response = new Response(500);
         $response->setBody('Server error at ' . $request->getPath() . "\n" . $message);

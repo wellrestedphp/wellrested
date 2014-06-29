@@ -4,14 +4,14 @@
  * pjdietz\WellRESTed\Request
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
 namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Exceptions\CurlException;
-use pjdietz\WellRESTed\Interfaces\RoutableInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -22,15 +22,8 @@ use pjdietz\WellRESTed\Interfaces\RoutableInterface;
  *
  * Second, you can create a custom Request and use it to obtain a Response
  * from a server through cURL.
- *
- * @property string hostname  Hostname part of the URI
- * @property string method  HTTP method (GET, POST, PUT, DELETE, etc.)
- * @property string path  Path component of the URI for the request
- * @property-read string pathParts  Fragments of the path, delimited by slashes
- * @property array query  Associative array of query parameters
- * @property array uri  Full URI (protocol, hostname, path, etc.)
  */
-class Request extends Message implements RoutableInterface
+class Request extends Message implements RequestInterface
 {
     /**
      * Singleton instance derived from reading info from Apache.
@@ -65,11 +58,9 @@ class Request extends Message implements RoutableInterface
     public function __construct($uri = null, $method = 'GET')
     {
         parent::__construct();
-
         if (!is_null($uri)) {
             $this->setUri($uri);
         }
-
         $this->method = $method;
     }
 
@@ -89,7 +80,6 @@ class Request extends Message implements RoutableInterface
             $request->readHttpRequest();
             self::$theRequest = $request;
         }
-
         return self::$theRequest;
     }
 
@@ -398,7 +388,7 @@ class Request extends Message implements RoutableInterface
         // Make a reponse to populate and return with data obtained via cURL.
         $resp = new Response();
 
-        $resp->statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $resp->setStatusCode(curl_getinfo($ch, CURLINFO_HTTP_CODE));
 
         // Split the result into headers and body.
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);

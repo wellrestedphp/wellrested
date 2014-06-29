@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Message
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
@@ -12,12 +12,6 @@ namespace pjdietz\WellRESTed;
 
 /**
  * Common base class for the Request and Response classes.
- *
- * @property string body  Entity body of the message
- * @property-read array headers  Associative array of HTTP headers
- * @property-read array headerLines  Numeric array of HTTP headers
- * @property string protocol  The protocol, e.g. HTTP
- * @property string protocolVersion  The version of the protocol
  */
 abstract class Message
 {

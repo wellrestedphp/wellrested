@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Exceptions\CurlException
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2013 by PJ Dietz
+ * @copyright Copyright 2014 by PJ Dietz
  * @license MIT
  */
 
