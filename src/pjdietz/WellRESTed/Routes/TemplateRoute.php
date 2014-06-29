@@ -21,27 +21,31 @@ class TemplateRoute extends RegexRoute
     const URI_TEMPLATE_EXPRESSION_RE = '/{([a-zA-Z]+)}/';
 
     /**
-     * Default regular expression used to match template variable
-     *
-     * @property string
-     */
-    static public $defaultVariablePattern = self::RE_SLUG;
-
-    /**
      * @param string $template URI template the path must match
-     * @param string $targetClassName Fully qualified name to an autoloadable handler class.
-     * @param array|null $variables Associative array of variables from the template and regular expressions.
+     * @param string $targetClassName Fully qualified name to an autoloadable handler class
+     * @param string $defaultPattern Regular expression for variables
+     * @param array|null $variablePatterns Map of variable names and regular expression
      */
-    public function __construct($template, $targetClassName, $variables = null)
-    {
-        $pattern = $this->buildPattern($template, $variables);
+    public function __construct(
+        $template,
+        $targetClassName,
+        $defaultPattern = self::RE_SLUG,
+        $variablePatterns = null
+    ) {
+        $pattern = $this->buildPattern($template, $defaultPattern, $variablePatterns);
         parent::__construct($pattern, $targetClassName);
     }
 
-    private function buildPattern($template, $variables)
+    private function buildPattern($template, $defaultPattern, $variablePatterns)
     {
-        if (is_null($variables)) {
-            $variables = array();
+        if (is_null($variablePatterns)) {
+            $variablePatterns = array();
+        } elseif (is_object($variablePatterns)) {
+            $variablePatterns = (array) $variablePatterns;
+        }
+
+        if (!$defaultPattern) {
+            $defaultPattern = self::RE_SLUG;
         }
 
         $pattern = '';
@@ -70,10 +74,10 @@ class TemplateRoute extends RegexRoute
                     // If the caller passed an array with this variable name
                     // as a key, use its value for the pattern here.
                     // Otherwise, use the class's current default.
-                    if (isset($variables[$variableName])) {
-                        $variablePattern = $variables[$variableName];
+                    if (isset($variablePatterns[$variableName])) {
+                        $variablePattern = $variablePatterns[$variableName];
                     } else {
-                        $variablePattern = self::$defaultVariablePattern;
+                        $variablePattern = $defaultPattern;
                     }
 
                     $pattern .= sprintf(
