@@ -10,6 +10,7 @@
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Exceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
@@ -43,7 +44,12 @@ abstract class Handler implements HandlerInterface
         $this->request = $request;
         $this->args = $args;
         $this->response = new Response();
-        $this->buildResponse();
+        try {
+            $this->buildResponse();
+        } catch (HttpException $e) {
+            $this->response->setStatusCode($e->getCode());
+            $this->response->setBody($e->getMessage());
+        }
         return $this->response;
     }
 
@@ -51,6 +57,10 @@ abstract class Handler implements HandlerInterface
      * Prepare the Response. Override this method if your subclass needs to
      * repond to any non-standard HTTP methods. Otherwise, override the
      * get, post, put, etc. methods.
+     *
+     * An uncaught HttpException (or subclass) will be converted to a response
+     * using the exception's code as the status code and the exceptios message
+     * as the body.
      */
     protected function buildResponse()
     {
