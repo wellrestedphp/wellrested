@@ -8,7 +8,7 @@ class HttpException extends WellRESTedException
     protected $message = "500 Internal Server Error";
 }
 
-class BadRequest extends HttpException
+class BadRequestException extends HttpException
 {
     protected $code = 400;
     protected $message = "400 Bad Request";
@@ -20,7 +20,7 @@ class ForbiddenException extends HttpException
     protected $message = "401 Forbidden";
 }
 
-class UnautorizedException extends HttpException
+class UnauthorizedException extends HttpException
 {
     protected $code = 403;
     protected $message = "403 Unauthorized";
