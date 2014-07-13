@@ -1,9 +1,18 @@
 <?php
 
+/**
+ * pjdietz\WellRESTed\TemplateRoute
+ *
+ * @author PJ Dietz <pj@pjdietz.com>
+ * @copyright Copyright 2014 by PJ Dietz
+ * @license MIT
+ */
+
 namespace pjdietz\WellRESTed\Routes;
 
-use InvalidArgumentException;
-
+/**
+ * Maps a URI template to a Handler
+ */
 class TemplateRoute extends RegexRoute
 {
     /**
@@ -21,6 +30,10 @@ class TemplateRoute extends RegexRoute
     const URI_TEMPLATE_EXPRESSION_RE = '/{([a-zA-Z]+)}/';
 
     /**
+     * Create a new route that matches a URI template to a Handler.
+     *
+     * Optionally provide patterns for the variables in the template.
+     *
      * @param string $template URI template the path must match
      * @param string $targetClassName Fully qualified name to an autoloadable handler class
      * @param string $defaultPattern Regular expression for variables
@@ -36,6 +49,14 @@ class TemplateRoute extends RegexRoute
         parent::__construct($pattern, $targetClassName);
     }
 
+    /**
+     * Translate the URI template into a regular expression.
+     *
+     * @param string $template URI template the path must match
+     * @param string $defaultPattern Regular expression for variables
+     * @param array $variablePatterns Map of variable names and regular expression
+     * @return string
+     */
     private function buildPattern($template, $defaultPattern, $variablePatterns)
     {
         if (is_null($variablePatterns)) {
@@ -64,31 +85,23 @@ class TemplateRoute extends RegexRoute
             // Is this part an expression or a literal?
             if (preg_match(self::URI_TEMPLATE_EXPRESSION_RE, $part, $matches)) {
 
-                // This part of the path is an expresion.
+                // Locate the name for the variable from the template.
+                $variableName = $matches[1];
 
-                if (count($matches) === 2) {
-
-                    // Locate the name for the variable from the template.
-                    $variableName = $matches[1];
-
-                    // If the caller passed an array with this variable name
-                    // as a key, use its value for the pattern here.
-                    // Otherwise, use the class's current default.
-                    if (isset($variablePatterns[$variableName])) {
-                        $variablePattern = $variablePatterns[$variableName];
-                    } else {
-                        $variablePattern = $defaultPattern;
-                    }
-
-                    $pattern .= sprintf(
-                        '(?<%s>%s)',
-                        $variableName,
-                        $variablePattern
-                    );
-
+                // If the caller passed an array with this variable name
+                // as a key, use its value for the pattern here.
+                // Otherwise, use the class's current default.
+                if (isset($variablePatterns[$variableName])) {
+                    $variablePattern = $variablePatterns[$variableName];
                 } else {
-                    throw new InvalidArgumentException('Invalid URI Template.');
+                    $variablePattern = $defaultPattern;
                 }
+
+                $pattern .= sprintf(
+                    '(?<%s>%s)',
+                    $variableName,
+                    $variablePattern
+                );
 
             } else {
                 // This part is a literal.

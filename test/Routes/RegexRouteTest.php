@@ -1,5 +1,7 @@
 <?php
 
+namespace pjdietz\WellRESTed\Test;
+
 use pjdietz\WellRESTed\Routes\RegexRoute;
 
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
