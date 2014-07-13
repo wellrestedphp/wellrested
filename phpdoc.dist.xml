@@ -12,7 +12,7 @@
         <target>docs</target>
     </transformer>
     <transformations>
-        <template name="clean" />
+        <template name="responsive" />
     </transformations>
     <files>
         <directory>src</directory>

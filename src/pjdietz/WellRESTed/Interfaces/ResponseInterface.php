@@ -15,30 +15,54 @@ namespace pjdietz\WellRESTed\Interfaces;
  */
 interface ResponseInterface
 {
-    /** @return int  HTTP status code */
+    /**
+     * Return the HTTP status code
+     *
+     * @return int HTTP status code
+     */
     public function getStatusCode();
 
-    /** @param int $statusCode  HTTP status code */
+    /**
+     * Set the status code for the response.
+     *
+     * @param int $statusCode HTTP status code
+     */
     public function setStatusCode($statusCode);
 
     /**
-     * Return the value for this header name
+     * Return the value for a given header.
      *
-     * @param $headerName
-     * @return string $headerName
+     * Per RFC 2616, HTTP headers are case-insensitive. Take care to conform to
+     * this when implementing.
+     *
+     * @param string $headerName Field name of the header
+     * @return string Header field value
      */
     public function getHeader($headerName);
 
     /**
-     * @param string $headerName
-     * @param string $headerValue
+     * Set the value for a given header.
+     *
+     * Per RFC 2616, HTTP headers are case-insensitive. Take care to conform to
+     * this when implementing.
+     *
+     * @param string $headerName Field name
+     * @param string $headerValue Field value
      */
     public function setHeader($headerName, $headerValue);
 
-    /** @return string */
+    /**
+     * Return the body of the response.
+     *
+     * @return string Response body
+     */
     public function getBody();
 
-    /** @param string $body */
+    /**
+     * Set the body of the response.
+     *
+     * @param string $body Response body
+     */
     public function setBody($body);
 
     /** Issue the reponse to the client. */

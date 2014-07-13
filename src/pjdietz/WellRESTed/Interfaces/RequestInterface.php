@@ -15,24 +15,43 @@ namespace pjdietz\WellRESTed\Interfaces;
  */
 interface RequestInterface
 {
-    /** @return string  HTTP request method (e.g., GET, POST, PUT). */
+    /**
+     * Return the HTTP verb (e.g., GET, POST, PUT).
+     *
+     * @return string Request verb
+     */
     public function getMethod();
 
-    /** @return string  Path component of the request URI */
+    /**
+     * Return path component of the request URI.
+     *
+     * @return string Path component
+     */
     public function getPath();
 
-    /** @return array  Query paramters as key-value pairs */
+    /**
+     * Return an associative array of query paramters.
+     *
+     * @return array Query paramters
+     */
     public function getQuery();
 
     /**
-     * Return the value for this header name
+     * Return the value for a given header.
      *
-     * @param $headerName
-     * @return string $headerName
+     * Per RFC 2616, HTTP headers are case-insensitive. Take care to conform to
+     * this when implementing.
+     *
+     * @param string $headerName Field name of the header
+     * @return string Header field value
      */
     public function getHeader($headerName);
 
-    /** @return string  Requst body */
+    /**
+     * Return the body of the request.
+     *
+     * @return string Request body
+     */
     public function getBody();
 
 }
