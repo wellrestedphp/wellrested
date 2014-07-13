@@ -80,7 +80,7 @@ $json = <<<'JSON'
 JSON;
 
 $builder = new RouteBuilder();
-$routes = $builder->buildRoutesFromJson($json);
+$routes = $builder->buildRoutes($json);
 
 $router = new Router();
 $router->addRoutes($routes);
