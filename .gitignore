@@ -3,6 +3,7 @@ vendor/
 
 # Generated documentation
 docs/
+report/
 
 # Previewing the README.md
 README.html

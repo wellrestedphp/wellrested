@@ -165,4 +165,48 @@ JSON;
         );
     }
 
+    public function testTemplateRouteWithVariables()
+    {
+        $mock = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
+        $routes = array(
+            (object) array(
+                "template" => "/cats/{catId}",
+                "handler" => get_class($mock),
+                "vars" => array(
+                    "catId" => "SLUG"
+                )
+            )
+        );
+        $builder = new RouteBuilder();
+        $builder->setTemplateVars(array("dogId" => "NUM"));
+        $routes = $builder->buildRoutes($routes);
+        $route = $routes[0];
+        $this->assertInstanceOf('\pjdietz\WellRESTed\Routes\TemplateRoute', $route);
+    }
+
+    /**
+     * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
+     * @expectedExceptionMessage Unable to parse. Missing array of routes.
+     */
+    public function testIvalidRoutesObject()
+    {
+        $conf = new stdClass();
+        $builder = new RouteBuilder();
+        $routes = $builder->buildRoutes($conf);
+    }
+
+    /**
+     * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
+     * @expectedExceptionMessage Unable to parse. Route is missing a handler.
+     */
+    public function testInvalidRoute()
+    {
+        $routes = array(
+            (object) array(
+                "path" => "/"
+            )
+        );
+        $builder = new RouteBuilder();
+        $routes = $builder->buildRoutes($routes);
+    }
 }
