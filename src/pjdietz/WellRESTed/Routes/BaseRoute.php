@@ -6,7 +6,6 @@ use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 
 /**
  * Base class for Routes.
- * @package pjdietz\WellRESTed\Routes
  */
 abstract class BaseRoute implements HandlerInterface
 {

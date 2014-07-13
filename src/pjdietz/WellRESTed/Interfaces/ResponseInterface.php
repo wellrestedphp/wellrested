@@ -12,7 +12,6 @@ namespace pjdietz\WellRESTed\Interfaces;
 
 /**
  * Interface for representing an HTTP response.
- * @package pjdietz\WellRESTed
  */
 interface ResponseInterface
 {

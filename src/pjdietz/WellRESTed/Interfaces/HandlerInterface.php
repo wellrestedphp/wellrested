@@ -12,7 +12,6 @@ namespace pjdietz\WellRESTed\Interfaces;
 
 /**
  * Provides a mechanism for obtaining a response given a request.
- * @package pjdietz\WellRESTed
  */
 interface HandlerInterface {
 

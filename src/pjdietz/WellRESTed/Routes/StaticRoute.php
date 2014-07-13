@@ -7,7 +7,6 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * Class StaticRoute
- * @package pjdietz\WellRESTed\Routes
  */
 class StaticRoute extends BaseRoute
 {
