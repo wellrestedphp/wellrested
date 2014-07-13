@@ -34,6 +34,9 @@ abstract class Message
 
     // -------------------------------------------------------------------------
 
+    /**
+     * Create a new HTTP message.
+     */
     public function __construct()
     {
         $this->headers = array();

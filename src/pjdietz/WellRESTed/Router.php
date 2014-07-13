@@ -79,6 +79,9 @@ class Router implements HandlerInterface
         }
     }
 
+    /**
+     * Dispatch the singleton Request through the router and output the response.
+     */
     public function respond() {
         $response = $this->getResponse(Request::getRequest());
         $response->respond();
