@@ -27,10 +27,6 @@ abstract class Message
      * @var array
      */
     protected $headerLookup;
-    /** @var string Name of the protocol to use. */
-    protected $protocol = 'HTTP';
-    /** @var string Version of the protocol to use. */
-    protected $protocolVersion = '1.1';
 
     // -------------------------------------------------------------------------
 
@@ -67,22 +63,6 @@ abstract class Message
     }
 
     /**
-     * Return if the body is set
-     *
-     * @return bool
-     */
-    public function issetBody()
-    {
-        return isset($this->body);
-    }
-
-    /** Unset the body property */
-    public function unsetBody()
-    {
-        unset($this->body);
-    }
-
-    /**
      * Return an associative array of all set headers.
      *
      * @return array
@@ -110,23 +90,16 @@ abstract class Message
      * Return the value of a given header, or false if it does not exist.
      *
      * @param string $name
-     * @return string|bool
+     * @return string|null
      */
     public function getHeader($name)
     {
         $lowerName = strtolower($name);
-
         if (isset($this->headerLookup[$lowerName])) {
-
             $realName = $this->headerLookup[$lowerName];
-
-            if (isset($this->headers[$realName])) {
-                return $this->headers[$realName];
-            }
-
+            return $this->headers[$realName];
         }
-
-        return false;
+        return null;
     }
 
     /**
@@ -187,91 +160,5 @@ abstract class Message
             unset($this->headerLookup[$lowerName]);
 
         }
-    }
-
-    /**
-     * Return the protocol (e.g., HTTP)
-     *
-     * @return string
-     */
-    public function getProtocol()
-    {
-        return $this->protocol;
-    }
-
-    /**
-     * Set the protocol for the message.
-     *
-     * The value is expected to be the name of the protocol only. If the
-     * version is included, the version is striped and set as the
-     * protocolVersion property.
-     *
-     * <code>
-     * $instance->protocol = 'HTTP1/1';
-     * print $instance->protocol; // 'HTTP';
-     * print $instance->protocolVersion; // '1.1';
-     * </code>
-     *
-     * @param $protocol
-     */
-    public function setProtocol($protocol)
-    {
-        if (strpos($protocol, '/') === false) {
-            list($this->protocol, $this->protocolVersion) = explode('/', $protocol, 2);
-        } else {
-            $this->protocol = $protocol;
-        }
-    }
-
-    /**
-     * Return if the protocol property is set.
-     *
-     * @return bool
-     */
-    public function issetProtocol()
-    {
-        return isset($this->protocol);
-    }
-
-    /** Unset the protocol property. */
-    public function unsetProtocol()
-    {
-        unset($this->protocol);
-    }
-
-    /**
-     * Return the version portion of the protocol. For HTTP/1.1, this is 1.1
-     *
-     * @return string
-     */
-    public function getProtocolVersion()
-    {
-        return $this->protocolVersion;
-    }
-
-    /**
-     * Assign a new protocol version
-     *
-     * @param string $protocolVersion
-     */
-    public function setProtocolVersion($protocolVersion)
-    {
-        $this->protocolVersion = $protocolVersion;
-    }
-
-    /**
-     * Return if the version portion of the protocol is set.
-     *
-     * @return bool
-     */
-    public function issetProtocolVersion()
-    {
-        return isset($this->protocolVersion);
-    }
-
-    /** Unset the version portion of the protocol. */
-    public function unsetProtocolVersion()
-    {
-        unset($this->protocolVersion);
     }
 }

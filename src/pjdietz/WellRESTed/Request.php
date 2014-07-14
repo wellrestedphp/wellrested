@@ -10,8 +10,10 @@
 
 namespace pjdietz\WellRESTed;
 
+use InvalidArgumentException;
 use pjdietz\WellRESTed\Exceptions\CurlException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use UnexpectedValueException;
 
 /**
  * A Request instance represents an HTTP request. This class has two main uses:
@@ -32,20 +34,20 @@ class Request extends Message implements RequestInterface
      * @static
      */
     static protected $theRequest;
-    /** @var string  The Hostname for the request (e.g., www.google.com) */
-    private $hostname;
     /** @var string  HTTP method or verb for the request */
-    private $method = 'GET';
+    private $method = "GET";
+    /** @var string  The Hostname for the request (e.g., www.google.com) */
+    private $hostname = "localhost";
+    /** @var string Scheme for the request (Must be "http" or "https" */
+    protected $scheme;
     /** @var string   Path component of the URI for the request */
     private $path = '/';
     /** @var array Array of fragments of the path, delimited by slashes */
     private $pathParts;
-    /** @var int */
+    /** @var int HTTP Port*/
     private $port = 80;
-    /**@var array Associative array of query parameters */
+    /** @var array Associative array of query parameters */
     private $query;
-    /** @var int internal count of the number of times routers have dispatched this instance */
-    private $routeDepth = 0;
 
     // -------------------------------------------------------------------------
 
@@ -55,7 +57,7 @@ class Request extends Message implements RequestInterface
      * @param string|null $uri
      * @param string $method
      */
-    public function __construct($uri = null, $method = 'GET')
+    public function __construct($uri = null, $method = "GET")
     {
         parent::__construct();
         if (!is_null($uri)) {
@@ -83,7 +85,11 @@ class Request extends Message implements RequestInterface
         return self::$theRequest;
     }
 
-    /** @return array all request headers from the current request. */
+    /**
+     * Read and return all request headers from the request issued to the server.
+     *
+     * @return array Associative array of headers
+     */
     public static function getRequestHeaders()
     {
         if (function_exists('apache_request_headers')) {
@@ -139,24 +145,6 @@ class Request extends Message implements RequestInterface
     }
 
     /**
-     * Return if the hostname portion of the URI is set.
-     *
-     * @return bool
-     */
-    public function issetHostName()
-    {
-        return isset($this->hostname);
-    }
-
-    /**
-     * Unset the hostname portion of the URI.
-     */
-    public function unsetHostname()
-    {
-        unset($this->hostname);
-    }
-
-    /**
      * Return the method (e.g., GET, POST, PUT, DELETE)
      *
      * @return string
@@ -194,7 +182,11 @@ class Request extends Message implements RequestInterface
     public function setPath($path)
     {
         $this->path = $path;
-        $this->pathParts = explode('/', substr($path, 1));
+        if ($path !== "/") {
+            $this->pathParts = explode("/", substr($path, 1));
+        } else {
+            $this->pathParts = array();
+        }
     }
 
     /**
@@ -207,15 +199,26 @@ class Request extends Message implements RequestInterface
         return $this->pathParts;
     }
 
-    /** @return int */
+    /**
+     * Return the HTTP port
+     *
+     * @return int
+     */
     public function getPort()
     {
         return $this->port;
     }
 
-    /** @param int $port */
-    public function setPort($port)
+    /**
+     * Set the HTTP port
+     *
+     * @param int $port
+     */
+    public function setPort($port = null)
     {
+        if (is_null($port)) {
+            $port = $this->getDefaultPort();
+        }
         $this->port = $port;
     }
 
@@ -234,20 +237,48 @@ class Request extends Message implements RequestInterface
      * joined by ampersands or it can be an associative array.
      *
      * @param string|array $query
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setQuery($query)
     {
         if (is_string($query)) {
             $qs = $query;
             parse_str($qs, $query);
+        } elseif (is_object($query)) {
+            $query = (array) $query;
         }
 
         if (is_array($query)) {
+            ksort($query);
             $this->query = $query;
         } else {
-            throw new \InvalidArgumentException('Unable to parse query string.');
+            throw new InvalidArgumentException('Unable to parse query string.');
         }
+    }
+
+    /**
+     * Set the scheme for the request (either "http" or "https")
+     *
+     * @param string $scheme
+     * @throws \UnexpectedValueException
+     */
+    public function setScheme($scheme)
+    {
+        $scheme = strtolower($scheme);
+        if (!in_array($scheme, array("http","https"))) {
+            throw new UnexpectedValueException('Scheme must be "http" or "https".');
+        }
+        $this->scheme = $scheme;
+    }
+
+    /**
+     * Return the scheme for the request (either "http" or "https")
+     *
+     * @return string
+     */
+    public function getScheme()
+    {
+        return $this->scheme;
     }
 
     /**
@@ -257,18 +288,16 @@ class Request extends Message implements RequestInterface
      */
     public function getUri()
     {
-        $uri = strtolower($this->protocol) . '://' . $this->hostname;
-
-        if ($this->port !== 80) {
+        $uri = $this->scheme . "://" . $this->hostname;
+        if ($this->port !== $this->getDefaultPort()) {
             $uri .= ':' . $this->port;
         }
-
-        $uri .= $this->path;
-
+        if ($this->path !== "/") {
+            $uri .= $this->path;
+        }
         if ($this->query) {
             $uri .= '?' . http_build_query($this->query);
         }
-
         return $uri;
     }
 
@@ -280,33 +309,29 @@ class Request extends Message implements RequestInterface
      */
     public function setUri($uri)
     {
+        // Provide http and localhost if missing.
+        if ($uri[0] === "/") {
+            $uri = "http://localhost" . $uri;
+        } elseif (strpos($uri, "://") === false) {
+            $uri = "http://" . $uri;
+        }
+
         $parsed = parse_url($uri);
 
-        $host = isset($parsed['host']) ? $parsed['host'] : '';
+        $scheme = isset($parsed["scheme"]) ? $parsed["scheme"] : "http";
+        $this->setScheme($scheme);
+
+        $host = isset($parsed['host']) ? $parsed['host'] : 'localhost';
         $this->setHostname($host);
 
-        $path = isset($parsed['path']) ? $parsed['path'] : '';
-        $this->setPath($path);
-
-        $port = isset($parsed['port']) ? (int) $parsed['port'] : 80;
+        $port = isset($parsed['port']) ? (int) $parsed['port'] : $this->getDefaultPort();
         $this->setPort($port);
+
+        $path = isset($parsed['path']) ? $parsed['path'] : '/';
+        $this->setPath($path);
 
         $query = isset($parsed['query']) ? $parsed['query'] : '';
         $this->setQuery($query);
-    }
-
-    // -------------------------------------------------------------------------
-
-    /** @return int The number of times a router has dispatched this Routable */
-    public function getRouteDepth()
-    {
-        return $this->routeDepth;
-    }
-
-    /** Increase the instance's internal count of its depth in nested route tables */
-    public function incrementRouteDepth()
-    {
-        $this->routeDepth++;
     }
 
     // -------------------------------------------------------------------------
@@ -396,4 +421,13 @@ class Request extends Message implements RequestInterface
         return $resp;
     }
 
+    /**
+     * Return the default port for the currently set scheme.
+     *
+     * @return int;
+     */
+    protected function getDefaultPort()
+    {
+        return $this->scheme === "http" ? 80 : 443;
+    }
 }
