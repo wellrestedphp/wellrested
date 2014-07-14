@@ -113,9 +113,7 @@ abstract class Handler implements HandlerInterface
         // The default function calls the instance's get() method, then sets
         // the resonse's body member to an empty string.
         $this->get();
-        if ($this->response->getStatusCode() == 200) {
-            $this->response->setBody('', false);
-        }
+        $this->response->setBody('', false);
     }
 
     /**
