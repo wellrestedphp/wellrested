@@ -39,11 +39,6 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        // Use the singleton if the caller did not pass a request.
-        if (is_null($request)) {
-            $request = Request::getRequest();
-        }
-
         foreach ($this->routes as $route) {
             /** @var HandlerInterface $route */
             $responce = $route->getResponse($request, $args);
@@ -97,20 +92,6 @@ class Router implements HandlerInterface
     {
         $response = new Response(404);
         $response->setBody('No resource at ' . $request->getPath());
-        return $response;
-    }
-
-    /**
-     * Prepare a response indicating a 500 Internal Server Error
-     *
-     * @param RequestInterface $request
-     * @param string $message Optional additional message.
-     * @return ResponseInterface
-     */
-    protected function getInternalServerErrorResponse(RequestInterface $request, $message = '')
-    {
-        $response = new Response(500);
-        $response->setBody('Server error at ' . $request->getPath() . "\n" . $message);
         return $response;
     }
 
