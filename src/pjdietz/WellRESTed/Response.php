@@ -75,7 +75,6 @@ class Response extends Message implements ResponseInterface
     public function setBody($value, $setContentLength = true)
     {
         $this->body = $value;
-
         if ($setContentLength === true) {
             $this->setHeader('Content-Length', strlen($value));
         }

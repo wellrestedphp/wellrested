@@ -2,9 +2,6 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
-use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Router;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 

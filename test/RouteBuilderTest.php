@@ -2,7 +2,6 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\RouteBuilder;
 use pjdietz\WellRESTed\Routes\TemplateRoute;
 use stdClass;
