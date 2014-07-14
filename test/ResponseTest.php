@@ -6,17 +6,6 @@ use pjdietz\WellRESTed\Test;
 
 class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        ob_start();
-    }
-
-    public function tearDown()
-    {
-        ob_clean();
-        ob_end_clean();
-    }
-
     public function testConstructor()
     {
         $resp = new Response(200, "This is the body", array("Content-type" => "text/plain"));
