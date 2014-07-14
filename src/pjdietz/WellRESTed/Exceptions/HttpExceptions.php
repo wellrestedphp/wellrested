@@ -15,7 +15,9 @@
  * @license MIT
  */
 
-namespace pjdietz\WellRESTed\Exceptions;
+namespace pjdietz\WellRESTed\Exceptions\HttpExceptions;
+
+use pjdietz\WellRESTed\Exceptions\WellRESTedException;
 
 /**
  * Base exception for HTTP-related errors. Also represents a 500 Internal Server error.
