@@ -33,6 +33,8 @@ class Response extends Message implements ResponseInterface
     private $reasonPhrase;
     /** @var int  HTTP status code */
     private $statusCode;
+    /** @var string HTTP protocol and version*/
+    private $protocol = "HTTP/1.1";
 
     // -------------------------------------------------------------------------
 
@@ -79,56 +81,64 @@ class Response extends Message implements ResponseInterface
         }
     }
 
-    /** @param string $bodyFilePath  Path to a file to read and output as the body */
+    /**
+     * Provide the path to a file to output as the response body.
+     *
+     * @param string $bodyFilePath Filepath
+     */
     public function setBodyFilePath($bodyFilePath)
     {
         $this->bodyFilePath = $bodyFilePath;
     }
 
-    /** @return string  Path to a file to read and output as the body */
+    /**
+     * Return the path to the file to output as the response body.
+     *
+     * @return string Filepath
+     */
     public function getBodyFilePath()
     {
         return $this->bodyFilePath;
     }
 
-    /** @return string  Portion of the status line explaining the status. */
+    /**
+     * Return the portion of the status line explaining the status.
+     *
+     * @return string
+     */
     public function getReasonPhrase()
     {
         return $this->reasonPhrase;
     }
 
     /**
-     * Assign an explaination for the status code. Not normally needed.
+     * Return true for status codes in the 1xx-3xx range.
      *
-     * @param string $statusCodeMessage
+     * @return bool
      */
-    public function setReasonPhrase($statusCodeMessage)
-    {
-        $this->reasonPhrase = $statusCodeMessage;
-    }
-
-    /** @return bool  True if the status code is in the 2xx range. */
     public function getSuccess()
     {
-        return $this->statusCode >= 200 && $this->statusCode < 300;
+        return $this->statusCode < 400;
     }
 
-    /** @return int */
+    /**
+     * Return the HTTP status code for the response.
+     *
+     * @return int
+     */
     public function getStatusCode()
     {
         return $this->statusCode;
     }
 
-    /** @return string  HTTP status line, e.g. HTTP/1.1 200 OK. */
+    /**
+     * Return the HTTP status line, e.g. HTTP/1.1 200 OK.
+     *
+     * @return string
+     */
     public function getStatusLine()
     {
-        return sprintf(
-            '%s/%s %s %s',
-            strtoupper($this->protocol),
-            $this->protocolVersion,
-            $this->statusCode,
-            $this->reasonPhrase
-        );
+        return $this->protocol . " " . $this->statusCode . " " . $this->reasonPhrase;
     }
 
     /**
@@ -140,7 +150,7 @@ class Response extends Message implements ResponseInterface
      */
     public function setStatusCode($statusCode, $reasonPhrase = null)
     {
-        $this->statusCode = (int)$statusCode;
+        $this->statusCode = (int) $statusCode;
 
         if (is_null($reasonPhrase)) {
 
@@ -179,7 +189,7 @@ class Response extends Message implements ResponseInterface
                     $text = 'Moved Permanently';
                     break;
                 case 302:
-                    $text = 'Moved Temporarily';
+                    $text = 'Found';
                     break;
                 case 303:
                     $text = 'See Other';
@@ -215,7 +225,7 @@ class Response extends Message implements ResponseInterface
                     $text = 'Proxy Authentication Required';
                     break;
                 case 408:
-                    $text = 'Request Time-out';
+                    $text = 'Request Timeout';
                     break;
                 case 409:
                     $text = 'Conflict';
@@ -233,7 +243,7 @@ class Response extends Message implements ResponseInterface
                     $text = 'Request Entity Too Large';
                     break;
                 case 414:
-                    $text = 'Request-URI Too Large';
+                    $text = 'Request-URI Too Long';
                     break;
                 case 415:
                     $text = 'Unsupported Media Type';
@@ -251,10 +261,10 @@ class Response extends Message implements ResponseInterface
                     $text = 'Service Unavailable';
                     break;
                 case 504:
-                    $text = 'Gateway Time-out';
+                    $text = 'Gateway Timeout';
                     break;
                 case 505:
-                    $text = 'HTTP Version not supported';
+                    $text = 'HTTP Version Not Supported';
                     break;
                 default:
                     $text = 'Nonstandard';
@@ -306,14 +316,12 @@ class Response extends Message implements ResponseInterface
     private function outputBodyFile()
     {
         $handle = fopen($this->getBodyFilePath(), 'rb');
-        if ($handle === false) {
-            return;
-        }
-        while (!feof($handle)) {
-            $buffer = fread($handle, self::CHUNK_SIZE);
-            print $buffer;
-            ob_flush();
-            flush();
+        if ($handle !== false) {
+            while (!feof($handle)) {
+                $buffer = fread($handle, self::CHUNK_SIZE);
+                print $buffer;
+                flush();
+            }
         }
     }
 }

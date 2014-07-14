@@ -241,6 +241,25 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @dataProvider defaultPortProvider
+     */
+    public function testDefaultPort($scheme, $port)
+    {
+        $rqst = new Request("http://localhost:9999");
+        $rqst->setScheme($scheme);
+        $rqst->setPort();
+        $this->assertEquals($port, $rqst->getPort());
+    }
+
+    public function defaultPortProvider()
+    {
+        return [
+            ["http", 80],
+            ["https", 443]
+        ];
+    }
+
+    /**
      * @dataProvider invalidSchemeProvider
      * @expectedException \UnexpectedValueException
      */
@@ -516,9 +535,9 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     {
         return [
             ["http://localhost:9991", [
-                CURLOPT_FAILONERROR, true
+                CURLOPT_FAILONERROR, true,
+                CURLOPT_TIMEOUT_MS, 10
             ]],
         ];
     }
-
 }
