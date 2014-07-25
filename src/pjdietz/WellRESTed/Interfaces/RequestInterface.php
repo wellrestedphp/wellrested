@@ -23,11 +23,32 @@ interface RequestInterface
     public function getMethod();
 
     /**
+     * Return the full URI for the request.
+     *
+     * @return string
+     */
+    public function getUri();
+
+    /**
+     * Return the hostname portion of the URI
+     *
+     * @return string
+     */
+    public function getHostname();
+
+    /**
      * Return path component of the request URI.
      *
      * @return string Path component
      */
     public function getPath();
+
+    /**
+     * Return the HTTP port
+     *
+     * @return int
+     */
+    public function getPort();
 
     /**
      * Return an associative array of query paramters.
@@ -46,6 +67,13 @@ interface RequestInterface
      * @return string Header field value
      */
     public function getHeader($headerName);
+
+    /**
+     * Return an associative array of headers.
+     *
+     * @return array
+     */
+    public function getHeaders();
 
     /**
      * Return the body of the request.

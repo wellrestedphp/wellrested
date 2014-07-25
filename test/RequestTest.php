@@ -48,15 +48,6 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider headerProvider
      */
-    public function testHeaderLines($name, $value, $testName)
-    {
-        $line = "$name: $value";
-        $this->assertTrue(in_array($line, $this->request->getHeaderLines()));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
     public function testHeaderValue($name, $value, $testName)
     {
         $this->assertEquals($value, $this->request->getHeader($testName));
@@ -498,46 +489,4 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @dataProvider curlProvider
-     */
-    public function testCurl($method, $uri, $opts, $code)
-    {
-        $rqst = new Request($uri);
-        $rqst->setMethod($method);
-        $resp = $rqst->request($opts);
-        $this->assertEquals($code, $resp->getStatusCode());
-    }
-
-    public function curlProvider()
-    {
-        return [
-            ["GET", "http://icanhasip.com", [
-                [CURLOPT_MAXREDIRS => 2]
-            ], 200],
-            ["POST", "http://icanhasip.com", [], 200],
-            ["PUT", "http://icanhasip.com", [], 405],
-            ["DELETE", "http://icanhasip.com", [], 405]
-        ];
-    }
-
-    /**
-     * @dataProvider curlErrorProvider
-     * @expectedException \pjdietz\WellRESTed\Exceptions\CurlException
-     */
-    public function testErrorCurl($uri, $opts)
-    {
-        $rqst = new Request($uri);
-        $resp = $rqst->request($opts);
-    }
-
-    public function curlErrorProvider()
-    {
-        return [
-            ["http://localhost:9991", [
-                CURLOPT_FAILONERROR, true,
-                CURLOPT_TIMEOUT_MS, 10
-            ]],
-        ];
-    }
 }

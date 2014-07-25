@@ -180,7 +180,11 @@ if ($rqst->getMethod() === 'PUT') {
 }
 ```
 
-The Request class can also make a request to another server and provide the response as a Response object. (This feature requires [PHP cURL](http://php.net/manual/en/book.curl.php).)
+### HTTP Client
+
+You can also use the `Client` class to make a request using cURL.
+
+(This feature requires [PHP cURL](http://php.net/manual/en/book.curl.php).)
 
 ```php
 // Prepare a request.
@@ -189,8 +193,9 @@ $rqst->setUri('http://my.api.local/resources/');
 $rqst->setMethod('POST');
 $rqst->setBody(json_encode($newResource));
 
-// Make the request.
-$resp = $rqst->request();
+// Use a Client to get a Response.
+$client = new Client();
+$resp = $client->request($rqst);
 
 // Read the response.
 if ($resp->getStatusCode() === 201) {
@@ -198,12 +203,6 @@ if ($resp->getStatusCode() === 201) {
     $createdResource = json_decode($resp->getBody());
 }
 ```
-
-
-More Examples
----------------
-
-For more examples, see the project [pjdietz/wellrested-samples](https://github.com/pjdietz/wellrested-samples). **Not yet updated for version 2.0**
 
 
 Copyright and License
