@@ -44,7 +44,7 @@ class Client
 
         $headers = array();
         foreach ($rqst->getHeaders() as $field => $value) {
-            $lines[] = sprintf('%s: %s', $field, $value);
+            $headers[] = sprintf('%s: %s', $field, $value);
         }
 
         $options = $this->curlOpts;
