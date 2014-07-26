@@ -198,4 +198,38 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $server->stop();
     }
 
+    /**
+     * @dataProvider curlErrorProvider
+     * @expectedException \pjdietz\WellRESTed\Exceptions\CurlException
+     */
+    public function testFailOnCurlError($uri, $opts)
+    {
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
+        $rqst->expects($this->any())
+            ->method("getUri")
+            ->will($this->returnValue($uri));
+        $rqst->expects($this->any())
+            ->method("getMethod")
+            ->will($this->returnValue("GET"));
+        $rqst->expects($this->any())
+            ->method("getPort")
+            ->will($this->returnValue(parse_url($uri, PHP_URL_PORT)));
+        $rqst->expects($this->any())
+            ->method("getHeaders")
+            ->will($this->returnValue(array()));
+
+        $client = new Client();
+        $client->request($rqst, $opts);
+    }
+
+    public function curlErrorProvider()
+    {
+        return [
+            ["http://localhost:9991", [
+                CURLOPT_FAILONERROR, true,
+                CURLOPT_TIMEOUT_MS, 10
+            ]],
+        ];
+    }
+
 }
