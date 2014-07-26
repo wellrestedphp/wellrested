@@ -137,4 +137,65 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             [$faker->text()]
         ];
     }
+
+    public function testSetCustomCurlOptionsOnInstantiation()
+    {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+        $server = new ShamServer($host, $port, $script);
+
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
+        $rqst->expects($this->any())
+            ->method("getUri")
+            ->will($this->returnValue("http://$host:$port"));
+        $rqst->expects($this->any())
+            ->method("getMethod")
+            ->will($this->returnValue("GET"));
+        $rqst->expects($this->any())
+            ->method("getPort")
+            ->will($this->returnValue($port));
+        $rqst->expects($this->any())
+            ->method("getHeaders")
+            ->will($this->returnValue(array()));
+
+        $cookieValue = "key=value";
+        $client = new Client([CURLOPT_COOKIE => $cookieValue]);
+        $resp = $client->request($rqst);
+        $headers = json_decode($resp->getBody());
+        $this->assertEquals($cookieValue, $headers->Cookie);
+
+        $server->stop();
+    }
+
+    public function testSetCustomCurlOptionsOnRequest()
+    {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+        $server = new ShamServer($host, $port, $script);
+
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
+        $rqst->expects($this->any())
+            ->method("getUri")
+            ->will($this->returnValue("http://$host:$port"));
+        $rqst->expects($this->any())
+            ->method("getMethod")
+            ->will($this->returnValue("GET"));
+        $rqst->expects($this->any())
+            ->method("getPort")
+            ->will($this->returnValue($port));
+        $rqst->expects($this->any())
+            ->method("getHeaders")
+            ->will($this->returnValue(array()));
+
+        $cookieValue = "key=value";
+        $client = new Client();
+        $resp = $client->request($rqst, [CURLOPT_COOKIE => $cookieValue]);
+        $headers = json_decode($resp->getBody());
+        $this->assertEquals($cookieValue, $headers->Cookie);
+
+        $server->stop();
+    }
+
 }
