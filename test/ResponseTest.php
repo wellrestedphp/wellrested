@@ -1,20 +1,25 @@
 <?php
 
-use pjdietz\WellRESTed\Request;
+namespace pjdietz\WellRESTed\Test;
+
+use Faker\Factory;
 use pjdietz\WellRESTed\Response;
-use pjdietz\WellRESTed\Test;
 
 class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConstructor()
+    /**
+     * @dataProvider statusCodeProvider
+     */
+    public function testSetStatusCodeInConstructor($statusCode, $reasonPhrase, $statusLine)
     {
-        $resp = new Response(200, "This is the body", array("Content-type" => "text/plain"));
+        $resp = new Response($statusCode);
+        $this->assertEquals($statusCode, $resp->getStatusCode());
     }
 
     /**
      * @dataProvider statusCodeProvider
      */
-    public function testStatusLine($statusCode, $reasonPhrase, $statusLine)
+    public function testReadStatusLine($statusCode, $reasonPhrase, $statusLine)
     {
         $resp = new Response();
         $resp->setStatusCode($statusCode, $reasonPhrase);
@@ -24,17 +29,7 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider statusCodeProvider
      */
-    public function testReasonPhrase($statusCode, $reasonPhrase, $statusLine)
-    {
-        $resp = new Response();
-        $resp->setStatusCode($statusCode, $reasonPhrase);
-        $this->assertEquals(substr($statusLine, 13), $resp->getReasonPhrase());
-    }
-
-    /**
-     * @dataProvider statusCodeProvider
-     */
-    public function testSuccess($statusCode, $reasonPhrase, $statusLine)
+    public function testReadSuccess($statusCode, $reasonPhrase, $statusLine)
     {
         $resp = new Response();
         $resp->setStatusCode($statusCode, $reasonPhrase);
@@ -43,6 +38,16 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
         } else {
             $this->assertFalse($resp->getSuccess());
         }
+    }
+
+    /**
+     * @dataProvider statusCodeProvider
+     */
+    public function testReadReasonPhrase($statusCode, $reasonPhrase, $statusLine)
+    {
+        $resp = new Response();
+        $resp->setStatusCode($statusCode, $reasonPhrase);
+        $this->assertEquals(substr($statusLine, 13), $resp->getReasonPhrase());
     }
 
     public function statusCodeProvider()
@@ -94,7 +99,7 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
      * @dataProvider invalidReasonPhraseProvider
      * @expectedException \InvalidArgumentException
      */
-    public function testInvalidReasonPhrase($statusCode, $reasonPhrase)
+    public function testFailOnInvalidReasonPhrase($statusCode, $reasonPhrase)
     {
         $resp = new Response();
         $resp->setStatusCode($statusCode, $reasonPhrase);
@@ -109,7 +114,24 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testBodyFile()
+    public function testSetBody()
+    {
+        $faker = Factory::create();
+        $body = $faker->text();
+        $resp = new Response();
+        $resp->setBody($body);
+        $this->assertEquals($body, $resp->getBody());
+    }
+
+    public function testSetBodyInConstructor()
+    {
+        $faker = Factory::create();
+        $body = $faker->text();
+        $resp = new Response(200, $body);
+        $this->assertEquals($body, $resp->getBody());
+    }
+
+    public function testSetBodyFile()
     {
         $path = tempnam(sys_get_temp_dir(), "TST");
         $resp = new Response();
@@ -118,10 +140,53 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
         unlink($path);
     }
 
-    public function testRespondBodyFile()
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testSetHeaders($headerKey, $headerValue, $testName)
+    {
+        $resp = new Response();
+        $resp->setHeader($headerKey, $headerValue);
+        $this->assertEquals($headerValue, $resp->getHeader($testName));
+    }
+
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testSetHeadersInConstructor($headerKey, $headerValue, $testName)
+    {
+        $resp = new Response(200, "Body", array($headerKey => $headerValue));
+        $this->assertEquals($headerValue, $resp->getHeader($testName));
+    }
+
+    public function headerProvider()
+    {
+        return [
+            ["Content-Encoding", "gzip", "CONTENT-ENCODING"],
+            ["Content-Length", "2048", "content-length"],
+            ["Content-Type", "text/plain", "Content-Type"]
+        ];
+    }
+
+    public function testOutputResponse()
+    {
+        $faker = Factory::create();
+        $body = $faker->text();
+
+        $resp = new Response(200, $body, ["Content-type" => "text/plain"]);
+        ob_start();
+        @$resp->respond();
+        $captured = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($body, $captured);
+    }
+
+    public function testOutputResponseFromFile()
     {
         $path = tempnam(sys_get_temp_dir(), "TST");
-        $body = "This is the body";
+        $faker = Factory::create();
+        $body = $faker->text();
 
         $f = fopen($path, "w");
         fwrite($f, $body);
@@ -142,7 +207,7 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($captured, $body);
     }
 
-    public function testMissingRespondBodyFile()
+    public function testMissingResponseFile()
     {
         $path = tempnam(sys_get_temp_dir(), "TST");
 
@@ -158,19 +223,6 @@ class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
         ob_end_clean();
 
         $this->assertEquals("", $captured);
-    }
-
-    public function testRespondBody()
-    {
-        $body = "This is the body";
-
-        $resp = new Response(200, $body, array("Content-type" => "text/plain"));
-        ob_start();
-        @$resp->respond();
-        $captured = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertEquals($body, $captured);
     }
 
 }

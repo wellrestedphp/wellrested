@@ -53,7 +53,9 @@ class Response extends Message implements ResponseInterface
         $this->setStatusCode($statusCode);
 
         if (is_array($headers)) {
-            $this->headers = $headers;
+            foreach ($headers as $key => $value) {
+                $this->setHeader($key, $value);
+            }
         }
 
         if (!is_null($body)) {
