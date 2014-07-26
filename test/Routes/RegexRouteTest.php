@@ -12,7 +12,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider matchingRouteProvider
      */
-    public function testMatchPatternForRoute($pattern, $path)
+    public function testMatchPatternForRoute($pattern, $path, $captures)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
@@ -24,11 +24,36 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($resp);
     }
 
+    /**
+     * @dataProvider matchingRouteProvider
+     */
+    public function testExctractCapturesForRoute($pattern, $path, $captures)
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue($path));
+
+        $route = new RegexRoute($pattern, __NAMESPACE__ . '\RegexRouteTestHandler');
+        $resp = $route->getResponse($mockRequest);
+        $body = json_decode($resp->getBody(), true);
+        $this->assertEquals($captures, $body);
+    }
+
     public function matchingRouteProvider()
     {
         return [
-            ["~/cat/[0-9]+~", "/cat/2"],
-            ["#/dog/.*#", "/dog/his-name-is-bear"]
+            ["~/cat/[0-9]+~", "/cat/2", [0 => "/cat/2"]],
+            ["#/dog/.*#", "/dog/his-name-is-bear", [0 => "/dog/his-name-is-bear"]],
+            ["~/cat/([0-9+])~", "/cat/2", [
+                0 => "/cat/2",
+                1 => "2"
+            ]],
+            ["~/dog/(?<id>[0-9+])~", "/dog/2", [
+                0 => "/dog/2",
+                1 => "2",
+                "id" => "2"
+            ]]
         ];
     }
 
@@ -88,6 +113,7 @@ class RegexRouteTestHandler implements HandlerInterface
     {
         $resp = new Response();
         $resp->setStatusCode(200);
+        $resp->setBody(json_encode($args));
         return $resp;
     }
 }
