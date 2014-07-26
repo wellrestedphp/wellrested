@@ -178,20 +178,41 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($rqst->getBody());
     }
 
-    public function testSetFormFields()
+    /**
+     * @dataProvider formProvider
+     */
+    public function testFormFieldsEncodeProperly($form)
     {
-        $faker = Factory::create();
-        $form = [
-            "firstName" => $faker->firstName,
-            "lastName" => $faker->lastName,
-            "username" => $faker->userName
-        ];
-
         $rqst = new Request();
         $rqst->setFormFields($form);
         $body = $rqst->getBody();
         parse_str($body, $fields);
         $this->assertEquals($form, $fields);
+    }
+
+    /**
+     * @dataProvider formProvider
+     */
+    public function testFormFieldsDecodeProperly($form)
+    {
+        $rqst = new Request();
+        $rqst->setFormFields($form);
+        $fields = $rqst->getFormFields();
+        $this->assertEquals($form, $fields);
+    }
+
+    public function formProvider()
+    {
+        $faker = Factory::create();
+        return [
+            [
+                [
+                    "firstName" => $faker->firstName,
+                    "lastName" => $faker->lastName,
+                    "username" => $faker->userName
+                ]
+            ]
+        ];
     }
 
     /**

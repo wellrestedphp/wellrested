@@ -5,6 +5,7 @@ namespace pjdietz\WellRESTed\Test;
 use Faker\Factory;
 use pjdietz\ShamServer\ShamServer;
 use pjdietz\WellRESTed\Client;
+use pjdietz\WellRESTed\Request;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -135,6 +136,42 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             [$faker->text()],
             [$faker->text()],
             [$faker->text()]
+        ];
+    }
+
+    /**
+     * @dataProvider formProvider
+     */
+    public function testSendForm($form)
+    {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/formFields.php");
+        $server = new ShamServer($host, $port, $script);
+
+        $rqst = new Request("http://$host:$port");
+        $rqst->setMethod("POST");
+        $rqst->setFormFields($form);
+        $client = new Client();
+        $resp = $client->request($rqst);
+
+        $body = json_decode($resp->getBody(), true);
+        $this->assertEquals($form, $body);
+
+        $server->stop();
+    }
+
+    public function formProvider()
+    {
+        $faker = Factory::create();
+        return [
+            [
+                [
+                    "firstName" => $faker->firstName,
+                    "lastName" => $faker->lastName,
+                    "email" => $faker->email
+                ]
+            ],
         ];
     }
 

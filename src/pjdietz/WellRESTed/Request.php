@@ -331,6 +331,17 @@ class Request extends Message implements RequestInterface
     }
 
     /**
+     * Return the form fields for this request.
+     *
+     * @return array
+     */
+    public function getFormFields()
+    {
+        parse_str($this->getBody(), $fields);
+        return $fields;
+    }
+
+    /**
      * Set the body by supplying an associative array of form fields.
      *
      * In additon, add a "Content-type: application/x-www-form-urlencoded" header
