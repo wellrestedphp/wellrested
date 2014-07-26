@@ -51,4 +51,46 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ["OPTIONS"]
         ];
     }
+
+    /**
+     * @dataProvider httpHeaderProvider
+     */
+    public function testCheckHttpHeaders($headerKey, $headerValue)
+    {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+
+        $server = new ShamServer($host, $port, $script);
+
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Request')->getMock();
+        $rqst->expects($this->any())
+            ->method("getUri")
+            ->will($this->returnValue("http://$host:$port"));
+        $rqst->expects($this->any())
+            ->method("getMethod")
+            ->will($this->returnValue("GET"));
+        $rqst->expects($this->any())
+            ->method("getPort")
+            ->will($this->returnValue($port));
+        $rqst->expects($this->any())
+            ->method("getHeaders")
+            ->will($this->returnValue(array($headerKey => $headerValue)));
+
+        $client = new Client();
+        $resp = $client->request($rqst);
+        $headers = json_decode($resp->getBody());
+        $this->assertEquals($headerValue, $headers->{$headerKey});
+
+        $server->stop();
+    }
+
+    public function httpHeaderProvider()
+    {
+        return [
+            ["Cache-Control", "max-age=0"],
+            ["X-Custom-Header", "custom value"],
+            ["Accept-Charset", "utf-8"]
+        ];
+    }
 }
