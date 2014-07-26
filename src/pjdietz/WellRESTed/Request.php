@@ -92,15 +92,11 @@ class Request extends Message implements RequestInterface
      */
     public static function getRequestHeaders()
     {
-        if (function_exists('apache_request_headers')) {
-            return apache_request_headers();
-        }
-
         // http://www.php.net/manual/en/function.getallheaders.php#84262
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === 'HTTP_') {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            if (substr($name, 0, 5) === "HTTP_") {
+                $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
             }
         }
         return $headers;
@@ -332,6 +328,19 @@ class Request extends Message implements RequestInterface
 
         $query = isset($parsed['query']) ? $parsed['query'] : '';
         $this->setQuery($query);
+    }
+
+    /**
+     * Set the body by supplying an associative array of form fields.
+     *
+     * In additon, add a "Content-type: application/x-www-form-urlencoded" header
+     *
+     * @param array $fields
+     */
+    public function setFormFields(array $fields)
+    {
+        $this->setBody(http_build_query($fields));
+        $this->setHeader("Content-type", "application/x-www-form-urlencoded");
     }
 
     // -------------------------------------------------------------------------
