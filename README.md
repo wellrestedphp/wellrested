@@ -40,9 +40,7 @@ Examples
 
 ### Routing
 
-WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a `Router` instance and load it up with some `Route`s. Each `Route` is simply a mapping of a URI pattern to a class name. The class name represents the `Handler` (any class implementing `HandlerInterface`) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
-
-Here's an example of a Router that will handle two URIs:
+WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a `Router` instance and load it up with some `Route`s. Each `Route` is simply a mapping of a URI pattern to a class name. The class name represents the "handler" (any class implementing `HandlerInterface`) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
 
 ```php
 // Build the router.
@@ -54,6 +52,9 @@ $myRouter->addRoutes(array(
 );
 $myRouter->respond();
 ```
+
+See [Routes](documentation/routes.md) to learn about the various route classes.
+
 
 ### Building Routes with JSON
 
@@ -98,7 +99,7 @@ For most cases, you'll want to use a subclass of the `Handler` class, which prov
 
 If your endpoint should reject particular verbs, no worries. The Handler base class defines the default verb-handling methods to respond with a **405 Method Not Allowed** status.
 
-Here's a simple Handler that matches the first endpoint, `/cats/`.
+Here's a simple Handler that allows `GET` and `POST`.
 
 ```php
 class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
@@ -128,14 +129,23 @@ class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 }
 ```
 
-This Handler works with the endpoint, `/cats/{id}`. The template for this endpoint has the variable `{id}` in it. The Handler can access path variables through its `args` member, which is an associative array of variables from the URI.
+#### Path Variables
 
+When you use a `TemplateRoute` with variables (or a `RegexRoute` with capture groups), you can access the variables (or captures) through the `Handler` member variable `$args`.
+
+Create this route...
+```php
+$route = TemplateRoute("/cats/{id}", "CatItemHandler");
+```
+
+...which dispatches a `CatItemHandler` instance.
 ```php
 class CatItemHandler extends \pjdietz\WellRESTed\Handler
 {
     protected function get()
     {
         // Find a cat ($cat) based on $this->args["id"]
+        $id = $this->args["id"]
         // ...do lookup here...
 
         if ($cat) {
