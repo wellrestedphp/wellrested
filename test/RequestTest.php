@@ -1,106 +1,39 @@
 <?php
 
+namespace pjdietz\WellRESTed\Test;
+
+use Faker\Factory;
 use pjdietz\WellRESTed\Request;
 use pjdietz\WellRESTed\Test;
 
-class RequestBuilderTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var Request */
-    private $request;
-
-    public function setUp()
+    /**
+     * @dataProvider methodProvider
+     */
+    public function testSetMethod($method)
     {
-        $this->request = new Request();
-        foreach ($this->headerProvider() as $item) {
-            $name = $item[0];
-            $value = $item[1];
-            $this->request->setHeader($name, $value);
-        }
+        $rqst = new Request();
+        $rqst->setMethod($method);
+        $this->assertEquals($method, $rqst->getMethod());
     }
 
-    public function headerProvider()
+    public function methodProvider()
     {
         return array(
-            array("Accept-Charset", "utf-8", "accept-charset"),
-            array("Accept-Encoding", "gzip, deflate", "ACCEPT-ENCODING"),
-            array("Cache-Control", "no-cache", "Cache-Control"),
+            array("GET"),
+            array("POST"),
+            array("PUT"),
+            array("DELETE"),
+            array("OPTIONS"),
+            array("HEAD")
         );
-    }
-
-    public function testSetBody()
-    {
-        $body = "This is the body";
-        $rqst = new Request();
-        $rqst->setBody($body);
-        $this->assertEquals($body, $rqst->getBody());
-    }
-
-    public function testNullBody()
-    {
-        $this->assertNull($this->request->getBody());
-    }
-
-    public function testHeaders()
-    {
-        $this->assertEquals(3, count($this->request->getHeaders()));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testHeaderValue($name, $value, $testName)
-    {
-        $this->assertEquals($value, $this->request->getHeader($testName));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testNonsetHeader()
-    {
-        $this->assertNull($this->request->getHeader("no-header"));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testUnsetHeader($name, $value, $testName)
-    {
-        $this->request->unsetHeader($testName);
-        $this->assertNull($this->request->getHeader($testName));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testUpdateHeader($name, $value, $testName)
-    {
-        $newvalue = "newvalue";
-        $this->request->setHeader($testName, "newvalue");
-        $this->assertEquals($newvalue, $this->request->getHeader($testName));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testIssetHeader($name, $value, $testName)
-    {
-        $this->assertTrue($this->request->issetHeader($testName));
-    }
-
-    /**
-     * @dataProvider headerProvider
-     */
-    public function testNotIssetHeader($name, $value, $testName)
-    {
-        $this->request->unsetHeader($testName);
-        $this->assertFalse($this->request->issetHeader($testName));
     }
 
     /**
      * @dataProvider uriProvider
      */
-    public function testUri($uri, $data)
+    public function testSetUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->uri, $rqst->getUri());
@@ -109,7 +42,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testScheme($uri, $data)
+    public function testParseSchemeFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->scheme, $rqst->getScheme());
@@ -118,7 +51,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testHostname($uri, $data)
+    public function testParseHostnameFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->hostname, $rqst->getHostname());
@@ -127,7 +60,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testPort($uri, $data)
+    public function testParsePortFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->port, $rqst->getPort());
@@ -136,7 +69,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testPath($uri, $data)
+    public function testParsePathFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->path, $rqst->getPath());
@@ -145,7 +78,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testPathParts($uri, $data)
+    public function testParsePathPartsFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->parts, $rqst->getPathParts());
@@ -154,7 +87,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider uriProvider
      */
-    public function testQuery($uri, $data)
+    public function testParseQueryFromUri($uri, $data)
     {
         $rqst = new Request($uri);
         $this->assertEquals($data->query, $rqst->getQuery());
@@ -231,43 +164,105 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @dataProvider defaultPortProvider
-     */
-    public function testDefaultPort($scheme, $port)
+    public function testSetBody()
     {
-        $rqst = new Request("http://localhost:9999");
-        $rqst->setScheme($scheme);
-        $rqst->setPort();
-        $this->assertEquals($port, $rqst->getPort());
+        $body = "This is the body";
+        $rqst = new Request();
+        $rqst->setBody($body);
+        $this->assertEquals($body, $rqst->getBody());
     }
 
-    public function defaultPortProvider()
+    public function testBodyIsNullByDefault()
     {
-        return [
-            ["http", 80],
-            ["https", 443]
+        $rqst = new Request();
+        $this->assertNull($rqst->getBody());
+    }
+
+    public function testSetFormFields()
+    {
+        $faker = Factory::create();
+        $form = [
+            "firstName" => $faker->firstName,
+            "lastName" => $faker->lastName,
+            "username" => $faker->userName
         ];
+
+        $rqst = new Request();
+        $rqst->setFormFields($form);
+        $body = $rqst->getBody();
+        parse_str($body, $fields);
+        $this->assertEquals($form, $fields);
     }
 
     /**
-     * @dataProvider invalidSchemeProvider
-     * @expectedException \UnexpectedValueException
+     * @dataProvider headerProvider
      */
-    public function testInvalidScheme($scheme)
+    public function testSetHeader($headerKey, $headerValue, $badCapsKey)
     {
-        $this->request->setScheme($scheme);
+        $rqst = new Request();
+        $rqst->setHeader($headerKey, $headerValue);
+        $this->assertEquals($headerValue, $rqst->getHeader($badCapsKey));
     }
 
-    public function invalidSchemeProvider()
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testUpdateHeader($headerKey, $headerValue, $testName)
     {
-        return [
-            [""],
-            ["ftp"],
-            ["ssh"],
-            [null],
-            [0]
-        ];
+        $rqst = new Request();
+        $rqst->setHeader($headerKey, $headerValue);
+        $newValue = "newvalue";
+        $rqst->setHeader($testName, "newvalue");
+        $this->assertEquals($newValue, $rqst->getHeader($testName));
+    }
+
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testNonsetHeaderIsNull()
+    {
+        $rqst = new Request();
+        $this->assertNull($rqst->getHeader("no-header"));
+    }
+
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testUnsetHeaderIsNull($headerKey, $headerValue, $testName)
+    {
+        $rqst = new Request();
+        $rqst->setHeader($headerKey, $headerValue);
+        $rqst->unsetHeader($testName);
+        $this->assertNull($rqst->getHeader($headerKey));
+    }
+
+    /**
+     * @dataProvider headerProvider
+     */
+    public function testCheckIfHeaderIsSet($headerKey, $headerValue, $testName)
+    {
+        $rqst = new Request();
+        $rqst->setHeader($headerKey, $headerValue);
+        $this->assertTrue($rqst->issetHeader($testName));
+    }
+
+    public function headerProvider()
+    {
+        return array(
+            array("Accept-Charset", "utf-8", "accept-charset"),
+            array("Accept-Encoding", "gzip, deflate", "ACCEPT-ENCODING"),
+            array("Cache-Control", "no-cache", "Cache-Control"),
+        );
+    }
+
+    public function testCountHeader()
+    {
+        $rqst = new Request();
+        $headers = $this->headerProvider();
+        foreach ($headers as $header) {
+            $rqst->setHeader($header[0], $header[1]);
+        }
+        $this->assertEquals(count($headers), count($rqst->getHeaders()));
     }
 
     /**
@@ -275,8 +270,9 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetQuery($input, $expected)
     {
-        $this->request->setQuery($input);
-        $this->assertEquals($expected, $this->request->getQuery());
+        $rqst = new Request();
+        $rqst->setQuery($input);
+        $this->assertEquals($expected, $rqst->getQuery());
     }
 
     public function queryProvider()
@@ -306,9 +302,10 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
      * @dataProvider invalidQueryProvider
      * @expectedException  \InvalidArgumentException
      */
-    public function testInvalidQuery($query)
+    public function testFailOnInvalidQuery($query)
     {
-        $this->request->setQuery($query);
+        $rqst = new Request();
+        $rqst->setQuery($query);
     }
 
     public function invalidQueryProvider()
@@ -322,30 +319,49 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider methodProvider
+     * @dataProvider invalidSchemeProvider
+     * @expectedException \UnexpectedValueException
      */
-    public function testMethod($method)
+    public function testFailOnInvalidScheme($scheme)
     {
-        $this->request->setMethod($method);
-        $this->assertEquals($method, $this->request->getMethod());
+        $rqst = new Request();
+        $rqst->setScheme($scheme);
     }
 
-    public function methodProvider()
+    public function invalidSchemeProvider()
     {
-        return array(
-            array("GET"),
-            array("POST"),
-            array("PUT"),
-            array("DELETE"),
-            array("OPTIONS"),
-            array("HEAD")
-        );
+        return [
+            [""],
+            ["ftp"],
+            ["ssh"],
+            [null],
+            [0]
+        ];
+    }
+
+    /**
+     * @dataProvider defaultPortProvider
+     */
+    public function testSetDefaultPort($scheme, $port)
+    {
+        $rqst = new Request("http://localhost:9999");
+        $rqst->setScheme($scheme);
+        $rqst->setPort();
+        $this->assertEquals($port, $rqst->getPort());
+    }
+
+    public function defaultPortProvider()
+    {
+        return [
+            ["http", 80],
+            ["https", 443]
+        ];
     }
 
     /**
      * @dataProvider serverProvider
      */
-    public function testServerRequestMethod($serverVars, $expected)
+    public function testReadServerRequestMethod($serverVars, $expected)
     {
         $original = $_SERVER;
         $_SERVER = array_merge($_SERVER, $serverVars);
@@ -358,7 +374,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider serverProvider
      */
-    public function testServerRequestHost($serverVars, $expected)
+    public function testReadServerRequestHost($serverVars, $expected)
     {
         $original = $_SERVER;
         $_SERVER = array_merge($_SERVER, $serverVars);
@@ -371,7 +387,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider serverProvider
      */
-    public function testServerRequestPath($serverVars, $expected)
+    public function testReadServerRequestPath($serverVars, $expected)
     {
         $original = $_SERVER;
         $_SERVER = array_merge($_SERVER, $serverVars);
@@ -384,35 +400,8 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider serverProvider
      */
-    public function testServerRequestHeaders($serverVars, $expected)
+    public function testReadServerRequestHeaders($serverVars, $expected)
     {
-        $original = $_SERVER;
-        $_SERVER = array_merge($_SERVER, $serverVars);
-        $rqst = new Request();
-        $rqst->readHttpRequest();
-        foreach ($expected->headers as $name => $value) {
-            $this->assertEquals($value, $rqst->getHeader($name));
-        }
-        $_SERVER = $original;
-    }
-
-    /**
-     * @dataProvider serverProvider
-     */
-    public function testHasApacheHeaders($serverVars, $expected)
-    {
-        if (!function_exists('apache_request_headers')) {
-            function apache_request_headers() {
-                $headers = '';
-                foreach ($_SERVER as $name => $value) {
-                    if (substr($name, 0, 5) === 'HTTP_') {
-                        $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-                    }
-                }
-                return $headers;
-            }
-        }
-
         $original = $_SERVER;
         $_SERVER = array_merge($_SERVER, $serverVars);
         $rqst = new Request();
@@ -426,7 +415,7 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * We can only test the static member once, so no need for dataProvider.
      */
-    public function testStaticRequest()
+    public function testReadStaticRequest()
     {
         $data = $this->serverProvider();
         $serverVars = $data[0][0];
@@ -443,9 +432,9 @@ class RequestBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testStaticRequest
+     * @depends testReadStaticRequest
      */
-    public function testStaticRequestAgain($previousRequest)
+    public function testReadStaticRequestAgain($previousRequest)
     {
         $rqst = Request::getRequest();
         $this->assertSame($previousRequest, $rqst);
