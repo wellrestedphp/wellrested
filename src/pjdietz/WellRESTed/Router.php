@@ -46,8 +46,7 @@ class Router implements HandlerInterface
                 return $responce;
             }
         }
-
-        return $this->getNoRouteResponse($request);
+        return null;
     }
 
     /**
@@ -76,9 +75,15 @@ class Router implements HandlerInterface
 
     /**
      * Dispatch the singleton Request through the router and output the response.
+     *
+     * Respond with a 404 Not Found if no route provides a response.
      */
     public function respond() {
-        $response = $this->getResponse(Request::getRequest());
+        $request = Request::getRequest();
+        $response = $this->getResponse($request);
+        if (!$response) {
+            $response = $this->getNoRouteResponse($request);
+        }
         $response->respond();
     }
 

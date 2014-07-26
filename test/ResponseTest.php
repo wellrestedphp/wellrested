@@ -168,6 +168,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testOutputResponse()
     {
         $faker = Factory::create();
@@ -175,13 +179,17 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
         $resp = new Response(200, $body, ["Content-type" => "text/plain"]);
         ob_start();
-        @$resp->respond();
+        $resp->respond();
         $captured = ob_get_contents();
         ob_end_clean();
 
         $this->assertEquals($body, $captured);
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testOutputResponseFromFile()
     {
         $path = tempnam(sys_get_temp_dir(), "TST");
@@ -197,8 +205,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $resp->setBodyFilePath($path);
 
         ob_start();
-        ob_clean();
-        @$resp->respond();
+        $resp->respond();
         $captured = ob_get_contents();
         ob_end_clean();
 
@@ -207,6 +214,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($captured, $body);
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testMissingResponseFile()
     {
         $path = tempnam(sys_get_temp_dir(), "TST");
@@ -217,8 +228,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         unlink($path);
 
         ob_start();
-        ob_clean();
-        @$resp->respond();
+        $resp->respond();
         $captured = ob_get_contents();
         ob_end_clean();
 

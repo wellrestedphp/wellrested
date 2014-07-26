@@ -45,7 +45,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $resp->getStatusCode());
     }
 
-    public function testGetNoRouteResponse()
+    public function testReturnNullWhenNoRouteMatches()
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
@@ -56,25 +56,51 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router = new Router();
         $router->addRoute($route);
         $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(404, $resp->getStatusCode());
+        $this->assertNull($resp);
     }
 
-    public function testStaticRequest()
+    public function testNestedRouters()
     {
-        $path = "/";
-        $original = $_SERVER;
-        $_SERVER["REQUEST_URI"] = $path;
-        $_SERVER["HTTP_HOST"] = "localhost";
+        $path = "/cats/";
 
-        $route = new StaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
+        $router1 = new Router();
+        $router2 = new Router();
+        $router3 = new Router();
+
+        $router1->addRoute($router2);
+        $router2->addRoute($router3);
+        $router3->addRoute(new StaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler'));
+
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue($path));
+
+        $resp = $router1->getResponse($mockRequest);
+        $this->assertNotNull($resp);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testStaticRequestDoesNotMatchRouter()
+    {
+        $_SERVER["REQUEST_URI"] = "/cats/";
+        $_SERVER["HTTP_HOST"] = "localhost";
+        $_SERVER["REQUEST_METHOD"] = "GET";
+
+        $route = new StaticRoute("/dogs/", __NAMESPACE__ . '\\RouterTestHandler');
         $router = new Router();
         $router->addRoute($route);
         ob_start();
-        @$router->respond();
+        $router->respond();
+        $captured = ob_get_contents();
         ob_end_clean();
 
-        $_SERVER = $original;
+        $this->assertEquals("No resource at /cats/", $captured);
     }
+
 }
 
 /**
