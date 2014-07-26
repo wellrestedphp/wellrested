@@ -22,6 +22,14 @@ class Client
     /** @var array cURL options */
     private $curlOpts;
 
+    /**
+     * Create a new client.
+     *
+     * You may optionally provide an array of cURL options to use by default.
+     * Options passed in the requset method will override these.
+     *
+     * @param array $curlOpts Optional array of cURL options
+     */
     public function __construct(array $curlOpts = null) {
         if (is_array($curlOpts)) {
             $this->curlOpts = $curlOpts;
@@ -34,7 +42,7 @@ class Client
      * Make an HTTP request and return a Response.
      *
      * @param RequestInterface $rqst
-     * @param array $curlOpts Option array of cURL options
+     * @param array $curlOpts Optional array of cURL options
      * @throws \pjdietz\WellRESTed\Exceptions\CurlException
      * @return ResponseInterface
      */
