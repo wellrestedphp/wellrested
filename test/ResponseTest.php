@@ -5,7 +5,7 @@ namespace pjdietz\WellRESTed\Test;
 use Faker\Factory;
 use pjdietz\WellRESTed\Response;
 
-class ResponseBuilderTest extends \PHPUnit_Framework_TestCase
+class ResponseTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider statusCodeProvider

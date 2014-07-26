@@ -11,7 +11,7 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
     /*
      * Parse JSON and get the correct number of routes.
      */
-    public function testBuildValidJson()
+    public function testBuildRoutesFromJson()
     {
         $json = <<<'JSON'
 {
@@ -44,14 +44,14 @@ JSON;
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse as JSON.
      */
-    public function testBuildInvalidJson()
+    public function testFailBuildingRoutesFromInvalidJson()
     {
         $json = "jadhjaksd";
         $builder = new RouteBuilder();
-        $routes = $builder->buildRoutes($json);
+        $builder->buildRoutes($json);
     }
 
-    public function testNamesapce()
+    public function testSetNamesapce()
     {
         $namespace = "\\test\\Namespace";
         $builder = new RouteBuilder();
@@ -62,7 +62,7 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testDefaultVariablePattern($name, $pattern, $expected)
+    public function testSetDefaultVariablePatternThroughAccessor($name, $pattern, $expected)
     {
         $builder = new RouteBuilder();
         $builder->setDefaultVariablePattern($pattern);
@@ -72,7 +72,7 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testConfigurationDefaultVariablePattern($name, $pattern, $expected)
+    public function testSetDefaultVariablePatternThroughConfiguration($name, $pattern, $expected)
     {
         $builder = new RouteBuilder();
         $conf = new stdClass();
@@ -84,7 +84,7 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testTemplateVariables($name, $pattern, $expected)
+    public function testSetTemplateVariablesThroughAccessor($name, $pattern, $expected)
     {
         $builder = new RouteBuilder();
         $builder->setTemplateVars(array($name => $pattern));
@@ -95,40 +95,40 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testConfigurationTemplateVariables($name, $pattern, $expected)
+    public function testSetTemplateVariablesThroughConfiguration($name, $pattern, $expected)
     {
         $builder = new RouteBuilder();
         $conf = new stdClass();
-        $conf->vars = array($name => $pattern);
+        $conf->vars = [$name => $pattern];
         $builder->readConfiguration($conf);
         $vars = $builder->getTemplateVars();
         $this->assertEquals($vars[$name], $expected);
     }
 
     public function varProvider()
-     {
-         return array(
-             array("slug", "SLUG", TemplateRoute::RE_SLUG),
-             array("name", "ALPHA", TemplateRoute::RE_ALPHA),
-             array("name", "ALPHANUM", TemplateRoute::RE_ALPHANUM),
-             array("id", "DIGIT", TemplateRoute::RE_NUM),
-             array("id", "NUM", TemplateRoute::RE_NUM),
-             array("custom", ".*", ".*")
-         );
-     }
+    {
+         return [
+             ["slug", "SLUG", TemplateRoute::RE_SLUG],
+             ["name", "ALPHA", TemplateRoute::RE_ALPHA],
+             ["name", "ALPHANUM", TemplateRoute::RE_ALPHANUM],
+             ["id", "DIGIT", TemplateRoute::RE_NUM],
+             ["id", "NUM", TemplateRoute::RE_NUM],
+             ["custom", ".*", ".*"]
+         ];
+    }
 
     /**
      * @dataProvider routeDescriptionProvider
      */
-    public function testRoutes($key, $value, $expectedClass)
+    public function testBuildRoutesFromRoutesArray($key, $value, $expectedClass)
     {
-        $mock = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
-        $routes = array(
-            (object) array(
+        $mockHander = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
+        $routes = [
+            (object) [
                 $key => $value,
-                "handler" => get_class($mock)
-            )
-        );
+                "handler" => get_class($mockHander)
+            ]
+        ];
         $builder = new RouteBuilder();
         $routes = $builder->buildRoutes($routes);
         $route = $routes[0];
@@ -138,17 +138,17 @@ JSON;
     /**
      * @dataProvider routeDescriptionProvider
      */
-    public function testRoutesObject($key, $value, $expectedClass)
+    public function testBuildRoutesFromConfigurationObject($key, $value, $expectedClass)
     {
-        $mock = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
-        $conf = (object) array(
-            "routes" => array(
-                (object) array(
+        $mockHander = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
+        $conf = (object) [
+            "routes" => [
+                (object) [
                     $key => $value,
-                    "handler" => get_class($mock)
-                )
-            )
-        );
+                    "handler" => get_class($mockHander)
+                ]
+            ]
+        ];
         $builder = new RouteBuilder();
         $routes = $builder->buildRoutes($conf);
         $route = $routes[0];
@@ -157,27 +157,27 @@ JSON;
 
     public function routeDescriptionProvider()
     {
-        return array(
-            array("path", "/", '\pjdietz\WellRESTed\Routes\StaticRoute'),
-            array("pattern", "/cat/[0-9]+", '\pjdietz\WellRESTed\Routes\RegexRoute'),
-            array("template", "/cat/{id}", '\pjdietz\WellRESTed\Routes\TemplateRoute'),
-        );
+        return [
+            ["path", "/", '\pjdietz\WellRESTed\Routes\StaticRoute'],
+            ["pattern", "/cat/[0-9]+", '\pjdietz\WellRESTed\Routes\RegexRoute'],
+            ["template", "/cat/{id}", '\pjdietz\WellRESTed\Routes\TemplateRoute'],
+        ];
     }
 
-    public function testTemplateRouteWithVariables()
+    public function testBuildRoutesWithTemplateVariables()
     {
         $mock = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
-        $routes = array(
-            (object) array(
+        $routes = [
+            (object) [
                 "template" => "/cats/{catId}",
                 "handler" => get_class($mock),
-                "vars" => array(
+                "vars" => [
                     "catId" => "SLUG"
-                )
-            )
-        );
+                ]
+            ]
+        ];
         $builder = new RouteBuilder();
-        $builder->setTemplateVars(array("dogId" => "NUM"));
+        $builder->setTemplateVars(["dogId" => "NUM"]);
         $routes = $builder->buildRoutes($routes);
         $route = $routes[0];
         $this->assertInstanceOf('\pjdietz\WellRESTed\Routes\TemplateRoute', $route);
@@ -187,25 +187,25 @@ JSON;
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse. Missing array of routes.
      */
-    public function testIvalidRoutesObject()
+    public function testFailOnConfigurationObjectMissingRoutesArray()
     {
         $conf = new stdClass();
         $builder = new RouteBuilder();
-        $routes = $builder->buildRoutes($conf);
+        $builder->buildRoutes($conf);
     }
 
     /**
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse. Route is missing a handler.
      */
-    public function testInvalidRoute()
+    public function testFailOnRouteMissingHandler()
     {
-        $routes = array(
-            (object) array(
+        $routes = [
+            (object) [
                 "path" => "/"
-            )
-        );
+            ]
+        ];
         $builder = new RouteBuilder();
-        $routes = $builder->buildRoutes($routes);
+        $builder->buildRoutes($routes);
     }
 }
