@@ -2,81 +2,92 @@
 
 namespace pjdietz\WellRESTed\Test;
 
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Routes\RegexRoute;
 
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        include_once(__DIR__ . "/../src/MockHandler.php");
-    }
-
     /**
      * @dataProvider matchingRouteProvider
      */
-    public function testMatchingRoute($pattern, $path)
+    public function testMatchPatternForRoute($pattern, $path)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $route = new RegexRoute($pattern, 'MockHandler');
+        $route = new RegexRoute($pattern, __NAMESPACE__ . '\RegexRouteTestHandler');
         $resp = $route->getResponse($mockRequest);
         $this->assertNotNull($resp);
     }
 
     public function matchingRouteProvider()
     {
-        return array(
-            array("~/cat/[0-9]+~", "/cat/2"),
-            array("#/dog/.*#", "/dog/his-name-is-bear")
-        );
+        return [
+            ["~/cat/[0-9]+~", "/cat/2"],
+            ["#/dog/.*#", "/dog/his-name-is-bear"]
+        ];
     }
 
     /**
-     * @dataProvider nonmatchingRouteProvider
+     * @dataProvider mismatchingRouteProvider
      */
-    public function testNonmatchingRoute($pattern, $path)
+    public function testSkipMismatchingPattern($pattern, $path)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $route = new RegexRoute($pattern, 'MockHandler');
+        $route = new RegexRoute($pattern, 'NoClass');
         $resp = $route->getResponse($mockRequest);
         $this->assertNull($resp);
     }
 
-    public function nonmatchingRouteProvider()
+    public function mismatchingRouteProvider()
     {
-        return array(
-            array("~/cat/[0-9]+~", "/cat/molly"),
-            array("~/cat/[0-9]+~", "/dog/bear"),
-            array("#/dog/.*#", "/dog")
-        );
+        return [
+            ["~/cat/[0-9]+~", "/cat/molly"],
+            ["~/cat/[0-9]+~", "/dog/bear"],
+            ["#/dog/.*#", "/dog"]
+       ];
     }
 
     /**
      * @dataProvider invalidRouteProvider
      * @expectedException  \pjdietz\WellRESTed\Exceptions\ParseException
      */
-    public function testInvalidRoute($pattern)
+    public function testFailOnInvalidPattern($pattern)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
 
-        $route = new RegexRoute($pattern, 'MockHandler');
+        $route = new RegexRoute($pattern, 'NoClass');
         $resp = $route->getResponse($mockRequest);
         $this->assertNull($resp);
     }
 
     public function invalidRouteProvider()
     {
-        return array(
-            array("~/unterminated"),
-            array("/nope")
-        );
+        return [
+            ["~/unterminated"],
+            ["/nope"]
+        ];
     }
 
+}
+
+/**
+ * Mini Handler class that allways returns a 200 status code Response.
+ */
+class RegexRouteTestHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $resp = new Response();
+        $resp->setStatusCode(200);
+        return $resp;
+    }
 }

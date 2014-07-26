@@ -10,7 +10,7 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
      * Create a route that will match, but has an incorrect handler assigned.
      * @expectedException  \UnexpectedValueException
      */
-    public function testSinglePathMatch()
+    public function testFailOnHandlerDoesNotImplementInterface()
     {
         $path = "/";
 
@@ -19,9 +19,8 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $path = "/";
         $route = new StaticRoute($path, __NAMESPACE__ . '\NotAHandler');
-        $resp = $route->getResponse($mockRequest);
+        $route->getResponse($mockRequest);
     }
 }
 

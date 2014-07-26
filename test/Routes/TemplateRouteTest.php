@@ -12,7 +12,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider matchingTemplateProvider
      */
-    public function testMatchingTemplate($template, $default, $vars, $path, $testName, $expected)
+    public function testMatchTemplate($template, $default, $vars, $path, $testName, $expected)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
@@ -44,14 +44,14 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider nonmatchingTemplateProvider
      */
-    public function testNonmatchingTemplate($template, $default, $vars, $path)
+    public function testSkipNonmatchingTemplate($template, $default, $vars, $path)
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
         $mockRequest->expects($this->any())
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $route = new TemplateRoute($template, __NAMESPACE__ . '\TemplateRouteTestMockHandler', $default, $vars);
+        $route = new TemplateRoute($template, "NoClass", $default, $vars);
         $resp = $route->getResponse($mockRequest);
         $this->assertNull($resp);
     }

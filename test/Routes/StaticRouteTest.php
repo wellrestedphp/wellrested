@@ -2,16 +2,13 @@
 
 namespace pjdietz\WellRESTed\Test;
 
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 
 class StaticRouteTest extends \PHPUnit_Framework_TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        include_once(__DIR__ . "/../src/MockHandler.php");
-    }
-
-    public function testSinglePathMatch()
+    public function testMatchSinglePath()
     {
         $path = "/";
 
@@ -20,26 +17,12 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $route = new StaticRoute($path, 'MockHandler');
+        $route = new StaticRoute($path, __NAMESPACE__ . '\StaticRouteTestHandler');
         $resp = $route->getResponse($mockRequest);
         $this->assertEquals(200, $resp->getStatusCode());
     }
 
-    public function testSinglePathNoMatch()
-    {
-        $path = "/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/not-this-path/"));
-
-        $route = new StaticRoute($path, 'HandlerStub');
-        $resp = $route->getResponse($mockRequest);
-        $this->assertNull($resp);
-    }
-
-    public function testListPathMatch()
+    public function testMatchPathInList()
     {
         $path = "/";
         $paths = array($path, "/cats/", "/dogs/");
@@ -49,18 +32,32 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
             ->method('getPath')
             ->will($this->returnValue($path));
 
-        $route = new StaticRoute($paths, 'MockHandler');
+        $route = new StaticRoute($paths, __NAMESPACE__ . '\StaticRouteTestHandler');
         $resp = $route->getResponse($mockRequest);
         $this->assertEquals(200, $resp->getStatusCode());
+    }
+
+    public function testFailToMatchPath()
+    {
+        $path = "/";
+
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/not-this-path/"));
+
+        $route = new StaticRoute($path, 'NoClass');
+        $resp = $route->getResponse($mockRequest);
+        $this->assertNull($resp);
     }
 
     /**
      * @dataProvider invalidPathsProvider
      * @expectedException  \InvalidArgumentException
      */
-    public function testInvalidPath($path)
+    public function testFailOnInvalidPath($path)
     {
-        $route = new StaticRoute($path, 'MockHandler');
+        new StaticRoute($path, 'NoClass');
     }
 
     public function invalidPathsProvider()
@@ -72,4 +69,17 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+}
+
+/**
+ * Mini Handler class that allways returns a 200 status code Response.
+ */
+class StaticRouteTestHandler implements HandlerInterface
+{
+    public function getResponse(\pjdietz\WellRESTed\Interfaces\RequestInterface $request, array $args = null)
+    {
+        $resp = new Response();
+        $resp->setStatusCode(200);
+        return $resp;
+    }
 }
