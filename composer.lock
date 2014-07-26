@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5f2174a14a32c9abc7bca48bc8557cb1",
+    "hash": "7f359f14a76a9181ee5315b4fb3f36b3",
     "packages": [],
     "packages-dev": [
         {
@@ -442,12 +442,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pjdietz/ShamServer.git",
-                "reference": "702e5c94bef72d99629cba4f54061ef72e5e638e"
+                "reference": "bc382dad72104d8cee44cbaa7edfc7a3e130fa84"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pjdietz/ShamServer/zipball/702e5c94bef72d99629cba4f54061ef72e5e638e",
-                "reference": "702e5c94bef72d99629cba4f54061ef72e5e638e",
+                "url": "https://api.github.com/repos/pjdietz/ShamServer/zipball/bc382dad72104d8cee44cbaa7edfc7a3e130fa84",
+                "reference": "bc382dad72104d8cee44cbaa7edfc7a3e130fa84",
                 "shasum": ""
             },
             "require": {
@@ -463,6 +463,7 @@
                     "pjdietz": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -479,11 +480,7 @@
                 "http",
                 "webserver"
             ],
-            "support": {
-                "source": "https://github.com/pjdietz/ShamServer/tree/master",
-                "issues": "https://github.com/pjdietz/ShamServer/issues"
-            },
-            "time": "2014-07-26 02:06:19"
+            "time": "2014-07-26 16:01:23"
         },
         {
             "name": "sebastian/comparator",
