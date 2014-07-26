@@ -4,9 +4,59 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "51e65a31711f28ae591ec9f4efb2bfac",
+    "hash": "5f2174a14a32c9abc7bca48bc8557cb1",
     "packages": [],
     "packages-dev": [
+        {
+            "name": "fzaninotto/faker",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fzaninotto/Faker.git",
+                "reference": "c48f30549b1ec508a74141a833757ca1e0d9ca53"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/c48f30549b1ec508a74141a833757ca1e0d9ca53",
+                "reference": "c48f30549b1ec508a74141a833757ca1e0d9ca53",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "~1.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Faker": "src/",
+                    "Faker\\PHPUnit": "test/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "François Zaninotto"
+                }
+            ],
+            "description": "Faker is a PHP library that generates fake data for you.",
+            "keywords": [
+                "data",
+                "faker",
+                "fixtures"
+            ],
+            "time": "2014-07-17 07:25:43"
+        },
         {
             "name": "phpunit/php-code-coverage",
             "version": "2.0.9",
@@ -756,6 +806,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "fzaninotto/faker": 20,
         "pjdietz/shamserver": 20
     },
     "platform": {

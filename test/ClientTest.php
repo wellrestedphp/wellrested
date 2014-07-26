@@ -2,6 +2,7 @@
 
 namespace pjdietz\WellRESTed\Test;
 
+use Faker\Factory;
 use pjdietz\ShamServer\ShamServer;
 use pjdietz\WellRESTed\Client;
 
@@ -10,7 +11,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider httpMethodProvider
      */
-    public function testCheckHttpMethod($method)
+    public function testSendHttpMethod($method)
     {
         $host = "localhost";
         $port = 8080;
@@ -18,7 +19,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Request')->getMock();
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
         $rqst->expects($this->any())
             ->method("getUri")
             ->will($this->returnValue("http://$host:$port"));
@@ -55,7 +56,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider httpHeaderProvider
      */
-    public function testCheckHttpHeaders($headerKey, $headerValue)
+    public function testSendHttpHeaders($headerKey, $headerValue)
     {
         $host = "localhost";
         $port = 8080;
@@ -63,7 +64,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Request')->getMock();
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
         $rqst->expects($this->any())
             ->method("getUri")
             ->will($this->returnValue("http://$host:$port"));
@@ -91,6 +92,49 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ["Cache-Control", "max-age=0"],
             ["X-Custom-Header", "custom value"],
             ["Accept-Charset", "utf-8"]
+        ];
+    }
+
+    /**
+     * @dataProvider bodyProvider
+     */
+    public function testSendBody($body)
+    {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/body.php");
+        $server = new ShamServer($host, $port, $script);
+
+        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
+        $rqst->expects($this->any())
+            ->method("getUri")
+            ->will($this->returnValue("http://$host:$port"));
+        $rqst->expects($this->any())
+            ->method("getMethod")
+            ->will($this->returnValue("POST"));
+        $rqst->expects($this->any())
+            ->method("getPort")
+            ->will($this->returnValue($port));
+        $rqst->expects($this->any())
+            ->method("getHeaders")
+            ->will($this->returnValue(array()));
+        $rqst->expects($this->any())
+            ->method("getBody")
+            ->will($this->returnValue($body));
+
+        $client = new Client();
+        $resp = $client->request($rqst);
+        $this->assertEquals($body, $resp->getBody());
+        $server->stop();
+    }
+
+    public function bodyProvider()
+    {
+        $faker = Factory::create();
+        return [
+            [$faker->text()],
+            [$faker->text()],
+            [$faker->text()]
         ];
     }
 }
