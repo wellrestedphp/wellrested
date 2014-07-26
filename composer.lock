@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ff7bc5c6c0cd51153b947901dc3d51af",
+    "hash": "51e65a31711f28ae591ec9f4efb2bfac",
     "packages": [],
     "packages-dev": [
         {
@@ -257,16 +257,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.1.3",
+            "version": "4.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "939cb801b3b2aa253aedd0b279f40bb8f35cec91"
+                "reference": "a71c4842c5fb836d8b200624583b859ec34e8a26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/939cb801b3b2aa253aedd0b279f40bb8f35cec91",
-                "reference": "939cb801b3b2aa253aedd0b279f40bb8f35cec91",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a71c4842c5fb836d8b200624583b859ec34e8a26",
+                "reference": "a71c4842c5fb836d8b200624583b859ec34e8a26",
                 "shasum": ""
             },
             "require": {
@@ -327,7 +327,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2014-06-11 14:15:47"
+            "time": "2014-07-18 07:15:58"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -385,6 +385,55 @@
                 "xunit"
             ],
             "time": "2014-06-12 07:22:15"
+        },
+        {
+            "name": "pjdietz/shamserver",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pjdietz/ShamServer.git",
+                "reference": "702e5c94bef72d99629cba4f54061ef72e5e638e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pjdietz/ShamServer/zipball/702e5c94bef72d99629cba4f54061ef72e5e638e",
+                "reference": "702e5c94bef72d99629cba4f54061ef72e5e638e",
+                "shasum": ""
+            },
+            "require": {
+                "lib-curl": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.1.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "pjdietz": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PJ Dietz",
+                    "email": "pj@pjdietz.com"
+                }
+            ],
+            "description": "Build mini web servers in PHP for testing",
+            "homepage": "https://github.com/pjdietz/ShamServer",
+            "keywords": [
+                "curl",
+                "http",
+                "webserver"
+            ],
+            "support": {
+                "source": "https://github.com/pjdietz/ShamServer/tree/master",
+                "issues": "https://github.com/pjdietz/ShamServer/issues"
+            },
+            "time": "2014-07-26 02:06:19"
         },
         {
             "name": "sebastian/comparator",
@@ -656,17 +705,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.5.1",
+            "version": "v2.5.2",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "1057e87364c0b38b50f5695fc9df9dd189036bec"
+                "reference": "f868ecdbcc0276b6158dfbf08b9e98ce07f014e1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/1057e87364c0b38b50f5695fc9df9dd189036bec",
-                "reference": "1057e87364c0b38b50f5695fc9df9dd189036bec",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/f868ecdbcc0276b6158dfbf08b9e98ce07f014e1",
+                "reference": "f868ecdbcc0276b6158dfbf08b9e98ce07f014e1",
                 "shasum": ""
             },
             "require": {
@@ -701,12 +750,14 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-07-08 12:21:33"
+            "time": "2014-07-09 09:05:48"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "pjdietz/shamserver": 20
+    },
     "platform": {
         "php": ">=5.3.0"
     },

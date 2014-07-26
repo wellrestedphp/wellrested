@@ -1,82 +1,54 @@
 <?php
 
+namespace pjdietz\WellRESTed\Test;
+
+use pjdietz\ShamServer\ShamServer;
 use pjdietz\WellRESTed\Client;
-use pjdietz\WellRESTed\Request;
-use pjdietz\WellRESTed\Test;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
-    public function testFake()
-    {
-        $this->assertTrue(true);
-    }
-
     /**
-     * @dataProvider curlProvider
+     * @dataProvider httpMethodProvider
      */
-    public function testCurl($method, $uri, $opts, $code)
+    public function testCheckHttpMethod($method)
     {
+        $host = "localhost";
+        $port = 8080;
+        $script = realpath(__DIR__ . "/sham-routers/method.php");
+
+        $server = new ShamServer($host, $port, $script);
+
         $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Request')->getMock();
         $rqst->expects($this->any())
             ->method("getUri")
-            ->will($this->returnValue($uri));
+            ->will($this->returnValue("http://$host:$port"));
         $rqst->expects($this->any())
             ->method("getMethod")
             ->will($this->returnValue($method));
         $rqst->expects($this->any())
             ->method("getPort")
-            ->will($this->returnValue(80));
+            ->will($this->returnValue($port));
         $rqst->expects($this->any())
             ->method("getHeaders")
-            ->will($this->returnValue(array(
-                        "Cache-control" => "max-age=0"
-                    )));
+            ->will($this->returnValue(array()));
 
-        $client = new Client(array(CURLOPT_HTTPHEADER => array("Cache-control" => "max-age=0")));
-        $resp = $client->request($rqst, $opts);
-        $this->assertEquals($code, $resp->getStatusCode());
-    }
-
-    public function curlProvider()
-    {
-        return [
-            ["GET", "http://icanhasip.com", [
-                [CURLOPT_MAXREDIRS => 2]
-            ], 200],
-            ["POST", "http://icanhasip.com", [], 200],
-            ["PUT", "http://icanhasip.com", [], 405],
-            ["DELETE", "http://icanhasip.com", [], 405]
-        ];
-    }
-
-    /**
-     * @dataProvider curlErrorProvider
-     * @expectedException \pjdietz\WellRESTed\Exceptions\CurlException
-     */
-    public function testErrorCurl($uri, $opts)
-    {
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Request')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue($uri));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array(
-                        "Cache-control" => "max-age=0"
-                    )));
-
-        $rqst = new Request($uri);
         $client = new Client();
-        $client->request($rqst, $opts);
+        $resp = $client->request($rqst);
+        $body = trim($resp->getBody());
+        $this->assertEquals($method, $body);
+
+        $server->stop();
     }
 
-    public function curlErrorProvider()
+    public function httpMethodProvider()
     {
         return [
-            ["http://localhost:9991", [
-                CURLOPT_FAILONERROR, true,
-                CURLOPT_TIMEOUT_MS, 10
-            ]],
+            ["GET"],
+            ["POST"],
+            ["PUT"],
+            ["DELETE"],
+            ["PATCH"],
+            ["OPTIONS"]
         ];
     }
 }
