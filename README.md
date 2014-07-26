@@ -7,7 +7,7 @@ Requirements
 ------------
 
 - PHP 5.3
-- [PHP cURL](http://php.net/manual/en/book.curl.php) for making requests with the `Client` class
+- [PHP cURL](http://php.net/manual/en/book.curl.php) for making requests with the `Client` class (Optional)
 
 
 Install
