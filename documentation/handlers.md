@@ -11,7 +11,7 @@ Member     | Type | Description
 ---------- | ---- | -----------
 `args`     | `array` | Map of variables to supplement the request, usually path variables.
 `request`  | [`RequestInterface`](../src/pjdietz/WellRESTed/Interfaces/RequestInterface.php) | The HTTP request to respond to.
-`response` | [`RequestInterface`](../src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php) | The HTTP response to send based on the request.
+`response` | [`ResponseInterface`](../src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php) | The HTTP response to send based on the request.
 
 
 ## HTTP Verbs
