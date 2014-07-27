@@ -27,18 +27,19 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
 
     public function matchingTemplateProvider()
     {
-        return array(
-            array("/cat/{id}", TemplateRoute::RE_NUM, null, "/cat/12", "id", "12"),
-            array("/cat/{catId}/{dogId}", TemplateRoute::RE_SLUG, null, "/cat/molly/bear", "dogId", "bear"),
-            array("/cat/{catId}/{dogId}", TemplateRoute::RE_NUM, array(
+        return [
+            ["/cat/{id}", TemplateRoute::RE_NUM, null, "/cat/12", "id", "12"],
+            ["/cat/{catId}/{dogId}", TemplateRoute::RE_SLUG, null, "/cat/molly/bear", "dogId", "bear"],
+            ["/cat/{catId}/{dogId}", TemplateRoute::RE_NUM, [
                 "catId" => TemplateRoute::RE_SLUG,
-                "dogId" => TemplateRoute::RE_SLUG),
-                "/cat/molly/bear", "dogId", "bear"),
-            array("cat/{catId}/{dogId}", TemplateRoute::RE_NUM, (object) array(
+                "dogId" => TemplateRoute::RE_SLUG],
+                "/cat/molly/bear", "dogId", "bear"],
+            ["cat/{catId}/{dogId}", TemplateRoute::RE_NUM, (object) [
                 "catId" => TemplateRoute::RE_SLUG,
-                "dogId" => TemplateRoute::RE_SLUG),
-                "/cat/molly/bear", "dogId", "bear")
-        );
+                "dogId" => TemplateRoute::RE_SLUG],
+                "/cat/molly/bear", "dogId", "bear"],
+            ["/cat/{id}/*", null, null, "/cat/12/molly", "id", "12"]
+        ];
     }
 
     /**

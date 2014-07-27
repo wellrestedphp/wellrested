@@ -110,7 +110,14 @@ class TemplateRoute extends RegexRoute
 
         }
 
-        $pattern = '/^' . $pattern . '$/';
+        $pattern = '/^' . $pattern;
+        if (substr($pattern, -1) === "*") {
+            // Allow path to include characters passed the pattern.
+            $pattern = rtrim($pattern, "*") . '/';
+        } else {
+            // Path must end at the end of the pattern.
+            $pattern .= "$/";
+        }
         return $pattern;
     }
 
