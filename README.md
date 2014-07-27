@@ -40,7 +40,7 @@ Examples
 
 ### Routing
 
-WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a [`Router`](src/pjdietz/WellRESTed/Router.php) instance and load it up with some routes. Each route is simply a mapping of a URI pattern to a class name. The class name represents the "handler" (any class implementing `HandlerInterface`) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
+WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a [`Router`](src/pjdietz/WellRESTed/Router.php) instance and load it up with some routes. Each route is simply a mapping of a URI pattern to a class name. The class name represents the "handler" (any class implementing [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) ) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
 
 ```php
 // Build the router.
@@ -93,7 +93,7 @@ Notice that when you build routes through JSON, you can provide a `handlerNamesp
 
 ### Handlers
 
-Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interface/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could another [`Router`](src/pjdietz/WellRESTed/Router.php).
+Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could another [`Router`](src/pjdietz/WellRESTed/Router.php).
 
 For most cases, you'll want to use a subclass of the [`Handler`](src/pjdietz/WellRESTed/Handler.php) class, which provides methods for responding based on HTTP method. When you create your [`Handler`](src/pjdietz/WellRESTed/Handler.php) subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
 
@@ -127,7 +127,7 @@ class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 }
 ```
 
-See [Handlers](documentation/handler.md) to learn about the various route classes.
+See [Handlers](documentation/handlers.md) to learn about the various route classes.
 
 ### Responses
 

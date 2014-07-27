@@ -91,9 +91,9 @@ protected function buildResponse()
 
 ## HttpExceptions
 
-Another useful feature of the [`Handler`](../src/pjdietz/WellRESTed/Handler.php) class is that it catches exceptions deriving from [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions) and turns them into responses.
+Another useful feature of the [`Handler`](../src/pjdietz/WellRESTed/Handler.php) class is that it catches exceptions deriving from [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and turns them into responses.
 
-[`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions) and its subclasses provide the status code and description for simple error responses.
+[`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and its subclasses provide the status code and description for simple error responses.
 
 For example, you can throw a `NotFountException` if the resource the request indicates does not exist.
 
@@ -121,7 +121,7 @@ class CatsCollectionHandler extends Handler
 
 Your [`Handler`](../src/pjdietz/WellRESTed/Handler.php) will automatically turn this into a `404 Not Found` response.
 
-Here are the available `HttpException` classes:
+Here are the available [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php)  classes:
 
 Response Code               | Class
 --------------------------- | -----------------------
