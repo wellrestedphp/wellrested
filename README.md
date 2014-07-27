@@ -9,7 +9,7 @@ Requirements
 ------------
 
 - PHP 5.3
-- [PHP cURL](http://php.net/manual/en/book.curl.php) for making requests with the `Client` class (Optional)
+- [PHP cURL](http://php.net/manual/en/book.curl.php) for making requests with the [`Client`](src/pjdietz/WellRESTed/Client.php) class (Optional)
 
 
 Install
@@ -40,7 +40,7 @@ Examples
 
 ### Routing
 
-WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a `Router` instance and load it up with some `Route`s. Each `Route` is simply a mapping of a URI pattern to a class name. The class name represents the "handler" (any class implementing `HandlerInterface`) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
+WellRESTed's primary goal is to facilitate mapping of URIs to classes that will provide or accept representations. To do this, create a [`Router`](src/pjdietz/WellRESTed/Router.php) instance and load it up with some routes. Each route is simply a mapping of a URI pattern to a class name. The class name represents the "handler" (any class implementing `HandlerInterface`) which the router will dispatch when it receives a request for the given URI. **The handlers are never instantiated or loaded unless they are needed.**
 
 ```php
 // Build the router.
@@ -58,7 +58,7 @@ See [Routes](documentation/routes.md) to learn about the various route classes.
 
 ### Building Routes with JSON
 
-WellRESTed also provides a class to construct routes for you based on a JSON description. Here's an example.
+WellRESTed also provides a class to construct routes for you based on a JSON description. Here's an example:
 
 ```php
 $json = <<<'JSON'
@@ -89,15 +89,13 @@ $router->addRoutes($routes);
 $router->respond();
 ```
 
-Notice that when you build routes through JSON, you can provide a `handlerNamespace` to be affixed to the front of every `handler`.
+Notice that when you build routes through JSON, you can provide a `handlerNamespace` to be affixed to the front of every handler.
 
 ### Handlers
 
-Any class that implements `HandlerInterface` may be the handler for a route. This could be a class that builds the actual response, or it could another `Router`.
+Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interface/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could another [`Router`](src/pjdietz/WellRESTed/Router.php).
 
-For most cases, you'll want to use a subclass of the `Handler` class, which provides methods for responding based on HTTP method. When you create your Handler subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
-
-If your endpoint should reject particular verbs, no worries. The Handler base class defines the default verb-handling methods to respond with a **405 Method Not Allowed** status.
+For most cases, you'll want to use a subclass of the [`Handler`](src/pjdietz/WellRESTed/Handler.php) class, which provides methods for responding based on HTTP method. When you create your [`Handler`](src/pjdietz/WellRESTed/Handler.php) subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
 
 Here's a simple Handler that allows `GET` and `POST`.
 
@@ -129,43 +127,11 @@ class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 }
 ```
 
-#### Path Variables
-
-When you use a `TemplateRoute` with variables (or a `RegexRoute` with capture groups), you can access the variables (or captures) through the `Handler` member variable `$args`.
-
-Create this route...
-```php
-$route = TemplateRoute("/cats/{id}", "CatItemHandler");
-```
-
-...which dispatches a `CatItemHandler` instance.
-```php
-class CatItemHandler extends \pjdietz\WellRESTed\Handler
-{
-    protected function get()
-    {
-        // Find a cat ($cat) based on $this->args["id"]
-        $id = $this->args["id"]
-        // ...do lookup here...
-
-        if ($cat) {
-            // The cat exists! Let's output a representation.
-            $this->response->setStatusCode(200);
-            $this->response->setHeader("Content-Type", "application/json");
-            $this->response->setBody(json_encode($cat));
-        } else {
-            // The ID did not match anything.
-            $this->response->setStatusCode(404);
-            $this->response->setHeader("Content-Type", "text/plain");
-            $this->response->setBody("No cat with id " . $this->args["id"]);
-        }
-    }
-}
-```
+See [Handlers](documentation/handler.md) to learn about the various route classes.
 
 ### Responses
 
-You've already seen a `Response` in use in the examples above. You can also a `Response` outside of `Handler`. Let's take a look at creating a new `Response`, setting a header, supplying the body, and outputting.
+You've already seen a [`Response`](src/pjdietz/WellRESTed/Response.php) in use in the examples above. You can also a [`Response`](src/pjdietz/WellRESTed/Response.php) outside of [`Handler`](src/pjdietz/WellRESTed/Handler.php). Let's take a look at creating a new [`Response`](src/pjdietz/WellRESTed/Response.php), setting a header, supplying the body, and outputting.
 
 ```php
 $resp = new \pjdietz\WellRESTed\Response();
@@ -178,7 +144,7 @@ exit;
 
 ### Requests
 
-From outside the context of a `Handler`, you can also use the `Request` class to read info for the request sent to the server by using the static method `Request::getRequest()`.
+From outside the context of a [`Handler`](src/pjdietz/WellRESTed/Handler.php), you can also use the [`Request`](src/pjdietz/WellRESTed/Request.php) class to read info for the request sent to the server by using the static method `Request::getRequest()`.
 
 ```php
 // Call the static method Request::getRequest() to get a reference to the Request
@@ -194,7 +160,7 @@ if ($rqst->getMethod() === 'PUT') {
 
 ### HTTP Client
 
-The `Client` class allows you to make an HTTP request using cURL.
+The [`Client`](src/pjdietz/WellRESTed/Client.php) class allows you to make an HTTP request using cURL.
 
 (This feature requires [PHP cURL](http://php.net/manual/en/book.curl.php).)
 

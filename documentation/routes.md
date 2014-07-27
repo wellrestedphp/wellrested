@@ -1,22 +1,22 @@
 # Routes
 
-WellRESTed comes with a few Route classes:
+WellRESTed comes with a few route classes:
 
-- `StaticRoute`: Matches request paths exactly
-- `TemplateRoute`: Matches URI templates
-- `RegexRoute`: Matches a custom regular expression
+- [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php): Matches request paths exactly
+- [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php): Matches URI templates
+- [`RegexRoute`](../src/pjdietz/WellRESTed/Routes/RegexRoute.php): Matches a custom regular expression
 
-Each works basically the same way: It first checks to see if it is a match for the request. If it's a match, it instantiates a specific class implementing the `HandlerInterface` (autoloading the class, if needed). Finally, it uses the handler class to provide a response.
+Each works basically the same way: It first checks to see if it is a match for the request. If it's a match, it instantiates a specific class implementing the [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) (autoloading the class, if needed). Finally, it uses the handler class to provide a response.
 
 ## StaticRoute
 
-Use a `StaticRoute` when you know the exact path you want to handle. This route will match only requests to `/cats/`.
+Use a [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) when you know the exact path you want to handle. This route will match only requests to `/cats/`.
 
 ```php
 $route = new StaticRoute("/cats/", "CatHandler");
 ```
 
-You can also make a `StaticRoute` that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests to `/cats/`, `/dogs/`, and `/birds/`. You can make this by passing an array instead of a string as the first parameter.
+You can also make a [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests to `/cats/`, `/dogs/`, and `/birds/`. You can make this by passing an array instead of a string as the first parameter.
 
 ```php
 $route = new StaticRoute(array("/cats/", "/dogs/", "/birds/"), "AnimalHandler");
@@ -24,7 +24,7 @@ $route = new StaticRoute(array("/cats/", "/dogs/", "/birds/"), "AnimalHandler");
 
 ## TemplateRoute
 
-`StaticRoutes` are the best choice if you know the exact path up front. But, what if you want to handle a path that includes a variable? That's where the `TemplateRoute` comes in.
+[`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) is the best choice if you know the exact path up front. But, what if you want to handle a path that includes a variable? That's where the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) comes in.
 
 Here's a route that will match a request to a specific cat by ID and send it to a `CatItemHandler`.
 
@@ -32,7 +32,7 @@ Here's a route that will match a request to a specific cat by ID and send it to 
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler");
 ```
 
-A `TemplateRoute` use a URI template to match a request. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
+A [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) use a URI template to match a request. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
 
 ```php
 class CatItemHandlder extends \pjdietz\WellRESTed\Handler
@@ -48,7 +48,7 @@ class CatItemHandlder extends \pjdietz\WellRESTed\Handler
 
 Your template may have multiple variables. Be sure to give each a unique name.
 
-With this `TemplateRoute`...
+With this [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php)...
 
 ```php
 $route = new TemplateRoute("/cats/{catId}/{dogId}", "CatItemHandler");
@@ -59,13 +59,13 @@ $route = new TemplateRoute("/cats/{catId}/{dogId}", "CatItemHandler");
 
 ### Default Variable Pattern
 
-By default, the `TemplateRoute` will accept for a variable any value consisting of numbers, letters, underscores, and hyphens. You can change this behavior by passing a pattern to use as the third parameter of the constructor. Here we'll restrict the template to match only numeric values.
+By default, the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) will accept for a variable any value consisting of numbers, letters, underscores, and hyphens. You can change this behavior by passing a pattern to use as the third parameter of the constructor. Here we'll restrict the template to match only numeric values.
 
 ```php
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler", TemplateRoute::RE_NUM);
 ```
 
-The `TemplateRoute` includes constants for some common situations. The value of each constant is a partial regular expression. You can use one of the constants, or provide your own partial regular expression.
+The [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) includes constants for some common situations. The value of each constant is a partial regular expression. You can use one of the constants, or provide your own partial regular expression.
 
 ### Pattern Constants
 
@@ -78,7 +78,7 @@ The `TemplateRoute` includes constants for some common situations. The value of 
 
 ### Variable Patterns Array
 
-You can also set a different pattern for each variable. To do this, pass an array to the `TemplateRoute` constructor as the fourth paramter. The array must have variable names as keys and patterns as values.
+You can also set a different pattern for each variable. To do this, pass an array to the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) constructor as the fourth parameter. The array must have variable names as keys and patterns as values.
 
 ```php
 $patterns = array(
@@ -96,13 +96,13 @@ Here, `{id}` will need to match digits and `{name}` must be all letters. Since `
 
 ### RegexRoute
 
-If `TemplateRoute` doesn't give you enough control, you can make a route that matches a regular expression.
+If [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) doesn't give you enough control, you can make a route that matches a regular expression using a [`RegexRoute`](../src/pjdietz/WellRESTed/Routes/RegexRoute.php).
 
 ```php
 $route = new RegexRoute("~/cat/[0-9]+~", "CatHandler")
 ```
 
-This will match `/cat/102` or `/cat/999` or what have you. To make this more useful, we can add a capture group. The captures are made available to the `Handler` as the `$args` member, as with the URI template variables for the `TemplateRoute`
+This will match `/cat/102` or `/cat/999` or what have you. To make this more useful, we can add a capture group. The captures are made available to the handler as the `$args` member, as with the URI template variables for the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php)
 
 Note that the entire matched path will always be the `0` item, and captured groups will begin at `1`.
 

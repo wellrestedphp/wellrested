@@ -27,7 +27,7 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
  */
 abstract class Handler implements HandlerInterface
 {
-    /** @var array  Map of variables to suppliement the request, usually path variables. */
+    /** @var array  Map of variables to supplement the request, usually path variables. */
     protected $args;
     /** @var RequestInterface  The HTTP request to respond to. */
     protected $request;
