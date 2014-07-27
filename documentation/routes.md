@@ -2,36 +2,29 @@
 
 WellRESTed comes with a few Route classes:
 
-- `StaticRoute`: Matches requests paths exactly
+- `StaticRoute`: Matches request paths exactly
 - `TemplateRoute`: Matches URI templates
 - `RegexRoute`: Matches a custom regular expression
 
 Each works basically the same way: It first checks to see if it is a match for the request. If it's a match, it instantiates a specific class implementing the `HandlerInterface` (autoloading the class, if needed). Finally, it uses the handler class to provide a response.
 
-If the route does not match the request, it returns `null`.
-
 ## StaticRoute
 
-Use a `StaticRoute` when you know the exact path you want to handle.
+Use a `StaticRoute` when you know the exact path you want to handle. This route will match only requests to `/cats/`.
 
 ```php
-$router = new Router();
-$router->addRoute(new StaticRoute("/", "RootHandler"));
-$router->addRoute(new StaticRoute("/cats/", "CatCollectionHandler"));
-$myRouter->respond();
+$route = new StaticRoute("/cats/", "CatHandler");
 ```
 
-This `Router` will now use a `RootHandler` for requests for the path `/` and `CatCollectionHandler` for requests to `/cats/`. The router doesn't know about any other paths, so any other requests will result in a 404 Not Found response.
-
-You can also make a `StaticRoute` that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests to `/cats/`, `/dogs`, and `/birds`. You can make this by passing an array instead of a string as the first parameter.
+You can also make a `StaticRoute` that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests to `/cats/`, `/dogs/`, and `/birds/`. You can make this by passing an array instead of a string as the first parameter.
 
 ```php
-$route = new StaticRoute(array("/cats/", "/dogs/", "/birds"), "AnimalHandler");
+$route = new StaticRoute(array("/cats/", "/dogs/", "/birds/"), "AnimalHandler");
 ```
 
 ## TemplateRoute
 
-`StaticRoutes` are the best choice if you know the exact path up front. But, what if you want to handle a path that expects an ID or other variable? That's where the `TemplateRoute` comes in.
+`StaticRoutes` are the best choice if you know the exact path up front. But, what if you want to handle a path that includes a variable? That's where the `TemplateRoute` comes in.
 
 Here's a route that will match a request to a specific cat by ID and send it to a `CatItemHandler`.
 
@@ -39,7 +32,7 @@ Here's a route that will match a request to a specific cat by ID and send it to 
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler");
 ```
 
-TemplateRoutes use URI templates to match requests to handlers. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
+A `TemplateRoute` use a URI template to match a request. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
 
 ```php
 class CatItemHandlder extends \pjdietz\WellRESTed\Handler
@@ -66,7 +59,7 @@ $route = new TemplateRoute("/cats/{catId}/{dogId}", "CatItemHandler");
 
 ### Default Variable Pattern
 
-By default, the `TemplateRoute` will accept for a variable any value consisting of numbers, letters, underscores, and hyphens. You can change this behavior by passing a pattern to use as the third parameter of the constructor. Here we'll restrict the template to only match numeric values.
+By default, the `TemplateRoute` will accept for a variable any value consisting of numbers, letters, underscores, and hyphens. You can change this behavior by passing a pattern to use as the third parameter of the constructor. Here we'll restrict the template to match only numeric values.
 
 ```php
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler", TemplateRoute::RE_NUM);
@@ -90,7 +83,7 @@ You can also set a different pattern for each variable. To do this, pass an arra
 ```php
 $patterns = array(
     "id" => TemplateRoute::RE_NUM,
-    "name" => TemplateRoute::RE_ALPHA,
+    "name" => TemplateRoute::RE_ALPHA
 );
 $route = new TemplateRoute(
     "/cats/{id}/{name}/{more}",
@@ -99,7 +92,7 @@ $route = new TemplateRoute(
     $patterns);
 ```
 
-Here, `{id}` will need to match digits, `{name}` must be all letters, and since `{more}` is not explicitly provided in the `$patterns` array, it uses the default `TemplateRoute::RE_SLUG` passed as the thrid parameter.
+Here, `{id}` will need to match digits and `{name}` must be all letters. Since `{more}` is not explicitly provided in the `$patterns` array, it uses the default `TemplateRoute::RE_SLUG` passed as the third parameter.
 
 ### RegexRoute
 
@@ -109,9 +102,9 @@ If `TemplateRoute` doesn't give you enough control, you can make a route that ma
 $route = new RegexRoute("~/cat/[0-9]+~", "CatHandler")
 ```
 
-This will match `/cat/102` or `/cat/999` or what have you. To make this more useful, we can add a capture group. The captures are made available to the `Handler` as the `$this->args` member, as with the URI template variables for the `TemplateRoute`
+This will match `/cat/102` or `/cat/999` or what have you. To make this more useful, we can add a capture group. The captures are made available to the `Handler` as the `$args` member, as with the URI template variables for the `TemplateRoute`
 
-Note the entire matched path will always be the `0` item, and captured groups will begin at `1`.
+Note that the entire matched path will always be the `0` item, and captured groups will begin at `1`.
 
 So this route...
 
