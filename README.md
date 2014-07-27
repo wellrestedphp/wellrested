@@ -1,7 +1,7 @@
 WellRESTed
 ==========
 
-[![Build Status](https://travis-ci.org/pjdietz/wellrested.svg?branch=two)](https://travis-ci.org/pjdietz/wellrested)
+[![Build Status](https://travis-ci.org/pjdietz/wellrested.svg?branch=master)](https://travis-ci.org/pjdietz/wellrested)
 
 WellRESTed is a micro-framework for creating RESTful APIs in PHP. It provides a lightweight yet powerful routing system and classes to make working with HTTP requests and responses clean and easy.
 
