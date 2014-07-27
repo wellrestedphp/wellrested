@@ -1,6 +1,6 @@
 # HandlerInterface
 
-Much of WellRESTed 2 centers around the [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php) which has only one method that you need to implement:
+Much of WellRESTed 2 centers around the [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) which has only one method that you need to implement:
 
 ```php
 /**
@@ -36,7 +36,7 @@ $router->respond();
 
 ### But there's no route?
 
-Here's the cool thing about how routing works in WellRESTed 2: The route classes implement [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php). When the `Router` iterates through its list of routes, it calls `getResponse()` on each one until it gets a non-`null` return value. At this point, it returns that response (or outputs it in the case of `Router::respond()`).
+Here's the cool thing about how routing works in WellRESTed 2: The route classes implement [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php). When the `Router` iterates through its list of routes, it calls `getResponse()` on each one until it gets a non-`null` return value. At this point, it returns that response (or outputs it in the case of `Router::respond()`).
 
 Each time the router calls `getResponse()` on a route that doesn't match request, the route returns `null` to indicate that something else will need to handle this.
 
@@ -68,7 +68,7 @@ If none of the routes in a router return a non-`null` value, what happens?
 
 If you're calling `Router::respond()`, you will **always** get a response. `Router::respond()` is a shorthand method that will output the response made in `Router::getNoRouteResponse()` if it gets through its entire route table and finds no matches.
 
-If you want to customize the default 404 response, you can either subclass `Router` and redefine `Router::getNoRouteResponse()`, or you can create a [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php) like our `HelloWorldHandler` that always returns a response with a `404 Not Found` status code and add it to the router **last**. (Remember: a router evaluates its routes in the order you add them.)
+If you want to customize the default 404 response, you can either subclass `Router` and redefine `Router::getNoRouteResponse()`, or you can create a [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) like our `HelloWorldHandler` that always returns a response with a `404 Not Found` status code and add it to the router **last**. (Remember: a router evaluates its routes in the order you add them.)
 
 ```php
 class NotFoundHandler implements HandlerInterface
@@ -93,7 +93,7 @@ $router->respond();
 
 ## Nested Routers
 
-`Router::respond()` is a shorthand method that wraps `Router::getResponse()`, which [`Router`](../src/pjdietz/WellRESTed/Router.php) must have because it too implements [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php). This means that you can break your router into subrouters.
+`Router::respond()` is a shorthand method that wraps `Router::getResponse()`, which [`Router`](../src/pjdietz/WellRESTed/Router.php) must have because it too implements [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php). This means that you can break your router into subrouters.
 
 
 ```php

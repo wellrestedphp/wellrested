@@ -55,13 +55,13 @@ See [Routes](routes.md) for more information.
 ## Interfaces
 
 I whittled the number of interfaces down to three:
-- [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php)
+- [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php)
 - [`RequestInterface`](../src/pjdietz/WellRESTed/Interfaces/RequestInterface.php)
 - [`ResponseInterface`](../src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php)
 
 (`RoutableInterface`, `RouteInterface`, `RouteTargetInterface`,  `RouterInterface` are all removed.)
 
-Version 2's design is centered around [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HanderInterface.php). This new approach both simplifies the API, but also adds a great deal of flexibility.
+Version 2's design is centered around [`HandlerInterface`](../src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php). This new approach both simplifies the API, but also adds a great deal of flexibility.
 
 See [HandlerInterface](handler-interface.md) to learn more.
 
