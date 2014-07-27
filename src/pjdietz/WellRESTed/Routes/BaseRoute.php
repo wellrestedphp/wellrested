@@ -20,7 +20,7 @@ abstract class BaseRoute implements HandlerInterface
     /** @var string Fully qualified name for the interface for handlers */
     const HANDLER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface';
 
-    /** @var string Fully qualified classname of the HandlerInterface to dispatch*/
+    /** @var string Fully qualified classname of the HandlerInterface to dispatch */
     private $targetClassName;
 
     /**

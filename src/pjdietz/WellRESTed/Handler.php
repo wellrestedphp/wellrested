@@ -12,8 +12,8 @@ namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 
 /**
  * Responds to a request based on the HTTP method.

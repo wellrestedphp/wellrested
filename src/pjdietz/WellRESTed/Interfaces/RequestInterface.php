@@ -81,5 +81,4 @@ interface RequestInterface
      * @return string Request body
      */
     public function getBody();
-
 }

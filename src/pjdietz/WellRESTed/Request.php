@@ -11,7 +11,6 @@
 namespace pjdietz\WellRESTed;
 
 use InvalidArgumentException;
-use pjdietz\WellRESTed\Exceptions\CurlException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use UnexpectedValueException;
 
@@ -36,15 +35,15 @@ class Request extends Message implements RequestInterface
     static protected $theRequest;
     /** @var string  HTTP method or verb for the request */
     private $method = "GET";
+    /** @var string Scheme for the request (Must be "http" or "https" */
+    private $scheme;
     /** @var string  The Hostname for the request (e.g., www.google.com) */
     private $hostname = "localhost";
-    /** @var string Scheme for the request (Must be "http" or "https" */
-    protected $scheme;
     /** @var string   Path component of the URI for the request */
-    private $path = '/';
+    private $path = "/";
     /** @var array Array of fragments of the path, delimited by slashes */
     private $pathParts;
-    /** @var int HTTP Port*/
+    /** @var int HTTP Port */
     private $port = 80;
     /** @var array Associative array of query parameters */
     private $query;
@@ -115,9 +114,82 @@ class Request extends Message implements RequestInterface
             $this->headerLookup[strtolower($key)] = $key;
         }
 
-        $this->setMethod($_SERVER['REQUEST_METHOD']);
-        $this->setUri($_SERVER['REQUEST_URI']);
-        $this->setHostname($_SERVER['HTTP_HOST']);
+        $this->setMethod($_SERVER["REQUEST_METHOD"]);
+        $this->setUri($_SERVER["REQUEST_URI"]);
+        $this->setHostname($_SERVER["HTTP_HOST"]);
+    }
+
+    /**
+     * Return the method (e.g., GET, POST, PUT, DELETE)
+     *
+     * @return string
+     */
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    /**
+     * Assign the method (e.g., GET, POST, PUT, DELETE)
+     *
+     * @param string $method
+     */
+    public function setMethod($method)
+    {
+        $this->method = $method;
+    }
+
+    /**
+     * Return the full URI includeing protocol, hostname, path, and query.
+     *
+     * @return array
+     */
+    public function getUri()
+    {
+        $uri = $this->scheme . "://" . $this->hostname;
+        if ($this->port !== $this->getDefaultPort()) {
+            $uri .= ":" . $this->port;
+        }
+        if ($this->path !== "/") {
+            $uri .= $this->path;
+        }
+        if ($this->query) {
+            $uri .= "?" . http_build_query($this->query);
+        }
+        return $uri;
+    }
+
+    /**
+     * Set the URI for the Request. This sets the other members: hostname,
+     * path, port, and query.
+     *
+     * @param string $uri
+     */
+    public function setUri($uri)
+    {
+        // Provide http and localhost if missing.
+        if ($uri[0] === "/") {
+            $uri = "http://localhost" . $uri;
+        } elseif (strpos($uri, "://") === false) {
+            $uri = "http://" . $uri;
+        }
+
+        $parsed = parse_url($uri);
+
+        $scheme = isset($parsed["scheme"]) ? $parsed["scheme"] : "http";
+        $this->setScheme($scheme);
+
+        $host = isset($parsed["host"]) ? $parsed["host"] : "localhost";
+        $this->setHostname($host);
+
+        $port = isset($parsed["port"]) ? (int) $parsed["port"] : $this->getDefaultPort();
+        $this->setPort($port);
+
+        $path = isset($parsed["path"]) ? $parsed["path"] : "/";
+        $this->setPath($path);
+
+        $query = isset($parsed["query"]) ? $parsed["query"] : "";
+        $this->setQuery($query);
     }
 
     /**
@@ -141,23 +213,28 @@ class Request extends Message implements RequestInterface
     }
 
     /**
-     * Return the method (e.g., GET, POST, PUT, DELETE)
+     * Set the scheme for the request (either "http" or "https")
      *
-     * @return string
+     * @param string $scheme
+     * @throws \UnexpectedValueException
      */
-    public function getMethod()
+    public function setScheme($scheme)
     {
-        return $this->method;
+        $scheme = strtolower($scheme);
+        if (!in_array($scheme, array("http", "https"))) {
+            throw new UnexpectedValueException('Scheme must be "http" or "https".');
+        }
+        $this->scheme = $scheme;
     }
 
     /**
-     * Assign the method (e.g., GET, POST, PUT, DELETE)
+     * Return the scheme for the request (either "http" or "https")
      *
-     * @param string $method
+     * @return string
      */
-    public function setMethod($method)
+    public function getScheme()
     {
-        $this->method = $method;
+        return $this->scheme;
     }
 
     /**
@@ -248,86 +325,8 @@ class Request extends Message implements RequestInterface
             ksort($query);
             $this->query = $query;
         } else {
-            throw new InvalidArgumentException('Unable to parse query string.');
+            throw new InvalidArgumentException("Unable to parse query string.");
         }
-    }
-
-    /**
-     * Set the scheme for the request (either "http" or "https")
-     *
-     * @param string $scheme
-     * @throws \UnexpectedValueException
-     */
-    public function setScheme($scheme)
-    {
-        $scheme = strtolower($scheme);
-        if (!in_array($scheme, array("http","https"))) {
-            throw new UnexpectedValueException('Scheme must be "http" or "https".');
-        }
-        $this->scheme = $scheme;
-    }
-
-    /**
-     * Return the scheme for the request (either "http" or "https")
-     *
-     * @return string
-     */
-    public function getScheme()
-    {
-        return $this->scheme;
-    }
-
-    /**
-     * Return the full URI includeing protocol, hostname, path, and query.
-     *
-     * @return array
-     */
-    public function getUri()
-    {
-        $uri = $this->scheme . "://" . $this->hostname;
-        if ($this->port !== $this->getDefaultPort()) {
-            $uri .= ':' . $this->port;
-        }
-        if ($this->path !== "/") {
-            $uri .= $this->path;
-        }
-        if ($this->query) {
-            $uri .= '?' . http_build_query($this->query);
-        }
-        return $uri;
-    }
-
-    /**
-     * Set the URI for the Request. This sets the other members: hostname,
-     * path, port, and query.
-     *
-     * @param string $uri
-     */
-    public function setUri($uri)
-    {
-        // Provide http and localhost if missing.
-        if ($uri[0] === "/") {
-            $uri = "http://localhost" . $uri;
-        } elseif (strpos($uri, "://") === false) {
-            $uri = "http://" . $uri;
-        }
-
-        $parsed = parse_url($uri);
-
-        $scheme = isset($parsed["scheme"]) ? $parsed["scheme"] : "http";
-        $this->setScheme($scheme);
-
-        $host = isset($parsed['host']) ? $parsed['host'] : 'localhost';
-        $this->setHostname($host);
-
-        $port = isset($parsed['port']) ? (int) $parsed['port'] : $this->getDefaultPort();
-        $this->setPort($port);
-
-        $path = isset($parsed['path']) ? $parsed['path'] : '/';
-        $this->setPath($path);
-
-        $query = isset($parsed['query']) ? $parsed['query'] : '';
-        $this->setQuery($query);
     }
 
     /**

@@ -11,8 +11,8 @@
 namespace pjdietz\WellRESTed;
 
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 
 /**
  * Router
@@ -78,7 +78,8 @@ class Router implements HandlerInterface
      *
      * Respond with a 404 Not Found if no route provides a response.
      */
-    public function respond() {
+    public function respond()
+    {
         $request = Request::getRequest();
         $response = $this->getResponse($request);
         if (!$response) {

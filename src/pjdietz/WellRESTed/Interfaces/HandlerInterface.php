@@ -13,8 +13,8 @@ namespace pjdietz\WellRESTed\Interfaces;
 /**
  * Provides a mechanism for obtaining a response given a request.
  */
-interface HandlerInterface {
-
+interface HandlerInterface
+{
     /**
      * Return the handled response.
      *
@@ -23,5 +23,4 @@ interface HandlerInterface {
      * @return ResponseInterface The handled response.
      */
     public function getResponse(RequestInterface $request, array $args = null);
-
 }

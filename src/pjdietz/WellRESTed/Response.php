@@ -33,7 +33,7 @@ class Response extends Message implements ResponseInterface
     private $reasonPhrase;
     /** @var int  HTTP status code */
     private $statusCode;
-    /** @var string HTTP protocol and version*/
+    /** @var string HTTP protocol and version */
     private $protocol = "HTTP/1.1";
 
     // -------------------------------------------------------------------------
@@ -72,7 +72,7 @@ class Response extends Message implements ResponseInterface
      * of the new body string.
      *
      * @param string $value
-     * @param bool $setContentLength  Automatically add a Content-length header
+     * @param bool $setContentLength Automatically add a Content-length header
      */
     public function setBody($value, $setContentLength = true)
     {
@@ -289,7 +289,7 @@ class Response extends Message implements ResponseInterface
     /**
      * Output the response to the client.
      *
-     * @param bool $headersOnly  Do not include the body, only the headers.
+     * @param bool $headersOnly Do not include the body, only the headers.
      */
     public function respond($headersOnly = false)
     {

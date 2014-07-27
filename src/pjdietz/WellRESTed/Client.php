@@ -30,7 +30,8 @@ class Client
      *
      * @param array $curlOpts Optional array of cURL options
      */
-    public function __construct(array $curlOpts = null) {
+    public function __construct(array $curlOpts = null)
+    {
         if (is_array($curlOpts)) {
             $this->curlOpts = $curlOpts;
         } else {
