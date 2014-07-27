@@ -16,7 +16,7 @@ Use a [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) when you
 $route = new StaticRoute("/cats/", "CatHandler");
 ```
 
-You can also make a [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests to `/cats/`, `/dogs/`, and `/birds/`. You can make this by passing an array instead of a string as the first parameter.
+You can also make a [`StaticRoute`](../src/pjdietz/WellRESTed/Routes/StaticRoute.php) that matches multiple exact paths. For example, suppose you have a multi-use `AnimalHandler` that you want to invoke to handle requests for `/cats/`, `/dogs/`, and `/birds/`. You can make this by passing an array instead of a string as the first parameter.
 
 ```php
 $route = new StaticRoute(array("/cats/", "/dogs/", "/birds/"), "AnimalHandler");
@@ -32,7 +32,9 @@ Here's a route that will match a request to a specific cat by ID and send it to 
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler");
 ```
 
-A [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) use a URI template to match a request. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
+This will match `/cats/1`, `/cats/99`, `/cats/molly`, etc.
+
+A [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) uses a URI template to match a request. To include a variable in your template, enclose it in `{}`. The variable will be extracted and made available for the handler in the handler's `args` member.
 
 ```php
 class CatItemHandlder extends \pjdietz\WellRESTed\Handler
@@ -46,16 +48,15 @@ class CatItemHandlder extends \pjdietz\WellRESTed\Handler
 }
 ```
 
+For the paths `/cats/1`, `/cats/99`, `/cats/molly`, the value of `$this->args["id"]` will be `"1"`, `"99"`, or `"molly"`.
+
 Your template may have multiple variables. Be sure to give each a unique name.
 
-With this [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php)...
+Here the handler will have access to `$this->args["catId"]` and `$this->args["dogId"]`.
 
 ```php
 $route = new TemplateRoute("/cats/{catId}/{dogId}", "CatItemHandler");
 ```
-
-...the handler will have access to `$this->args["catId"]` and `$this->args["dogId"]`.
-
 
 ### Default Variable Pattern
 
@@ -65,16 +66,19 @@ By default, the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute
 $route = new TemplateRoute("/cats/{id}", "CatItemHandler", TemplateRoute::RE_NUM);
 ```
 
-The [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) includes constants for some common situations. The value of each constant is a partial regular expression. You can use one of the constants, or provide your own partial regular expression.
+This will match `/cats/1` or `/cats/99`, but NOT `/cats/molly`.
 
 ### Pattern Constants
 
-| Constant   | Pattern           | Description |
-| ---------  | ----------------- | ----------- |
-| `RE_SLUG`  | `[0-9a-zA-Z\-_]+` | "URL-friendly" characters such as numbers, letters, underscores, and hyphens |
-| `RE_NUM`   | `[0-9]+` | Digits only |
-| `RE_ALPHA` | `[a-zA-Z]+` | Letters only |
-| `RE_ALPHANUM` | `[0-9a-zA-Z]+` | Letters and digits |
+The [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) includes constants for some common situations. The value of each constant is a partial regular expression. You can use one of the constants, or provide your own partial regular expression.
+
+
+| Constant      | Pattern           | Description |
+| ------------  | ----------------- | ----------- |
+| `RE_SLUG`     | `[0-9a-zA-Z\-_]+` | **(Default)** "URL-friendly" characters such as numbers, letters, underscores, and hyphens |
+| `RE_NUM`      | `[0-9]+`          | Digits only |
+| `RE_ALPHA`    | `[a-zA-Z]+`       | Letters only |
+| `RE_ALPHANUM` | `[0-9a-zA-Z]+`    | Letters and digits |
 
 ### Variable Patterns Array
 
@@ -88,13 +92,25 @@ $patterns = array(
 $route = new TemplateRoute(
     "/cats/{id}/{name}/{more}",
     "CatItemHandler",
-    TemplateRoute::RE_SLUG,
+    TemplateRoute::RE_ALPHANUM,
     $patterns);
 ```
 
-Here, `{id}` will need to match digits and `{name}` must be all letters. Since `{more}` is not explicitly provided in the `$patterns` array, it uses the default `TemplateRoute::RE_SLUG` passed as the third parameter.
+Here, `{id}` will need to match digits and `{name}` must be all letters. Since `{more}` is not explicitly provided in the `$patterns` array, it uses the default `TemplateRoute::RE_ALPHANUM` passed as the third parameter.
 
-### RegexRoute
+### Wildcard
+
+If you want to match all requests with paths that start with a given template, end your template with `*`. This is useful for handing groups of requests off to subrouters.
+
+```php
+$route = new TemplateRoute("/cats/*", "CatRouter");
+```
+
+This will match `/cats/`, `/cats/21`, `/cats/with/extra/path/components/`, etc.
+
+The `*` wildcard may only appear at the **end** of your template.
+
+## RegexRoute
 
 If [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) doesn't give you enough control, you can make a route that matches a regular expression using a [`RegexRoute`](../src/pjdietz/WellRESTed/Routes/RegexRoute.php).
 
@@ -102,7 +118,7 @@ If [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php) doesn't
 $route = new RegexRoute("~/cat/[0-9]+~", "CatHandler")
 ```
 
-This will match `/cat/102` or `/cat/999` or what have you. To make this more useful, we can add a capture group. The captures are made available to the handler as the `$args` member, as with the URI template variables for the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php)
+This will match `/cat/102`, `/cat/999`, etc. To make this more useful, we can add a capture group. The captures are made available to the handler as the `$args` member, as with the URI template variables for the [`TemplateRoute`](../src/pjdietz/WellRESTed/Routes/TemplateRoute.php)
 
 Note that the entire matched path will always be the `0` item, and captured groups will begin at `1`.
 
@@ -122,14 +138,14 @@ Array
 )
 ```
 
-You can also used named capture groups like this;
+You can also used named capture groups like this:
 
 
 ```php
 $route = new RegexRoute("~/cat/(?<id>[0-9]+)~", "CatHandler")
 ```
 
-...with the path `/cat/99` creates this array or matches:
+The path `/cat/99` creates this array of matches:
 
 ```
 Array

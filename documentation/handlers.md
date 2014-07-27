@@ -91,9 +91,7 @@ protected function buildResponse()
 
 ## HttpExceptions
 
-Another useful feature of the [`Handler`](../src/pjdietz/WellRESTed/Handler.php) class is that it catches exceptions deriving from [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and turns them into responses.
-
-[`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and its subclasses provide the status code and description for simple error responses.
+Another useful feature of the [`Handler`](../src/pjdietz/WellRESTed/Handler.php) class is that it catches exceptions deriving from [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and turns them into responses. [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and its subclasses provide the status code and description for simple error responses.
 
 For example, you can throw a `NotFountException` if the resource the request indicates does not exist.
 
@@ -132,4 +130,42 @@ Response Code               | Class
 `409 Conflict`              | `ConflictException`
 `500 Internal Server Error` | `HttpException`
 
-You can also create your own by subclass `HttpException` and setting the exception's `$code` to the status code and `$messge` to a default message.
+You can also create your own by subclass [`HttpException`](../src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php) and setting the exception's `$code` to the status code and `$messge` to a default message.
+
+## Custom Base Handler
+
+When building your API, you may want to subclass [`Handler`](../src/pjdietz/WellRESTed/Handler.php) with your own abstract class that adds methods for authenticaion, supports some extra verbs, presents custom errors, adds addiitonal headers, etc. Then, you can derive all of your concrete handlers from that class.
+
+```php
+<?php
+abstract class MyHandler extends \pjdietz\WellRESTed\Handler
+{
+    protected function buildResponse()
+    {
+        try {
+            // Add support for a custom HTTP verb.
+            switch ($this->request->getMethod()) {
+            case 'SNIFF':
+                $this->sniff();
+                break;
+            default:
+                self::buildResponse();
+            }
+        } catch (UnauthorizedException $e) {
+            // Catch 401 errors and call a method to do something with them.
+            $this->responseToUnauthorized($e);
+        }
+
+        // Add a header to all responses.
+        $this->response->addHeader("X-Custom-Header", "Hello, world!");
+    }
+
+    abstract protected function sniff();
+
+    protected function responseToUnauthorized(HttpException $e)
+    {
+        $this->response->setStatusCode($e->getCode());
+        $this->response->setBody("Y U NO SEND CREDENTIALS?");
+    }
+}
+```
