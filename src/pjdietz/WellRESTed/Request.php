@@ -92,7 +92,7 @@ class Request extends Message implements RequestInterface
     public static function getRequestHeaders()
     {
         // http://www.php.net/manual/en/function.getallheaders.php#84262
-        $headers = [];
+        $headers = array();
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) === "HTTP_") {
                 $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
@@ -343,7 +343,7 @@ class Request extends Message implements RequestInterface
     /**
      * Set the body by supplying an associative array of form fields.
      *
-     * In additon, add a "Content-type: application/x-www-form-urlencoded" header
+     * In addition, add a "Content-type: application/x-www-form-urlencoded" header
      *
      * @param array $fields
      */

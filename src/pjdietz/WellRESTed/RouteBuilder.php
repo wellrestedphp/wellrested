@@ -174,7 +174,7 @@ class RouteBuilder
     }
 
     /**
-     * Create and return an approrate route given an object describing a route.
+     * Create and return an appropriate route given an object describing a route.
      *
      * $item must contain a "handler" property providing the classname for the
      * HandlerInterface to call getResponse() on if the route matches. "handler"
