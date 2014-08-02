@@ -10,7 +10,7 @@ Version 2
 
 It's more RESTed than ever!
 
-Version 2 brings a lot improvements over 1.x, but it is **not backwards compatible**. See [Changes from Version 1](https://github.com/pjdietz/wellrested/wiki/cChanges-from-Version-1) if you are migrating from a previous 1.x version of WellRESTed.
+Version 2 brings a lot improvements over 1.x, but it is **not backwards compatible**. See [Changes from Version 1](https://github.com/pjdietz/wellrested/wiki/Changes-from-Version-1) if you are migrating from a previous 1.x version of WellRESTed.
 
 Requirements
 ------------
