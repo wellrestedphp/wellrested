@@ -10,7 +10,7 @@ Version 2
 
 It's more RESTed than ever!
 
-Version 2 brings a lot improvements over 1.x, but it is **not backwards compatible**. See [Changes from Version 1](wiki/cChanges-from-Version-1) if you are migrating from a previous 1.x version of WellRESTed.
+Version 2 brings a lot improvements over 1.x, but it is **not backwards compatible**. See [Changes from Version 1](https://github.com/pjdietz/wellrested/wiki/cChanges-from-Version-1) if you are migrating from a previous 1.x version of WellRESTed.
 
 Requirements
 ------------
@@ -60,7 +60,7 @@ $myRouter->addRoutes(array(
 $myRouter->respond();
 ```
 
-See [Routes](wiki/Routes) to learn about the various route classes.
+See [Routes](https://github.com/pjdietz/wellrested/wiki/Routes) to learn about the various route classes.
 
 
 ### Building Routes with JSON
@@ -134,8 +134,8 @@ class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 }
 ```
 
-See [Handlers](wiki/Handlers) to learn about the subclassing the [`Handler`](src/pjdietz/WellRESTed/Handler.php) class.
-See [HandlerInteface](wiki/HandlerInterface) to learn about more ways build completely custom classes.
+See [Handlers](https://github.com/pjdietz/wellrested/wiki/Handlers) to learn about the subclassing the [`Handler`](src/pjdietz/WellRESTed/Handler.php) class.
+See [HandlerInteface](https://github.com/pjdietz/wellrested/wiki/HandlerInterface) to learn about more ways build completely custom classes.
 
 ### Responses
 
