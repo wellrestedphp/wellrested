@@ -78,10 +78,10 @@ class Router implements HandlerInterface
      *
      * Respond with a 404 Not Found if no route provides a response.
      */
-    public function respond()
+    public function respond($args = null)
     {
         $request = Request::getRequest();
-        $response = $this->getResponse($request);
+        $response = $this->getResponse($request, $args);
         if (!$response) {
             $response = $this->getNoRouteResponse($request);
         }

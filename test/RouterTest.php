@@ -4,7 +4,6 @@ namespace pjdietz\WellRESTed\Test;
 
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
-use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Router;
 use pjdietz\WellRESTed\Routes\StaticRoute;
@@ -134,6 +133,25 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    public function testInjection()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/2/3"));
+
+        $dependencies = [
+            "add" => function ($a, $b) {
+                    return $a + $b;
+                }
+        ];
+
+        $router = new Router();
+        $router->addRoute(new TemplateRoute("/{a}/{b}", __NAMESPACE__ . "\\InjectionHandler"));
+        $resp = $router->getResponse($mockRequest, $dependencies);
+        $this->assertEquals("5", $resp->getBody());
+    }
+
 }
 
 /**
@@ -181,6 +199,17 @@ class NotFoundHandler implements HandlerInterface
     {
         $response = new Response(404);
         $response->setBody("No resource found at " . $request->getPath());
+        return $response;
+    }
+}
+
+class InjectionHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = new Response(200);
+        $body = $args["add"]($args["a"], $args["b"]);
+        $response->setBody($body);
         return $response;
     }
 }
