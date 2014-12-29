@@ -15,7 +15,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSendHttpMethod($method)
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/method.php");
 
         $server = new ShamServer($host, $port, $script);
@@ -60,7 +60,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSendHttpHeaders($headerKey, $headerValue)
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/headers.php");
 
         $server = new ShamServer($host, $port, $script);
@@ -102,7 +102,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSendBody($body)
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/body.php");
         $server = new ShamServer($host, $port, $script);
 
@@ -145,7 +145,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSendForm($form)
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/formFields.php");
         $server = new ShamServer($host, $port, $script);
 
@@ -178,7 +178,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSetCustomCurlOptionsOnInstantiation()
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 
@@ -208,7 +208,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testSetCustomCurlOptionsOnRequest()
     {
         $host = "localhost";
-        $port = 8080;
+        $port = getenv("PORT");
         $script = realpath(__DIR__ . "/sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 

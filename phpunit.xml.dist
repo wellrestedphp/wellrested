@@ -10,6 +10,10 @@
         syntaxCheck="false"
         verbose="true"
         >
+    <php>
+        <!-- To override, "export PORT=8081" -->
+        <env name="PORT" value="8080" />
+    </php>
     <testsuites>
         <testsuite name="WellRESTed Test Suite">
             <directory>./test/</directory>

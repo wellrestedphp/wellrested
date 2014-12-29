@@ -16,7 +16,7 @@
     },
     "require-dev": {
         "fzaninotto/faker": "1.5.*@dev",
-        "phpunit/phpunit": "4.1.*",
+        "phpunit/phpunit": "4.4.*",
         "pjdietz/shamserver": "dev-master"
     },
     "autoload": {
