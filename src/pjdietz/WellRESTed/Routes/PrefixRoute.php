@@ -1,7 +1,7 @@
 <?php
 
 /**
- * pjdietz\WellRESTed\StaticRoute
+ * pjdietz\WellRESTed\PrefixRoute
  *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2014 by PJ Dietz
@@ -10,36 +10,13 @@
 
 namespace pjdietz\WellRESTed\Routes;
 
-use InvalidArgumentException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 /**
  * Maps a list of static URI paths to a Handler
  */
-class StaticRoute extends BaseRoute
+class PrefixRoute extends StaticRoute
 {
-    /** @var array List of static URI paths */
-    protected $paths;
-
-    /**
-     * Create a new StaticRoute for a given path or paths and a handler class.
-     *
-     * @param string|array $paths Path or list of paths the request must match
-     * @param string $targetClassName Fully qualified name to an autoloadable handler class.
-     * @throws \InvalidArgumentException
-     */
-    public function __construct($paths, $targetClassName)
-    {
-        parent::__construct($targetClassName);
-        if (is_string($paths)) {
-            $this->paths = array($paths);
-        } elseif (is_array($paths)) {
-            $this->paths = $paths;
-        } else {
-            throw new InvalidArgumentException("$paths must be a string or array of string");
-        }
-    }
-
     // ------------------------------------------------------------------------
     /* HandlerInterface */
 
@@ -56,12 +33,11 @@ class StaticRoute extends BaseRoute
     {
         $requestPath = $request->getPath();
         foreach ($this->paths as $path) {
-            if ($path === $requestPath) {
+            if (substr($requestPath, 0, strlen($path)) === $path) {
                 $target = $this->getTarget();
                 return $target->getResponse($request, $args);
             }
         }
         return null;
     }
-
 }
