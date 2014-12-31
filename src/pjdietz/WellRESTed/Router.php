@@ -23,6 +23,8 @@ class Router implements HandlerInterface
 {
     /** @var array  Array of Route objects */
     private $routes;
+    /** @var array  Array of Route objects for error handling. */
+    private $errorHandlers;
 
     /** Create a new Router. */
     public function __construct()
@@ -74,6 +76,29 @@ class Router implements HandlerInterface
     }
 
     /**
+     * Add a custom error handler.
+     *
+     * @param integer $error The error code.
+     * @param HandlerInterface $errorHandler The handler for the error.
+     */
+    public function addErrorHandler($error, $errorHandler)
+    {
+        $this->errorHandlers[$error] = $errorHandler;
+    }
+
+    /**
+     * Add custom error handlers.
+     *
+     * @param array $errorHandlers An array mapping an integer error code to something implementing an HandlerInterface.
+     */
+    public function addErrorHandlers(array $errorHandlers)
+    {
+        foreach ($errorHandlers as $error => $errorHandler) {
+            $this->addErrorHandler($error, $errorHandler);
+        }
+    }
+
+    /**
      * Dispatch the singleton Request through the router and output the response.
      *
      * Respond with a 404 Not Found if no route provides a response.
@@ -84,6 +109,11 @@ class Router implements HandlerInterface
         $response = $this->getResponse($request, $args);
         if (!$response) {
             $response = $this->getNoRouteResponse($request);
+        }
+        $status = $response->getStatusCode();
+        if (array_key_exists($status, $this->errorHandlers)) {
+            $errorHandler = new $this->errorHandlers[$status]();
+            $response = $errorHandler->getResponse($request, $args);
         }
         $response->respond();
     }
