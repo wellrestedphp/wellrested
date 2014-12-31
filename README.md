@@ -53,10 +53,10 @@ WellRESTed's primary goal is to facilitate mapping of URIs to classes that will 
 // Build the router.
 $myRouter = new Router();
 $myRouter->addRoutes(array(
-    new StaticRoute("/", "\\myapi\\Handlers\\RootHandler")),
-    new StaticRoute("/cats/", "\\myapi\\Handlers\\CatCollectionHandler")),
-    new TemplateRoute("/cats/{id}/", "\\myapi\\Handlers\\CatItemHandler"))
-);
+    new StaticRoute("/", "\\myapi\\Handlers\\RootHandler"),
+    new StaticRoute("/cats/", "\\myapi\\Handlers\\CatCollectionHandler"),
+    new TemplateRoute("/cats/{id}/", "\\myapi\\Handlers\\CatItemHandler")
+));
 $myRouter->respond();
 ```
 
