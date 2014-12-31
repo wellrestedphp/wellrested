@@ -30,6 +30,7 @@ class Router implements HandlerInterface
     public function __construct()
     {
         $this->routes = array();
+        $this->errorHandlers = array();
     }
 
     /**
