@@ -44,7 +44,6 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        $response = null;
         $path = $request->getPath();
         if (array_key_exists($path, $this->routes)) {
             $handler = new $this->routes[$path]();
@@ -65,7 +64,7 @@ class Router implements HandlerInterface
                 }
             }
         }
-        if ($response) {
+        if (isset($response) and $response) {
             // Check if the router has an error handler for this status code.
             $status = $response->getStatusCode();
             if (array_key_exists($status, $this->errorHandlers)) {
