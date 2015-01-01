@@ -14,6 +14,7 @@ use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
+use pjdietz\WellRESTed\Routes\StaticRoute;
 
 /**
  * Router
@@ -43,30 +44,37 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        foreach ($this->routes as $route) {
-            /** @var HandlerInterface $route */
-            try {
-                $response = $route->getResponse($request, $args);
-            } catch (HttpException $e) {
-                $response = new Response();
-                $response->setStatusCode($e->getCode());
-                $response->setBody($e->getMessage());
-            }
-            if ($response) {
-                // Check if the router has an error handler for this status code.
-                $status = $response->getStatusCode();
-                if (array_key_exists($status, $this->errorHandlers)) {
-                    /** @var HandlerInterface $errorHandler */
-                    $errorHandler = new $this->errorHandlers[$status]();
-                    // Pass the response triggering this along to the error handler.
-                    $errorArgs = array("response" => $response);
-                    if ($args) {
-                        $errorArgs = array_merge($args, $errorArgs);
-                    }
-                    return $errorHandler->getResponse($request, $errorArgs);
+        $path = $request->getPath();
+        if (array_key_exists($path, $this->routes)) {
+            $handler = new $this->routes[$path]();
+            $response = $handler->getResponse($request, $args);
+        } else {
+            foreach ($this->routes as $route) {
+                /** @var HandlerInterface $route */
+                try {
+                    $response = $route->getResponse($request, $args);
+                } catch (HttpException $e) {
+                    $response = new Response();
+                    $response->setStatusCode($e->getCode());
+                    $response->setBody($e->getMessage());
                 }
-                return $response;
+                if ($response) break;
             }
+        }
+        if ($response) {
+            // Check if the router has an error handler for this status code.
+            $status = $response->getStatusCode();
+            if (array_key_exists($status, $this->errorHandlers)) {
+                /** @var HandlerInterface $errorHandler */
+                $errorHandler = new $this->errorHandlers[$status]();
+                // Pass the response triggering this along to the error handler.
+                $errorArgs = array("response" => $response);
+                if ($args) {
+                    $errorArgs = array_merge($args, $errorArgs);
+                }
+                return $errorHandler->getResponse($request, $errorArgs);
+            }
+            return $response;
         }
         return null;
     }
@@ -78,7 +86,14 @@ class Router implements HandlerInterface
      */
     public function addRoute(HandlerInterface $route)
     {
-        $this->routes[] = $route;
+        if ($route instanceof StaticRoute) {
+            $handler = $route->getHandler();
+            foreach ($route->getPaths() as $path) {
+                $this->routes[$path] = $handler;
+            }
+        } else {
+            $this->routes[] = $route;
+        }
     }
 
     /**

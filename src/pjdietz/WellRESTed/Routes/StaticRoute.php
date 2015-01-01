@@ -64,4 +64,23 @@ class StaticRoute extends BaseRoute
         return null;
     }
 
+    /**
+     * Returns the target class this maps to.
+     *
+     * @return HandlerInterface
+     */
+    public function getHandler()
+    {
+        return $this->getTarget();
+    }
+
+    /**
+     * Returns the paths this maps to a target handler.
+     *
+     * @return array Array of paths.
+     */
+    public function getPaths()
+    {
+        return $this->paths;
+    }
 }
