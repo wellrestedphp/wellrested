@@ -35,6 +35,19 @@ class Router implements HandlerInterface
         $this->errorHandlers = array();
     }
 
+    private function tryResponse($handler, $request, $args)
+    {
+        $response = null;
+        try {
+            $response = $handler->getResponse($request, $args);
+        } catch (HttpException $e) {
+            $response = new Response();
+            $response->setStatusCode($e->getCode());
+            $response->setBody($e->getMessage());
+        }
+        return $response;
+    }
+
     /**
      * Return the response built by the handler based on the request
      *
@@ -47,19 +60,13 @@ class Router implements HandlerInterface
         $path = $request->getPath();
         if (array_key_exists($path, $this->routes)) {
             $handler = new $this->routes[$path]();
-            $response = $handler->getResponse($request, $args);
+            $response = tryResponse($handler, $request, $args);
         } else {
             foreach ($this->routes as $path => $route) {
                 // Only take elements that are not $path => $handler mapped.
                 if (is_int($path)) {
                     /** @var HandlerInterface $route */
-                    try {
-                        $response = $route->getResponse($request, $args);
-                    } catch (HttpException $e) {
-                        $response = new Response();
-                        $response->setStatusCode($e->getCode());
-                        $response->setBody($e->getMessage());
-                    }
+                    $response = $this->tryResponse($route, $request, $args);
                     if ($response) break;
                 }
             }
