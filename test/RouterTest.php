@@ -2,8 +2,10 @@
 
 namespace pjdietz\WellRESTed\Test;
 
+use pjdietz\WellRESTed\Exceptions\HttpExceptions\ForbiddenException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Router;
 use pjdietz\WellRESTed\Routes\StaticRoute;
@@ -44,6 +46,75 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->addRoutes($routes);
         $resp = $router->getResponse($mockRequest);
         $this->assertEquals(200, $resp->getStatusCode());
+    }
+
+    public function testRespondWithDefaultErrorForException()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/"));
+
+        $router = new Router();
+        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenExceptionHandler'));
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals(403, $resp->getStatusCode());
+    }
+
+    public function testRespondWithErrorHandlerForException()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/"));
+
+        $router = new Router();
+        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenExceptionHandler'));
+        $router->setErrorHandler(403, __NAMESPACE__ . '\\ForbiddenErrorHandler');
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals("YOU SHALL NOT PASS!", $resp->getBody());
+    }
+
+    public function testRespondWithErrorHandlerForStatusCode()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/"));
+
+        $router = new Router();
+        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenHandler'));
+        $router->setErrorHandler(403, __NAMESPACE__ . '\\ForbiddenErrorHandler');
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals("YOU SHALL NOT PASS!", $resp->getBody());
+    }
+
+    public function testRespondWithErrorHandlerUsingOriginalResponse()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/"));
+
+        $router = new Router();
+        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\MessageHandler'));
+        $router->setErrorHandlers([404 => __NAMESPACE__ . '\\MessageErrorHandler']);
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals("<h1>Not Found</h1>", $resp->getBody());
+    }
+
+    public function testRespondWithErrorHandlerUsingInjection()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/"));
+
+        $router = new Router();
+        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenHandler'));
+        $router->setErrorHandlers([403 => __NAMESPACE__ . '\\InjectionErrorHandler']);
+        $resp = $router->getResponse($mockRequest, ["message" => "Pass through"]);
+        $this->assertEquals("Pass through", $resp->getBody());
     }
 
     public function testReturnNullWhenNoRouteMatches()
@@ -202,6 +273,70 @@ class NotFoundHandler implements HandlerInterface
         return $response;
     }
 }
+
+class ForbiddenHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = new Response(403);
+        $response->setBody("Forbidden");
+        return $response;
+    }
+}
+
+class ForbiddenExceptionHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        throw new ForbiddenException();
+    }
+}
+
+class ForbiddenErrorHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = new Response(403);
+        $response->setBody("YOU SHALL NOT PASS!");
+        return $response;
+    }
+}
+
+class MessageHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = new Response(404);
+        $response->setBody("Not Found");
+        return $response;
+    }
+}
+
+class MessageErrorHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        if (isset($args["response"])) {
+            /** @var ResponseInterface $response */
+            $response = $args["response"];
+            $message = "<h1>" . $response->getBody() . "</h1>";
+            $response->setBody($message);
+            return $response;
+        }
+        return null;
+    }
+}
+
+class InjectionErrorHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = new Response(403);
+        $response->setBody($args["message"]);
+        return $response;
+    }
+}
+
 
 class InjectionHandler implements HandlerInterface
 {

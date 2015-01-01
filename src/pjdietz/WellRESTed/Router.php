@@ -10,6 +10,7 @@
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
@@ -23,11 +24,14 @@ class Router implements HandlerInterface
 {
     /** @var array  Array of Route objects */
     private $routes;
+    /** @var array  Hash array of status code => qualified HandlerInterface names for error handling. */
+    private $errorHandlers;
 
     /** Create a new Router. */
     public function __construct()
     {
         $this->routes = array();
+        $this->errorHandlers = array();
     }
 
     /**
@@ -41,9 +45,27 @@ class Router implements HandlerInterface
     {
         foreach ($this->routes as $route) {
             /** @var HandlerInterface $route */
-            $responce = $route->getResponse($request, $args);
-            if ($responce) {
-                return $responce;
+            try {
+                $response = $route->getResponse($request, $args);
+            } catch (HttpException $e) {
+                $response = new Response();
+                $response->setStatusCode($e->getCode());
+                $response->setBody($e->getMessage());
+            }
+            if ($response) {
+                // Check if the router has an error handler for this status code.
+                $status = $response->getStatusCode();
+                if (array_key_exists($status, $this->errorHandlers)) {
+                    /** @var HandlerInterface $errorHandler */
+                    $errorHandler = new $this->errorHandlers[$status]();
+                    // Pass the response triggering this along to the error handler.
+                    $errorArgs = array("response" => $response);
+                    if ($args) {
+                        $errorArgs = array_merge($args, $errorArgs);
+                    }
+                    return $errorHandler->getResponse($request, $errorArgs);
+                }
+                return $response;
             }
         }
         return null;
@@ -74,9 +96,33 @@ class Router implements HandlerInterface
     }
 
     /**
+     * Add a custom error handler.
+     *
+     * @param integer $statusCode The error status code.
+     * @param string $errorHandler Fully qualified name to an autoloadable handler class.
+     */
+    public function setErrorHandler($statusCode, $errorHandler)
+    {
+        $this->errorHandlers[$statusCode] = $errorHandler;
+    }
+
+    /**
+     * Add custom error handlers.
+     *
+     * @param array $errorHandlers Array mapping integer error codes to qualified handler names.
+     */
+    public function setErrorHandlers(array $errorHandlers)
+    {
+        foreach ($errorHandlers as $statusCode => $errorHandler) {
+            $this->setErrorHandler($statusCode, $errorHandler);
+        }
+    }
+
+    /**
      * Dispatch the singleton Request through the router and output the response.
      *
      * Respond with a 404 Not Found if no route provides a response.
+     * @param array|null $args
      */
     public function respond($args = null)
     {
@@ -89,7 +135,7 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Prepare a resonse indicating a 404 Not Found error
+     * Prepare a response indicating a 404 Not Found error
      *
      * @param RequestInterface $request
      * @return ResponseInterface

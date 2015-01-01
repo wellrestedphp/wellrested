@@ -2,7 +2,6 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Exceptions\HttpExceptions\NotFoundException;
 use pjdietz\WellRESTed\Handler;
 
 class HandlerTest extends \PHPUnit_Framework_TestCase
@@ -44,18 +43,6 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testTranslateHttpExceptionToResponse()
-    {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getMethod')
-            ->will($this->returnValue("GET"));
-
-        $handler = new ExceptionHandler();
-        $resp = $handler->getResponse($mockRequest);
-        $this->assertEquals(404, $resp->getStatusCode());
-    }
-
     public function testReadAllowedMethods()
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
@@ -69,14 +56,6 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("GET, POST", $resp->getHeader("Allow"));
     }
 
-}
-
-class ExceptionHandler extends Handler
-{
-    protected function get()
-    {
-        throw new NotFoundException();
-    }
 }
 
 class OptionsHandler extends Handler

@@ -83,6 +83,8 @@ class RouteBuilder
      * ->variablePattern is passed to setDefaultVariablePattern()
      * <br /><br />
      * ->vars is passed to setTemplateVars()
+     *
+     * @param object
      */
     public function readConfiguration($data)
     {

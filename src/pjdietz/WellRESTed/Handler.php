@@ -10,7 +10,6 @@
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
@@ -46,12 +45,7 @@ abstract class Handler implements HandlerInterface
         $this->request = $request;
         $this->args = $args;
         $this->response = new Response();
-        try {
-            $this->buildResponse();
-        } catch (HttpException $e) {
-            $this->response->setStatusCode($e->getCode());
-            $this->response->setBody($e->getMessage());
-        }
+        $this->buildResponse();
         return $this->response;
     }
 
