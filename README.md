@@ -63,41 +63,6 @@ $myRouter->respond();
 See [Routes](https://github.com/pjdietz/wellrested/wiki/Routes) to learn about the various route classes.
 
 
-### Building Routes with JSON
-
-WellRESTed also provides a class to construct routes for you based on a JSON description. Here's an example:
-
-```php
-$json = <<<'JSON'
-{
-    "handlerNamespace": "\\myapi\\Handlers",
-    "routes": [
-        {
-            "path": "/",
-            "handler": "RootHandler"
-        },
-        {
-            "path": "/cats/",
-            "handler": "CatCollectionHandler"
-        },
-        {
-            "tempalte": "/cats/{id}",
-            "handler": "CatItemHandler"
-        }
-    ]
-}
-JSON;
-
-$builder = new RouteBuilder();
-$routes = $builder->buildRoutes($json);
-
-$router = new Router();
-$router->addRoutes($routes);
-$router->respond();
-```
-
-When you build routes through JSON, you can provide a `handlerNamespace` to be affixed to the front of every handler.
-
 ### Handlers
 
 Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could be another [`Router`](src/pjdietz/WellRESTed/Router.php).
@@ -191,8 +156,44 @@ if ($resp->getStatusCode() === 201) {
 }
 ```
 
+### Building Routes with JSON
+
+WellRESTed also provides a class to construct routes for you based on a JSON description. Here's an example:
+
+```php
+$json = <<<'JSON'
+{
+    "handlerNamespace": "\\myapi\\Handlers",
+    "routes": [
+        {
+            "path": "/",
+            "handler": "RootHandler"
+        },
+        {
+            "path": "/cats/",
+            "handler": "CatCollectionHandler"
+        },
+
+        {
+            "tempalte": "/cats/{id}",
+            "handler": "CatItemHandler"
+        }
+    ]
+}
+JSON;
+
+$builder = new RouteBuilder();
+$routes = $builder->buildRoutes($json);
+
+$router = new Router();
+$router->addRoutes($routes);
+$router->respond();
+```
+
+When you build routes through JSON, you can provide a `handlerNamespace` to be affixed to the front of every handler.
+
 
 Copyright and License
 ---------------------
-Copyright © 2014 by PJ Dietz
+Copyright © 2015 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
