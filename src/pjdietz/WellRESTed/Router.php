@@ -49,16 +49,19 @@ class Router implements HandlerInterface
             $handler = new $this->routes[$path]();
             $response = $handler->getResponse($request, $args);
         } else {
-            foreach ($this->routes as $route) {
-                /** @var HandlerInterface $route */
-                try {
-                    $response = $route->getResponse($request, $args);
-                } catch (HttpException $e) {
-                    $response = new Response();
-                    $response->setStatusCode($e->getCode());
-                    $response->setBody($e->getMessage());
+            foreach ($this->routes as $path => $route) {
+                // Only take elements that are not $path => $handler mapped.
+                if (is_int($path)) {
+                    /** @var HandlerInterface $route */
+                    try {
+                        $response = $route->getResponse($request, $args);
+                    } catch (HttpException $e) {
+                        $response = new Response();
+                        $response->setStatusCode($e->getCode());
+                        $response->setBody($e->getMessage());
+                    }
+                    if ($response) break;
                 }
-                if ($response) break;
             }
         }
         if ($response) {
