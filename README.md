@@ -63,6 +63,11 @@ $myRouter->respond();
 See [Routes](https://github.com/pjdietz/wellrested/wiki/Routes) to learn about the various route classes.
 
 
+#### Optimized Route Lookup
+
+StaticRoute routes are optimized by providing a direct lookup from path to handler. This is different from convential lookups because a match must be found by iterating through the entire list of routes in the router. This reduces the lookup complexity from O(n) - linear - to O(1) - constant.
+
+
 ### Handlers
 
 Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could be another [`Router`](src/pjdietz/WellRESTed/Router.php).
