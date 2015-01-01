@@ -44,6 +44,7 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
+        $response = null;
         $path = $request->getPath();
         if (array_key_exists($path, $this->routes)) {
             $handler = new $this->routes[$path]();
