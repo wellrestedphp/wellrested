@@ -35,6 +35,14 @@ class Router implements HandlerInterface
         $this->errorHandlers = array();
     }
 
+    /**
+     * Wraps the getResponse method in a try-catch.
+     *
+     * @param HandlerInterface $handler The Route or Handle to try.
+     * @param RequestInterface $request The incoming request.
+     * @param array $args The array of arguments.
+     * @return null|Response
+     */
     private function tryResponse($handler, $request, $args)
     {
         $response = null;
@@ -60,7 +68,7 @@ class Router implements HandlerInterface
         $path = $request->getPath();
         if (array_key_exists($path, $this->routes)) {
             $handler = new $this->routes[$path]();
-            $response = tryResponse($handler, $request, $args);
+            $response = $this->tryResponse($handler, $request, $args);
         } else {
             foreach ($this->routes as $path => $route) {
                 // Only take elements that are not $path => $handler mapped.
