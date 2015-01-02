@@ -99,7 +99,7 @@ class Router implements HandlerInterface
      * A route for an exact match to a path.
      *
      * @param string|array $paths Path component of the URI or a list of paths
-     * @param string $handler Fully qualified name to an autoloadable handler class.
+     * @param string $handler Fully qualified name to an autoloadable handler class
      */
     public function setStaticRoute($paths, $handler)
     {
@@ -180,10 +180,7 @@ class Router implements HandlerInterface
         // First check if there is a handler for this exact path.
         $handler = $this->getStaticHandler($path);
         if ($handler) {
-            $reponse = $this->tryResponse($handler, $request, $args);
-            if ($reponse) {
-                return $reponse;
-            }
+            return $this->tryResponse($handler, $request, $args);
         }
 
         // Try each of the routes.

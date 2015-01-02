@@ -11,7 +11,6 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
@@ -21,24 +20,24 @@ use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 class StaticRoute extends BaseRoute implements StaticRouteInterface
 {
     /** @var array List of static URI paths */
-    protected $paths;
+    private $paths;
 
     /**
      * Create a new StaticRoute for a given path or paths and a handler class.
      *
-     * @param string|array $paths Path or list of paths the request must match
+     * @param string|array $prefixes Path or list of paths the request must match
      * @param string $targetClassName Fully qualified name to an autoloadable handler class.
      * @throws \InvalidArgumentException
      */
-    public function __construct($paths, $targetClassName)
+    public function __construct($prefixes, $targetClassName)
     {
         parent::__construct($targetClassName);
-        if (is_string($paths)) {
-            $this->paths = array($paths);
-        } elseif (is_array($paths)) {
-            $this->paths = $paths;
+        if (is_string($prefixes)) {
+            $this->paths = array($prefixes);
+        } elseif (is_array($prefixes)) {
+            $this->paths = $prefixes;
         } else {
-            throw new InvalidArgumentException("$paths must be a string or array of string");
+            throw new InvalidArgumentException("$prefixes must be a string or array of string");
         }
     }
 
