@@ -8,6 +8,7 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Router;
+use pjdietz\WellRESTed\Routes\PrefixRoute;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 use pjdietz\WellRESTed\Routes\TemplateRoute;
 
@@ -44,6 +45,81 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
         $router->addRoutes($routes);
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals(200, $resp->getStatusCode());
+    }
+
+    public function testAddStaticRoute()
+    {
+        $path = "/cats/";
+
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue($path));
+
+        $router = new Router();
+        $router->setStaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
+        $resp = $router->getResponse($mockRequest);
+        $this->assertNotNull($resp);
+    }
+
+    public function testAddPrefixRoute()
+    {
+        $path = "/cats/";
+
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue($path));
+
+        $router = new Router();
+        $router->setPrefixRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
+        $resp = $router->getResponse($mockRequest);
+        $this->assertNotNull($resp);
+    }
+
+    public function testMatchStaticRouteBeforePrefixRoute()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/amimals/cats/molly"));
+
+        $router = new Router();
+        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
+        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\NotFoundHandler'));
+        $router->addRoute(new StaticRoute("/amimals/cats/molly",  __NAMESPACE__ . '\\RouterTestHandler'));
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals(200, $resp->getStatusCode());
+    }
+
+    public function testMatchBestPrefixRoute()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/amimals/cats/molly"));
+
+        $router = new Router();
+        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
+        $router->addRoute(new PrefixRoute("/amimals/dogs/",  __NAMESPACE__ . '\\NotFoundHandler'));
+        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\RouterTestHandler'));
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals(200, $resp->getStatusCode());
+    }
+
+    public function testMatchBestPrefixRouteBeforeTemplateRoute()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/amimals/cats/molly"));
+
+        $router = new Router();
+        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
+        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\RouterTestHandler'));
+        $router->addRoute(new TemplateRoute("/amimals/cats/*",  __NAMESPACE__ . '\\NotFoundHandler'));
         $resp = $router->getResponse($mockRequest);
         $this->assertEquals(200, $resp->getStatusCode());
     }
@@ -336,7 +412,6 @@ class InjectionErrorHandler implements HandlerInterface
         return $response;
     }
 }
-
 
 class InjectionHandler implements HandlerInterface
 {

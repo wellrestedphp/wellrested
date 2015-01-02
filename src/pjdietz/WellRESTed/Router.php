@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Router
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
@@ -14,6 +14,7 @@ use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
+use pjdietz\WellRESTed\Interfaces\Routes\PrefixRouteInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**
@@ -26,6 +27,9 @@ class Router implements HandlerInterface
     /** @var array  Array of Route objects */
     private $routes;
 
+    /** @var array  Hash array mapping path prefixes to handlers */
+    private $prefixRoutes;
+
     /** @var array  Hash array mapping exact paths to handlers */
     private $staticRoutes;
 
@@ -36,6 +40,7 @@ class Router implements HandlerInterface
     public function __construct()
     {
         $this->routes = array();
+        $this->prefixRoutes = array();
         $this->staticRoutes = array();
         $this->errorHandlers = array();
     }
@@ -76,6 +81,8 @@ class Router implements HandlerInterface
     {
         if ($route instanceof StaticRouteInterface) {
             $this->setStaticRoute($route->getPaths(), $route->getHandler());
+        } elseif ($route instanceof PrefixRouteInterface) {
+            $this->setPrefixRoute($route->getPrefixes(), $route->getHandler());
         } else {
             $this->routes[] = $route;
         }
@@ -96,7 +103,23 @@ class Router implements HandlerInterface
     }
 
     /**
-     * A route for an exact match to a path.
+     * Add a route for paths beginning with a given prefix.
+     *
+     * @param string|array $prefixes Prefix of a path to match
+     * @param string $handler Fully qualified name to an autoloadable handler class
+     */
+    public function setPrefixRoute($prefixes, $handler)
+    {
+        if (is_string($prefixes)) {
+            $prefixes = array($prefixes);
+        }
+        foreach ($prefixes as $prefix) {
+            $this->prefixRoutes[$prefix] = $handler;
+        }
+    }
+
+    /**
+     * Add a route for an exact match to a path.
      *
      * @param string|array $paths Path component of the URI or a list of paths
      * @param string $handler Fully qualified name to an autoloadable handler class
@@ -163,10 +186,44 @@ class Router implements HandlerInterface
         return $response;
     }
 
+    /**
+     * Returning the matching static handler, or null if none match.
+     *
+     * @param $path string The request's path
+     * @return HandlerInterface|null
+     */
     private function getStaticHandler($path)
     {
         if (array_key_exists($path, $this->staticRoutes)) {
+            // Instantiate and return the handler identified by the path.
             return new $this->staticRoutes[$path]();
+        }
+        return null;
+    }
+
+    /**
+     * Returning the best-matching prefix handler, or null if none match.
+     *
+     * @param $path string The request's path
+     * @return HandlerInterface|null
+     */
+    private function getPrefixHandler($path)
+    {
+        // Find all prefixes that match the start of this path.
+        $prefixes = array_keys($this->prefixRoutes);
+        $matches = array_filter($prefixes, function ($prefix) use ($path) {
+                return (strrpos($path, $prefix, -strlen($path)) !== false);
+            });
+
+        if ($matches) {
+            // If there are multiple matches, sort them to find the one with the longest string length.
+            if (count($matches) > 0) {
+                usort($matches, function ($a, $b) {
+                        return strlen($b) - strlen($a);
+                    });
+            }
+            // Instantiate and return the handler identified as the best match.
+            return new $this->prefixRoutes[$matches[0]]();
         }
         return null;
     }
@@ -179,6 +236,12 @@ class Router implements HandlerInterface
 
         // First check if there is a handler for this exact path.
         $handler = $this->getStaticHandler($path);
+        if ($handler) {
+            return $this->tryResponse($handler, $request, $args);
+        }
+
+        // Check prefix routes for any routes that match. Use the longest matching prefix.
+        $handler = $this->getPrefixHandler($path);
         if ($handler) {
             return $this->tryResponse($handler, $request, $args);
         }
