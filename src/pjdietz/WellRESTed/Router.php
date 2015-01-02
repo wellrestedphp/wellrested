@@ -14,7 +14,7 @@ use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Routes\StaticRoute;
+use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**
  * Router
@@ -25,6 +25,10 @@ class Router implements HandlerInterface
 {
     /** @var array  Array of Route objects */
     private $routes;
+
+    /** @var array  Hash array mapping exact paths to handlers */
+    private $staticRoutes;
+
     /** @var array  Hash array of status code => qualified HandlerInterface names for error handling. */
     private $errorHandlers;
 
@@ -32,28 +36,8 @@ class Router implements HandlerInterface
     public function __construct()
     {
         $this->routes = array();
+        $this->staticRoutes = array();
         $this->errorHandlers = array();
-    }
-
-    /**
-     * Wraps the getResponse method in a try-catch.
-     *
-     * @param HandlerInterface $handler The Route or Handle to try.
-     * @param RequestInterface $request The incoming request.
-     * @param array $args The array of arguments.
-     * @return null|Response
-     */
-    private function tryResponse($handler, $request, $args)
-    {
-        $response = null;
-        try {
-            $response = $handler->getResponse($request, $args);
-        } catch (HttpException $e) {
-            $response = new Response();
-            $response->setStatusCode($e->getCode());
-            $response->setBody($e->getMessage());
-        }
-        return $response;
     }
 
     /**
@@ -65,21 +49,8 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        $path = $request->getPath();
-        if (array_key_exists($path, $this->routes)) {
-            $handler = new $this->routes[$path]();
-            $response = $this->tryResponse($handler, $request, $args);
-        } else {
-            foreach ($this->routes as $path => $route) {
-                // Only take elements that are not $path => $handler mapped.
-                if (is_int($path)) {
-                    /** @var HandlerInterface $route */
-                    $response = $this->tryResponse($route, $request, $args);
-                    if ($response) break;
-                }
-            }
-        }
-        if (isset($response) and $response) {
+        $response = $this->getResponseFromRoutes($request, $args);
+        if ($response) {
             // Check if the router has an error handler for this status code.
             $status = $response->getStatusCode();
             if (array_key_exists($status, $this->errorHandlers)) {
@@ -92,9 +63,8 @@ class Router implements HandlerInterface
                 }
                 return $errorHandler->getResponse($request, $errorArgs);
             }
-            return $response;
         }
-        return null;
+        return $response;
     }
 
     /**
@@ -104,11 +74,8 @@ class Router implements HandlerInterface
      */
     public function addRoute(HandlerInterface $route)
     {
-        if ($route instanceof StaticRoute) {
-            $handler = $route->getHandler();
-            foreach ($route->getPaths() as $path) {
-                $this->routes[$path] = $handler;
-            }
+        if ($route instanceof StaticRouteInterface) {
+            $this->setStaticRoute($route->getPaths(), $route->getHandler());
         } else {
             $this->routes[] = $route;
         }
@@ -125,6 +92,22 @@ class Router implements HandlerInterface
             if ($route instanceof HandlerInterface) {
                 $this->addRoute($route);
             }
+        }
+    }
+
+    /**
+     * A route for an exact match to a path.
+     *
+     * @param string|array $paths Path component of the URI or a list of paths
+     * @param string $handler Fully qualified name to an autoloadable handler class.
+     */
+    public function setStaticRoute($paths, $handler)
+    {
+        if (is_string($paths)) {
+            $paths = array($paths);
+        }
+        foreach ($paths as $path) {
+            $this->staticRoutes[$path] = $handler;
         }
     }
 
@@ -180,4 +163,62 @@ class Router implements HandlerInterface
         return $response;
     }
 
+    private function getStaticHandler($path)
+    {
+        if (array_key_exists($path, $this->staticRoutes)) {
+            return new $this->staticRoutes[$path]();
+        }
+        return null;
+    }
+
+    private function getResponseFromRoutes(RequestInterface $request, array $args = null)
+    {
+        $response = null;
+
+        $path = $request->getPath();
+
+        // First check if there is a handler for this exact path.
+        $handler = $this->getStaticHandler($path);
+        if ($handler) {
+            $reponse = $this->tryResponse($handler, $request, $args);
+            if ($reponse) {
+                return $reponse;
+            }
+        }
+
+        // Try each of the routes.
+        foreach ($this->routes as $route) {
+            /** @var HandlerInterface $route */
+            $response = $this->tryResponse($route, $request, $args);
+            if ($response) {
+                return $response;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Wraps the getResponse method in a try-catch.
+     *
+     * In an HttpException is caught while trying to get a response, the method returns a response based on the
+     * HttpException's error code and message.
+     *
+     * @param HandlerInterface $handler The Route or Handler to try.
+     * @param RequestInterface $request The incoming request.
+     * @param array $args The array of arguments.
+     * @return null|Response
+     */
+    private function tryResponse($handler, $request, $args)
+    {
+        $response = null;
+        try {
+            $response = $handler->getResponse($request, $args);
+        } catch (HttpException $e) {
+            $response = new Response();
+            $response->setStatusCode($e->getCode());
+            $response->setBody($e->getMessage());
+        }
+        return $response;
+    }
 }

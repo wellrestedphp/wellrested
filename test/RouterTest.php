@@ -48,6 +48,20 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $resp->getStatusCode());
     }
 
+    public function testTryRoutesAfterNullStaticRoute()
+    {
+        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
+        $mockRequest->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue("/cat/"));
+
+        $router = new Router();
+        $router->setStaticRoute("/cat/", __NAMESPACE__ . '\\NullResponseHandler');
+        $router->addRoute(new TemplateRoute("/cat/*", __NAMESPACE__ . '\\RouterTestHandler'));
+        $resp = $router->getResponse($mockRequest);
+        $this->assertEquals(200, $resp->getStatusCode());
+    }
+
     public function testRespondWithDefaultErrorForException()
     {
         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
@@ -346,5 +360,13 @@ class InjectionHandler implements HandlerInterface
         $body = $args["add"]($args["a"], $args["b"]);
         $response->setBody($body);
         return $response;
+    }
+}
+
+class NullResponseHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        return null;
     }
 }

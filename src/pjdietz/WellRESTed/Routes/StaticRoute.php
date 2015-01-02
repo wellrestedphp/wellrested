@@ -11,12 +11,14 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**
  * Maps a list of static URI paths to a Handler
  */
-class StaticRoute extends BaseRoute
+class StaticRoute extends BaseRoute implements StaticRouteInterface
 {
     /** @var array List of static URI paths */
     protected $paths;
@@ -67,7 +69,7 @@ class StaticRoute extends BaseRoute
     /**
      * Returns the target class this maps to.
      *
-     * @return HandlerInterface
+     * @return string Fully qualified name for a HandlerInterface
      */
     public function getHandler()
     {
