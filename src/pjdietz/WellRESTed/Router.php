@@ -142,9 +142,14 @@ class Router implements HandlerInterface
      */
     protected function getNoRouteResponse(RequestInterface $request)
     {
-        $response = new Response(404);
-        $response->setBody('No resource at ' . $request->getPath());
+        if (array_key_exists(404, $this->errorHandlers)) {
+            $handler = new $this->errorHandlers[404]();
+            $response = $handler->getResponse($request, NULL);
+        } else {
+            $response = new Response(404);
+            $response->setBody('No resource at ' . $request->getPath());
+
+        }
         return $response;
     }
-
 }
