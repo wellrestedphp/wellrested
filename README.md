@@ -65,7 +65,7 @@ See [Routes](https://github.com/pjdietz/wellrested/wiki/Routes) to learn about t
 
 #### Optimized Route Lookup
 
-StaticRoute routes are optimized by providing a direct lookup from path to handler. This is different from convential lookups because a match must be found by iterating through the entire list of routes in the router. This reduces the lookup complexity from O(n) - linear - to O(1) - constant.
+StaticRoute and PrefixRoute routes are optimized by providing a direct lookup from path to handler. This is different from convential lookups because a match must be found by iterating through the entire list of routes in the router. This reduces the lookup complexity from O(n)—linear—to O(1)—constant.
 
 
 ### Handlers
