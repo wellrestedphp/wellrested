@@ -58,15 +58,9 @@ class Router implements HandlerInterface
         if ($response) {
             // Check if the router has an error handler for this status code.
             $status = $response->getStatusCode();
-            if (array_key_exists($status, $this->errorHandlers)) {
-                /** @var HandlerInterface $errorHandler */
-                $errorHandler = new $this->errorHandlers[$status]();
-                // Pass the response triggering this along to the error handler.
-                $errorArgs = array("response" => $response);
-                if ($args) {
-                    $errorArgs = array_merge($args, $errorArgs);
-                }
-                return $errorHandler->getResponse($request, $errorArgs);
+            $errorResponse = $this->getErrorResponse($status, $request, $args, $response);
+            if ($errorResponse) {
+                return $errorResponse;
             }
         }
         return $response;
@@ -181,9 +175,29 @@ class Router implements HandlerInterface
      */
     protected function getNoRouteResponse(RequestInterface $request)
     {
+        $response = $this->getErrorResponse(404, $request);
+        if ($response) {
+            return $response;
+        }
+
         $response = new Response(404);
         $response->setBody('No resource at ' . $request->getPath());
         return $response;
+    }
+
+    private function getErrorResponse($status, $request, $args = null, $response = null)
+    {
+        if (isset($this->errorHandlers[$status])) {
+            /** @var HandlerInterface $errorHandler */
+            $errorHandler = new $this->errorHandlers[$status]();
+            // Pass the response triggering this along to the error handler.
+            $errorArgs = array("response" => $response);
+            if ($args) {
+                $errorArgs = array_merge($args, $errorArgs);
+            }
+            return $errorHandler->getResponse($request, $errorArgs);
+        }
+        return null;
     }
 
     /**
@@ -194,7 +208,7 @@ class Router implements HandlerInterface
      */
     private function getStaticHandler($path)
     {
-        if (array_key_exists($path, $this->staticRoutes)) {
+        if (isset($this->staticRoutes[$path])) {
             // Instantiate and return the handler identified by the path.
             return new $this->staticRoutes[$path]();
         }

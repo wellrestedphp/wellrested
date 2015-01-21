@@ -250,6 +250,26 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testRespondWithErrorHandlerForNoRoute()
+    {
+        $_SERVER["REQUEST_URI"] = "/cats/";
+        $_SERVER["HTTP_HOST"] = "localhost";
+        $_SERVER["REQUEST_METHOD"] = "GET";
+
+        $router = new Router();
+        $router->setErrorHandler(404, __NAMESPACE__ . '\\MessageHandler');
+        ob_start();
+        $router->respond();
+        $captured = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals("Not Found", $captured);
+    }
+
+    /**
      * @dataProvider nestedRouterRoutesProvider
      */
     public function testNestedRouterFromWithRoutes($path, $expectedBody)
