@@ -4,12 +4,13 @@
  * pjdietz\WellRESTed\Handler
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
 namespace pjdietz\WellRESTed;
 
+use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
@@ -45,7 +46,12 @@ abstract class Handler implements HandlerInterface
         $this->request = $request;
         $this->args = $args;
         $this->response = new Response();
-        $this->buildResponse();
+        try {
+            $this->buildResponse();
+        } catch (HttpException $e) {
+            $this->response->setStatusCode($e->getCode());
+            $this->response->setBody($e->getMessage());
+        }
         return $this->response;
     }
 
