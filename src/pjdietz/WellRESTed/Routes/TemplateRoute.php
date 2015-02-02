@@ -59,65 +59,45 @@ class TemplateRoute extends RegexRoute
      */
     private function buildPattern($template, $defaultPattern, $variablePatterns)
     {
+        // Ensure $variablePatterns is an array.
         if (is_null($variablePatterns)) {
             $variablePatterns = array();
         } elseif (is_object($variablePatterns)) {
             $variablePatterns = (array) $variablePatterns;
         }
 
+        // Ensure a default is set.
         if (!$defaultPattern) {
             $defaultPattern = self::RE_SLUG;
         }
 
-        $pattern = '';
+        // Convert the template into the pattern
+        $pattern = $template;
 
-        // Explode the template into an array of path segments.
-        if ($template[0] === '/') {
-            $parts = explode('/', substr($template, 1));
-        } else {
-            $parts = explode('/', $template);
-        }
+        // Escape allowable characters with regex meaning.
+        $pattern = str_replace(
+            array("-", "."),
+            array("\\-", "\\."),
+            $pattern);
 
-        foreach ($parts as $part) {
+        // Replace * with .* AFTER escaping to avoid escaping .*
+        $pattern = str_replace("*", ".*", $pattern);
 
-            $pattern .= '\/';
+        // Surroung the pattern with delimiters
+        $pattern = "~^{$pattern}$~";
 
-            // Is this part an expression or a literal?
-            if (preg_match(self::URI_TEMPLATE_EXPRESSION_RE, $part, $matches)) {
-
-                // Locate the name for the variable from the template.
-                $variableName = $matches[1];
-
-                // If the caller passed an array with this variable name
-                // as a key, use its value for the pattern here.
-                // Otherwise, use the class's current default.
-                if (isset($variablePatterns[$variableName])) {
-                    $variablePattern = $variablePatterns[$variableName];
-                } else {
-                    $variablePattern = $defaultPattern;
-                }
-
-                $pattern .= sprintf(
-                    '(?<%s>%s)',
-                    $variableName,
-                    $variablePattern
-                );
-
+        // Replace all template variables with matching subpatterns.
+        $callback = function ($matches) use ($variablePatterns, $defaultPattern) {
+            $key = $matches[1];
+            if (isset($variablePatterns[$key])) {
+                $pattern = $variablePatterns[$key];
             } else {
-                // This part is a literal.
-                $pattern .= $part;
+                $pattern = $defaultPattern;
             }
+            return "(?<{$key}>{$pattern})";
+        };
+        $pattern = preg_replace_callback(self::URI_TEMPLATE_EXPRESSION_RE, $callback, $pattern);
 
-        }
-
-        $pattern = '/^' . $pattern;
-        if (substr($pattern, -1) === "*") {
-            // Allow path to include characters passed the pattern.
-            $pattern = rtrim($pattern, "*") . '/';
-        } else {
-            // Path must end at the end of the pattern.
-            $pattern .= "$/";
-        }
         return $pattern;
     }
 

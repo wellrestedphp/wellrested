@@ -34,11 +34,13 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
                 "catId" => TemplateRoute::RE_SLUG,
                 "dogId" => TemplateRoute::RE_SLUG],
                 "/cat/molly/bear", "dogId", "bear"],
-            ["cat/{catId}/{dogId}", TemplateRoute::RE_NUM, (object) [
+            ["/cat/{catId}/{dogId}", TemplateRoute::RE_NUM, (object) [
                 "catId" => TemplateRoute::RE_SLUG,
                 "dogId" => TemplateRoute::RE_SLUG],
                 "/cat/molly/bear", "dogId", "bear"],
-            ["/cat/{id}/*", null, null, "/cat/12/molly", "id", "12"]
+            ["/cat/{id}/*", null, null, "/cat/12/molly", "id", "12"],
+            ["/cat/{id}-{width}x{height}.jpg", TemplateRoute::RE_NUM, null, "/cat/17-100x100.jpg", "id", "17"],
+            ["/cat/{path}", ".*", null, "/cat/this/section/has/slashes", "path", "this/section/has/slashes"]
         ];
     }
 
