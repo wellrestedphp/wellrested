@@ -6,14 +6,14 @@ use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 
+/**
+ * @covers pjdietz\WellRESTed\Routes\BaseRoute
+ */
 class BaseRouteTest extends \PHPUnit_Framework_TestCase
 {
     private $path = "/";
     private $request;
 
-    /**
-     * @covers pjdietz\WellRESTed\Routes\BaseRoute
-     */
     public function testDispatchesHandlerFromCallable()
     {
         $target = function () {
@@ -25,9 +25,6 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
         $route->getResponse($this->request->reveal());
     }
 
-    /**
-     * @covers pjdietz\WellRESTed\Routes\BaseRoute
-     */
     public function testDispatchesHandlerFromString()
     {
         $target = __NAMESPACE__ . "\\ValidHandler";
@@ -36,9 +33,6 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
         $route->getResponse($this->request->reveal());
     }
 
-    /**
-     * @covers pjdietz\WellRESTed\Routes\BaseRoute
-     */
     public function testDispatchesHandlerInstance()
     {
         $target = new ValidHandler();
@@ -48,10 +42,9 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers pjdietz\WellRESTed\Routes\BaseRoute
      * @expectedException  \UnexpectedValueException
      */
-    public function testFailsWhenHandlerDoesNotImplementInterface()
+    public function testThrowsExceptionWhenHandlerDoesNotImplementInterface()
     {
         $target = "\\stdClass";
 
