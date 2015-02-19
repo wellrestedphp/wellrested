@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\BaseRoute
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
@@ -17,20 +17,22 @@ use pjdietz\WellRESTed\Interfaces\HandlerInterface;
  */
 abstract class BaseRoute implements HandlerInterface
 {
-    /** @var string Fully qualified name for the interface for handlers */
-    const HANDLER_INTERFACE = '\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface';
-
-    /** @var string Fully qualified classname of the HandlerInterface to dispatch */
-    private $targetClassName;
+    /** @var callable|string|HandlerInterface HandlerInterface to dispatch */
+    private $target;
 
     /**
      * Create a new route that will dispatch an instance of the given handelr class.
      *
-     * @param string $targetClassName Fully qualified name to a handler class.
+     * $target may be:
+     * - A callable expecting no arguments that returns a HandlerInterface
+     * - A string containing the fully qualified class of a HandlerInterface
+     * - A HandlerInterface
+     *
+     * @param callable|string|HandlerInterface $target HandlerInterface to dispatch
      */
-    public function __construct($targetClassName)
+    public function __construct($target)
     {
-        $this->targetClassName = $targetClassName;
+        $this->target = $target;
     }
 
     /**
@@ -41,13 +43,19 @@ abstract class BaseRoute implements HandlerInterface
      */
     protected function getTarget()
     {
-        if (is_subclass_of($this->targetClassName, self::HANDLER_INTERFACE)) {
-            /** @var HandlerInterface $target */
-            $target = new $this->targetClassName();
+        if (is_callable($this->target)) {
+            $callable = $this->target;
+            $target = $callable();
+        } elseif (is_string($this->target)) {
+            $className = $this->target;
+            $target = new $className();
+        } else {
+            $target = $this->target;
+        }
+        if ($target instanceof HandlerInterface) {
             return $target;
         } else {
             throw new \UnexpectedValueException("Target class must implement HandlerInterface");
         }
     }
-
 }

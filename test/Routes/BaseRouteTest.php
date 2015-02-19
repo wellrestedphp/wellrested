@@ -2,25 +2,75 @@
 
 namespace pjdietz\WellRESTed\Test;
 
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 
 class BaseRouteTest extends \PHPUnit_Framework_TestCase
 {
+    private $path = "/";
+    private $request;
+
     /**
-     * Create a route that will match, but has an incorrect handler assigned.
+     * @covers pjdietz\WellRESTed\Routes\BaseRoute
+     */
+    public function testDispatchesHandlerFromCallable()
+    {
+        $target = function () {
+            $handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+            return $handler->reveal();
+        };
+
+        $route = new StaticRoute($this->path, $target);
+        $route->getResponse($this->request->reveal());
+    }
+
+    /**
+     * @covers pjdietz\WellRESTed\Routes\BaseRoute
+     */
+    public function testDispatchesHandlerFromString()
+    {
+        $target = __NAMESPACE__ . "\\ValidHandler";
+
+        $route = new StaticRoute($this->path, $target);
+        $route->getResponse($this->request->reveal());
+    }
+
+    /**
+     * @covers pjdietz\WellRESTed\Routes\BaseRoute
+     */
+    public function testDispatchesHandlerInstance()
+    {
+        $target = new ValidHandler();
+
+        $route = new StaticRoute($this->path, $target);
+        $route->getResponse($this->request->reveal());
+    }
+
+    /**
+     * @covers pjdietz\WellRESTed\Routes\BaseRoute
      * @expectedException  \UnexpectedValueException
      */
-    public function testFailOnHandlerDoesNotImplementInterface()
+    public function testFailWhenHandlerDoesNotImplementInterface()
     {
-        $path = "/";
+        $target = "\\stdClass";
 
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $route = new StaticRoute($this->path, $target);
+        $route->getResponse($this->request->reveal());
+    }
 
-        $route = new StaticRoute($path, __NAMESPACE__ . '\NotAHandler');
-        $route->getResponse($mockRequest);
+    public function setUp()
+    {
+        $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->request->getPath()->willReturn($this->path);
+    }
+}
+
+class ValidHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        return null;
     }
 }
 
