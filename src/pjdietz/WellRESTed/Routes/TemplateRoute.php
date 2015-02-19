@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\TemplateRoute
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
@@ -35,18 +35,18 @@ class TemplateRoute extends RegexRoute
      * Optionally provide patterns for the variables in the template.
      *
      * @param string $template URI template the path must match
-     * @param string $targetClassName Fully qualified name to an autoloadable handler class
+     * @param string $target Fully qualified name to an autoloadable handler class
      * @param string $defaultPattern Regular expression for variables
      * @param array|null $variablePatterns Map of variable names and regular expression
      */
     public function __construct(
         $template,
-        $targetClassName,
+        $target,
         $defaultPattern = self::RE_SLUG,
         $variablePatterns = null
     ) {
         $pattern = $this->buildPattern($template, $defaultPattern, $variablePatterns);
-        parent::__construct($pattern, $targetClassName);
+        parent::__construct($pattern, $target);
     }
 
     /**
@@ -100,5 +100,4 @@ class TemplateRoute extends RegexRoute
 
         return $pattern;
     }
-
 }
