@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\RegexRout
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
@@ -25,11 +25,11 @@ class RegexRoute extends BaseRoute
      * Create a new route mapping a regex pattern to a handler class name.
      *
      * @param string $pattern Regular expression the path must match.
-     * @param string $targetClassName Fully qualified name to an autoloadable handler class.
+     * @param string $target Fully qualified name to an autoloadable handler class.
      */
-    public function __construct($pattern, $targetClassName)
+    public function __construct($pattern, $target)
     {
-        parent::__construct($targetClassName);
+        parent::__construct($target);
         $this->pattern = $pattern;
     }
 

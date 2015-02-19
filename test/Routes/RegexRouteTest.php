@@ -2,42 +2,43 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
-use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Routes\RegexRoute;
+use Prophecy\Argument;
 
+/**
+ * @covers pjdietz\WellRESTed\Routes\RegexRoute
+ */
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
+    private $handler;
+    private $request;
+    private $response;
+
     /**
      * @dataProvider matchingRouteProvider
      */
-    public function testMatchPatternForRoute($pattern, $path, $captures)
+    public function testMatchesPattern($pattern, $path)
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $this->request->getPath()->willReturn($path);
 
-        $route = new RegexRoute($pattern, __NAMESPACE__ . '\RegexRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
+        $route = new RegexRoute($pattern, $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNotNull($resp);
     }
 
     /**
      * @dataProvider matchingRouteProvider
      */
-    public function testExctractCapturesForRoute($pattern, $path, $captures)
+    public function testExtractsCaptures($pattern, $path, $captures)
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $this->request->getPath()->willReturn($path);
 
-        $route = new RegexRoute($pattern, __NAMESPACE__ . '\RegexRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
-        $body = json_decode($resp->getBody(), true);
-        $this->assertEquals($captures, $body);
+        $route = new RegexRoute($pattern, $this->handler->reveal());
+        $route->getResponse($this->request->reveal());
+        $this->handler->getResponse(Argument::any(), Argument::that(
+            function ($args) use ($captures) {
+                return $args = $captures;
+            }))->shouldHaveBeenCalled();
     }
 
     public function matchingRouteProvider()
@@ -60,15 +61,12 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider mismatchingRouteProvider
      */
-    public function testSkipMismatchingPattern($pattern, $path)
+    public function testFailsToMatchMismatchingPattern($pattern, $path)
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $this->request->getPath()->willReturn($path);
 
-        $route = new RegexRoute($pattern, 'NoClass');
-        $resp = $route->getResponse($mockRequest);
+        $route = new RegexRoute($pattern, $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNull($resp);
     }
 
@@ -85,13 +83,10 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
      * @dataProvider invalidRouteProvider
      * @expectedException  \pjdietz\WellRESTed\Exceptions\ParseException
      */
-    public function testFailOnInvalidPattern($pattern)
+    public function testThrowsExceptionOnInvalidPattern($pattern)
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-
-        $route = new RegexRoute($pattern, 'NoClass');
-        $resp = $route->getResponse($mockRequest);
-        $this->assertNull($resp);
+        $route = new RegexRoute($pattern, $this->handler->reveal());
+        $route->getResponse($this->request->reveal());
     }
 
     public function invalidRouteProvider()
@@ -102,18 +97,11 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-}
-
-/**
- * Mini Handler class that allways returns a 200 status code Response.
- */
-class RegexRouteTestHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
+    public function setUp()
     {
-        $resp = new Response();
-        $resp->setStatusCode(200);
-        $resp->setBody(json_encode($args));
-        return $resp;
+        $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->response = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
+        $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
     }
 }
