@@ -110,7 +110,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider nonmatchingTemplateProvider
      */
-    public function testSkipNonmatchingTemplate($template, $default, $vars, $path)
+    public function testFailsToMatchNonmatchingTemplate($template, $default, $vars, $path)
     {
         $this->request->getPath()->willReturn($path);
         $route = new TemplateRoute($template, $this->handler->reveal(), $default, $vars);
