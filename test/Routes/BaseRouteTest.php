@@ -51,7 +51,7 @@ class BaseRouteTest extends \PHPUnit_Framework_TestCase
      * @covers pjdietz\WellRESTed\Routes\BaseRoute
      * @expectedException  \UnexpectedValueException
      */
-    public function testFailWhenHandlerDoesNotImplementInterface()
+    public function testFailsWhenHandlerDoesNotImplementInterface()
     {
         $target = "\\stdClass";
 
@@ -72,8 +72,4 @@ class ValidHandler implements HandlerInterface
     {
         return null;
     }
-}
-
-class NotAHandler
-{
 }
