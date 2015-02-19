@@ -2,62 +2,49 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Routes\StaticRoute;
+use Prophecy\Argument;
 
+/**
+ * @covers pjdietz\WellRESTed\Routes\StaticRoute
+ */
 class StaticRouteTest extends \PHPUnit_Framework_TestCase
 {
-    public function testMatchSinglePath()
+    private $handler;
+    private $request;
+    private $response;
+
+    public function testMatchesSinglePath()
     {
-        $path = "/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $route = new StaticRoute($path, __NAMESPACE__ . '\StaticRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $this->request->getPath()->willReturn("/cats/");
+        $route = new StaticRoute("/cats/", $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
+        $this->assertNotNull($resp);
     }
 
-    public function testMatchPathInList()
+    public function testMatchesPathInList()
     {
-        $path = "/";
-        $paths = array($path, "/cats/", "/dogs/");
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $route = new StaticRoute($paths, __NAMESPACE__ . '\StaticRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $this->request->getPath()->willReturn("/cats/");
+        $route = new StaticRoute(array("/cats/", "/dogs/"), $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
+        $this->assertNotNull($resp);
     }
 
-    public function testFailToMatchPath()
+    public function testFailsToMatchPath()
     {
-        $path = "/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/not-this-path/"));
-
-        $route = new StaticRoute($path, 'NoClass');
-        $resp = $route->getResponse($mockRequest);
+        $this->request->getPath()->willReturn("/dogs/");
+        $route = new StaticRoute("/cats/", $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNull($resp);
     }
 
     /**
      * @dataProvider invalidPathsProvider
-     * @expectedException  \InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
-    public function testFailOnInvalidPath($path)
+    public function testThrowsExceptionOnInvalidPath($path)
     {
-        new StaticRoute($path, 'NoClass');
+        new StaticRoute($path, "\\NoClass");
     }
 
     public function invalidPathsProvider()
@@ -69,17 +56,24 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-}
-
-/**
- * Mini Handler class that allways returns a 200 status code Response.
- */
-class StaticRouteTestHandler implements HandlerInterface
-{
-    public function getResponse(\pjdietz\WellRESTed\Interfaces\RequestInterface $request, array $args = null)
+    public function testReturnsHandler()
     {
-        $resp = new Response();
-        $resp->setStatusCode(200);
-        return $resp;
+        $route = new StaticRoute("/cats/", $this->handler->reveal());
+        $this->assertNotNull($route->getHandler());
+    }
+
+    public function testReturnsPaths()
+    {
+        $paths = array("/cats/", "/dogs/");
+        $route = new StaticRoute($paths, $this->handler->reveal());
+        $this->assertEquals($paths, $route->getPaths());
+    }
+
+    public function setUp()
+    {
+        $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->response = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
+        $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
     }
 }
