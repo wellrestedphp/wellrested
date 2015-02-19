@@ -2,63 +2,47 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Response;
 use pjdietz\WellRESTed\Routes\PrefixRoute;
+use Prophecy\Argument;
 
+/**
+ * @covers pjdietz\WellRESTed\Routes\PrefixRoute
+ */
 class PrefixRouteTest extends \PHPUnit_Framework_TestCase
 {
-    public function testMatchSinglePathExactly()
+    private $handler;
+    private $request;
+    private $response;
+
+    public function testMatchesSinglePathExactly()
     {
-        $path = "/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $route = new PrefixRoute($path, __NAMESPACE__ . '\PrefixRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
+        $this->request->getPath()->willReturn("/cats/");
+        $route = new PrefixRoute("/cats/", $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNotNull($resp);
     }
 
-    public function testMatchSinglePathWithPrefix()
+    public function testMatchesSinglePathWithPrefix()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/cats/"));
-
-        $route = new PrefixRoute("/", __NAMESPACE__ . '\PrefixRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
+        $this->request->getPath()->willReturn("/cats/molly");
+        $route = new PrefixRoute("/cats/", $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNotNull($resp);
     }
 
-    public function testMatchPathInList()
+    public function testMatchesPathInList()
     {
-        $paths = array("/cats/", "/dogs/");
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/cats/"));
-
-        $route = new PrefixRoute($paths, __NAMESPACE__ . '\StaticRouteTestHandler');
-        $resp = $route->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $this->request->getPath()->willReturn("/cats/molly");
+        $route = new PrefixRoute(array("/cats/", "/dogs/"), $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
+        $this->assertNotNull($resp);
     }
 
-    public function testFailToMatchPath()
+    public function testFailsToMatchPath()
     {
-        $path = "/cat/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/not-this-path/"));
-
-        $route = new PrefixRoute($path, 'NoClass');
-        $resp = $route->getResponse($mockRequest);
+        $this->request->getPath()->willReturn("/dogs/");
+        $route = new PrefixRoute("/cats/", $this->handler->reveal());
+        $resp = $route->getResponse($this->request->reveal());
         $this->assertNull($resp);
     }
 
@@ -66,9 +50,9 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
      * @dataProvider invalidPathsProvider
      * @expectedException  \InvalidArgumentException
      */
-    public function testFailOnInvalidPath($path)
+    public function testThrowsExceptionOnInvalidPath($path)
     {
-        new PrefixRoute($path, 'NoClass');
+        new PrefixRoute($path, "\\NoClass");
     }
 
     public function invalidPathsProvider()
@@ -79,17 +63,25 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
             array(null)
         );
     }
-}
 
-/**
- * Mini Handler class that allways returns a 200 status code Response.
- */
-class PrefixRouteTestHandler implements HandlerInterface
-{
-    public function getResponse(\pjdietz\WellRESTed\Interfaces\RequestInterface $request, array $args = null)
+    public function testReturnsHandler()
     {
-        $resp = new Response();
-        $resp->setStatusCode(200);
-        return $resp;
+        $route = new PrefixRoute("/cats/", $this->handler->reveal());
+        $this->assertNotNull($route->getHandler());
+    }
+
+    public function testReturnsPrefixes()
+    {
+        $paths = array("/cats/", "/dogs/");
+        $route = new PrefixRoute($paths, $this->handler->reveal());
+        $this->assertEquals($paths, $route->getPrefixes());
+    }
+
+    public function setUp()
+    {
+        $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->response = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
+        $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
     }
 }

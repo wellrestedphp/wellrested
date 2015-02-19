@@ -25,19 +25,19 @@ class PrefixRoute extends BaseRoute implements PrefixRouteInterface
     /**
      * Create a new StaticRoute for a given path or paths and a handler class.
      *
-     * @param string|array $prefixes Path or list of paths the request must match
-     * @param string $targetClassName Fully qualified name to an autoloadable handler class.
+     * @param string|array $path Path or list of paths the request must match
+     * @param string $target Fully qualified name to an autoloadable handler class.
      * @throws \InvalidArgumentException
      */
-    public function __construct($prefixes, $targetClassName)
+    public function __construct($path, $target)
     {
-        parent::__construct($targetClassName);
-        if (is_string($prefixes)) {
-            $this->prefixes = array($prefixes);
-        } elseif (is_array($prefixes)) {
-            $this->prefixes = $prefixes;
+        parent::__construct($target);
+        if (is_string($path)) {
+            $this->prefixes = array($path);
+        } elseif (is_array($path)) {
+            $this->prefixes = $path;
         } else {
-            throw new InvalidArgumentException("$prefixes must be a string or array of string");
+            throw new InvalidArgumentException("$path must be a string or array of string");
         }
     }
 
