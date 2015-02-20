@@ -10,6 +10,7 @@
 
 namespace pjdietz\WellRESTed\Routes;
 
+use pjdietz\WellRESTed\HandlerUnpacker;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 
 /**
@@ -17,18 +18,18 @@ use pjdietz\WellRESTed\Interfaces\HandlerInterface;
  */
 abstract class BaseRoute implements HandlerInterface
 {
-    /** @var callable|string|HandlerInterface HandlerInterface to dispatch */
+    /** @var callable|string|HandlerInterface Handler to dispatch */
     private $target;
 
     /**
-     * Create a new route that will dispatch an instance of the given handelr class.
+     * Create a new route that will dispatch an instance of the given handler.
      *
      * $target may be:
      * - A callable expecting no arguments that returns a HandlerInterface
      * - A string containing the fully qualified class of a HandlerInterface
-     * - A HandlerInterface
+     * - A HandlerInterface instance
      *
-     * @param callable|string|HandlerInterface $target HandlerInterface to dispatch
+     * @param mixed $target Handler to dispatch
      */
     public function __construct($target)
     {
@@ -36,26 +37,14 @@ abstract class BaseRoute implements HandlerInterface
     }
 
     /**
-     * Instantiate and return an instance of the assigned HandlerInterface
+     * Return an instance of the assigned handler
      *
      * @throws \UnexpectedValueException
      * @return HandlerInterface
      */
     protected function getTarget()
     {
-        if (is_callable($this->target)) {
-            $callable = $this->target;
-            $target = $callable();
-        } elseif (is_string($this->target)) {
-            $className = $this->target;
-            $target = new $className();
-        } else {
-            $target = $this->target;
-        }
-        if ($target instanceof HandlerInterface) {
-            return $target;
-        } else {
-            throw new \UnexpectedValueException("Target class must implement HandlerInterface");
-        }
+        $unpacker = new HandlerUnpacker();
+        return $unpacker->unpack($this->target);
     }
 }
