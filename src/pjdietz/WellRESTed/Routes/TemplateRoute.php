@@ -83,7 +83,7 @@ class TemplateRoute extends RegexRoute
         // Replace * with .* AFTER escaping to avoid escaping .*
         $pattern = str_replace("*", ".*", $pattern);
 
-        // Surroung the pattern with delimiters
+        // Surround the pattern with delimiters.
         $pattern = "~^{$pattern}$~";
 
         // Replace all template variables with matching subpatterns.
