@@ -2,245 +2,341 @@
 
 namespace pjdietz\WellRESTed\Test;
 
-use pjdietz\WellRESTed\Exceptions\HttpExceptions\ForbiddenException;
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
-use pjdietz\WellRESTed\Interfaces\RequestInterface;
-use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Response;
+use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Router;
-use pjdietz\WellRESTed\Routes\PrefixRoute;
-use pjdietz\WellRESTed\Routes\StaticRoute;
-use pjdietz\WellRESTed\Routes\TemplateRoute;
+use Prophecy\Argument;
 
+/**
+ * @covers pjdietz\WellRESTed\Router
+ */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
-    public function testAddRoute()
+    private $handler;
+    private $request;
+    private $response;
+    private $route;
+
+    public function setUp()
     {
-        $path = "/";
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $route = new StaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
-        $router = new Router();
-        $router->addRoute($route);
-        $resp = $router->getResponse($mockRequest);
-        $this->assertNotNull($resp);
+        $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->response = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
+        $this->route = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
     }
 
-    public function testAddRoutes()
+    public function testMatchesStaticRoute()
     {
-        $path = "/";
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
+        $this->route->getPaths()->willReturn(["/cats/"]);
+        $this->route->getHandler()->willReturn($this->handler->reveal());
 
-        $routes = array();
-        $routes[] = new StaticRoute("/", __NAMESPACE__ . '\\RouterTestHandler');
-        $routes[] = new StaticRoute("/another/", __NAMESPACE__ . '\\RouterTestHandler');
+        $this->request->getPath()->willReturn("/cats/");
 
         $router = new Router();
-        $router->addRoutes($routes);
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $router->addRoute($this->route->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $this->route->getHandler()->shouldHaveBeenCalled();
     }
 
-    public function testAddStaticRoute()
+    public function testMatchesPrefixRoute()
     {
-        $path = "/cats/";
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
+        $this->route->getPrefixes()->willReturn(["/cats/"]);
+        $this->route->getHandler()->willReturn($this->handler->reveal());
+
+        $this->request->getPath()->willReturn("/cats/molly");
 
         $router = new Router();
-        $router->setStaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
-        $resp = $router->getResponse($mockRequest);
-        $this->assertNotNull($resp);
+        $router->addRoute($this->route->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $this->route->getHandler()->shouldHaveBeenCalled();
     }
 
-    public function testAddPrefixRoute()
+    public function testMatchesBestPrefixRoute()
     {
-        $path = "/cats/";
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
+        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
+        $route1->getPrefixes()->willReturn(["/animals/"]);
+        $route1->getHandler()->willReturn($this->handler->reveal());
+
+        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route2->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
+        $route2->getPrefixes()->willReturn(["/animals/cats/"]);
+        $route2->getHandler()->willReturn($this->handler->reveal());
+
+        $this->request->getPath()->willReturn("/animals/cats/molly");
 
         $router = new Router();
-        $router->setPrefixRoute($path, __NAMESPACE__ . '\\RouterTestHandler');
-        $resp = $router->getResponse($mockRequest);
-        $this->assertNotNull($resp);
+        $router->addRoute($route1->reveal());
+        $router->addRoute($route2->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $route1->getHandler()->shouldNotHaveBeenCalled();
+        $route2->getHandler()->shouldHaveBeenCalled();
     }
 
-    public function testMatchStaticRouteBeforePrefixRoute()
+    public function testMatchesStaticRouteBeforePrefixRoute()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/amimals/cats/molly"));
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
+        $route1->getPrefixes()->willReturn(["/animals/cats/"]);
+        $route1->getHandler()->willReturn($this->handler->reveal());
+
+        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route2->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
+        $route2->getPaths()->willReturn(["/animals/cats/molly"]);
+        $route2->getHandler()->willReturn($this->handler->reveal());
+
+        $this->request->getPath()->willReturn("/animals/cats/molly");
 
         $router = new Router();
-        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $router->addRoute(new StaticRoute("/amimals/cats/molly",  __NAMESPACE__ . '\\RouterTestHandler'));
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $router->addRoute($route1->reveal());
+        $router->addRoute($route2->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $route1->getHandler()->shouldNotHaveBeenCalled();
+        $route2->getHandler()->shouldHaveBeenCalled();
     }
 
-    public function testMatchBestPrefixRoute()
+    public function testMatchesPrefixRouteBeforeHandlerRoute()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/amimals/cats/molly"));
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
+        $route1->getPrefixes()->willReturn(["/animals/cats/"]);
+        $route1->getHandler()->willReturn($this->handler->reveal());
+
+        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route2->getResponse(Argument::cetera())->willReturn(null);
+
+        $this->request->getPath()->willReturn("/animals/cats/molly");
 
         $router = new Router();
-        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $router->addRoute(new PrefixRoute("/amimals/dogs/",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\RouterTestHandler'));
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $router->addRoute($route1->reveal());
+        $router->addRoute($route2->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $route1->getHandler()->shouldHaveBeenCalled();
+        $route2->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
-    public function testMatchBestPrefixRouteBeforeTemplateRoute()
+    public function testReturnsFirstNonNullResponse()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/amimals/cats/molly"));
+        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route1->getResponse(Argument::cetera())->willReturn(null);
+
+        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route2->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $route3 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route3->getResponse(Argument::cetera())->willReturn(null);
+
+        $this->request->getPath()->willReturn("/");
 
         $router = new Router();
-        $router->addRoute(new PrefixRoute("/amimals/",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $router->addRoute(new PrefixRoute("/amimals/cats/",  __NAMESPACE__ . '\\RouterTestHandler'));
-        $router->addRoute(new TemplateRoute("/amimals/cats/*",  __NAMESPACE__ . '\\NotFoundHandler'));
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(200, $resp->getStatusCode());
+        $router->addRoutes(
+            [
+                $route1->reveal(),
+                $route2->reveal(),
+                $route3->reveal()
+            ]
+        );
+        $response = $router->getResponse($this->request->reveal());
+
+        $this->assertNotNull($response);
+        $route1->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $route2->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $route3->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
-    public function testRespondWithDefaultErrorForException()
+    public function testReturnsNullWhenNoRouteMatches()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/"));
+        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route1->getResponse(Argument::cetera())->willReturn(null);
+
+        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route2->getResponse(Argument::cetera())->willReturn(null);
+
+        $route3 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $route3->getResponse(Argument::cetera())->willReturn(null);
 
         $router = new Router();
-        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenExceptionHandler'));
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals(403, $resp->getStatusCode());
+        $router->addRoutes(
+            [
+                $route1->reveal(),
+                $route2->reveal(),
+                $route3->reveal()
+            ]
+        );
+        $response = $router->getResponse($this->request->reveal());
+
+        $this->assertNull($response);
+        $route1->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $route2->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $route3->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-    public function testRespondWithErrorHandlerForException()
+    public function testRespondsWithErrorResponseForHttpException()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/"));
+        $this->route->getResponse(Argument::cetera())->willThrow(new HttpException());
+        $this->request->getPath()->willReturn("/");
 
         $router = new Router();
-        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenExceptionHandler'));
-        $router->setErrorHandler(403, __NAMESPACE__ . '\\ForbiddenErrorHandler');
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals("YOU SHALL NOT PASS!", $resp->getBody());
+        $router->addRoute($this->route->reveal());
+        $response = $router->getResponse($this->request->reveal());
+        $this->assertEquals(500, $response->getStatusCode());
     }
 
-    public function testRespondWithErrorHandlerForStatusCode()
+    public function testDispatchesErrorHandlerForStatusCode()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/"));
+        $this->request->getPath()->willReturn("/");
+        $this->response->getStatusCode()->willReturn(403);
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $errorHandler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $errorHandler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
         $router = new Router();
-        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenHandler'));
-        $router->setErrorHandler(403, __NAMESPACE__ . '\\ForbiddenErrorHandler');
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals("YOU SHALL NOT PASS!", $resp->getBody());
+        $router->addRoute($this->route->reveal());
+        $router->setErrorHandlers([403 => $errorHandler->reveal()]);
+        $router->getResponse($this->request->reveal());
+
+        $errorHandler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-    public function testRespondWithErrorHandlerUsingOriginalResponse()
+    public function testDispatchesErrorHandlerWithOriginalRequest()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/"));
+        $this->request->getPath()->willReturn("/");
+        $this->response->getStatusCode()->willReturn(403);
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $errorHandler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $errorHandler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $request = $this->request->reveal();
 
         $router = new Router();
-        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\MessageHandler'));
-        $router->setErrorHandlers([404 => __NAMESPACE__ . '\\MessageErrorHandler']);
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals("<h1>Not Found</h1>", $resp->getBody());
+        $router->addRoute($this->route->reveal());
+        $router->setErrorHandlers([403 => $errorHandler->reveal()]);
+        $router->getResponse($request);
+
+        $errorHandler->getResponse(
+            Argument::that(
+                function ($arg) use ($request) {
+                    return $arg === $request;
+                }
+            ),
+            Argument::any()
+        )->shouldHaveBeenCalled();
     }
 
-    public function testRespondWithErrorHandlerUsingInjection()
+    public function testDispatchesErrorHandlerWithOriginalArguments()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/"));
+        $this->request->getPath()->willReturn("/");
+        $this->response->getStatusCode()->willReturn(403);
+        $response = $this->response->reveal();
+        $this->route->getResponse(Argument::cetera())->willReturn($response);
+
+        $errorHandler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $errorHandler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $arguments = [
+            "cat" => "Molly",
+            "dog" => "Bear"
+        ];
 
         $router = new Router();
-        $router->addRoute(new StaticRoute("/", __NAMESPACE__ . '\\ForbiddenHandler'));
-        $router->setErrorHandlers([403 => __NAMESPACE__ . '\\InjectionErrorHandler']);
-        $resp = $router->getResponse($mockRequest, ["message" => "Pass through"]);
-        $this->assertEquals("Pass through", $resp->getBody());
+        $router->addRoute($this->route->reveal());
+        $router->setErrorHandlers([403 => $errorHandler->reveal()]);
+        $router->getResponse($this->request->reveal(), $arguments);
+
+        $errorHandler->getResponse(
+            Argument::any(),
+            Argument::that(
+                function ($args) use ($arguments) {
+                    return count(array_diff_assoc($arguments, $args)) === 0;
+                }
+            )
+        )->shouldHaveBeenCalled();
     }
 
-    public function testReturnNullWhenNoRouteMatches()
+    public function testDispatchesErrorHandlerWithPreviousResponse()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/dog/"));
+        $this->request->getPath()->willReturn("/");
+        $this->response->getStatusCode()->willReturn(403);
+        $response = $this->response->reveal();
+        $this->route->getResponse(Argument::cetera())->willReturn($response);
 
-        $route = new StaticRoute("/cat/", __NAMESPACE__ . '\\RouterTestHandler');
+        $errorHandler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $errorHandler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
         $router = new Router();
-        $router->addRoute($route);
-        $resp = $router->getResponse($mockRequest);
-        $this->assertNull($resp);
-    }
+        $router->addRoute($this->route->reveal());
+        $router->setErrorHandlers([403 => $errorHandler->reveal()]);
+        $router->getResponse($this->request->reveal());
 
-    public function testNestedRouters()
-    {
-        $path = "/cats/";
-
-        $router1 = new Router();
-        $router2 = new Router();
-        $router3 = new Router();
-
-        $router1->addRoute($router2);
-        $router2->addRoute($router3);
-        $router3->addRoute(new StaticRoute($path, __NAMESPACE__ . '\\RouterTestHandler'));
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $resp = $router1->getResponse($mockRequest);
-        $this->assertNotNull($resp);
+        $errorHandler->getResponse(
+            Argument::any(),
+            Argument::that(
+                function ($arg) use ($response) {
+                    return isset($arg["response"]) && $arg["response"] === $response;
+                }
+            )
+        )->shouldHaveBeenCalled();
     }
 
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testStaticRequestDoesNotMatchRouter()
+    public function testRoutesStaticRequest()
     {
         $_SERVER["REQUEST_URI"] = "/cats/";
         $_SERVER["HTTP_HOST"] = "localhost";
         $_SERVER["REQUEST_METHOD"] = "GET";
 
-        $route = new StaticRoute("/dogs/", __NAMESPACE__ . '\\RouterTestHandler');
+        $this->response->getStatusCode()->willReturn(200);
+        $this->response->respond()->willReturn();
+
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
+        $this->route->getPaths()->willReturn(["/cats/"]);
+        $this->route->getHandler()->willReturn($this->handler->reveal());
+
         $router = new Router();
-        $router->addRoute($route);
+        $router->addRoute($this->route->reveal());
+
+        ob_start();
+        $router->respond();
+        ob_end_clean();
+
+        $this->response->respond()->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testRoutesStaticRequestToNoRouteResponse()
+    {
+        $_SERVER["REQUEST_URI"] = "/cats/";
+        $_SERVER["HTTP_HOST"] = "localhost";
+        $_SERVER["REQUEST_METHOD"] = "GET";
+
+        $router = new Router();
+
         ob_start();
         $router->respond();
         $captured = ob_get_contents();
@@ -253,193 +349,46 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRespondWithErrorHandlerForNoRoute()
+    public function testRoutesStaticRequestTo404ErrorHandler()
     {
         $_SERVER["REQUEST_URI"] = "/cats/";
         $_SERVER["HTTP_HOST"] = "localhost";
         $_SERVER["REQUEST_METHOD"] = "GET";
 
+        $errorHandler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $errorHandler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
         $router = new Router();
-        $router->setErrorHandler(404, __NAMESPACE__ . '\\MessageHandler');
+        $router->setErrorHandler(404, $errorHandler->reveal());
+
         ob_start();
         $router->respond();
-        $captured = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals("Not Found", $captured);
+        $errorHandler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-    /**
-     * @dataProvider nestedRouterRoutesProvider
-     */
-    public function testNestedRouterFromWithRoutes($path, $expectedBody)
+    public function testDeprecatedSetStaticRoute()
     {
-        $router = new Router();
-        $router->addRoutes(array(
-            new TemplateRoute("/cats/*", __NAMESPACE__ . "\\CatRouter"),
-            new TemplateRoute("/dogs/*", __NAMESPACE__ . "\\DogRouter"),
-            new NotFoundHandler()
-        ));
-
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue($path));
-
-        $resp = $router->getResponse($mockRequest);
-        $this->assertEquals($expectedBody, $resp->getBody());
-    }
-
-    public function nestedRouterRoutesProvider()
-    {
-        return [
-            ["/cats/", "/cats/"],
-            ["/cats/molly", "/cats/molly"],
-            ["/dogs/", "/dogs/"],
-            ["/birds/", "No resource found at /birds/"]
-        ];
-    }
-
-    public function testInjection()
-    {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getPath')
-            ->will($this->returnValue("/2/3"));
-
-        $dependencies = [
-            "add" => function ($a, $b) {
-                    return $a + $b;
-                }
-        ];
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+        $this->request->getPath()->willReturn("/cats/");
 
         $router = new Router();
-        $router->addRoute(new TemplateRoute("/{a}/{b}", __NAMESPACE__ . "\\InjectionHandler"));
-        $resp = $router->getResponse($mockRequest, $dependencies);
-        $this->assertEquals("5", $resp->getBody());
+        @$router->setStaticRoute(["/cats/"], $this->handler->reveal());
+        $router->getResponse($this->request->reveal());
+
+        $this->handler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-}
-
-/**
- * Mini Handler class that allways returns a 200 status code Response.
- */
-class RouterTestHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
+    public function testDeprecatedSetPrefixRoute()
     {
-        $resp = new Response();
-        $resp->setStatusCode(200);
-        $resp->setBody($request->getPath());
-        return $resp;
-    }
-}
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+        $this->request->getPath()->willReturn("/cats/molly");
 
-class CatRouter extends Router
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->addRoutes([
-            new StaticRoute("/cats/", __NAMESPACE__ . "\\RouterTestHandler"),
-            new StaticRoute("/cats/molly", __NAMESPACE__ . "\\RouterTestHandler"),
-            new StaticRoute("/cats/oscar", __NAMESPACE__ . "\\RouterTestHandler")
-        ]);
-    }
-}
+        $router = new Router();
+        @$router->setPrefixRoute(["/cats/"], $this->handler->reveal());
+        $router->getResponse($this->request->reveal());
 
-class DogRouter extends Router
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->addRoutes([
-            new StaticRoute("/dogs/", __NAMESPACE__ . "\\RouterTestHandler"),
-            new StaticRoute("/dogs/bear", __NAMESPACE__ . "\\RouterTestHandler")
-        ]);
-    }
-}
-
-class NotFoundHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(404);
-        $response->setBody("No resource found at " . $request->getPath());
-        return $response;
-    }
-}
-
-class ForbiddenHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(403);
-        $response->setBody("Forbidden");
-        return $response;
-    }
-}
-
-class ForbiddenExceptionHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        throw new ForbiddenException();
-    }
-}
-
-class ForbiddenErrorHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(403);
-        $response->setBody("YOU SHALL NOT PASS!");
-        return $response;
-    }
-}
-
-class MessageHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(404);
-        $response->setBody("Not Found");
-        return $response;
-    }
-}
-
-class MessageErrorHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        if (isset($args["response"])) {
-            /** @var ResponseInterface $response */
-            $response = $args["response"];
-            $message = "<h1>" . $response->getBody() . "</h1>";
-            $response->setBody($message);
-            return $response;
-        }
-        return null;
-    }
-}
-
-class InjectionErrorHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(403);
-        $response->setBody($args["message"]);
-        return $response;
-    }
-}
-
-class InjectionHandler implements HandlerInterface
-{
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = new Response(200);
-        $body = $args["add"]($args["a"], $args["b"]);
-        $response->setBody($body);
-        return $response;
+        $this->handler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 }

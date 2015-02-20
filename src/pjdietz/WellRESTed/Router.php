@@ -16,6 +16,8 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\PrefixRouteInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
+use pjdietz\WellRESTed\Routes\PrefixRoute;
+use pjdietz\WellRESTed\Routes\StaticRoute;
 
 /**
  * Router
@@ -27,13 +29,13 @@ class Router implements HandlerInterface
     /** @var array  Array of Route objects */
     private $routes;
 
-    /** @var array  Hash array mapping path prefixes to handlers */
+    /** @var array  Hash array mapping path prefixes to routes */
     private $prefixRoutes;
 
-    /** @var array  Hash array mapping exact paths to handlers */
+    /** @var array  Hash array mapping exact paths to routes */
     private $staticRoutes;
 
-    /** @var array  Hash array of status code => qualified HandlerInterface names for error handling. */
+    /** @var array  Hash array of status code => error handler */
     private $errorHandlers;
 
     /** Create a new Router. */
@@ -67,16 +69,16 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Append a new route to the route route table.
+     * Append a new route to the route table.
      *
      * @param HandlerInterface $route
      */
     public function addRoute(HandlerInterface $route)
     {
         if ($route instanceof StaticRouteInterface) {
-            $this->setStaticRoute($route->getPaths(), $route->getHandler());
+            $this->addStaticRoute($route);
         } elseif ($route instanceof PrefixRouteInterface) {
-            $this->setPrefixRoute($route->getPrefixes(), $route->getHandler());
+            $this->addPrefixRoute($route);
         } else {
             $this->routes[] = $route;
         }
@@ -97,42 +99,10 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Add a route for paths beginning with a given prefix.
-     *
-     * @param string|array $prefixes Prefix of a path to match
-     * @param string $handler Fully qualified name to an autoloadable handler class
-     */
-    public function setPrefixRoute($prefixes, $handler)
-    {
-        if (is_string($prefixes)) {
-            $prefixes = array($prefixes);
-        }
-        foreach ($prefixes as $prefix) {
-            $this->prefixRoutes[$prefix] = $handler;
-        }
-    }
-
-    /**
-     * Add a route for an exact match to a path.
-     *
-     * @param string|array $paths Path component of the URI or a list of paths
-     * @param string $handler Fully qualified name to an autoloadable handler class
-     */
-    public function setStaticRoute($paths, $handler)
-    {
-        if (is_string($paths)) {
-            $paths = array($paths);
-        }
-        foreach ($paths as $path) {
-            $this->staticRoutes[$path] = $handler;
-        }
-    }
-
-    /**
      * Add a custom error handler.
      *
-     * @param integer $statusCode The error status code.
-     * @param string $errorHandler Fully qualified name to an autoloadable handler class.
+     * @param integer $statusCode The error status code
+     * @param callable|string|HandlerInterface $errorHandler
      */
     public function setErrorHandler($statusCode, $errorHandler)
     {
@@ -142,7 +112,7 @@ class Router implements HandlerInterface
     /**
      * Add custom error handlers.
      *
-     * @param array $errorHandlers Array mapping integer error codes to qualified handler names.
+     * @param array $errorHandlers Array mapping integer error codes to handlers
      */
     public function setErrorHandlers(array $errorHandlers)
     {
@@ -185,11 +155,25 @@ class Router implements HandlerInterface
         return $response;
     }
 
+    private function addStaticRoute(StaticRouteInterface $staticRoute)
+    {
+        foreach ($staticRoute->getPaths() as $path) {
+            $this->staticRoutes[$path] = $staticRoute;
+        }
+    }
+
+    private function addPrefixRoute(PrefixRouteInterface $prefixRoute)
+    {
+        foreach ($prefixRoute->getPrefixes() as $prefix) {
+            $this->prefixRoutes[$prefix] = $prefixRoute;
+        }
+    }
+
     private function getErrorResponse($status, $request, $args = null, $response = null)
     {
         if (isset($this->errorHandlers[$status])) {
-            /** @var HandlerInterface $errorHandler */
-            $errorHandler = new $this->errorHandlers[$status]();
+            $unpacker = new HandlerUnpacker();
+            $errorHandler = $unpacker->unpack($this->errorHandlers[$status]);
             // Pass the response triggering this along to the error handler.
             $errorArgs = array("response" => $response);
             if ($args) {
@@ -201,7 +185,7 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Returning the matching static handler, or null if none match.
+     * Returning the handler associated with the matching static route, or null if none match.
      *
      * @param $path string The request's path
      * @return HandlerInterface|null
@@ -209,8 +193,8 @@ class Router implements HandlerInterface
     private function getStaticHandler($path)
     {
         if (isset($this->staticRoutes[$path])) {
-            // Instantiate and return the handler identified by the path.
-            return new $this->staticRoutes[$path]();
+            $route = $this->staticRoutes[$path];
+            return $route->getHandler();
         }
         return null;
     }
@@ -237,7 +221,8 @@ class Router implements HandlerInterface
                     });
             }
             // Instantiate and return the handler identified as the best match.
-            return new $this->prefixRoutes[$matches[0]]();
+            $route = $this->prefixRoutes[$matches[0]];
+            return $route->getHandler();
         }
         return null;
     }
@@ -294,5 +279,29 @@ class Router implements HandlerInterface
             $response->setBody($e->getMessage());
         }
         return $response;
+    }
+
+    ////////////////
+    // Deprecated //
+    ////////////////
+
+    /**
+     * @deprecated Use {@see addRoute} instead.
+     * @see addRoute
+     */
+    public function setPrefixRoute($prefixes, $handler)
+    {
+        $this->addPrefixRoute(new PrefixRoute($prefixes, $handler));
+        trigger_error("Router::setPrefixRoute is deprecated. Use addRoute", E_USER_DEPRECATED);
+    }
+
+    /**
+     * @deprecated Use {@see addRoute} instead.
+     * @see addRoute
+     */
+    public function setStaticRoute($paths, $handler)
+    {
+        $this->addStaticRoute(new StaticRoute($paths, $handler));
+        trigger_error("Router::setStaticRoute is deprecated. Use addRoute", E_USER_DEPRECATED);
     }
 }
