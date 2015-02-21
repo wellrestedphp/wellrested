@@ -24,17 +24,28 @@ use pjdietz\WellRESTed\Routes\StaticRoute;
  */
 class Router implements HandlerInterface
 {
-    /** @var array  Hash array HTTP verb => RouteTable */
-    private $routeTables;
-
     /** @var array  Hash array of status code => error handler */
     private $errorHandlers;
+    /** @var array  Hash array HTTP verb => RouteTable */
+    private $routeTables;
 
     /** Create a new Router. */
     public function __construct()
     {
-        $this->routeTables = array();
         $this->errorHandlers = array();
+        $this->routeTables = array();
+    }
+
+    /**
+     * Append a new route to the route table.
+     *
+     * @param HandlerInterface $route
+     * @param string $method HTTP Method; * for any
+     */
+    public function addRoute(HandlerInterface $route, $method = "*")
+    {
+        $table = $this->getRouteTable($method);
+        $table->addRoute($route);
     }
 
     /**
@@ -96,7 +107,7 @@ class Router implements HandlerInterface
         }
         return $response;
     }
-
+    
     /**
      * Prepare a response indicating a 404 Not Found error
      *
@@ -113,6 +124,14 @@ class Router implements HandlerInterface
         $response = new Response(404);
         $response->setBody('No resource at ' . $request->getPath());
         return $response;
+    }
+
+    private function getRouteTable($method = "*")
+    {
+        if (!isset($this->routeTables[$method])) {
+            $this->routeTables[$method] = new RouteTable();
+        }
+        return $this->routeTables[$method];
     }
 
     private function getResponseFromRouteTables(RequestInterface $request, array $args = null)
@@ -170,6 +189,10 @@ class Router implements HandlerInterface
         return $response;
     }
 
+    ////////////////
+    // Deprecated //
+    ////////////////
+
     /**
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
@@ -178,30 +201,6 @@ class Router implements HandlerInterface
     {
         $this->addRoute(new PrefixRoute($prefixes, $handler));
         trigger_error("Router::setPrefixRoute is deprecated. Use addRoute", E_USER_DEPRECATED);
-    }
-
-    /**
-     * Append a new route to the route table.
-     *
-     * @param HandlerInterface $route
-     * @param string $method HTTP Method; * for any
-     */
-    public function addRoute(HandlerInterface $route, $method = "*")
-    {
-        $table = $this->getRouteTable($method);
-        $table->addRoute($route);
-    }
-
-    ////////////////
-    // Deprecated //
-    ////////////////
-
-    private function getRouteTable($method = "*")
-    {
-        if (!isset($this->routeTables[$method])) {
-            $this->routeTables[$method] = new RouteTable();
-        }
-        return $this->routeTables[$method];
     }
 
     /**
