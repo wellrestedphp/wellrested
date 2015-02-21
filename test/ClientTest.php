@@ -7,12 +7,15 @@ use pjdietz\ShamServer\ShamServer;
 use pjdietz\WellRESTed\Client;
 use pjdietz\WellRESTed\Request;
 
+/**
+ * @covers pjdietz\WellRESTed\Client
+ */
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider httpMethodProvider
      */
-    public function testSendHttpMethod($method)
+    public function testSendsHttpMethod($method)
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
@@ -20,22 +23,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue("http://$host:$port"));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue($method));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue($port));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array()));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn("http://$host:$port");
+        $rqst->getMethod()->willReturn($method);
+        $rqst->getPort()->willReturn($port);
+        $rqst->getHeaders()->willReturn([]);
+        $rqst->getBody()->willReturn(null);
 
         $client = new Client();
-        $resp = $client->request($rqst);
+        $resp = $client->request($rqst->reveal());
         $body = trim($resp->getBody());
         $this->assertEquals($method, $body);
 
@@ -57,7 +53,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider httpHeaderProvider
      */
-    public function testSendHttpHeaders($headerKey, $headerValue)
+    public function testSendsHttpHeaders($headerKey, $headerValue)
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
@@ -65,22 +61,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue("http://$host:$port"));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue("GET"));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue($port));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array($headerKey => $headerValue)));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn("http://$host:$port");
+        $rqst->getMethod()->willReturn("GET");
+        $rqst->getPort()->willReturn($port);
+        $rqst->getHeaders()->willReturn([$headerKey => $headerValue]);
+        $rqst->getBody()->willReturn(null);
 
         $client = new Client();
-        $resp = $client->request($rqst);
+        $resp = $client->request($rqst->reveal());
         $headers = json_decode($resp->getBody());
         $this->assertEquals($headerValue, $headers->{$headerKey});
 
@@ -99,32 +88,22 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider bodyProvider
      */
-    public function testSendBody($body)
+    public function testSendsBody($body)
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
         $script = realpath(__DIR__ . "/sham-routers/body.php");
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue("http://$host:$port"));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue("POST"));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue($port));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array()));
-        $rqst->expects($this->any())
-            ->method("getBody")
-            ->will($this->returnValue($body));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn("http://$host:$port");
+        $rqst->getMethod()->willReturn("POST");
+        $rqst->getPort()->willReturn($port);
+        $rqst->getHeaders()->willReturn([]);
+        $rqst->getBody()->willReturn($body);
 
         $client = new Client();
-        $resp = $client->request($rqst);
+        $resp = $client->request($rqst->reveal());
         $this->assertEquals($body, $resp->getBody());
         $server->stop();
     }
@@ -142,7 +121,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider formProvider
      */
-    public function testSendForm($form)
+    public function testSendsForm($form)
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
@@ -175,60 +154,46 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testSetCustomCurlOptionsOnInstantiation()
+    public function testSetsCustomCurlOptionsOnInstantiation()
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
         $script = realpath(__DIR__ . "/sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue("http://$host:$port"));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue("GET"));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue($port));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array()));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn("http://$host:$port");
+        $rqst->getMethod()->willReturn("GET");
+        $rqst->getPort()->willReturn($port);
+        $rqst->getHeaders()->willReturn([]);
+        $rqst->getBody()->willReturn(null);
 
         $cookieValue = "key=value";
         $client = new Client([CURLOPT_COOKIE => $cookieValue]);
-        $resp = $client->request($rqst);
+        $resp = $client->request($rqst->reveal());
         $headers = json_decode($resp->getBody());
         $this->assertEquals($cookieValue, $headers->Cookie);
 
         $server->stop();
     }
 
-    public function testSetCustomCurlOptionsOnRequest()
+    public function testSetsCustomCurlOptionsOnRequest()
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
         $script = realpath(__DIR__ . "/sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue("http://$host:$port"));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue("GET"));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue($port));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array()));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn("http://$host:$port");
+        $rqst->getMethod()->willReturn("GET");
+        $rqst->getPort()->willReturn($port);
+        $rqst->getHeaders()->willReturn([]);
+        $rqst->getBody()->willReturn(null);
 
         $cookieValue = "key=value";
         $client = new Client();
-        $resp = $client->request($rqst, [CURLOPT_COOKIE => $cookieValue]);
+        $resp = $client->request($rqst->reveal(), [CURLOPT_COOKIE => $cookieValue]);
         $headers = json_decode($resp->getBody());
         $this->assertEquals($cookieValue, $headers->Cookie);
 
@@ -239,24 +204,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      * @dataProvider curlErrorProvider
      * @expectedException \pjdietz\WellRESTed\Exceptions\CurlException
      */
-    public function testFailOnCurlError($uri, $opts)
+    public function testThrowsCurlException($uri, $opts)
     {
-        $rqst = $this->getMockBuilder('pjdietz\WellRESTed\Interfaces\RequestInterface')->getMock();
-        $rqst->expects($this->any())
-            ->method("getUri")
-            ->will($this->returnValue($uri));
-        $rqst->expects($this->any())
-            ->method("getMethod")
-            ->will($this->returnValue("GET"));
-        $rqst->expects($this->any())
-            ->method("getPort")
-            ->will($this->returnValue(parse_url($uri, PHP_URL_PORT)));
-        $rqst->expects($this->any())
-            ->method("getHeaders")
-            ->will($this->returnValue(array()));
+        $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $rqst->getUri()->willReturn($uri);
+        $rqst->getMethod()->willReturn("GET");
+        $rqst->getPort()->willReturn(parse_url($uri, PHP_URL_PORT));
+        $rqst->getHeaders()->willReturn([]);
+        $rqst->getBody()->willReturn(null);
 
         $client = new Client();
-        $client->request($rqst, $opts);
+        $client->request($rqst->reveal(), $opts);
     }
 
     public function curlErrorProvider()

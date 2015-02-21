@@ -5,29 +5,29 @@ namespace pjdietz\WellRESTed\Test;
 use pjdietz\WellRESTed\Exceptions\HttpExceptions\NotFoundException;
 use pjdietz\WellRESTed\Handler;
 
+/**
+ * @covers pjdietz\WellRESTed\Handler
+ */
 class HandlerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetResponse()
+    public function testReturnsResponse()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockHandler = $this->getMockForAbstractClass('\pjdietz\WellRESTed\Handler');
-        /** @var \pjdietz\WellRESTed\Handler $mockHandler */
-        $this->assertNotNull($mockHandler->getResponse($mockRequest));
+        $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $handler = $this->getMockForAbstractClass("\\pjdietz\\WellRESTed\\Handler");
+        $response = $handler->getResponse($request->reveal());
+        $this->assertNotNull($response);
     }
 
     /**
      * @dataProvider verbProvider
      */
-    public function testCallMethodForHttpVerb($verb)
+    public function testCallsMethodForHttpVerb($method)
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getMethod')
-            ->will($this->returnValue($verb));
-
-        $mockHandler = $this->getMockForAbstractClass('\pjdietz\WellRESTed\Handler');
-        /** @var \pjdietz\WellRESTed\Handler $mockHandler */
-        $this->assertNotNull($mockHandler->getResponse($mockRequest));
+        $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $request->getMethod()->willReturn($method);
+        $handler = $this->getMockForAbstractClass("\\pjdietz\\WellRESTed\\Handler");
+        $response = $handler->getResponse($request->reveal());
+        $this->assertNotNull($response);
     }
 
     public function verbProvider()
@@ -44,29 +44,24 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testTranslateHttpExceptionToResponse()
+    public function testTranslatesHttpExceptionToResponse()
     {
-         $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-         $mockRequest->expects($this->any())
-             ->method('getMethod')
-             ->will($this->returnValue("GET"));
+        $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $request->getMethod()->willReturn("GET");
 
-         $handler = new ExceptionHandler();
-         $resp = $handler->getResponse($mockRequest);
-         $this->assertEquals(404, $resp->getStatusCode());
+        $handler = new ExceptionHandler();
+        $response = $handler->getResponse($request->reveal());
+        $this->assertEquals(404, $response->getStatusCode());
     }
 
     public function testReadAllowedMethods()
     {
-        $mockRequest = $this->getMock('\pjdietz\WellRESTed\Interfaces\RequestInterface');
-        $mockRequest->expects($this->any())
-            ->method('getMethod')
-            ->will($this->returnValue("OPTIONS"));
+        $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $request->getMethod()->willReturn("OPTIONS");
 
         $handler = new OptionsHandler();
-
-        $resp = $handler->getResponse($mockRequest);
-        $this->assertEquals("GET, POST", $resp->getHeader("Allow"));
+        $response = $handler->getResponse($request->reveal());
+        $this->assertEquals("GET, POST", $response->getHeader("Allow"));
     }
 
 }

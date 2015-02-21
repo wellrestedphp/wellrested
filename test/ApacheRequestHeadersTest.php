@@ -10,7 +10,7 @@ class ApacheRequestHeadersTest extends \PHPUnit_Framework_TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testReadApacheRequestHeaders()
+    public function testReadsApacheRequestHeaders()
     {
         if (!function_exists('apache_request_headers')) {
             function apache_request_headers() {
