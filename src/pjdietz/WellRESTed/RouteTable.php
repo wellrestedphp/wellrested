@@ -123,20 +123,6 @@ class RouteTable implements HandlerInterface
     }
 
     /**
-     * Append a series of routes.
-     *
-     * @param HandlerInterface[] $routes List array of HandlerInterface instances
-     */
-    public function addRoutes(array $routes)
-    {
-        foreach ($routes as $route) {
-            if ($route instanceof HandlerInterface) {
-                $this->addRoute($route);
-            }
-        }
-    }
-
-    /**
      * Append a new route.
      *
      * @param HandlerInterface $route

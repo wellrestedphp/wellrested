@@ -151,13 +151,9 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
         $this->request->getPath()->willReturn("/");
 
         $table = new RouteTable();
-        $table->addRoutes(
-            [
-                $route1->reveal(),
-                $route2->reveal(),
-                $route3->reveal()
-            ]
-        );
+        $table->addRoute($route1->reveal());
+        $table->addRoute($route2->reveal());
+        $table->addRoute($route3->reveal());
         $response = $table->getResponse($this->request->reveal());
 
         $this->assertNotNull($response);
