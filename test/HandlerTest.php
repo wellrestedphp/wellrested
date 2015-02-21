@@ -54,7 +54,7 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function testReadAllowedMethods()
+    public function testProvidesAllowHeader()
     {
         $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
         $request->getMethod()->willReturn("OPTIONS");

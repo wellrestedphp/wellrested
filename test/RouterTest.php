@@ -265,7 +265,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $errorHandler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-    public function testDeprecatedSetStaticRoute()
+    public function testDeprecatedSetsStaticRoute()
     {
         $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
         $this->request->getPath()->willReturn("/cats/");
@@ -277,7 +277,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->handler->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
-    public function testDeprecatedSetPrefixRoute()
+    public function testDeprecatedSetsPrefixRoute()
     {
         $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
         $this->request->getPath()->willReturn("/cats/molly");

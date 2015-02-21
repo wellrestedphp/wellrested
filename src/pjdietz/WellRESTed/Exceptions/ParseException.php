@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Exceptions\ParseException
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
