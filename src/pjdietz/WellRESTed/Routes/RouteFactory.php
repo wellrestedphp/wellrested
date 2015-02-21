@@ -10,6 +10,7 @@
 
 namespace pjdietz\WellRESTed\Routes;
 
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use ReflectionClass;
 
 /**
@@ -17,6 +18,9 @@ use ReflectionClass;
  */
 class RouteFactory
 {
+    /**
+     * @return HandlerInterface
+     */
     public function createRoute()
     {
         $args = func_get_args();
@@ -51,6 +55,5 @@ class RouteFactory
         // Regex
         $reflector = new ReflectionClass("\\pjdietz\\WellRESTed\\Routes\\RegexRoute");
         return $reflector->newInstanceArgs($args);
-
     }
 }

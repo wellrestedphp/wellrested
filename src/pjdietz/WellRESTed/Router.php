@@ -15,6 +15,7 @@ use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Routes\PrefixRoute;
+use pjdietz\WellRESTed\Routes\RouteFactory;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 
 /**
@@ -26,26 +27,64 @@ class Router implements HandlerInterface
 {
     /** @var array  Hash array of status code => error handler */
     private $errorHandlers;
-    /** @var array  Hash array HTTP verb => RouteTable */
-    private $routeTables;
+    /** @var RouteTable */
+    private $routeTable;
 
     /** Create a new Router. */
     public function __construct()
     {
         $this->errorHandlers = array();
-        $this->routeTables = array();
+        $this->routeTable = new RouteTable();
+    }
+
+    /**
+     * Add a route or series of routes to the Router.
+     *
+     * When adding a single route, the first argument should be the path, path prefix, URI template, or regex pattern.
+     * The method will attempt to find the best type of route based on this argument and send the remainding arguments
+     * to that routes constructor. @see {RouteFactory::createRoute}
+     *
+     * To add multiple routes, pass arrays to add where each array contains an argument list.
+     */
+    public function add()
+    {
+        $factory = new RouteFactory();
+
+        $args = func_get_args();
+        if (count($args) > 1 && is_array($args[0])) {
+            foreach ($args as $argumentList) {
+                $route = call_user_func_array(array($factory, "createRoute"), $argumentList);
+                $this->addRoute($route);
+            }
+            return;
+        }
+
+        $route = call_user_func_array(array($factory, "createRoute"), $args);
+        $this->addRoute($route);
+    }
+
+    /**
+     * Append a series of routes.
+     *
+     * @param array $routes List array of routes
+     */
+    public function addRoutes(array $routes)
+    {
+        foreach ($routes as $route) {
+            if ($route instanceof HandlerInterface) {
+                $this->addRoute($route);
+            }
+        }
     }
 
     /**
      * Append a new route to the route table.
      *
      * @param HandlerInterface $route
-     * @param string $method HTTP Method; * for any
      */
-    public function addRoute(HandlerInterface $route, $method = "*")
+    public function addRoute(HandlerInterface $route)
     {
-        $table = $this->getRouteTable($method);
-        $table->addRoute($route);
+        $this->routeTable->addRoute($route);
     }
 
     /**
@@ -96,7 +135,7 @@ class Router implements HandlerInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        $response = $this->getResponseFromRouteTables($request, $args);
+        $response = $this->tryResponse($this->routeTable, $request, $args);
         if ($response) {
             // Check if the router has an error handler for this status code.
             $status = $response->getStatusCode();
@@ -107,7 +146,7 @@ class Router implements HandlerInterface
         }
         return $response;
     }
-    
+
     /**
      * Prepare a response indicating a 404 Not Found error
      *
@@ -124,30 +163,6 @@ class Router implements HandlerInterface
         $response = new Response(404);
         $response->setBody('No resource at ' . $request->getPath());
         return $response;
-    }
-
-    private function getRouteTable($method = "*")
-    {
-        if (!isset($this->routeTables[$method])) {
-            $this->routeTables[$method] = new RouteTable();
-        }
-        return $this->routeTables[$method];
-    }
-
-    private function getResponseFromRouteTables(RequestInterface $request, array $args = null)
-    {
-        $method = $request->getMethod();
-        if (isset($this->routeTables[$method])) {
-            $table = $this->routeTables[$method];
-            return $this->tryResponse($table, $request, $args);
-        }
-
-        if (isset($this->routeTables["*"])) {
-            $table = $this->routeTables["*"];
-            return $this->tryResponse($table, $request, $args);
-        }
-
-        return null;
     }
 
     private function getErrorResponse($status, $request, $args = null, $response = null)

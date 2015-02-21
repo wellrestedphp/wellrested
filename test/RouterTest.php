@@ -4,6 +4,7 @@ namespace pjdietz\WellRESTed\Test;
 
 use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Router;
+use pjdietz\WellRESTed\Routes\TemplateRoute;
 use Prophecy\Argument;
 
 /**
@@ -26,82 +27,65 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
     }
 
-    /**
-     * @dataProvider httpMethodProvider
-     */
-    public function testAddsRouteToDefaultRouteTable($method)
+    public function testAddsSingleRoute()
     {
-        $this->request->getPath()->willReturn("/");
-        $this->request->getMethod()->willReturn($method);
-        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+        $this->request->getPath()->willReturn("/cats/");
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
         $router = new Router();
-        $router->addRoute($this->route->reveal());
+        $router->add("/cats/", $this->handler->reveal());
         $response = $router->getResponse($this->request->reveal());
         $this->assertNotNull($response);
     }
 
-    public function httpMethodProvider()
-    {
-        return [
-            ["GET"],
-            ["POST"],
-            ["PUT"],
-            ["DELETE"],
-            ["HEAD"],
-            ["PATCH"],
-            ["OPTIONS"],
-            ["CUSTOM"]
-        ];
-    }
-
     /**
-     * @dataProvider httpMethodListProvider
+     * @dataProvider pathProvider
      */
-    public function testAddsRouteToSpecificRouteTable($registerMethod, $requestMethod, $expectedResponse)
+    public function testAddsMultpleRoutes($path, $exptectedSuccess)
     {
-        $this->request->getPath()->willReturn("/");
-        $this->request->getMethod()->willReturn($requestMethod);
-        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $router = new Router();
-        $router->addRoute($this->route->reveal(), $registerMethod);
-        $response = $router->getResponse($this->request->reveal());
-
-        $this->assertEquals($expectedResponse, !is_null($response));
-    }
-
-    public function httpMethodListProvider()
-    {
-        return [
-            ["GET", "GET", true],
-            ["POST", "GET", false]
-        ];
-    }
-
-    /**
-     * @dataProvider httpMethodProvider
-     */
-    public function testMatchSpecificTableBeforeDefaultTable($method)
-    {
-        $this->request->getMethod()->willReturn("POST");
+        $this->request->getPath()->willReturn($path);
         $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
-        $genericRoute = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $genericRoute->getResponse()->willReturn(null);
-
-        $specificRoute = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $specificRoute->getResponse(Argument::cetera())->willReturn(null);
-
         $router = new Router();
-        $router->addRoute($genericRoute->reveal());
-        $router->addRoute($specificRoute->reveal(), "POST");
-        $router->getResponse($this->request->reveal());
-
-        $genericRoute->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
-        $specificRoute->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $router->add(
+            ["/cats/", $this->handler->reveal()],
+            ["/cats/*", $this->handler->reveal()],
+            ["/dogs/{name}", $this->handler->reveal(), TemplateRoute::RE_ALPHA],
+            ["~/hamsters/[a-z]+~", $this->handler->reveal()]
+        );
+        $response = $router->getResponse($this->request->reveal());
+        $this->assertEquals($exptectedSuccess, !is_null($response));
     }
-    
+
+    public function pathProvider()
+    {
+        return [
+            ["/cats/", true],
+            ["/cats/molly", true],
+            ["/dogs/bear", true],
+            ["/hamsters/fizzgig", true],
+            ["/dogs/", false],
+            ["/birds/", false],
+            ["/hamsters/23", false]
+        ];
+    }
+
+    public function testAddsSingleRouteInstance()
+    {
+        $router = new Router();
+        $router->addRoute($this->route->reveal());
+        $router->getResponse($this->request->reveal());
+        $this->route->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    public function testAddsMultipleRouteInstances()
+    {
+        $router = new Router();
+        $router->addRoutes([$this->route->reveal()]);
+        $router->getResponse($this->request->reveal());
+        $this->route->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
     public function testRespondsWithErrorResponseForHttpException()
     {
         $this->route->getResponse(Argument::cetera())->willThrow(new HttpException());
