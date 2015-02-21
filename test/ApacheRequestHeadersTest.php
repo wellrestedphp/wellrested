@@ -7,6 +7,7 @@ use pjdietz\WellRESTed\Request;
 class ApacheRequestHeadersTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @covers pjdietz\WellRESTed\Request::getRequestHeaders
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */

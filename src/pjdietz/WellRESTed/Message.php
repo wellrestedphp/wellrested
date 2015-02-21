@@ -4,7 +4,7 @@
  * pjdietz\WellRESTed\Message
  *
  * @author PJ Dietz <pj@pjdietz.com>
- * @copyright Copyright 2014 by PJ Dietz
+ * @copyright Copyright 2015 by PJ Dietz
  * @license MIT
  */
 
@@ -134,17 +134,12 @@ abstract class Message
     public function unsetHeader($name)
     {
         $lowerName = strtolower($name);
-
         if (isset($this->headerLookup[$lowerName])) {
-
             $realName = $this->headerLookup[$lowerName];
-
             if (isset($this->headers[$realName])) {
                 unset($this->headers[$realName]);
             }
-
             unset($this->headerLookup[$lowerName]);
-
         }
     }
 }
