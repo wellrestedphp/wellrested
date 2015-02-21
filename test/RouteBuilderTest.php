@@ -33,7 +33,7 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
 }
 JSON;
 
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $routes = $builder->buildRoutes($json);
         $this->assertEquals(3, count($routes));
     }
@@ -44,17 +44,17 @@ JSON;
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse as JSON.
      */
-    public function testFailBuildingRoutesFromInvalidJson()
+    public function testThrowsExceptionBuildingRoutesFromInvalidJson()
     {
         $json = "jadhjaksd";
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->buildRoutes($json);
     }
 
-    public function testSetNamesapce()
+    public function testSetsNamesapce()
     {
         $namespace = "\\test\\Namespace";
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->setHandlerNamespace($namespace);
         $this->assertEquals($namespace, $builder->getHandlerNamespace());
     }
@@ -62,9 +62,9 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testSetDefaultVariablePatternThroughAccessor($name, $pattern, $expected)
+    public function testSetsDefaultVariablePatternThroughAccessor($name, $pattern, $expected)
     {
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->setDefaultVariablePattern($pattern);
         $this->assertEquals($builder->getDefaultVariablePattern(), $expected);
     }
@@ -72,9 +72,9 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testSetDefaultVariablePatternThroughConfiguration($name, $pattern, $expected)
+    public function testSetsDefaultVariablePatternThroughConfiguration($name, $pattern, $expected)
     {
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $conf = new stdClass();
         $conf->variablePattern = $pattern;
         $builder->readConfiguration($conf);
@@ -84,9 +84,9 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testSetTemplateVariablesThroughAccessor($name, $pattern, $expected)
+    public function testSetsTemplateVariablesThroughAccessor($name, $pattern, $expected)
     {
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->setTemplateVars(array($name => $pattern));
         $vars = $builder->getTemplateVars();
         $this->assertEquals($vars[$name], $expected);
@@ -95,9 +95,9 @@ JSON;
     /**
      * @dataProvider varProvider
      */
-    public function testSetTemplateVariablesThroughConfiguration($name, $pattern, $expected)
+    public function testSetsTemplateVariablesThroughConfiguration($name, $pattern, $expected)
     {
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $conf = new stdClass();
         $conf->vars = [$name => $pattern];
         $builder->readConfiguration($conf);
@@ -120,7 +120,7 @@ JSON;
     /**
      * @dataProvider routeDescriptionProvider
      */
-    public function testBuildRoutesFromRoutesArray($key, $value, $expectedClass)
+    public function testBuildsRoutesFromRoutesArray($key, $value, $expectedClass)
     {
         $mockHander = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
         $routes = [
@@ -129,7 +129,7 @@ JSON;
                 "handler" => get_class($mockHander)
             ]
         ];
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $routes = $builder->buildRoutes($routes);
         $route = $routes[0];
         $this->assertInstanceOf($expectedClass, $route);
@@ -138,7 +138,7 @@ JSON;
     /**
      * @dataProvider routeDescriptionProvider
      */
-    public function testBuildRoutesFromConfigurationObject($key, $value, $expectedClass)
+    public function testBuildsRoutesFromConfigurationObject($key, $value, $expectedClass)
     {
         $mockHander = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
         $conf = (object) [
@@ -149,7 +149,7 @@ JSON;
                 ]
             ]
         ];
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $routes = $builder->buildRoutes($conf);
         $route = $routes[0];
         $this->assertInstanceOf($expectedClass, $route);
@@ -164,7 +164,7 @@ JSON;
         ];
     }
 
-    public function testBuildRoutesWithTemplateVariables()
+    public function testBuildsRoutesWithTemplateVariables()
     {
         $mock = $this->getMock('\pjdietz\WellRESTed\Interfaces\HandlerInterface');
         $routes = [
@@ -176,7 +176,7 @@ JSON;
                 ]
             ]
         ];
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->setTemplateVars(["dogId" => "NUM"]);
         $routes = $builder->buildRoutes($routes);
         $route = $routes[0];
@@ -187,10 +187,10 @@ JSON;
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse. Missing array of routes.
      */
-    public function testFailOnConfigurationObjectMissingRoutesArray()
+    public function testThrowsExceptionWhenConfigurationObjectIsMissingRoutesArray()
     {
         $conf = new stdClass();
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->buildRoutes($conf);
     }
 
@@ -198,14 +198,14 @@ JSON;
      * @expectedException        \pjdietz\WellRESTed\Exceptions\ParseException
      * @expectedExceptionMessage Unable to parse. Route is missing a handler.
      */
-    public function testFailOnRouteMissingHandler()
+    public function testThrowsExceptionWhenMissingHandler()
     {
         $routes = [
             (object) [
                 "path" => "/"
             ]
         ];
-        $builder = new RouteBuilder();
+        $builder = @new RouteBuilder();
         $builder->buildRoutes($routes);
     }
 }

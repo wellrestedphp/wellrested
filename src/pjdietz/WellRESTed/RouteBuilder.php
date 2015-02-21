@@ -18,6 +18,9 @@ use pjdietz\WellRESTed\Routes\TemplateRoute;
 
 /**
  * Class for facilitating constructing Routers.
+ *
+ * @deprecated Use {@see Router::add} instead.
+ * @see Router::add
  */
 class RouteBuilder
 {
@@ -27,6 +30,11 @@ class RouteBuilder
     private $handlerNamespace;
     /** @var array Associative array of variable names and regex patterns. */
     private $templateVariablePatterns;
+
+    public function __construct()
+    {
+        trigger_error("RouteBuilder is deprecated. Use Router::add", E_USER_DEPRECATED);
+    }
 
     /**
      * Contruct and return an array of routes.
