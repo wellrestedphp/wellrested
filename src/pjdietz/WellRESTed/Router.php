@@ -14,8 +14,6 @@ use pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use pjdietz\WellRESTed\Interfaces\ResponseInterface;
-use pjdietz\WellRESTed\Interfaces\Routes\PrefixRouteInterface;
-use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 use pjdietz\WellRESTed\Routes\PrefixRoute;
 use pjdietz\WellRESTed\Routes\StaticRoute;
 
@@ -26,14 +24,8 @@ use pjdietz\WellRESTed\Routes\StaticRoute;
  */
 class Router implements HandlerInterface
 {
-    /** @var array  Array of Route objects */
-    private $routes;
-
-    /** @var array  Hash array mapping path prefixes to routes */
-    private $prefixRoutes;
-
-    /** @var array  Hash array mapping exact paths to routes */
-    private $staticRoutes;
+    /** @var array  Hash array HTTP verb => RouteTable */
+    private $routeTables;
 
     /** @var array  Hash array of status code => error handler */
     private $errorHandlers;
@@ -41,72 +33,8 @@ class Router implements HandlerInterface
     /** Create a new Router. */
     public function __construct()
     {
-        $this->routes = array();
-        $this->prefixRoutes = array();
-        $this->staticRoutes = array();
+        $this->routeTables = array();
         $this->errorHandlers = array();
-    }
-
-    /**
-     * Return the response built by the handler based on the request
-     *
-     * @param RequestInterface $request
-     * @param array|null $args
-     * @return ResponseInterface
-     */
-    public function getResponse(RequestInterface $request, array $args = null)
-    {
-        $response = $this->getResponseFromRoutes($request, $args);
-        if ($response) {
-            // Check if the router has an error handler for this status code.
-            $status = $response->getStatusCode();
-            $errorResponse = $this->getErrorResponse($status, $request, $args, $response);
-            if ($errorResponse) {
-                return $errorResponse;
-            }
-        }
-        return $response;
-    }
-
-    /**
-     * Append a new route to the route table.
-     *
-     * @param HandlerInterface $route
-     */
-    public function addRoute(HandlerInterface $route)
-    {
-        if ($route instanceof StaticRouteInterface) {
-            $this->addStaticRoute($route);
-        } elseif ($route instanceof PrefixRouteInterface) {
-            $this->addPrefixRoute($route);
-        } else {
-            $this->routes[] = $route;
-        }
-    }
-
-    /**
-     * Append a series of routes.
-     *
-     * @param array $routes List array of HandlerInterface instances
-     */
-    public function addRoutes(array $routes)
-    {
-        foreach ($routes as $route) {
-            if ($route instanceof HandlerInterface) {
-                $this->addRoute($route);
-            }
-        }
-    }
-
-    /**
-     * Add a custom error handler.
-     *
-     * @param integer $statusCode The error status code
-     * @param callable|string|HandlerInterface $errorHandler
-     */
-    public function setErrorHandler($statusCode, $errorHandler)
-    {
-        $this->errorHandlers[$statusCode] = $errorHandler;
     }
 
     /**
@@ -119,6 +47,17 @@ class Router implements HandlerInterface
         foreach ($errorHandlers as $statusCode => $errorHandler) {
             $this->setErrorHandler($statusCode, $errorHandler);
         }
+    }
+
+    /**
+     * Add a custom error handler.
+     *
+     * @param integer $statusCode The error status code
+     * @param callable|string|HandlerInterface $errorHandler
+     */
+    public function setErrorHandler($statusCode, $errorHandler)
+    {
+        $this->errorHandlers[$statusCode] = $errorHandler;
     }
 
     /**
@@ -135,6 +74,27 @@ class Router implements HandlerInterface
             $response = $this->getNoRouteResponse($request);
         }
         $response->respond();
+    }
+
+    /**
+     * Return the response built by the handler based on the request
+     *
+     * @param RequestInterface $request
+     * @param array|null $args
+     * @return ResponseInterface
+     */
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        $response = $this->getResponseFromRouteTables($request, $args);
+        if ($response) {
+            // Check if the router has an error handler for this status code.
+            $status = $response->getStatusCode();
+            $errorResponse = $this->getErrorResponse($status, $request, $args, $response);
+            if ($errorResponse) {
+                return $errorResponse;
+            }
+        }
+        return $response;
     }
 
     /**
@@ -155,18 +115,20 @@ class Router implements HandlerInterface
         return $response;
     }
 
-    private function addStaticRoute(StaticRouteInterface $staticRoute)
+    private function getResponseFromRouteTables(RequestInterface $request, array $args = null)
     {
-        foreach ($staticRoute->getPaths() as $path) {
-            $this->staticRoutes[$path] = $staticRoute;
+        $method = $request->getMethod();
+        if (isset($this->routeTables[$method])) {
+            $table = $this->routeTables[$method];
+            return $this->tryResponse($table, $request, $args);
         }
-    }
 
-    private function addPrefixRoute(PrefixRouteInterface $prefixRoute)
-    {
-        foreach ($prefixRoute->getPrefixes() as $prefix) {
-            $this->prefixRoutes[$prefix] = $prefixRoute;
+        if (isset($this->routeTables["*"])) {
+            $table = $this->routeTables["*"];
+            return $this->tryResponse($table, $request, $args);
         }
+
+        return null;
     }
 
     private function getErrorResponse($status, $request, $args = null, $response = null)
@@ -181,79 +143,6 @@ class Router implements HandlerInterface
             }
             return $errorHandler->getResponse($request, $errorArgs);
         }
-        return null;
-    }
-
-    /**
-     * Returning the handler associated with the matching static route, or null if none match.
-     *
-     * @param $path string The request's path
-     * @return HandlerInterface|null
-     */
-    private function getStaticHandler($path)
-    {
-        if (isset($this->staticRoutes[$path])) {
-            $route = $this->staticRoutes[$path];
-            return $route->getHandler();
-        }
-        return null;
-    }
-
-    /**
-     * Returning the best-matching prefix handler, or null if none match.
-     *
-     * @param $path string The request's path
-     * @return HandlerInterface|null
-     */
-    private function getPrefixHandler($path)
-    {
-        // Find all prefixes that match the start of this path.
-        $prefixes = array_keys($this->prefixRoutes);
-        $matches = array_filter($prefixes, function ($prefix) use ($path) {
-                return (strrpos($path, $prefix, -strlen($path)) !== false);
-            });
-
-        if ($matches) {
-            // If there are multiple matches, sort them to find the one with the longest string length.
-            if (count($matches) > 0) {
-                usort($matches, function ($a, $b) {
-                        return strlen($b) - strlen($a);
-                    });
-            }
-            // Instantiate and return the handler identified as the best match.
-            $route = $this->prefixRoutes[$matches[0]];
-            return $route->getHandler();
-        }
-        return null;
-    }
-
-    private function getResponseFromRoutes(RequestInterface $request, array $args = null)
-    {
-        $response = null;
-
-        $path = $request->getPath();
-
-        // First check if there is a handler for this exact path.
-        $handler = $this->getStaticHandler($path);
-        if ($handler) {
-            return $this->tryResponse($handler, $request, $args);
-        }
-
-        // Check prefix routes for any routes that match. Use the longest matching prefix.
-        $handler = $this->getPrefixHandler($path);
-        if ($handler) {
-            return $this->tryResponse($handler, $request, $args);
-        }
-
-        // Try each of the routes.
-        foreach ($this->routes as $route) {
-            /** @var HandlerInterface $route */
-            $response = $this->tryResponse($route, $request, $args);
-            if ($response) {
-                return $response;
-            }
-        }
-
         return null;
     }
 
@@ -281,18 +170,38 @@ class Router implements HandlerInterface
         return $response;
     }
 
-    ////////////////
-    // Deprecated //
-    ////////////////
-
     /**
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
      */
     public function setPrefixRoute($prefixes, $handler)
     {
-        $this->addPrefixRoute(new PrefixRoute($prefixes, $handler));
+        $this->addRoute(new PrefixRoute($prefixes, $handler));
         trigger_error("Router::setPrefixRoute is deprecated. Use addRoute", E_USER_DEPRECATED);
+    }
+
+    /**
+     * Append a new route to the route table.
+     *
+     * @param HandlerInterface $route
+     * @param string $method HTTP Method; * for any
+     */
+    public function addRoute(HandlerInterface $route, $method = "*")
+    {
+        $table = $this->getRouteTable($method);
+        $table->addRoute($route);
+    }
+
+    ////////////////
+    // Deprecated //
+    ////////////////
+
+    private function getRouteTable($method = "*")
+    {
+        if (!isset($this->routeTables[$method])) {
+            $this->routeTables[$method] = new RouteTable();
+        }
+        return $this->routeTables[$method];
     }
 
     /**
@@ -301,7 +210,7 @@ class Router implements HandlerInterface
      */
     public function setStaticRoute($paths, $handler)
     {
-        $this->addStaticRoute(new StaticRoute($paths, $handler));
+        $this->addRoute(new StaticRoute($paths, $handler));
         trigger_error("Router::setStaticRoute is deprecated. Use addRoute", E_USER_DEPRECATED);
     }
 }

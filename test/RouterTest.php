@@ -19,178 +19,92 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $this->request->getPath()->willReturn("/");
+        $this->request->getMethod()->willReturn("GET");
         $this->response = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
         $this->route = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
         $this->handler = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
     }
 
-    public function testMatchesStaticRoute()
+    /**
+     * @dataProvider httpMethodProvider
+     */
+    public function testAddsRouteToDefaultRouteTable($method)
     {
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
-        $this->route->getPaths()->willReturn(["/cats/"]);
-        $this->route->getHandler()->willReturn($this->handler->reveal());
-
-        $this->request->getPath()->willReturn("/cats/");
-
-        $router = new Router();
-        $router->addRoute($this->route->reveal());
-        $router->getResponse($this->request->reveal());
-
-        $this->route->getHandler()->shouldHaveBeenCalled();
-    }
-
-    public function testMatchesPrefixRoute()
-    {
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
-        $this->route->getPrefixes()->willReturn(["/cats/"]);
-        $this->route->getHandler()->willReturn($this->handler->reveal());
-
-        $this->request->getPath()->willReturn("/cats/molly");
-
-        $router = new Router();
-        $router->addRoute($this->route->reveal());
-        $router->getResponse($this->request->reveal());
-
-        $this->route->getHandler()->shouldHaveBeenCalled();
-    }
-
-    public function testMatchesBestPrefixRoute()
-    {
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
-        $route1->getPrefixes()->willReturn(["/animals/"]);
-        $route1->getHandler()->willReturn($this->handler->reveal());
-
-        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route2->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
-        $route2->getPrefixes()->willReturn(["/animals/cats/"]);
-        $route2->getHandler()->willReturn($this->handler->reveal());
-
-        $this->request->getPath()->willReturn("/animals/cats/molly");
-
-        $router = new Router();
-        $router->addRoute($route1->reveal());
-        $router->addRoute($route2->reveal());
-        $router->getResponse($this->request->reveal());
-
-        $route1->getHandler()->shouldNotHaveBeenCalled();
-        $route2->getHandler()->shouldHaveBeenCalled();
-    }
-
-    public function testMatchesStaticRouteBeforePrefixRoute()
-    {
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
-        $route1->getPrefixes()->willReturn(["/animals/cats/"]);
-        $route1->getHandler()->willReturn($this->handler->reveal());
-
-        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route2->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
-        $route2->getPaths()->willReturn(["/animals/cats/molly"]);
-        $route2->getHandler()->willReturn($this->handler->reveal());
-
-        $this->request->getPath()->willReturn("/animals/cats/molly");
-
-        $router = new Router();
-        $router->addRoute($route1->reveal());
-        $router->addRoute($route2->reveal());
-        $router->getResponse($this->request->reveal());
-
-        $route1->getHandler()->shouldNotHaveBeenCalled();
-        $route2->getHandler()->shouldHaveBeenCalled();
-    }
-
-    public function testMatchesPrefixRouteBeforeHandlerRoute()
-    {
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route1->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\PrefixRouteInterface");
-        $route1->getPrefixes()->willReturn(["/animals/cats/"]);
-        $route1->getHandler()->willReturn($this->handler->reveal());
-
-        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route2->getResponse(Argument::cetera())->willReturn(null);
-
-        $this->request->getPath()->willReturn("/animals/cats/molly");
-
-        $router = new Router();
-        $router->addRoute($route1->reveal());
-        $router->addRoute($route2->reveal());
-        $router->getResponse($this->request->reveal());
-
-        $route1->getHandler()->shouldHaveBeenCalled();
-        $route2->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
-    }
-
-    public function testReturnsFirstNonNullResponse()
-    {
-        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route1->getResponse(Argument::cetera())->willReturn(null);
-
-        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route2->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
-        $route3 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route3->getResponse(Argument::cetera())->willReturn(null);
-
         $this->request->getPath()->willReturn("/");
+        $this->request->getMethod()->willReturn($method);
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
         $router = new Router();
-        $router->addRoutes(
-            [
-                $route1->reveal(),
-                $route2->reveal(),
-                $route3->reveal()
-            ]
-        );
+        $router->addRoute($this->route->reveal());
         $response = $router->getResponse($this->request->reveal());
-
         $this->assertNotNull($response);
-        $route1->getResponse(Argument::cetera())->shouldHaveBeenCalled();
-        $route2->getResponse(Argument::cetera())->shouldHaveBeenCalled();
-        $route3->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
-    public function testReturnsNullWhenNoRouteMatches()
+    public function httpMethodProvider()
     {
-        $route1 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route1->getResponse(Argument::cetera())->willReturn(null);
+        return [
+            ["GET"],
+            ["POST"],
+            ["PUT"],
+            ["DELETE"],
+            ["HEAD"],
+            ["PATCH"],
+            ["OPTIONS"],
+            ["CUSTOM"]
+        ];
+    }
 
-        $route2 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route2->getResponse(Argument::cetera())->willReturn(null);
-
-        $route3 = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
-        $route3->getResponse(Argument::cetera())->willReturn(null);
+    /**
+     * @dataProvider httpMethodListProvider
+     */
+    public function testAddsRouteToSpecificRouteTable($registerMethod, $requestMethod, $expectedResponse)
+    {
+        $this->request->getPath()->willReturn("/");
+        $this->request->getMethod()->willReturn($requestMethod);
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
         $router = new Router();
-        $router->addRoutes(
-            [
-                $route1->reveal(),
-                $route2->reveal(),
-                $route3->reveal()
-            ]
-        );
+        $router->addRoute($this->route->reveal(), $registerMethod);
         $response = $router->getResponse($this->request->reveal());
 
-        $this->assertNull($response);
-        $route1->getResponse(Argument::cetera())->shouldHaveBeenCalled();
-        $route2->getResponse(Argument::cetera())->shouldHaveBeenCalled();
-        $route3->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+        $this->assertEquals($expectedResponse, !is_null($response));
     }
 
+    public function httpMethodListProvider()
+    {
+        return [
+            ["GET", "GET", true],
+            ["POST", "GET", false]
+        ];
+    }
+
+    /**
+     * @dataProvider httpMethodProvider
+     */
+    public function testMatchSpecificTableBeforeDefaultTable($method)
+    {
+        $this->request->getMethod()->willReturn("POST");
+        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $genericRoute = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $genericRoute->getResponse()->willReturn(null);
+
+        $specificRoute = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface");
+        $specificRoute->getResponse(Argument::cetera())->willReturn(null);
+
+        $router = new Router();
+        $router->addRoute($genericRoute->reveal());
+        $router->addRoute($specificRoute->reveal(), "POST");
+        $router->getResponse($this->request->reveal());
+
+        $genericRoute->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
+        $specificRoute->getResponse(Argument::cetera())->shouldHaveBeenCalled();
+    }
+    
     public function testRespondsWithErrorResponseForHttpException()
     {
         $this->route->getResponse(Argument::cetera())->willThrow(new HttpException());
-        $this->request->getPath()->willReturn("/");
 
         $router = new Router();
         $router->addRoute($this->route->reveal());
@@ -200,7 +114,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function testDispatchesErrorHandlerForStatusCode()
     {
-        $this->request->getPath()->willReturn("/");
         $this->response->getStatusCode()->willReturn(403);
         $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
@@ -300,7 +213,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRoutesStaticRequest()
+    public function testRoutesServerRequest()
     {
         $_SERVER["REQUEST_URI"] = "/cats/";
         $_SERVER["HTTP_HOST"] = "localhost";
