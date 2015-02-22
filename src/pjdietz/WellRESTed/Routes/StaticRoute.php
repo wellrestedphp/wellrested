@@ -11,9 +11,7 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
-use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**

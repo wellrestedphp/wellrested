@@ -214,6 +214,8 @@ class Router implements HandlerInterface
     /**
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
+     * @param array|string $prefixes
+     * @param mixed $handler
      */
     public function setPrefixRoute($prefixes, $handler)
     {
@@ -224,6 +226,8 @@ class Router implements HandlerInterface
     /**
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
+     * @param array|string $paths
+     * @param mixed $handler
      */
     public function setStaticRoute($paths, $handler)
     {
