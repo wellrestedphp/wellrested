@@ -20,8 +20,11 @@
         <env name="FAIL_PORT" value="9001-9100" />
     </php>
     <testsuites>
-        <testsuite name="WellRESTed Test Suite">
-            <directory>./test/</directory>
+        <testsuite name="unit">
+            <directory>./test/tests/unit/</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>./test/tests/integration/</directory>
         </testsuite>
     </testsuites>
     <filter>

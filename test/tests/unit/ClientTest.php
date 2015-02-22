@@ -19,7 +19,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/method.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/method.php");
 
         $server = new ShamServer($host, $port, $script);
 
@@ -57,7 +57,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/headers.php");
 
         $server = new ShamServer($host, $port, $script);
 
@@ -92,7 +92,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/body.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/body.php");
         $server = new ShamServer($host, $port, $script);
 
         $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
@@ -125,7 +125,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/formFields.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/formFields.php");
         $server = new ShamServer($host, $port, $script);
 
         $rqst = new Request("http://$host:$port");
@@ -158,7 +158,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 
         $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
@@ -181,7 +181,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $host = "localhost";
         $port = $this->getRandomNumberInRange(getenv("PORT"));
-        $script = realpath(__DIR__ . "/sham-routers/headers.php");
+        $script = realpath(__DIR__ . "/../../sham-routers/headers.php");
         $server = new ShamServer($host, $port, $script);
 
         $rqst = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");

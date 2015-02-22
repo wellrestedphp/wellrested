@@ -136,7 +136,7 @@ class Router implements HandlerInterface
     public function getResponse(RequestInterface $request, array $args = null)
     {
         $response = $this->tryResponse($this->routeTable, $request, $args);
-        if ($response) {
+        if ($response && $response instanceof ResponseInterface) {
             // Check if the router has an error handler for this status code.
             $status = $response->getStatusCode();
             $errorResponse = $this->getErrorResponse($status, $request, $args, $response);
