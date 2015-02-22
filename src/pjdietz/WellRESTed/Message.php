@@ -92,7 +92,6 @@ abstract class Message
      * Add or update a header to a given value
      *
      * @param string $name
-     * @param $value
      * @param string $value
      */
     public function setHeader($name, $value)

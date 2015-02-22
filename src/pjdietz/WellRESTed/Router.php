@@ -27,7 +27,7 @@ class Router implements HandlerInterface
 {
     /** @var array  Hash array of status code => error handler */
     private $errorHandlers;
-    /** @var RouteTable */
+    /** @var RouteTable Collection of routes */
     private $routeTable;
 
     /** Create a new Router. */
@@ -165,6 +165,15 @@ class Router implements HandlerInterface
         return $response;
     }
 
+    /**
+     * Obtain a response from the register error handlers.
+     *
+     * @param int $status HTTP Status Code
+     * @param RequestInterface $request The original request
+     * @param null $args Optional additional data
+     * @param null $response The response providing the error
+     * @return mixed
+     */
     private function getErrorResponse($status, $request, $args = null, $response = null)
     {
         if (isset($this->errorHandlers[$status])) {
@@ -212,6 +221,8 @@ class Router implements HandlerInterface
     ////////////////
 
     /**
+     * Set a route for specific prefix
+     *
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
      * @param array|string $prefixes
@@ -224,6 +235,8 @@ class Router implements HandlerInterface
     }
 
     /**
+     * Set a route for a given path
+     *
      * @deprecated Use {@see addRoute} instead.
      * @see addRoute
      * @param array|string $paths

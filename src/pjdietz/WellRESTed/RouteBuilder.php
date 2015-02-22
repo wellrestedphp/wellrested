@@ -31,6 +31,12 @@ class RouteBuilder
     /** @var array Associative array of variable names and regex patterns. */
     private $templateVariablePatterns;
 
+    /**
+     * Create a new RouteBuilder
+     *
+     * @deprecated Use {@see Router::add} instead.
+     * @see Router::add
+     */
     public function __construct()
     {
         trigger_error("RouteBuilder is deprecated. Use Router::add", E_USER_DEPRECATED);

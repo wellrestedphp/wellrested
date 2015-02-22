@@ -10,6 +10,9 @@
 
 namespace pjdietz\WellRESTed\Interfaces\Routes;
 
+/**
+ * Interface for routes that map to paths begining with a given prefix or prefixes
+ */
 interface PrefixRouteInterface
 {
     /**

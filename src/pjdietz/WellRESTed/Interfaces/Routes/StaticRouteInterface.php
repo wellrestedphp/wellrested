@@ -10,6 +10,9 @@
 
 namespace pjdietz\WellRESTed\Interfaces\Routes;
 
+/**
+ * Interface for routes that map to an exact path or paths
+ */
 interface StaticRouteInterface
 {
     /**
