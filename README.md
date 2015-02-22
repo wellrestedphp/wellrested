@@ -44,76 +44,323 @@ WellRESTed's primary goal is to facilitate mapping of URIs to classes that will 
 
 ```php
 // Build the router.
-$myRouter = new Router();
-$myRouter->add(
-    ["/exact/", $exactHandler],
-    ["/prefix/*", $prefixHandler],
-    ["/template/{id}/", $templateHandler],
-    ["~/regex/([0-9+])~", $regexHandler],
+$router = new Router();
+
+$router->add(
+    ["/cats/", $catHandler],
+    ["/dogs/*", $dogHandler],
+    ["/hamsters/{id}", $hamsterHandler],
+    ["~/rabbits/([0-9]+)~", $rabbitHandler]
 );
-$myRouter->respond();
+$router->respond();
 ```
 
-Each route maps a path to a handler. The path may be:
+You can use `Router::add` to one route or multiple routes. When you add routes one-at-a-time, the first argument is the path pattern to match and the second argument is the handler to dispatch. (More on handlers below.) When you add mutple routes, pass an array for route where the first item is the path pattern and the second is the handler.
 
-- An exact match to a path (fastest, least powerful)
-- A prefix (ending with `*`)
-- A URI template with variables indicated with curly braces (ex: `{variable}`)
-- A regular expression (slowest, most powerful)
-
-Template and Regex routes will forward variables or captures to their handlers. Template routes can also be customized to restrict variables to match specific patterns. (TODO LINK)
-
-The handler may be any of the following:
-- An instance that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php)
-- A string containing the fully qualified name of a `HandlerInterface` concrete class
-- A callable that returns a `HandlerInterface` concrete class
-
-The best choices are strings and callables because they delay instantiation until the last instant. If your class is autoloaded, the class never needs to be loaded or instantiated until it is needed.
-
-To illustrate, image you have a namespace `\MyApi` with several classes inside that implement `HandlerInterface`.
+Here's the same router added one route at a time.
 
 ```php
 // Build the router.
-$myRouter = new Router();
-$myRouter->add(
-    ["/instance/", new \MyApi\InstanceHandler()],
-    ["/string/",    '\MyApi\StringHandler'],
-    ["/callable/", function () {
-        return new \MyApi\CallableHandler();
-        }]
-);
-$myRouter->respond();
+$router = new Router();
+
+// Match requests to the exact path "/cats/"
+$router->add("/cats/", $catHandler);
+
+// Match requests that begin with "/dogs/", including "/dogs/", "/dogs/flat-coated-retriever", etc.
+$router->add("/dogs/*", $dogHandler);
+
+// Match using a URI template and forward the variable to the handler.
+// "/hamsters/teddy-bear" will provide the handler with an array containing an "id" element with the value "teddy-bear".
+$router->add("/hamsters/{id}", $hamsterHandler
+
+// Match using a regular expression and forward the captures to the handler.
+// "/rabbit/56" will provide the handler with an array containing "56".
+$router->add("~/rabbits/([0-9]+)~", $rabbitHandler);
+
+// Dispatch the requset sent to the web server through the router and output the response.
+$router->respond();
 ```
 
-While the callable approach may look a bit weird, it's very powerful, and makes dependency injection very easy. (TODO LINK)
+#### Route Types
+
+`Router::add()` scans the path pattern and figures out the best type of route to use. Here's a brief descripton of the types.
+
+Route Type      | Example               | Matches
+--------------- | --------------------- | --------------------------------------
+`StaticRoute`   | `/cats/`              | Exact paths only
+`PrefixRoute`   | `/dogs/*`             | Paths beginning with a prefix
+`TemplateRoute` | `/hamsters/{id}`      | URI template with variables
+`RegexRoute`    | `~/rabbits/([0-9]+)~` | Regular expression
+
+Template and Regex routes will forward variables or captures to their handlers. Template routes can also be customized to restrict variables to match specific patterns.
+
+#### Route Order
+
+##### Static Routes (Exact Matches)
+
+When the router evalutes its routes to find the best match, it first checks for a route that is an exact match to the path.
+The example router above will match a request to `/cats/` immediately.
+
+##### Prefix Routes
+
+If no static routes match, the router next tries prefix routes. If the router above were to get a request for `/dogs/border-collies`, it would first check for any static routes to that path, then move on to prefix routes, where it would match and dispatch `$dogHandler`.
+
+When a router could match a request to multiple prefix routes, it always uses the longest match.
+
+Give the following router, a request for `/animals/cats/calicos/` will be matched by the second route because it is longer.
+
+```
+$myRouter->add(
+    ["/animals/*", $animalsHandler],
+    ["/animals/cats/*", $catsHandler]
+);
+```
+
+#### Other Routes
+
+Once the router tries and fails to find a matching static or prefix route, it will try all other routes in series until it find route that matches. The router will always test them in the order you add the routes.
+
+#### Special Notes
+
+To prevent the route from interpreting your regular expression as a really weird path, a character other than `/` as the regular expression [delimiter](http://php.net/manual/en/regexp.reference.delimiters.php). For example, `~` or `#`.
+
+Template Routes can take extra parameters to indicate the characters allows in the variables. See the [wiki page about Routes](https://github.com/pjdietz/wellrested/wiki/Routes) for details.
+
 
 ### Handlers
 
-Any class that implements [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) may be the handler for a route. This could be a class that builds the actual response, or it could be another [`Router`](src/pjdietz/WellRESTed/Router.php).
+Matching the path is the first part of a routes job. The second part is dispatching the request to a handler.
 
-When a router dispatches a request to a handler, it calls the handler's `getResponse()` method, passing along the request and an array of extra arguments. These extra arguments may be captures from a regular expression route, variables from a URI template route, or any other arbitrary pieces of information you want to pass to the handler.
+#### Callables
 
-The handler builds and returns a [`ResponseInterface`](src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php). Or, the handler may return `null` to indicate that it won't be handling the request after all.
+WellRESTed provides a number of ways to create and use handlers. The simplest way to use them is to provide a callable that gets called when the route matches.
+
+```php
+$router = new Router();
+$router->add("/hello", function () {
+    header("Content-type: text/plain");
+    echo "Hello, world";
+    return true; // Returning anything non-null signals the router to stop.
+});
+$router->respond();
+```
+
+This is okay, but a better a approach is to return an instance that implements [`ResponseInterface`](src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php).
+
+```php
+$router = new Router();
+$router->add("/hello", function () {
+    $response = new Response();
+    $response->setStatusCode(200);
+    $response->setHeader("Content-type", "text/plain");
+    $response->setBody("Hello, world");
+    return $response;
+});
+$router->respond();
+```
+
+Building and returning a response object allows you to provide all of the information for your response such as the status code, headers, and body. It also makes your code more testable since you can send a mock request through the router and inspect the response it returns.
+
+##### Callable Arguments
+
+The callable will receive to arguments when it is called. The first is an object representing the request. See [`RequestInterface`](src/pjdietz/WellRESTed/Interfaces/RequestInterface.php).
+
+```php
+$router = new Router();
+$router->add("/cats/", function ($rqst, $args) {
+
+    // Create the response and set defaults.
+    $response = new Response();
+    $response->setHeader("Content-type", "application/json");
+
+    // Determine how to respond based on the request's HTTP method.
+    $method = $rqst->getMethod();
+    if ($method === "GET") {
+        // ...Lookup the current list of cats here...
+        $response->setStatusCode(200);
+        $response->setBody(json_encode($catsList);
+    } elseif ($method === "POST") {
+        // Read from the request and store a new cat.
+        $cat = json_decode($request->getBody());
+        // ...store $cat to the database...
+        $response->setStatusCode(201);
+        $response->setBody(json_encode($newCat);
+    } else {
+        $response->setStatusCode(405);
+    }
+    return $response;
+});
+$router->respond();
+```
+
+The second argument is an array of extra data. The extra data will contain things such as variables from `TemplateRoutes` or captures from `RegexRoutes`.
+
+With this router, a request to `/cats/molly` will respond with "Hello, molly".
+
+```php
+$router = new Router();
+$router->add("/cats/{name}", function ($rqst, $args) {
+    $response = new Response();
+    $response->setStatusCode(200);
+    $response->setHeader("Content-type", "text/plain");
+    $response->setBody("Hello, " . $args["name"]);
+    return $response;
+});
+$router->respond();
+```
+
+You can also pass in your own custom variables by passing an array to `Router::respond` (or `Router::getResponse`).
+
+```php
+$router = new Router();
+$router->add("/", function ($rqst, $args) {
+    $response = new Response();
+    $response->setStatusCode(200);
+    $response->setHeader("Content-type", "text/plain");
+    $response->setBody("Hello, " . $args["name"]);
+    return $response;
+});
+$router->respond(["name" => "molly"]);
+```
+
+This is one approach to dependency injection. You can pass your dependency containter in as one of the array elements.
+
+```php
+$container = new MySuperCoolDependencyContainer();
+$router = new Router();
+// ... Add routes ...
+$router->respond(["container" => container]);
+```
+
+The router will make the dependency container available to the handlers it dispatches as the "container" element of the $args array.
+
+
+#### HandlerInterface
+
+The callables are handy, but once you need to do something a little more significant, they start to get a bit unmanageble. Rather than returning a [`ResponseInterface`](src/pjdietz/WellRESTed/Interfaces/ResponseInterface.php), you can return a [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php).
+
+The [`HandlerInterface`](src/pjdietz/WellRESTed/Interfaces/HandlerInterface.php) is very simple and only has one method which looks like this:
+
+```php
+/**
+ * Return the handled response.
+ *
+ * @param RequestInterface $request The request to respond to.
+ * @param array|null $args Optional additional arguments.
+ * @return ResponseInterface The handled response.
+ */
+public function getResponse(RequestInterface $request, array $args = null);
+```
+
+Does it look familiar? It should! It's the same signature as the callables we've used to return responses.
+
+Let's refactor one of our callables to use a proper handler.
+
+```php
+Class CatHandler implements HandlerInterface
+{
+    public function getResponse(RequestInterface $request, array $args = null)
+    {
+        // Create the response and set defaults.
+        $response = new Response();
+        $response->setHeader("Content-type", "application/json");
+
+        // Determine how to respond based on the request's HTTP method.
+        $method = $rqst->getMethod();
+        if ($method === "GET") {
+            // ...Lookup the current list of cats here...
+            $response->setStatusCode(200);
+            $response->setBody(json_encode($catsList);
+        } elseif ($method === "POST") {
+            // Read from the request and store a new cat.
+            $cat = json_decode($request->getBody());
+            // ...store $cat to the database...
+            $response->setStatusCode(201);
+            $response->setBody(json_encode($newCat);
+        } else {
+            $response->setStatusCode(405);
+        }
+        return $response;
+    }
+}
+
+$router = new Router();
+$router->add("/cats/", function () {
+    return new CatHandler();
+});
+$router->respond();
+```
+
+We've pushed all the code for our handler out to a seperate class, allowing the router to just describe the actual routing. The `CatHandler` can also now have its own private methods, etc.
+
+This also gives us another chance for dependency injection. The CatHandler could be modified to take a reference to the dependency continer in its constructor. Our router could then look like this:
+
+```php
+$container = new MySuperCoolDependencyContainer();
+
+$router = new Router();
+$router->add("/cats/", function () use ($container) {
+    return new CatHandler($container);
+});
+$router->respond();
+```
+
+For extra fun (and more readable code), you could store the callable that provides the handler in the container. Here's an example using [Pimple](http://pimple.sensiolabs.org/).
+
+```php
+$c = new Pimple\Container();
+$c["catHandler"] = $c->protect(function () use ($c) {
+    return new CatHandler($c);
+});
+
+$router = new Router();
+$router->add("/cats/", $c["catHandler"]);
+$router->respond();
+```
+
+#### String Handlers
+
+An addional way to add handlers (previously the only way) is to provide a string containing the fully qualified name of a handler class.
+
+For example, if `CatHandler` were in the the namespace `MyApi\Handlers', the router would look like this
+
+```php
+$router = new Router();
+$router->add("/cats/", '\MyApi\Handlers\CatHandler');
+$router->respond();
+```
+
+The router take care of instantiating the handler for you, but it won't do it unless it is needed. In other words, a router with 100 handlers registered as strings will only ever autoload and instantiate the one handler that matches the request.
+
+#### Handler Instances
+
+The final approach to registering handlers is to just pass in a `HandlerInterface` instance.
+
+```php
+$catHandler = new CatHandler();
+
+$router = new Router();
+$router->add("/cats/", $catHandler);
+$router->respond();
+```
+
+This is not usually a good approach for anything other than testing becauce you need to have mutiple handlers instantiated and taking up memory even though only one will be dispatched. Prefer the callable or string approaches unless you really have a good reason.
 
 #### Handler Class
 
-WellRESTed provides the abstract class [`Handler`](src/pjdietz/WellRESTed/Handler.php) which you may subclass for your handlers. This class provides methods for responding based on HTTP method. When you create your [`Handler`](src/pjdietz/WellRESTed/Handler.php) subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
+WellRESTed provides the abstract class [`Handler`](src/pjdietz/WellRESTed/Handler.php) which you can subclass for your handlers. This class provides methods for responding based on HTTP method. When you create your [`Handler`](src/pjdietz/WellRESTed/Handler.php) subclass, you will implement a method for each HTTP verb you would like the endpoint to support. For example, if `/cats/` should support `GET`, you would override the `get()` method. For `POST`, `post()`, etc.
 
-Here's a simple Handler that allows `GET` and `POST`.
+Here's another version of the `CatHandler` that inherits from `Handler`.
 
 ```php
 class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 {
     protected function get()
     {
-        // Read some cats from the database, cache, whatever.
-        // ...read these an array as the variable $cats.
-
-        // Set the values for the instance's response member. This is what the
-        // Router will eventually output to the client.
+        // ...Lookup the current list of cats here...
         $this->response->setStatusCode(200);
-        $this->response->setHeader("Content-Type", "application/json");
-        $this->response->setBody(json_encode($cats));
+        $this->response->setHeader("Content-type", "application/json");
+        $this->response->setBody(json_encode($catsList);
     }
 
     protected function post()
@@ -124,6 +371,7 @@ class CatsCollectionHandler extends \pjdietz\WellRESTed\Handler
 
         // Build a response to send to the client.
         $this->response->setStatusCode(201);
+        $this->response->setHeader("Content-type", "application/json");
         $this->response->setBody(json_encode($cat));
     }
 }
