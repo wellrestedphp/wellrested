@@ -2,19 +2,16 @@
 
 namespace pjdietz\WellRESTed;
 
-use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
 
 class HandlerUnpacker
 {
-    public function unpack($handler)
+    public function unpack($handler, RequestInterface $request = null, array $args = null)
     {
         if (is_callable($handler)) {
-            $handler = $handler();
+            $handler = $handler($request, $args);
         } elseif (is_string($handler)) {
             $handler = new $handler();
-        }
-        if (!$handler instanceof HandlerInterface) {
-            throw new \UnexpectedValueException("Handler must implement HandlerInterface");
         }
         return $handler;
     }

@@ -21,6 +21,29 @@ class HandlerUnpackerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface", $handler);
     }
 
+    public function testPropagatesArgumentsToCallable()
+    {
+        $request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
+        $args = [
+            "cat" => "Molly"
+        ];
+
+        $callableRequest = null;
+        $callableArguments = null;
+
+        $handlerCallable = function ($rqst, $args) use (&$callableRequest, &$callableArguments) {
+            $callableRequest = $rqst;
+            $callableArguments = $args;
+            return null;
+        };
+
+        $handlerUnpacker = new HandlerUnpacker();
+        $handlerUnpacker->unpack($handlerCallable, $request->reveal(), $args);
+
+        $this->assertSame($callableRequest, $request->reveal());
+        $this->assertSame($callableArguments, $args);
+    }
+
     public function testUnpacksFromString()
     {
         $handlerContainer = __NAMESPACE__ . "\\HandlerUnpackerTest_Handler";
@@ -35,15 +58,6 @@ class HandlerUnpackerTest extends \PHPUnit_Framework_TestCase
         $handlerUnpacker = new HandlerUnpacker();
         $handler = $handlerUnpacker->unpack($handler);
         $this->assertInstanceOf("\\pjdietz\\WellRESTed\\Interfaces\\HandlerInterface", $handler);
-    }
-
-    /**
-     * @expectedException \UnexpectedValueException
-     */
-    public function testThrowsExceptionWhenUnpackedInstanceDoesNotImplementInterface()
-    {
-        $handlerUnpacker = new HandlerUnpacker();
-        $handlerUnpacker->unpack("\\stdClass");
     }
 }
 
