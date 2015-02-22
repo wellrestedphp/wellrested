@@ -11,7 +11,9 @@
 namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
+use pjdietz\WellRESTed\Interfaces\HandlerInterface;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**
@@ -55,25 +57,14 @@ class StaticRoute extends BaseRoute implements StaticRouteInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
-        $requestPath = $request->getPath();
-        foreach ($this->paths as $path) {
-            if ($path === $requestPath) {
-                $target = $this->getTarget();
-                return $target->getResponse($request, $args);
-            }
+        if (in_array($request->getPath(), $this->paths)) {
+            return $this->getResponseFromTarget($request, $args);
         }
         return null;
     }
 
-    /**
-     * Returns the target class this maps to.
-     *
-     * @return string Fully qualified name for a HandlerInterface
-     */
-    public function getHandler()
-    {
-        return $this->getTarget();
-    }
+    // ------------------------------------------------------------------------
+    /* StaticRouteInterface */
 
     /**
      * Returns the paths this maps to a target handler.

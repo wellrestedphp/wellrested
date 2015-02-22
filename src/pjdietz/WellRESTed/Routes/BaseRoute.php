@@ -12,6 +12,8 @@ namespace pjdietz\WellRESTed\Routes;
 
 use pjdietz\WellRESTed\HandlerUnpacker;
 use pjdietz\WellRESTed\Interfaces\HandlerInterface;
+use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 
 /**
  * Base class for Routes.
@@ -37,14 +39,19 @@ abstract class BaseRoute implements HandlerInterface
     }
 
     /**
-     * Return an instance of the assigned handler
+     * Return the handled response from the target.
      *
-     * @throws \UnexpectedValueException
-     * @return HandlerInterface
+     * @param RequestInterface $request The request to respond to.
+     * @param array|null $args Optional additional arguments.
+     * @return ResponseInterface The response.
      */
-    protected function getTarget()
+    protected function getResponseFromTarget(RequestInterface $request, array $args = null)
     {
         $unpacker = new HandlerUnpacker();
-        return $unpacker->unpack($this->target);
+        $target = $unpacker->unpack($this->target, $request, $args);
+        if (!is_null($target) && $target instanceof HandlerInterface) {
+            return $target->getResponse($request, $args);
+        }
+        return $target;
     }
 }

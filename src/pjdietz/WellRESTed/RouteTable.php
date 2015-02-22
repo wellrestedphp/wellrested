@@ -49,18 +49,16 @@ class RouteTable implements HandlerInterface
     {
         $response = null;
 
-        $path = $request->getPath();
-
-        // First check if there is a handler for this exact path.
-        $handler = $this->getStaticHandler($path);
-        if ($handler) {
-            return $handler->getResponse($request, $args);
+        // First check if there is a static route.
+        $response = $this->getStaticResponse($request, $args);
+        if ($response) {
+            return $response;
         }
 
         // Check prefix routes for any routes that match. Use the longest matching prefix.
-        $handler = $this->getPrefixHandler($path);
-        if ($handler) {
-            return $handler->getResponse($request, $args);
+        $response = $this->getPrefixResponse($request, $args);
+        if ($response) {
+            return $response;
         }
 
         // Try each of the routes.
@@ -76,16 +74,18 @@ class RouteTable implements HandlerInterface
     }
 
     /**
-     * Return the handler associated with the matching static route, or null if none match.
+     * Return the response associated with the matching static route, or null if none match.
      *
-     * @param $path string The request's path
-     * @return HandlerInterface|null
+     * @param RequestInterface $request
+     * @param array|null $args
+     * @return ResponseInterface
      */
-    private function getStaticHandler($path)
+    private function getStaticResponse(RequestInterface $request, array $args = null)
     {
+        $path = $request->getPath();
         if (isset($this->staticRoutes[$path])) {
             $route = $this->staticRoutes[$path];
-            return $route->getHandler();
+            return $route->getResponse($request, $args);
         }
         return null;
     }
@@ -93,11 +93,14 @@ class RouteTable implements HandlerInterface
     /**
      * Returning the best-matching prefix handler, or null if none match.
      *
-     * @param $path string The request's path
-     * @return HandlerInterface|null
+     * @param RequestInterface $request
+     * @param array|null $args
+     * @return ResponseInterface
      */
-    private function getPrefixHandler($path)
+    private function getPrefixResponse(RequestInterface $request, array $args = null)
     {
+        $path = $request->getPath();
+
         // Find all prefixes that match the start of this path.
         $prefixes = array_keys($this->prefixRoutes);
         $matches = array_filter(
@@ -115,9 +118,8 @@ class RouteTable implements HandlerInterface
                 };
                 usort($matches, $compareByLength);
             }
-            // Instantiate and return the handler identified as the best match.
             $route = $this->prefixRoutes[$matches[0]];
-            return $route->getHandler();
+            return $route->getResponse($request, $args);
         }
         return null;
     }

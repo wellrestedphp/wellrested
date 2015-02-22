@@ -50,12 +50,11 @@ class RegexRoute extends BaseRoute
     {
         $matched = @preg_match($this->getPattern(), $request->getPath(), $matches);
         if ($matched) {
-            $target = $this->getTarget();
             if (is_null($args)) {
                 $args = array();
             }
             $args = array_merge($args, $matches);
-            return $target->getResponse($request, $args);
+            return $this->getResponseFromTarget($request, $args);
         } elseif ($matched === false) {
             throw new ParseException("Invalid regular expression: " . $this->getPattern());
         }

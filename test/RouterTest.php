@@ -86,6 +86,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->getResponse(Argument::cetera())->shouldHaveBeenCalled();
     }
 
+    public function testPropagatesArgumentsToRouteTable()
+    {
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+        $this->request->getPath()->willReturn("/cats/");
+        $args = ["cat" => "molly"];
+
+        $router = new Router();
+        $router->addRoute($this->route->reveal());
+        $router->getResponse($this->request->reveal(), $args);
+
+        $this->route->getResponse($this->request->reveal(), $args)->shouldHaveBeenCalled();
+    }
+
     public function testRespondsWithErrorResponseForHttpException()
     {
         $this->route->getResponse(Argument::cetera())->willThrow(new HttpException());
@@ -193,6 +206,27 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         )->shouldHaveBeenCalled();
     }
 
+    public function testDispatchesErrorCallable()
+    {
+        $this->request->getPath()->willReturn("/");
+        $this->response->getStatusCode()->willReturn(403);
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
+
+        $errorResponse = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\ResponseInterface");
+        $errorResponse->respond()->willReturn();
+
+        $errorCallable = function () use ($errorResponse) {
+            return $errorResponse->reveal();
+        };
+
+        $router = new Router();
+        $router->addRoute($this->route->reveal());
+        $router->setErrorHandlers([403 => $errorCallable]);
+        $result = $router->getResponse($this->request->reveal());
+
+        $this->assertSame($errorResponse->reveal(), $result);
+    }
+
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -206,11 +240,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->response->getStatusCode()->willReturn(200);
         $this->response->respond()->willReturn();
 
-        $this->handler->getResponse(Argument::cetera())->willReturn($this->response->reveal());
-
         $this->route->willImplement("\\pjdietz\\WellRESTed\\Interfaces\\Routes\\StaticRouteInterface");
         $this->route->getPaths()->willReturn(["/cats/"]);
-        $this->route->getHandler()->willReturn($this->handler->reveal());
+        $this->route->getResponse(Argument::cetera())->willReturn($this->response->reveal());
 
         $router = new Router();
         $router->addRoute($this->route->reveal());

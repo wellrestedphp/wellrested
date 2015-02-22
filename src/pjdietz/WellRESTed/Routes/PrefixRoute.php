@@ -58,12 +58,14 @@ class PrefixRoute extends BaseRoute implements PrefixRouteInterface
         $requestPath = $request->getPath();
         foreach ($this->prefixes as $prefix) {
             if (strrpos($requestPath, $prefix, -strlen($requestPath)) !== false) {
-                $target = $this->getTarget();
-                return $target->getResponse($request, $args);
+                return $this->getResponseFromTarget($request, $args);
             }
         }
         return null;
     }
+
+    // ------------------------------------------------------------------------
+    /* PrefixRouteInterface */
 
     /**
      * Returns the path prefixes this maps to a target handler.
@@ -73,15 +75,5 @@ class PrefixRoute extends BaseRoute implements PrefixRouteInterface
     public function getPrefixes()
     {
         return $this->prefixes;
-    }
-
-    /**
-     * Returns the target class this maps to.
-     *
-     * @return string Fully qualified name for a HandlerInterface
-     */
-    public function getHandler()
-    {
-        return $this->getTarget();
     }
 }

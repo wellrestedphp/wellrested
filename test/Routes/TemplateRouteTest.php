@@ -134,4 +134,25 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
             )
         );
     }
+
+    public function testPropagatesArgumentsToCallable()
+    {
+        $callableRequest = null;
+        $callableArgs = null;
+        $callable = function ($request, $args) use (&$callableRequest, &$callableArgs) {
+            $callableRequest = $request;
+            $callableArgs = $args;
+        };
+
+        $this->request->getPath()->willReturn("/dog/bear");
+        $args = ["cat" => "Molly"];
+
+        $route = new TemplateRoute("/dog/{dog}", $callable);
+        $route->getResponse($this->request->reveal(), $args);
+
+        $this->assertSame($this->request->reveal(), $callableRequest);
+        $this->assertArraySubset($args, $callableArgs);
+        $this->assertArraySubset(["dog" => "bear"], $callableArgs);
+    }
+
 }

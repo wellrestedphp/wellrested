@@ -64,17 +64,30 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testReturnsHandler()
-    {
-        $route = new PrefixRoute("/cats/", $this->handler->reveal());
-        $this->assertNotNull($route->getHandler());
-    }
-
     public function testReturnsPrefixes()
     {
         $paths = array("/cats/", "/dogs/");
         $route = new PrefixRoute($paths, $this->handler->reveal());
         $this->assertEquals($paths, $route->getPrefixes());
+    }
+
+    public function testPropagatesArgumentsToCallable()
+    {
+        $callableRequest = null;
+        $callableArgs = null;
+        $callable = function ($request, $args) use (&$callableRequest, &$callableArgs) {
+            $callableRequest = $request;
+            $callableArgs = $args;
+        };
+
+        $this->request->getPath()->willReturn("/");
+        $args = ["cat" => "Molly"];
+
+        $route = new PrefixRoute("/", $callable);
+        $route->getResponse($this->request->reveal(), $args);
+
+        $this->assertSame($this->request->reveal(), $callableRequest);
+        $this->assertSame($args, $callableArgs);
     }
 
     public function setUp()

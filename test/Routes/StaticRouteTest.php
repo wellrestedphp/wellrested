@@ -56,17 +56,31 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testReturnsHandler()
-    {
-        $route = new StaticRoute("/cats/", $this->handler->reveal());
-        $this->assertNotNull($route->getHandler());
-    }
-
     public function testReturnsPaths()
     {
         $paths = array("/cats/", "/dogs/");
         $route = new StaticRoute($paths, $this->handler->reveal());
         $this->assertEquals($paths, $route->getPaths());
+    }
+
+    public function testPropagatesArgumentsToCallable()
+    {
+        $callableRequest = null;
+        $callableArgs = null;
+        $callable = function ($request, $args) use (&$callableRequest, &$callableArgs) {
+            $callableRequest = $request;
+            $callableArgs = $args;
+        };
+
+        $this->request->getPath()->willReturn("/");
+
+        $args = ["cat" => "Molly"];
+
+        $route = new StaticRoute("/", $callable);
+        $route->getResponse($this->request->reveal(), $args);
+
+        $this->assertSame($this->request->reveal(), $callableRequest);
+        $this->assertSame($args, $callableArgs);
     }
 
     public function setUp()

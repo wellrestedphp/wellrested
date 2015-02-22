@@ -103,7 +103,7 @@ class Router implements HandlerInterface
      * Add a custom error handler.
      *
      * @param integer $statusCode The error status code
-     * @param callable|string|HandlerInterface $errorHandler
+     * @param mixed $errorHandler
      */
     public function setErrorHandler($statusCode, $errorHandler)
     {
@@ -168,14 +168,17 @@ class Router implements HandlerInterface
     private function getErrorResponse($status, $request, $args = null, $response = null)
     {
         if (isset($this->errorHandlers[$status])) {
-            $unpacker = new HandlerUnpacker();
-            $errorHandler = $unpacker->unpack($this->errorHandlers[$status]);
             // Pass the response triggering this along to the error handler.
             $errorArgs = array("response" => $response);
             if ($args) {
                 $errorArgs = array_merge($args, $errorArgs);
             }
-            return $errorHandler->getResponse($request, $errorArgs);
+            $unpacker = new HandlerUnpacker();
+            $handler = $unpacker->unpack($this->errorHandlers[$status], $request, $errorArgs);
+            if (!is_null($handler) && $handler instanceof HandlerInterface) {
+                return $handler->getResponse($request, $errorArgs);
+            }
+            return $handler;
         }
         return null;
     }
