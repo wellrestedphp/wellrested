@@ -72,4 +72,28 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("Hello, cat!", $captured);
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testRouterRespondsWithNoisyCallable()
+    {
+        $_SERVER["REQUEST_URI"] = "/cats/molly";
+        $_SERVER["HTTP_HOST"] = "localhost";
+        $_SERVER["REQUEST_METHOD"] = "GET";
+
+        $router = new Router();
+        $router->add("/cats/{cat}", function () {
+            echo "Hello, cat!";
+            return true;
+        });
+
+        ob_start();
+        @$router->respond();
+        $captured = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals("Hello, cat!", $captured);
+    }
 }

@@ -123,7 +123,9 @@ class Router implements HandlerInterface
         if (!$response) {
             $response = $this->getNoRouteResponse($request);
         }
-        $response->respond();
+        if ($response instanceof ResponseInterface) {
+            $response->respond();
+        }
     }
 
     /**
