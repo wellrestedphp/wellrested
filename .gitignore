@@ -7,6 +7,9 @@ phpdoc/
 # Code coverage report
 report/
 
+# Sphinx Documentation
+docs/build
+
 # Previewing the README.md
 README.html
 preview

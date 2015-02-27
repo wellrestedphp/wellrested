@@ -2,14 +2,14 @@
 <phpdoc>
     <title>WellRESTed</title>
     <parser>
-        <target>docs</target>
+        <target>phpdoc</target>
         <markers>
             <item>TODO</item>
             <item>FIXME</item>
         </markers>
     </parser>
     <transformer>
-        <target>docs</target>
+        <target>phpdoc</target>
     </transformer>
     <transformations>
         <template name="responsive" />
