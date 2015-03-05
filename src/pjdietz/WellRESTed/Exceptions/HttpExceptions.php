@@ -75,6 +75,17 @@ class NotFoundException extends HttpException
 }
 
 /**
+ * Represents a 405 Method Not Allowed error.
+ */
+class MethodNotAllowedException extends HttpException
+{
+    /** @var int HTTP Status Code */
+    protected $code = 405;
+    /** @var string Default description for the error */
+    protected $message = "405 Method Not Allowed";
+}
+
+/**
  * Represents a 409 Conflict error.
  */
 class ConflictException extends HttpException
@@ -83,4 +94,15 @@ class ConflictException extends HttpException
     protected $code = 409;
     /** @var string Default description for the error */
     protected $message = "409 Conflict";
+}
+
+/**
+ * Represents a 410 Gone error.
+ */
+class GoneException extends HttpException
+{
+    /** @var int HTTP Status Code */
+    protected $code = 410;
+    /** @var string Default description for the error */
+    protected $message = "410 Gone";
 }
