@@ -46,10 +46,10 @@ class RouteBuilder
      * Contruct and return an array of routes.
      *
      * If $data is a string, buildRoutes() will parse it as JSON with json_decode.
-     * <br /><br />
+     *
      * If $data is an array, buildRoutes() assumes each item in the array is
      * an object it can translate into a route.
-     * <br /><br />
+     *
      * If $data is an object, buildRoutes() assumes it will have a "routes"
      * property with an array value that is a collection of objects to
      * translate into routes. Any other properties will be read with
@@ -92,11 +92,11 @@ class RouteBuilder
     /**
      * Parse an object and update the instances with the new configuration.
      *
-     * ->handlerNamespace is passed to setHandlerNamesapce()
-     * <br /></br />
-     * ->variablePattern is passed to setDefaultVariablePattern()
-     * <br /><br />
-     * ->vars is passed to setTemplateVars()
+     * handlerNamespace is passed to setHandlerNamesapce()
+
+     * variablePattern is passed to setDefaultVariablePattern()
+     *
+     * vars is passed to setTemplateVars()
      *
      * @param object
      */
@@ -149,7 +149,7 @@ class RouteBuilder
      * Keys are names of variables for use in URI template (do not include {}).
      * Values are regex patterns or any of the following special names: SLUG,
      * ALPHA, ALPHANUM, DIGIT, NUM.
-     * <br /><br />
+     *
      * If you wish to use additional named patterns, subclass RouteBuilder and
      * override getTemplateVariablePattern.
      *
@@ -178,7 +178,7 @@ class RouteBuilder
      *
      * $defaultVariablePattern may be a regex pattern or one of the following:
      * SLUG, ALPHA, ALPHANUM, DIGIT, NUM.
-     * <br /><br />
+     *
      * If you wish to use additional named patterns, subclass RouteBuilder and
      * override getTemplateVariablePattern.
      *
@@ -196,7 +196,7 @@ class RouteBuilder
      * HandlerInterface to call getResponse() on if the route matches. "handler"
      * may be fully qualified and begin with "\". If it does not begin with "\",
      * the instance's $handlerNamespace is affixed to the begining.
-     * <br /><br />
+     *
      * $item must also contain a "path", "template", or "pattern" property to
      * indicate how to create the StaticRoute, TemplateRoute, or RegexRoute.
      *
@@ -246,7 +246,7 @@ class RouteBuilder
      *
      * The names SLUG, ALPHA, ALPHANUM, DIGIT, NUM convert to regex patterns.
      * Anything else passes through as is.
-     * <br /><br />
+     *
      * If you wish to use additional named patterns, subclass RouteBuilder and
      * override getTemplateVariablePattern.
      *
@@ -269,5 +269,4 @@ class RouteBuilder
                 return $variable;
         }
     }
-
 }

@@ -20,10 +20,10 @@ use pjdietz\WellRESTed\Interfaces\ResponseInterface;
  *
  * To use Handler, create a subclass and implement the methods for any HTTP
  * verbs you would like to support. (get() for GET, post() for POST, etc).
- * <br /><br />
- * - Access the request via the protected member $this->request<br />
- * - Access a map of arguments via $this->args (e.g., URI path variables)<br />
- * - Modify $this->response to provide the response the instance will return<br />
+ *
+ * - Access the request via the protected member $this->request
+ * - Access a map of arguments via $this->args (e.g., URI path variables)
+ * - Modify $this->response to provide the response the instance will return
  */
 abstract class Handler implements HandlerInterface
 {
@@ -204,5 +204,4 @@ abstract class Handler implements HandlerInterface
         }
         return false;
     }
-
 }

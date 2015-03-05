@@ -73,5 +73,4 @@ class RegexRoute extends BaseRoute
     {
         return $this->pattern;
     }
-
 }
