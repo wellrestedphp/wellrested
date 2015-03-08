@@ -27,7 +27,7 @@ class TemplateRoute extends RegexRoute
     /** Regular expression matching letters and digits */
     const RE_ALPHANUM = '[0-9a-zA-Z]+';
     /** Regular expression matching a URI template variable (e.g., {id}) */
-    const URI_TEMPLATE_EXPRESSION_RE = '/{([a-zA-Z]+)}/';
+    const URI_TEMPLATE_EXPRESSION_RE = '/{([[a-zA-Z][a-zA-Z0-_]*)}/';
 
     /**
      * Create a new route that matches a URI template to a Handler.

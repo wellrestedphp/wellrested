@@ -99,6 +99,56 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    /**
+     * @dataProvider allowedVariableNamesProvider
+     */
+    public function testMatchesAllowedVariablesNames($template, $path, $expectedCaptures)
+    {
+        $this->request->getPath()->willReturn($path);
+        $route = new TemplateRoute($template, $this->handler->reveal(), null, null);
+        $route->getResponse($this->request->reveal());
+        $this->handler->getResponse(
+            Argument::any(),
+            Argument::that(
+                function ($args) use ($expectedCaptures) {
+                    return count(array_diff_assoc($expectedCaptures, $args)) === 0;
+                }
+            )
+        )->shouldHaveBeenCalled();
+    }
+
+    public function allowedVariableNamesProvider()
+    {
+        return [
+            ["/{n}", "/lower", ["n" => "lower"]],
+            ["/{N}", "/UPPER", ["N" => "UPPER"]],
+            ["/{var1024}", "/digits", ["var1024" => "digits"]],
+            ["/{variable_name}", "/underscore", ["variable_name" => "underscore"]],
+        ];
+    }
+
+    /**
+     * @dataProvider illegalVariableNamesProvider
+     */
+    public function testFailsToMatchIllegalVariablesNames($template, $path)
+    {
+        $this->request->getPath()->willReturn($path);
+        $route = new TemplateRoute($template, $this->handler->reveal(), null, null);
+        $route->getResponse($this->request->reveal());
+        $this->handler->getResponse(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function illegalVariableNamesProvider()
+    {
+        return [
+            ["/{not-legal}", "/hyphen"],
+            ["/{1digitfirst}", "/digitfirst"],
+            ["/{%2f}", "/percent-encoded"],
+            ["/{}", "/empty"],
+            ["/{{nested}}", "/nested"]
+        ];
+    }
+
     public function setUp()
     {
         $this->request = $this->prophesize("\\pjdietz\\WellRESTed\\Interfaces\\RequestInterface");
