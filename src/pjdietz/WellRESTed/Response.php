@@ -152,9 +152,7 @@ class Response extends Message implements ResponseInterface
     public function setStatusCode($statusCode, $reasonPhrase = null)
     {
         $this->statusCode = (int) $statusCode;
-
         if (is_null($reasonPhrase)) {
-
             switch ($this->statusCode) {
                 case 100:
                     $text = 'Continue';
@@ -271,19 +269,14 @@ class Response extends Message implements ResponseInterface
                     $text = 'Nonstandard';
                     break;
             }
-
             $this->reasonPhrase = $text;
-
         } else {
-
             if (is_string($reasonPhrase)) {
                 $this->reasonPhrase = $reasonPhrase;
             } else {
                 throw new InvalidArgumentException('$reasonPhrase must be a string (or null to use standard HTTP Reason-Phrase');
             }
-
         }
-
     }
 
     /**

@@ -16,9 +16,9 @@ namespace pjdietz\WellRESTed\Interfaces\Routes;
 interface StaticRouteInterface
 {
     /**
-     * Returns the paths this maps to a target handler.
+     * Returns the paths the instance maps to a target handler.
      *
-     * @return array Array of paths.
+     * @return string[] List array of paths.
      */
     public function getPaths();
 }

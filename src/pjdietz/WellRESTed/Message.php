@@ -73,7 +73,7 @@ abstract class Message
     }
 
     /**
-     * Return the value of a given header, or false if it does not exist.
+     * Return the value of a given header, or null if it does not exist.
      *
      * @param string $name
      * @return string|null

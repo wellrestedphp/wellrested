@@ -27,9 +27,14 @@ abstract class BaseRoute implements HandlerInterface
      * Create a new route that will dispatch an instance of the given handler.
      *
      * $target may be:
-     * - A callable expecting no arguments that returns a HandlerInterface
+     * - A callable
      * - A string containing the fully qualified class of a HandlerInterface
      * - A HandlerInterface instance
+     *
+     * Callable targets should expect to receive the same arguments as would
+     * be passed to a HandlerInterface's getResponse() method. The callable
+     * should return a HandlerInterface instance, a ResponseInterface instance,
+     * or null.
      *
      * @param mixed $target Handler to dispatch
      */
@@ -39,7 +44,7 @@ abstract class BaseRoute implements HandlerInterface
     }
 
     /**
-     * Return the handled response from the target.
+     * Return the handled response.
      *
      * @param RequestInterface $request The request to respond to.
      * @param array|null $args Optional additional arguments.

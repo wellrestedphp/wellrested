@@ -5,10 +5,10 @@
  * error status codes. The most common are included, but you may create
  * additional subclasses if needed by subclassing HttpException.
  *
- * The HttpException classes are intended to be used with Handler subclasses
- * (pjdietz\WellRESTed\Handler). Handler::getResponse() catches HttpException
- * exceptions and converts them to responses using the exception's code as the
- * HTTP status code and the exception's message as the response body.
+ * The HttpException classes are intended to be used with Routers or Handler
+ * subclasses (pjdietz\WellRESTed\Handler). These classes will catch
+ * HttpExceptions and convert them to responses using the exception's code as
+ * the HTTP status code and the exception's message as the response body.
  *
  * @author PJ Dietz <pj@pjdietz.com>
  * @copyright Copyright 2015 by PJ Dietz

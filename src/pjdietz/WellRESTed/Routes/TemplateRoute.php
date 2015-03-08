@@ -30,14 +30,16 @@ class TemplateRoute extends RegexRoute
     const URI_TEMPLATE_EXPRESSION_RE = '/{([[a-zA-Z][a-zA-Z0-_]*)}/';
 
     /**
-     * Create a new route that matches a URI template to a Handler.
+     * Create a new route that matches a URI template to a handler.
      *
      * Optionally provide patterns for the variables in the template.
      *
      * @param string $template URI template the path must match
-     * @param string $target Fully qualified name to an autoloadable handler class
+     * @param mixed $target Handler to dispatch
      * @param string $defaultPattern Regular expression for variables
-     * @param array|null $variablePatterns Map of variable names and regular expression
+     * @param array $variablePatterns Map of variable names and partial regular expression
+     *
+     * @see BaseRoute for details about $target
      */
     public function __construct(
         $template,

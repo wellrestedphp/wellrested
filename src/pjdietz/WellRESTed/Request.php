@@ -15,19 +15,12 @@ use pjdietz\WellRESTed\Interfaces\RequestInterface;
 use UnexpectedValueException;
 
 /**
- * A Request instance represents an HTTP request. This class has two main uses:
- *
- * First, you can access a singleton instance via the getRequest() method that
- * represents the request sent to the server. The instance will contain the URI,
- * headers, body, etc.
- *
- * Second, you can create a custom Request and use it to obtain a Response
- * from a server through cURL.
+ * A Request instance represents an HTTP request.
  */
 class Request extends Message implements RequestInterface
 {
     /**
-     * Singleton instance derived from reading info from Apache.
+     * Singleton instance derived from reading the request sent to the server.
      *
      * @var Request
      * @static
@@ -37,7 +30,7 @@ class Request extends Message implements RequestInterface
     private $method = "GET";
     /** @var string Scheme for the request (Must be "http" or "https" */
     private $scheme;
-    /** @var string  The Hostname for the request (e.g., www.google.com) */
+    /** @var string  The Hostname for the request */
     private $hostname = "localhost";
     /** @var string   Path component of the URI for the request */
     private $path = "/";
@@ -69,7 +62,7 @@ class Request extends Message implements RequestInterface
 
     /**
      * Return a reference to the singleton instance of the Request derived
-     * from the server's information about the request sent to the script.
+     * from the server's information about the request sent to the server.
      *
      * @return Request
      * @static

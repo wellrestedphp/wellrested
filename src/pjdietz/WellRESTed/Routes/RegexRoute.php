@@ -12,6 +12,7 @@ namespace pjdietz\WellRESTed\Routes;
 
 use pjdietz\WellRESTed\Exceptions\ParseException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 
 /**
  * Maps a regular expression pattern for a URI path to a Handler
@@ -22,10 +23,13 @@ class RegexRoute extends BaseRoute
     private $pattern;
 
     /**
-     * Create a new route mapping a regex pattern to a handler class name.
+     * Create a new route mapping a regex pattern to a handler.
      *
      * @param string $pattern Regular expression the path must match.
-     * @param string $target Fully qualified name to an autoloadable handler class.
+     * @param mixed $target Handler to dispatch
+     * @throws \InvalidArgumentException
+     *
+     * @see BaseRoute for details about $target
      */
     public function __construct($pattern, $target)
     {
@@ -37,14 +41,14 @@ class RegexRoute extends BaseRoute
     /* HandlerInterface */
 
     /**
-     * Return the response issued by the handler class or null.
+     * Return the handled response or null.
      *
      * A null return value indicates that this route failed to match the request.
      *
-     * @param RequestInterface $request
-     * @param array $args
-     * @throws \pjdietz\WellRESTed\Exceptions\ParseException
-     * @return null|\pjdietz\WellRESTed\Interfaces\ResponseInterface
+     * @param RequestInterface $request The request to respond to.
+     * @param array|null $args Optional additional arguments.
+     * @return ResponseInterface The handled response.
+     * @throws ParseException
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
@@ -58,7 +62,6 @@ class RegexRoute extends BaseRoute
         } elseif ($matched === false) {
             throw new ParseException("Invalid regular expression: " . $this->getPattern());
         }
-
         return null;
     }
 

@@ -16,9 +16,9 @@ namespace pjdietz\WellRESTed\Interfaces\Routes;
 interface PrefixRouteInterface
 {
     /**
-     * Returns the path prefixes this maps to a target handler.
+     * Returns the path prefixes the instance maps to a target handler.
      *
-     * @return array Array of path prefixes.
+     * @return string[] List array of path prefixes.
      */
     public function getPrefixes();
 }

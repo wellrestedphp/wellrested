@@ -40,11 +40,12 @@ class Router implements HandlerInterface
     /**
      * Add a route or series of routes to the Router.
      *
-     * When adding a single route, the first argument should be the path, path prefix, URI template, or regex pattern.
-     * The method will attempt to find the best type of route based on this argument and send the remainding arguments
-     * to that routes constructor. @see {RouteFactory::createRoute}
+     * When adding a single route, the first argument should be the path, path
+     * prefix, URI template, or regex pattern. The method will attempt to find
+     * the best type of route based on this argument and send the remaining
+     * arguments to the route's constructor. @see {RouteFactory::createRoute}
      *
-     * To add multiple routes, pass arrays to add where each array contains an argument list.
+     * To add multiple routes, pass arrays where each array contains an argument list.
      */
     public function add()
     {
@@ -111,7 +112,7 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Dispatch the singleton Request through the router and output the response.
+     * Dispatch the server request through the router and output the response.
      *
      * Respond with a 404 Not Found if no route provides a response.
      * @param array|null $args
@@ -150,7 +151,10 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Prepare a response indicating a 404 Not Found error
+     * Prepare a response indicating a 404 Not Found error.
+     *
+     * Rather than subclassing and overriding this method, you may provide an
+     * error handler for status code 404. (@see setErrorHandler)
      *
      * @param RequestInterface $request
      * @return ResponseInterface
@@ -168,7 +172,7 @@ class Router implements HandlerInterface
     }
 
     /**
-     * Obtain a response from the register error handlers.
+     * Obtain a response from the registered error handlers.
      *
      * @param int $status HTTP Status Code
      * @param RequestInterface $request The original request
@@ -197,13 +201,13 @@ class Router implements HandlerInterface
     /**
      * Wraps the getResponse method in a try-catch.
      *
-     * In an HttpException is caught while trying to get a response, the method returns a response based on the
-     * HttpException's error code and message.
+     * In an HttpException is caught while trying to get a response, the method
+     * returns a response based on the HttpException's error code and message.
      *
      * @param HandlerInterface $handler The Route or Handler to try.
      * @param RequestInterface $request The incoming request.
      * @param array $args The array of arguments.
-     * @return null|Response
+     * @return Response
      */
     private function tryResponse($handler, $request, $args)
     {

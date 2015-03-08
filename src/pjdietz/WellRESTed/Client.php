@@ -19,7 +19,7 @@ use pjdietz\WellRESTed\Interfaces\ResponseInterface;
  */
 class Client
 {
-    /** @var array cURL options */
+    /** @var array Map of cURL options with cURL constants as keys */
     private $curlOpts;
 
     /**

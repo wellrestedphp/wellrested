@@ -12,6 +12,7 @@ namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\PrefixRouteInterface;
 
 /**
@@ -19,25 +20,27 @@ use pjdietz\WellRESTed\Interfaces\Routes\PrefixRouteInterface;
  */
 class PrefixRoute extends BaseRoute implements PrefixRouteInterface
 {
-    /** @var array List of static URI paths */
+    /** @var string[] List of static URI path prefixes*/
     private $prefixes;
 
     /**
-     * Create a new StaticRoute for a given path or paths and a handler class.
+     * Create a new PrefixRoute for a given prefix or prefixes and a handler class.
      *
-     * @param string|array $path Path or list of paths the request must match
-     * @param string $target Fully qualified name to an autoloadable handler class.
+     * @param string|string[] $prefix Path or list of paths the request must match
+     * @param mixed $target Handler to dispatch
      * @throws \InvalidArgumentException
+     *
+     * @see BaseRoute for details about $target
      */
-    public function __construct($path, $target)
+    public function __construct($prefix, $target)
     {
         parent::__construct($target);
-        if (is_string($path)) {
-            $this->prefixes = array($path);
-        } elseif (is_array($path)) {
-            $this->prefixes = $path;
+        if (is_string($prefix)) {
+            $this->prefixes = array($prefix);
+        } elseif (is_array($prefix)) {
+            $this->prefixes = $prefix;
         } else {
-            throw new InvalidArgumentException("$path must be a string or array of string");
+            throw new InvalidArgumentException("$prefix must be a string or array of string");
         }
     }
 
@@ -45,13 +48,11 @@ class PrefixRoute extends BaseRoute implements PrefixRouteInterface
     /* HandlerInterface */
 
     /**
-     * Return the response issued by the handler class or null.
+     * Return the handled response.
      *
-     * A null return value indicates that this route failed to match the request.
-     *
-     * @param RequestInterface $request
-     * @param array $args
-     * @return null|\pjdietz\WellRESTed\Interfaces\ResponseInterface
+     * @param RequestInterface $request The request to respond to.
+     * @param array|null $args Optional additional arguments.
+     * @return ResponseInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
@@ -68,9 +69,9 @@ class PrefixRoute extends BaseRoute implements PrefixRouteInterface
     /* PrefixRouteInterface */
 
     /**
-     * Returns the path prefixes this maps to a target handler.
+     * Returns the path prefixes the instance maps to a target handler.
      *
-     * @return array Array of path prefixes.
+     * @return string[] List array of path prefixes.
      */
     public function getPrefixes()
     {

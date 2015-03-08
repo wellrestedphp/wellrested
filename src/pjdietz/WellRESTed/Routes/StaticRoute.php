@@ -12,6 +12,7 @@ namespace pjdietz\WellRESTed\Routes;
 
 use InvalidArgumentException;
 use pjdietz\WellRESTed\Interfaces\RequestInterface;
+use pjdietz\WellRESTed\Interfaces\ResponseInterface;
 use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
 
 /**
@@ -19,15 +20,17 @@ use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
  */
 class StaticRoute extends BaseRoute implements StaticRouteInterface
 {
-    /** @var array List of static URI paths */
+    /** @var string[] List of static URI paths */
     private $paths;
 
     /**
-     * Create a new StaticRoute for a given path or paths and a handler class.
+     * Create a new StaticRoute for a given path or paths and a handler.
      *
      * @param string|array $path Path or list of paths the request must match
-     * @param string $target Fully qualified name to an autoloadable handler class.
+     * @param mixed $target Handler to dispatch
      * @throws \InvalidArgumentException
+     *
+     * @see BaseRoute for details about $target
      */
     public function __construct($path, $target)
     {
@@ -45,13 +48,11 @@ class StaticRoute extends BaseRoute implements StaticRouteInterface
     /* HandlerInterface */
 
     /**
-     * Return the response issued by the handler class or null.
+     * Return the handled response.
      *
-     * A null return value indicates that this route failed to match the request.
-     *
-     * @param RequestInterface $request
-     * @param array $args
-     * @return null|\pjdietz\WellRESTed\Interfaces\ResponseInterface
+     * @param RequestInterface $request The request to respond to.
+     * @param array|null $args Optional additional arguments.
+     * @return ResponseInterface
      */
     public function getResponse(RequestInterface $request, array $args = null)
     {
@@ -65,9 +66,9 @@ class StaticRoute extends BaseRoute implements StaticRouteInterface
     /* StaticRouteInterface */
 
     /**
-     * Returns the paths this maps to a target handler.
+     * Returns the paths the instance maps to a target handler.
      *
-     * @return array Array of paths.
+     * @return string[] List array of paths.
      */
     public function getPaths()
     {

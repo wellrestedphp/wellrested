@@ -23,7 +23,7 @@ use pjdietz\WellRESTed\Interfaces\Routes\StaticRouteInterface;
  */
 class RouteTable implements HandlerInterface
 {
-    /** @var array  Array of Route objects */
+    /** @var HandlerInterface[]  Array of Route objects */
     private $routes;
     /** @var array  Hash array mapping exact paths to routes */
     private $staticRoutes;
@@ -74,7 +74,7 @@ class RouteTable implements HandlerInterface
     }
 
     /**
-     * Return the response associated with the matching static route, or null if none match.
+     * Return the response from the matching static route, or null if none match.
      *
      * @param RequestInterface $request
      * @param array|null $args
@@ -91,7 +91,7 @@ class RouteTable implements HandlerInterface
     }
 
     /**
-     * Returning the best-matching prefix handler, or null if none match.
+     * Returning the response from the best-matching prefix handler, or null if none match.
      *
      * @param RequestInterface $request
      * @param array|null $args
