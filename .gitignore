@@ -1,8 +1,10 @@
 # Composer
 vendor/
 
-# Generated documentation
-docs/
+# PhpDocumentor
+phpdoc/
+
+# Code coverage report
 report/
 
 # Previewing the README.md
