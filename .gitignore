@@ -15,3 +15,6 @@ preview
 
 # PhpStorm
 workspace.xml
+
+# Vagrant
+.vagrant/

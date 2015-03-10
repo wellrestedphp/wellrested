@@ -1,0 +1,9 @@
+Welcome to the WellRESTed development box.
+
+To run unit tests:
+  vendor/bin/phpunit
+
+To generate documentation:
+  make html -C docs
+
+
