@@ -20,3 +20,6 @@ workspace.xml
 
 # Vagrant
 .vagrant/
+
+# Vagrant site's document root.
+/htdocs/

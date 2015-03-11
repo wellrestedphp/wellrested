@@ -13,8 +13,50 @@ fi
 # Install Python dependencies
 pip install sphinx sphinx_rtd_theme
 
+# Configure software
+changes="
+set /files/etc/php5/cli/php.ini/Date/date.timezone America/New_York
+set /files/etc/php5/fpm/php.ini/Date/date.timezone America/New_York
+set /files/etc/php5/fpm/php.ini/cgi/cgi.fix_pathinfo 0
+set /files/etc/php5/fpm/php.ini/Session/session.save_handler memcached
+set /files/etc/php5/fpm/php.ini/Session/session.save_path 127.0.0.1:11211
+set /files/etc/php5/mods-available/xdebug.ini/.anon/zend_extension xdebug.so
+set /files/etc/php5/mods-available/xdebug.ini/.anon/xdebug.remote_enable on
+set /files/etc/php5/mods-available/xdebug.ini/.anon/xdebug.remote_connect_back on
+set /files/etc/php5/fpm/pool.d/www.conf/www/listen /var/run/php5-fpm.sock
+# Disable sendfile in Nginx to avoid VirtualBox synced directory bug.
+set /files/etc/nginx/nginx.conf/http/sendfile off
+save
+"
+echo "$changes" | augtool
+
+# Install the Nginx site.
+cp /vagrant/vagrant/nginx /etc/nginx/sites-available/wellrested
+if [ ! -h /etc/nginx/sites-enabled/wellrested ] ; then
+  ln -s /etc/nginx/sites-available/wellrested /etc/nginx/sites-enabled/wellrested
+fi
+if [ -h /etc/nginx/sites-enabled/default ] ; then
+  rm /etc/nginx/sites-enabled/default
+fi
+
+# Create the document and symlinks.
+if [ ! -d  /vagrant/htdocs ] ; then
+  mkdir /vagrant/htdocs 2&> /dev/null
+fi
+if [ ! -h /vagrant/htdocs/docs ] ; then
+  ln -s /vagrant/docs/build/html /vagrant/htdocs/docs
+fi
+if [ ! -h /vagrant/htdocs/coverage ] ; then
+  ln -s /vagrant/report /vagrant/htdocs/coverage
+fi
+cp /vagrant/vagrant/index.php /vagrant/htdocs/index.php
+
 # Install Composer dependencies
 composer --working-dir=/vagrant install
+
+# Restart services.
+service php5-fpm restart
+service nginx restart
 
 # Run the unit tests.
 cd /vagrant
