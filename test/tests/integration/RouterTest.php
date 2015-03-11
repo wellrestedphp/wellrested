@@ -5,6 +5,9 @@ namespace pjdietz\WellRESTed\Test\Integration;
 use pjdietz\WellRESTed\Router;
 use Prophecy\Argument;
 
+/**
+ * @coversNothing
+ */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
