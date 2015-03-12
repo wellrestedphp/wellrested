@@ -15,6 +15,9 @@ preview
 .DS_Store
 .AppleDouble
 
+# IDE
+.idea/
+
 # PhpStorm
 workspace.xml
 
