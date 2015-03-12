@@ -24,5 +24,6 @@ workspace.xml
 # Vagrant
 .vagrant/
 
-# Vagrant site's document root.
+# Vagrant sandbox site files.
 /htdocs/
+/autoload/

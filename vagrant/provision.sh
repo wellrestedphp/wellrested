@@ -41,7 +41,7 @@ fi
 
 # Create the document and symlinks.
 if [ ! -d  /vagrant/htdocs ] ; then
-  mkdir /vagrant/htdocs 2&> /dev/null
+  mkdir /vagrant/htdocs
 fi
 if [ ! -h /vagrant/htdocs/docs ] ; then
   ln -s /vagrant/docs/build/html /vagrant/htdocs/docs
@@ -49,7 +49,12 @@ fi
 if [ ! -h /vagrant/htdocs/coverage ] ; then
   ln -s /vagrant/report /vagrant/htdocs/coverage
 fi
-cp /vagrant/vagrant/index.php /vagrant/htdocs/index.php
+if [ ! -f /vagrant/htdocs/index.php ] ; then
+  cp /vagrant/vagrant/index.php /vagrant/htdocs/index.php
+fi
+if [ ! -d  /vagrant/autoload ] ; then
+  mkdir /vagrant/autoload
+fi
 
 # Install Composer dependencies
 composer --working-dir=/vagrant install
