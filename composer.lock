@@ -4,8 +4,55 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6f8afe11003065ccbf5d3a09f4bea340",
-    "packages": [],
+    "hash": "ae063f8a64fd980e12ddf9a21845262d",
+    "packages": [
+        {
+            "name": "psr/http-message",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "7c361ae6b0dcd84d8fc4f89636ee0cc9fcb02035"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/7c361ae6b0dcd84d8fc4f89636ee0cc9fcb02035",
+                "reference": "7c361ae6b0dcd84d8fc4f89636ee0cc9fcb02035",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "time": "2015-03-18 22:07:07"
+        }
+    ],
     "packages-dev": [
         {
             "name": "doctrine/instantiator",
@@ -67,12 +114,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzaninotto/Faker.git",
-                "reference": "80c1424e6522a3303d320b611647fa6fbc29a8e4"
+                "reference": "81f8e9439d0041866849c05d334584ea31c7b05e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/80c1424e6522a3303d320b611647fa6fbc29a8e4",
-                "reference": "80c1424e6522a3303d320b611647fa6fbc29a8e4",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/81f8e9439d0041866849c05d334584ea31c7b05e",
+                "reference": "81f8e9439d0041866849c05d334584ea31c7b05e",
                 "shasum": ""
             },
             "require": {
@@ -111,7 +158,7 @@
                 "faker",
                 "fixtures"
             ],
-            "time": "2015-02-12 21:08:01"
+            "time": "2015-03-18 16:46:58"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -1011,21 +1058,24 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.4",
+            "version": "v2.6.5",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8"
+                "reference": "0cd8e72071e46e15fc072270ae39ea1b66b10a9d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/60ed7751671113cf1ee7d7778e691642c2e9acd8",
-                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/0cd8e72071e46e15fc072270ae39ea1b66b10a9d",
+                "reference": "0cd8e72071e46e15fc072270ae39ea1b66b10a9d",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "symfony/phpunit-bridge": "~2.7"
             },
             "type": "library",
             "extra": {
@@ -1054,12 +1104,13 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-25 04:39:26"
+            "time": "2015-03-12 10:28:44"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "psr/http-message": 20,
         "fzaninotto/faker": 20,
         "pjdietz/shamserver": 20
     },

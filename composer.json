@@ -12,7 +12,8 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0"
+        "php": ">=5.3.0",
+        "psr/http-message": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "1.5.*@dev",
