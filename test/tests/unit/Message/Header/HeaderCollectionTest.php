@@ -1,6 +1,6 @@
 <?php
 
-namespace pjdietz\WellRESTed\Test\Message\Header;
+namespace WellRESTed\Test\Message\Header;
 
 use WellRESTed\Message\Header\HeaderCollection;
 
