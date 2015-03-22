@@ -2,7 +2,10 @@
 
 namespace WellRESTed\Message;
 
-class HeaderCollection implements \ArrayAccess
+use ArrayAccess;
+use Iterator;
+
+class HeaderCollection implements ArrayAccess, Iterator
 {
     /**
      * @var array
@@ -18,11 +21,24 @@ class HeaderCollection implements \ArrayAccess
      */
     private $values;
 
+    /**
+     * @var string[]
+     *
+     * List arrary of lowercase header names.
+     */
+    private $keys;
+
+    /** @var int */
+    private $position = 0;
+
     public function __construct()
     {
+        $this->keys = [];
         $this->fields = [];
         $this->values = [];
     }
+
+    // ArrayAccess -----------------------------------------------------------------------------------------------------
 
     /**
      * @param string $offset
@@ -49,7 +65,16 @@ class HeaderCollection implements \ArrayAccess
     public function offsetSet($offset, $value)
     {
         $normalized = strtolower($offset);
+
+        // Add the normalized key to the list of keys, if not already set.
+        if (!in_array($normalized, $this->keys)) {
+            $this->keys[] = $normalized;
+        }
+
+        // Add or update the preserved case key.
         $this->fields[$normalized] = $offset;
+
+        // Store the value.
         if (isset($this->values[$normalized])) {
             $this->values[$normalized][] = $value;
         } else {
@@ -65,5 +90,37 @@ class HeaderCollection implements \ArrayAccess
         $normalized = strtolower($offset);
         unset($this->fields[$normalized]);
         unset($this->values[$normalized]);
+        // Remove and renormalize the list of keys.
+        if (($key = array_search($normalized, $this->keys)) !== false) {
+            unset($this->keys[$key]);
+            $this->keys = array_values($this->keys);
+        }
+    }
+
+    // Iterator --------------------------------------------------------------------------------------------------------
+
+    public function current()
+    {
+        return $this->values[$this->keys[$this->position]];
+    }
+
+    public function next()
+    {
+        ++$this->position;
+    }
+
+    public function key()
+    {
+        return $this->fields[$this->keys[$this->position]];
+    }
+
+    public function valid()
+    {
+        return isset($this->keys[$this->position]);
+    }
+
+    public function rewind()
+    {
+        $this->position = 0;
     }
 }

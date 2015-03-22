@@ -88,4 +88,75 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(isset($collection["set-cookie"]));
         $this->assertFalse(isset($clone["set-cookie"]));
     }
+
+    /**
+     * @covers WellRESTed\Message\HeaderCollection::current
+     * @covers WellRESTed\Message\HeaderCollection::next
+     * @covers WellRESTed\Message\HeaderCollection::key
+     * @covers WellRESTed\Message\HeaderCollection::valid
+     * @covers WellRESTed\Message\HeaderCollection::rewind
+     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @uses WellRESTed\Message\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
+     */
+    public function testIteratesWithOriginalKeys()
+    {
+        $collection = new HeaderCollection();
+        $collection["Content-length"] = "100";
+        $collection["Set-Cookie"] = "cat=Molly";
+        $collection["Set-Cookie"] = "dog=Bear";
+        $collection["Content-type"] = "application/json";
+        unset($collection["Content-length"]);
+
+        $headers = [];
+
+        foreach ($collection as $key => $values) {
+            $headers[] = $key;
+        }
+
+        $expected = ["Content-type", "Set-Cookie"];
+        $this->assertEquals(0, count(array_diff($expected, $headers)));
+        $this->assertEquals(0, count(array_diff($headers, $expected)));
+    }
+
+    /**
+     * @covers WellRESTed\Message\HeaderCollection::current
+     * @covers WellRESTed\Message\HeaderCollection::next
+     * @covers WellRESTed\Message\HeaderCollection::key
+     * @covers WellRESTed\Message\HeaderCollection::valid
+     * @covers WellRESTed\Message\HeaderCollection::rewind
+     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @uses WellRESTed\Message\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
+     */
+    public function testIteratesWithOriginalKeysAndValues()
+    {
+        $collection = new HeaderCollection();
+        $collection["Content-length"] = "100";
+        $collection["Set-Cookie"] = "cat=Molly";
+        $collection["Set-Cookie"] = "dog=Bear";
+        $collection["Content-type"] = "application/json";
+        unset($collection["Content-length"]);
+
+        $headers = [];
+
+        foreach ($collection as $key => $values) {
+            foreach ($values as $value) {
+                if (isset($headers[$key])) {
+                    $headers[$key][] = $value;
+                } else {
+                    $headers[$key] = [$value];
+                }
+            }
+        }
+
+        $expected = [
+            "Set-Cookie" => ["cat=Molly", "dog=Bear"],
+            "Content-type" => ["application/json"]
+        ];
+
+        $this->assertEquals($expected, $headers);
+    }
 }
