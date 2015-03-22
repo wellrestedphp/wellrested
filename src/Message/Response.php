@@ -3,7 +3,6 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamableInterface;
 
 class Response extends Message implements ResponseInterface
 {
