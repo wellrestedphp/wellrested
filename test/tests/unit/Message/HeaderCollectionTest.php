@@ -1,13 +1,13 @@
 <?php
 
-namespace WellRESTed\Test\Message\Header;
+namespace WellRESTed\Test\Message;
 
-use WellRESTed\Message\Header\HeaderCollection;
+use WellRESTed\Message\HeaderCollection;
 
 class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::__construct
+     * @covers WellRESTed\Message\HeaderCollection::__construct
      */
     public function testCreatesInstance()
     {
@@ -16,10 +16,9 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetSet
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
-     * @uses WellRESTed\Message\Header\Header
+     * @covers WellRESTed\Message\HeaderCollection::offsetSet
+     * @covers WellRESTed\Message\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\HeaderCollection::__construct
      */
     public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
     {
@@ -29,10 +28,9 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetSet
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
-     * @uses WellRESTed\Message\Header\Header
+     * @covers WellRESTed\Message\HeaderCollection::offsetSet
+     * @covers WellRESTed\Message\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\HeaderCollection::__construct
      */
     public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset()
     {
@@ -43,10 +41,9 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetGet
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
-     * @uses WellRESTed\Message\Header\Header
+     * @covers WellRESTed\Message\HeaderCollection::offsetGet
+     * @uses WellRESTed\Message\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\HeaderCollection::__construct
      */
     public function testReturnsHeadersWithCaseInsensitiveHeaderName()
     {
@@ -55,16 +52,15 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $collection["SET-COOKIE"] = "dog=Bear";
 
         $headers = $collection["set-cookie"];
-        $this->assertContains("Set-Cookie: cat=Molly", $headers);
-        $this->assertContains("SET-COOKIE: dog=Bear", $headers);
+        $this->assertContains("cat=Molly", $headers);
+        $this->assertContains("dog=Bear", $headers);
     }
 
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::offsetUnset
-     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\Header\Header
+     * @covers WellRESTed\Message\HeaderCollection::offsetUnset
+     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @uses WellRESTed\Message\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\HeaderCollection::offsetExists
      */
     public function testRemovesHeadersWithCaseInsensitiveHeaderName()
     {
@@ -76,12 +72,10 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Header\HeaderCollection::__clone
-     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\Header\HeaderCollection::offsetUnset
-     * @uses WellRESTed\Message\Header\Header
+     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @uses WellRESTed\Message\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
      */
     public function testCloneMakesDeepCopyOfHeaders()
     {
