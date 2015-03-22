@@ -74,4 +74,24 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         unset($collection["set-cookie"]);
         $this->assertFalse(isset($collection["set-cookie"]));
     }
+
+    /**
+     * @covers WellRESTed\Message\Header\HeaderCollection::__clone
+     * @uses WellRESTed\Message\Header\HeaderCollection::__construct
+     * @uses WellRESTed\Message\Header\HeaderCollection::offsetSet
+     * @uses WellRESTed\Message\Header\HeaderCollection::offsetExists
+     * @uses WellRESTed\Message\Header\HeaderCollection::offsetUnset
+     * @uses WellRESTed\Message\Header\Header
+     */
+    public function testCloneMakesDeepCopyOfHeaders()
+    {
+        $collection = new HeaderCollection();
+        $collection["Set-Cookie"] = "cat=Molly";
+
+        $clone = clone $collection;
+        unset($clone["Set-Cookie"]);
+
+        $this->assertTrue(isset($collection["set-cookie"]));
+        $this->assertFalse(isset($clone["set-cookie"]));
+    }
 }
