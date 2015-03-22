@@ -19,7 +19,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
      * @uses WellRESTed\Message\Message::__construct
      * @uses WellRESTed\Message\HeaderCollection
      */
-    public function testReturnsProtocolVersion11ByDefault()
+    public function testReturnsProtocolVersion1Point1ByDefault()
     {
         $message = $this->getMockForAbstractClass("\\WellRESTed\\Message\\Message");
         $this->assertEquals("1.1", $message->getProtocolVersion());

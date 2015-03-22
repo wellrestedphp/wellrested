@@ -9,13 +9,17 @@ abstract class Message implements MessageInterface
 {
     /** @var StreamableInterface */
     private $body;
+    /** @var HeaderCollection */
     private $headers;
+    /** @var string */
     private $protcolVersion = "1.1";
 
     public function __construct()
     {
         $this->headers = new HeaderCollection();
     }
+
+    // Psr\Http\Message\MessageInterface -------------------------------------------------------------------------------
 
     /**
      * Retrieves the HTTP protocol version as a string.
