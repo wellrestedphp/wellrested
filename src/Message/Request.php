@@ -36,7 +36,7 @@ class Request extends Message implements RequestInterface
     {
         $headers = parent::getHeaders();
         // Add a host header, if none is present.
-        if (!$this->hasHeader("host")) {
+        if (!$this->hasHeader("host") && isset($this->uri)) {
             $headers["Host"] = [$this->uri->getHost()];
         }
         return $headers;
