@@ -292,6 +292,24 @@ class ServerRequest extends Request implements ServerRequestInterface
     // -------------------------------------------------------------------------
 
     /**
+     * Create a new instance based on the request sent to the server.
+     */
+    public function withServerRequest($options = null)
+    {
+        $request = clone $this;
+        self::updateWithServerRequest($request);
+        return $request;
+    }
+
+    public function __clone()
+    {
+        if (is_object($this->parsedBody)) {
+            $this->parsedBody = clone $this->parsedBody;
+        }
+        parent::__clone();
+    }
+
+    /**
      * Return a reference to the singleton instance of the Request derived
      * from the server's information about the request sent to the server.
      *
@@ -302,23 +320,46 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         if (!isset(self::$serverRequest)) {
             $request = new self();
-            $request->serverParams = $_SERVER;
-            $request->cookieParams = $_COOKIE;
-            $request->fileParams = $_FILES;
-            $request->queryParams = [];
-            if (isset($_SERVER["QUERY_STRING"])) {
-                parse_str($_SERVER["QUERY_STRING"], $request->queryParams);
-            }
+            self::updateWithServerRequest($request);
             self::$serverRequest = $request;
         }
         return self::$serverRequest;
     }
 
-    public function __clone()
+    private function updateWithServerRequest(&$request)
     {
-        if (is_object($this->parsedBody)) {
-            $this->parsedBody = clone $this->parsedBody;
+        $request->serverParams = $_SERVER;
+        $request->cookieParams = $_COOKIE;
+        $request->fileParams = $_FILES;
+        $request->queryParams = [];
+        if (isset($_SERVER["QUERY_STRING"])) {
+            parse_str($_SERVER["QUERY_STRING"], $request->queryParams);
         }
-        parent::__clone();
+        $headers = self::getServerRequestHeaders();
+        foreach ($headers as $key => $value) {
+            $request->headers[$key] = $value;
+        }
+    }
+
+    /**
+     * Read and return all request headers from the request issued to the server.
+     *
+     * @return array Associative array of headers
+     */
+    private static function getServerRequestHeaders()
+    {
+        // Prefer apache_request_headers is available.
+        if (function_exists("apache_request_headers")) {
+            return apache_request_headers();
+        }
+
+        // http://www.php.net/manual/en/function.getallheaders.php#84262
+        $headers = array();
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) === "HTTP_") {
+                $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
     }
 }
