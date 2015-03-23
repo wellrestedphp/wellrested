@@ -7,10 +7,10 @@ use Psr\Http\Message\StreamableInterface;
 
 abstract class Message implements MessageInterface
 {
+    /** @var HeaderCollection */
+    protected $headers;
     /** @var StreamableInterface */
     private $body;
-    /** @var HeaderCollection */
-    private $headers;
     /** @var string */
     private $protcolVersion = "1.1";
 
