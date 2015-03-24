@@ -14,7 +14,8 @@ class Request extends Message implements RequestInterface
     /** @var UriInterface */
     private $uri;
 
-    // Psr\Http\Message\RequestInterface -------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Psr\Http\Message\RequestInterface
 
     /**
      * Extends MessageInterface::getHeaders() to provide request-specific
@@ -209,6 +210,8 @@ class Request extends Message implements RequestInterface
         $request->uri = $uri;
         return $request;
     }
+
+    // ------------------------------------------------------------------------
 
     public function __clone()
     {

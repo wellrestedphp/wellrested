@@ -19,7 +19,8 @@ abstract class Message implements MessageInterface
         $this->headers = new HeaderCollection();
     }
 
-    // Psr\Http\Message\MessageInterface -------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Psr\Http\Message\MessageInterface
 
     /**
      * Retrieves the HTTP protocol version as a string.
@@ -240,7 +241,7 @@ abstract class Message implements MessageInterface
         return $message;
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     public function __clone()
     {

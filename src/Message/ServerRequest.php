@@ -32,7 +32,8 @@ class ServerRequest extends Request implements ServerRequestInterface
         $this->attributes = [];
     }
 
-    // Psr\Http\Message\ServerRequestInterface -------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Psr\Http\Message\ServerRequestInterface
 
     /**
      * Retrieve server parameters.
@@ -283,7 +284,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $request;
     }
 
-    // -------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     /**
      * Create a new instance based on the request sent to the server.

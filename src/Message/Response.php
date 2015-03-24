@@ -18,7 +18,8 @@ class Response extends Message implements ResponseInterface
     private $statusCode;
     /** @var string HTTP protocol and version */
 
-    // Psr\Http\Message\ResponseInterface ------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Psr\Http\Message\ResponseInterface
 
     /**
      * Gets the response Status-Code.

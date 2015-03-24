@@ -38,7 +38,8 @@ class HeaderCollection implements ArrayAccess, Iterator
         $this->values = [];
     }
 
-    // ArrayAccess -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // ArrayAccess
 
     /**
      * @param string $offset
@@ -97,7 +98,8 @@ class HeaderCollection implements ArrayAccess, Iterator
         }
     }
 
-    // Iterator --------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Iterator
 
     public function current()
     {
