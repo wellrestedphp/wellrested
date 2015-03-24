@@ -110,17 +110,16 @@ class Request extends Message implements RequestInterface
     public function getRequestTarget()
     {
         if (isset($this->requestTarget)) {
-            $target = $this->requestTarget;
+            return $this->requestTarget;
         } elseif (isset($this->uri)) {
             $target = $this->uri->getPath();
             $query = $this->uri->getQuery();
             if ($query) {
                 $target .= "?" . $query;
             }
-        } else {
-            $target = "/";
+            return $target;
         }
-        return $target;
+        return "/";
     }
 
     /**
