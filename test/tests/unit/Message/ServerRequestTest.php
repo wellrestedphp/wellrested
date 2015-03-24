@@ -47,9 +47,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                 "size" => 98174
             ]
         ];
-        $_POST = [
-            "dog" => "Bear"
-        ];
         $request = ServerRequest::getServerRequest();
         $this->assertNotNull($request);
     }
@@ -83,9 +80,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                 "error" => "UPLOAD_ERR_OK",
                 "size" => 98174
             ]
-        ];
-        $_POST = [
-            "dog" => "Bear"
         ];
         $request = new ServerRequest();
         $request = $request->withServerRequest();
@@ -191,63 +185,70 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getParsedBody
+     * @covers WellRESTed\Message\ServerRequest::updateWithServerRequest
+     * @uses WellRESTed\Message\ServerRequest::__construct
      * @uses WellRESTed\Message\ServerRequest::__clone
+     * @uses WellRESTed\Message\ServerRequest::withServerRequest
+     * @uses WellRESTed\Message\ServerRequest::updateWithServerRequest
+     * @uses WellRESTed\Message\ServerRequest::getServerRequestHeaders
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
      * @uses WellRESTed\Message\HeaderCollection
      * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @dataProvider formContentTypeProvider
      */
-    public function testGetParsedBodyReturnsFormFieldsForUrlencodedForm($request)
+    public function testGetParsedBodyReturnsFormFieldsForUrlencodedForm($contentType)
     {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_CONTENT_TYPE" => $contentType,
+        ];
+        $_COOKIE = [];
+        $_FILES = [];
         $_POST = [
             "dog" => "Bear"
         ];
-
-        /** @var ServerRequest $request */
-        $request = $request->withHeader("Content-type", "application/x-www-form-urlencoded");
+        $request = new ServerRequest();
+        $request = $request->withServerRequest();
         $this->assertEquals("Bear", $request->getParsedBody()["dog"]);
     }
 
-    /**
-     * @covers WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
-     */
-    public function testGetParsedBodyReturnsFormFieldsForMultipartForm($request)
+    public function formContentTypeProvider()
     {
-        $_POST = [
-            "dog" => "Bear"
+        return [
+            ["application/x-www-form-urlencoded"],
+            ["multipart/form-data"]
         ];
-
-        /** @var ServerRequest $request */
-        $request = $request->withHeader("Content-type", "multipart/form-data");
-        $this->assertEquals("Bear", $request->getParsedBody()["dog"]);
     }
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withParsedBody
      * @uses WellRESTed\Message\ServerRequest::getParsedBody
+     * @uses WellRESTed\Message\ServerRequest::__construct
      * @uses WellRESTed\Message\ServerRequest::__clone
+     * @uses WellRESTed\Message\ServerRequest::withServerRequest
+     * @uses WellRESTed\Message\ServerRequest::updateWithServerRequest
+     * @uses WellRESTed\Message\ServerRequest::getServerRequestHeaders
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
      * @uses WellRESTed\Message\HeaderCollection
      * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
      */
-    public function testWithParsedBodyCreatesNewInstance($request1)
+    public function testWithParsedBodyCreatesNewInstance()
     {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded",
+        ];
+        $_COOKIE = [];
+        $_FILES = [];
         $_POST = [
             "dog" => "Bear"
         ];
-
-        /** @var ServerRequest $request1 */
-        $request1 = $request1->withHeader("Content-type", "application/x-www-form-urlencoded");
+        $request1 = new ServerRequest();
+        $request1 = $request1->withServerRequest();
         $body1 = $request1->getParsedBody();
+
         $request2 = $request1->withParsedBody([
             "guinea_pig" => "Clyde"
         ]);
@@ -392,6 +393,4 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Molly", $attributes["cat"]);
         $this->assertEquals("Bear", $attributes["dog"]);
     }
-
-
 }

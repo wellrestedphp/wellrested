@@ -164,12 +164,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getParsedBody()
     {
-        if (!isset($this->parsedBody)) {
-            $contentType = $this->getHeader("Content-type");
-            if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
-                $this->parsedBody = $_POST;
-            }
-        }
         return $this->parsedBody;
     }
 
@@ -326,6 +320,10 @@ class ServerRequest extends Request implements ServerRequestInterface
         return self::$serverRequest;
     }
 
+    /**
+     * Set the members of the passed request based on the request sent to the server.
+     * @param self $request
+     */
     private function updateWithServerRequest(&$request)
     {
         $request->serverParams = $_SERVER;
@@ -338,6 +336,10 @@ class ServerRequest extends Request implements ServerRequestInterface
         $headers = self::getServerRequestHeaders();
         foreach ($headers as $key => $value) {
             $request->headers[$key] = $value;
+        }
+        $contentType = $request->getHeader("Content-type");
+        if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
+            $request->parsedBody = $_POST;
         }
     }
 
