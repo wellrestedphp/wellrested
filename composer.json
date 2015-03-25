@@ -23,6 +23,6 @@
     "autoload": {
         "psr-4": { "WellRESTed\\" : "src/" },
         "psr-0": { "pjdietz\\WellRESTed": "src/" },
-        "classmap": ["src/pjdietz/WellRESTed/Exceptions/HttpExceptions.php"]
+        "classmap": ["src/HttpExceptions.php"]
     }
 }

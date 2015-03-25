@@ -15,14 +15,14 @@
  * @license MIT
  */
 
-namespace pjdietz\WellRESTed\Exceptions\HttpExceptions;
+namespace WellRESTed\HttpExceptions;
 
-use pjdietz\WellRESTed\Exceptions\WellRESTedException;
+use Exception;
 
 /**
  * Base exception for HTTP-related errors. Also represents a 500 Internal Server error.
  */
-class HttpException extends WellRESTedException
+class HttpException extends Exception
 {
     /** @var int HTTP Status Code */
     protected $code = 500;
