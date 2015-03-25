@@ -286,16 +286,6 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // ------------------------------------------------------------------------
 
-    /**
-     * Create a new instance based on the request sent to the server.
-     */
-    public function withServerRequest($options = null)
-    {
-        $request = clone $this;
-        self::updateWithServerRequest($request);
-        return $request;
-    }
-
     public function __clone()
     {
         if (is_object($this->parsedBody)) {
@@ -311,22 +301,10 @@ class ServerRequest extends Request implements ServerRequestInterface
      * @return self
      * @static
      */
-    public static function getServerRequest()
+    public static function getServerRequest(array $attributes = null)
     {
-        if (!isset(self::$serverRequest)) {
-            $request = new self();
-            self::updateWithServerRequest($request);
-            self::$serverRequest = $request;
-        }
-        return self::$serverRequest;
-    }
-
-    /**
-     * Set the members of the passed request based on the request sent to the server.
-     * @param self $request
-     */
-    private function updateWithServerRequest(&$request)
-    {
+        $request = new self();
+        $request->attributes = $attributes ?: [];
         $request->serverParams = $_SERVER;
         $request->cookieParams = $_COOKIE;
         $request->fileParams = $_FILES;
@@ -342,6 +320,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
             $request->parsedBody = $_POST;
         }
+        return $request;
     }
 
     /**

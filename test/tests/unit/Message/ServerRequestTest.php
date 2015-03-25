@@ -19,7 +19,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getServerRequest
-     * @covers WellRESTed\Message\ServerRequest::updateWithServerRequest
      * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
      * @uses WellRESTed\Message\ServerRequest::__construct
      * @uses WellRESTed\Message\ServerRequest::__clone
@@ -33,6 +32,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $_SERVER = [
             "HTTP_HOST" => "localhost",
             "HTTP_ACCEPT" => "application/json",
+            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded",
             "QUERY_STRING" => "guinea_pig=Claude&hamster=Fizzgig"
         ];
         $_COOKIE = [
@@ -47,50 +47,17 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                 "size" => 98174
             ]
         ];
-        $request = ServerRequest::getServerRequest();
-        $this->assertNotNull($request);
-    }
-
-    /**
-     * @covers WellRESTed\Message\ServerRequest::withServerRequest
-     * @covers WellRESTed\Message\ServerRequest::updateWithServerRequest
-     * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
-     * @preserveGlobalState disabled
-     */
-    public function testWithServerRequestReadsFromRequest()
-    {
-        $_SERVER = [
-            "HTTP_HOST" => "localhost",
-            "HTTP_ACCEPT" => "application/json",
-            "QUERY_STRING" => "guinea_pig=Claude&hamster=Fizzgig"
+        $_POST = [
+           "dog" => "Bear"
         ];
-        $_COOKIE = [
-            "cat" => "Molly"
-        ];
-        $_FILES = [
-            "file" => [
-                "name" => "MyFile.jpg",
-                "type" => "image/jpeg",
-                "tmp_name" => "/tmp/php/php6hst32",
-                "error" => "UPLOAD_ERR_OK",
-                "size" => 98174
-            ]
-        ];
-        $request = new ServerRequest();
-        $request = $request->withServerRequest();
+        $request = ServerRequest::getServerRequest(["guinea_pig" => "Claude"]);
         $this->assertNotNull($request);
         return $request;
     }
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getServerParams
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesServerParams($request)
     {
@@ -100,8 +67,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getCookieParams
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesCookieParams($request)
     {
@@ -111,8 +77,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getQueryParams
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesQueryParams($request)
     {
@@ -122,8 +87,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getFileParams
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesFilesParams($request)
     {
@@ -132,12 +96,11 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getFileParams
+     * @covers WellRESTed\Message\ServerRequest::getHeader
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
      * @uses WellRESTed\Message\HeaderCollection
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesHeaders($request)
     {
@@ -146,13 +109,25 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers WellRESTed\Message\ServerRequest::getAttribute
+     * @uses WellRESTed\Message\Request
+     * @uses WellRESTed\Message\Message
+     * @uses WellRESTed\Message\HeaderCollection
+     * @depends testGetServerRequestReadsFromRequest
+     */
+    public function testServerRequestProvidesAttributesIfPassed($request)
+    {
+        /** @var ServerRequest $request */
+        $this->assertEquals("Claude", $request->getAttribute("guinea_pig"));
+    }
+
+    /**
      * @covers WellRESTed\Message\ServerRequest::withCookieParams
      * @uses WellRESTed\Message\ServerRequest::getCookieParams
      * @uses WellRESTed\Message\ServerRequest::__clone
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithCookieParamsCreatesNewInstance($request1)
     {
@@ -170,8 +145,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @uses WellRESTed\Message\ServerRequest::__clone
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
-     * @preserveGlobalState disabled
-     * @depends testWithServerRequestReadsFromRequest
+     * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithQueryParamsCreatesNewInstance($request1)
     {
@@ -184,12 +158,33 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers WellRESTed\Message\ServerRequest::withParsedBody
+     * @uses WellRESTed\Message\ServerRequest::getParsedBody
+     * @uses WellRESTed\Message\ServerRequest::getQueryParams
+     * @uses WellRESTed\Message\ServerRequest::__clone
+     * @uses WellRESTed\Message\Request
+     * @uses WellRESTed\Message\Message
+     * @depends testGetServerRequestReadsFromRequest
+     */
+    public function testWithParsedBodyCreatesNewInstance($request1)
+    {
+        /** @var ServerRequest $request1 */
+        $body1 = $request1->getParsedBody();
+
+        $request2 = $request1->withParsedBody([
+            "guinea_pig" => "Clyde"
+        ]);
+        $body2 = $request2->getParsedBody();
+
+        $this->assertEquals("Bear", $body1["dog"]);
+        $this->assertEquals("Clyde", $body2["guinea_pig"]);
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getServerRequest
      * @covers WellRESTed\Message\ServerRequest::getParsedBody
-     * @covers WellRESTed\Message\ServerRequest::updateWithServerRequest
      * @uses WellRESTed\Message\ServerRequest::__construct
      * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withServerRequest
-     * @uses WellRESTed\Message\ServerRequest::updateWithServerRequest
      * @uses WellRESTed\Message\ServerRequest::getServerRequestHeaders
      * @uses WellRESTed\Message\Request
      * @uses WellRESTed\Message\Message
@@ -197,7 +192,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @preserveGlobalState disabled
      * @dataProvider formContentTypeProvider
      */
-    public function testGetParsedBodyReturnsFormFieldsForUrlencodedForm($contentType)
+    public function testGetServerRequestParsesFormBody($contentType)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -208,8 +203,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $_POST = [
             "dog" => "Bear"
         ];
-        $request = new ServerRequest();
-        $request = $request->withServerRequest();
+        $request = ServerRequest::getServerRequest();
         $this->assertEquals("Bear", $request->getParsedBody()["dog"]);
     }
 
@@ -219,43 +213,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
             ["application/x-www-form-urlencoded"],
             ["multipart/form-data"]
         ];
-    }
-
-    /**
-     * @covers WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withServerRequest
-     * @uses WellRESTed\Message\ServerRequest::updateWithServerRequest
-     * @uses WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
-     * @preserveGlobalState disabled
-     */
-    public function testWithParsedBodyCreatesNewInstance()
-    {
-        $_SERVER = [
-            "HTTP_HOST" => "localhost",
-            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded",
-        ];
-        $_COOKIE = [];
-        $_FILES = [];
-        $_POST = [
-            "dog" => "Bear"
-        ];
-        $request1 = new ServerRequest();
-        $request1 = $request1->withServerRequest();
-        $body1 = $request1->getParsedBody();
-
-        $request2 = $request1->withParsedBody([
-            "guinea_pig" => "Clyde"
-        ]);
-        $body2 = $request2->getParsedBody();
-
-        $this->assertEquals("Bear", $body1["dog"]);
-        $this->assertEquals("Clyde", $body2["guinea_pig"]);
     }
 
     /**
