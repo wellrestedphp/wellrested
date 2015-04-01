@@ -10,9 +10,9 @@ abstract class Message implements MessageInterface
     /** @var HeaderCollection */
     protected $headers;
     /** @var StreamableInterface */
-    private $body;
+    protected $body;
     /** @var string */
-    private $protcolVersion = "1.1";
+    protected $protcolVersion = "1.1";
 
     public function __construct()
     {

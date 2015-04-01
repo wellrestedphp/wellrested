@@ -3,16 +3,11 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamableInterface;
+use WellRESTed\Stream\StreamStream;
 
 class ServerRequest extends Request implements ServerRequestInterface
 {
-    /**
-     * Singleton instance derived from reading the request sent to the server.
-     *
-     * @var self
-     * @static
-     */
-    static private $serverRequest;
     /** @var array */
     private $attributes;
     /** @var array */
@@ -294,6 +289,28 @@ class ServerRequest extends Request implements ServerRequestInterface
         parent::__clone();
     }
 
+    protected function readFromServerRequest(array $attributes = null)
+    {
+        $this->attributes = $attributes ?: [];
+        $this->serverParams = $_SERVER;
+        $this->cookieParams = $_COOKIE;
+        $this->fileParams = $_FILES;
+        $this->queryParams = [];
+        if (isset($_SERVER["QUERY_STRING"])) {
+            parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
+        }
+        $headers = $this->getServerRequestHeaders();
+        foreach ($headers as $key => $value) {
+            $this->headers[$key] = $value;
+        }
+        $this->body = $this->getStreamForBody();
+
+        $contentType = $this->getHeader("Content-type");
+        if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
+            $this->parsedBody = $_POST;
+        }
+    }
+
     /**
      * Return a reference to the singleton instance of the Request derived
      * from the server's information about the request sent to the server.
@@ -303,24 +320,21 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public static function getServerRequest(array $attributes = null)
     {
-        $request = new self();
-        $request->attributes = $attributes ?: [];
-        $request->serverParams = $_SERVER;
-        $request->cookieParams = $_COOKIE;
-        $request->fileParams = $_FILES;
-        $request->queryParams = [];
-        if (isset($_SERVER["QUERY_STRING"])) {
-            parse_str($_SERVER["QUERY_STRING"], $request->queryParams);
-        }
-        $headers = self::getServerRequestHeaders();
-        foreach ($headers as $key => $value) {
-            $request->headers[$key] = $value;
-        }
-        $contentType = $request->getHeader("Content-type");
-        if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
-            $request->parsedBody = $_POST;
-        }
+        $request = new static();
+        $request->readFromServerRequest($attributes);
         return $request;
+    }
+
+    /**
+     * Return a stream representing the request's body.
+     *
+     * Override this method to use a specific StreamableInterface implementation.
+     *
+     * @return StreamableInterface
+     */
+    protected function getStreamForBody()
+    {
+        return new StreamStream(fopen("php://input", "r"));
     }
 
     /**
@@ -328,7 +342,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @return array Associative array of headers
      */
-    private static function getServerRequestHeaders()
+    protected function getServerRequestHeaders()
     {
         // Prefer apache_request_headers is available.
         if (function_exists("apache_request_headers")) {

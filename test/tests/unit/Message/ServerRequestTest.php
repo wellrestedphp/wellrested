@@ -4,12 +4,17 @@ namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\ServerRequest;
 
+/**
+ * @uses WellRESTed\Message\ServerRequest
+ * @uses WellRESTed\Message\Request
+ * @uses WellRESTed\Message\Message
+ * @uses WellRESTed\Message\HeaderCollection
+ * @uses WellRESTed\Stream\StreamStream
+ */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @covers WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testCreatesInstance()
     {
@@ -20,11 +25,8 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\ServerRequest::getServerRequest
      * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
+     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @covers WellRESTed\Message\ServerRequest::getStreamForBody
      * @preserveGlobalState disabled
      */
     public function testGetServerRequestReadsFromRequest()
@@ -50,7 +52,8 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $_POST = [
            "dog" => "Bear"
         ];
-        $request = ServerRequest::getServerRequest(["guinea_pig" => "Claude"]);
+        $attributes = ["guinea_pig" => "Claude"];
+        $request = ServerRequest::getServerRequest($attributes);
         $this->assertNotNull($request);
         return $request;
     }
@@ -97,9 +100,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getHeader
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesHeaders($request)
@@ -108,11 +108,16 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("application/json", $request->getHeader("Accept"));
     }
 
+    public function testServerRequestProvidesBody()
+    {
+        $body = $this->prophesize('Psr\Http\Message\StreamableInterface');
+        MockServerRequestTest::$bodyStream = $body->reveal();
+        $request = MockServerRequestTest::getServerRequest();
+        $this->assertSame($body->reveal(), $request->getBody());
+    }
+
     /**
      * @covers WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesAttributesIfPassed($request)
@@ -123,10 +128,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withCookieParams
-     * @uses WellRESTed\Message\ServerRequest::getCookieParams
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithCookieParamsCreatesNewInstance($request1)
@@ -141,10 +142,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withQueryParams
-     * @uses WellRESTed\Message\ServerRequest::getQueryParams
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithQueryParamsCreatesNewInstance($request1)
@@ -159,11 +156,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getQueryParams
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithParsedBodyCreatesNewInstance($request1)
@@ -183,12 +175,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\ServerRequest::getServerRequest
      * @covers WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      * @preserveGlobalState disabled
      * @dataProvider formContentTypeProvider
      */
@@ -217,12 +203,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testCloneMakesDeepCopiesOfParsedBody()
     {
@@ -240,13 +220,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\ServerRequest::withAttribute
      * @covers WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testWithAttributeCreatesNewInstance()
     {
@@ -257,14 +230,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withAttribute
-     * @uses WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testWithAttributePreserversOtherAttributes()
     {
@@ -277,10 +242,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testGetAttributeReturnsDefaultIfNotSet()
     {
@@ -290,15 +251,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withoutAttribute
-     * @uses WellRESTed\Message\ServerRequest::withAttribute
-     * @uses WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testWithoutAttributeCreatesNewInstance()
     {
@@ -310,15 +262,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::withoutAttribute
-     * @uses WellRESTed\Message\ServerRequest::withAttribute
-     * @uses WellRESTed\Message\ServerRequest::getAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testWithoutAttributePreservesOtherAttributes()
     {
@@ -332,14 +275,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getAttributes
-     * @uses WellRESTed\Message\ServerRequest::withAttribute
-     * @uses WellRESTed\Message\ServerRequest::__construct
-     * @uses WellRESTed\Message\ServerRequest::__clone
-     * @uses WellRESTed\Message\ServerRequest::withParsedBody
-     * @uses WellRESTed\Message\ServerRequest::getParsedBody
-     * @uses WellRESTed\Message\Request
-     * @uses WellRESTed\Message\Message
-     * @uses WellRESTed\Message\HeaderCollection
      */
     public function testGetAttributesReturnsAllAttributes()
     {
@@ -349,5 +284,17 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $attributes = $request->getAttributes();
         $this->assertEquals("Molly", $attributes["cat"]);
         $this->assertEquals("Bear", $attributes["dog"]);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+class MockServerRequestTest extends ServerRequest
+{
+    public static $bodyStream;
+
+    protected function getStreamForBody()
+    {
+        return self::$bodyStream;
     }
 }
