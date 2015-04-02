@@ -6,7 +6,7 @@ use WellRESTed\Stream\StringStream;
 
 /**
  * @covers WellRESTed\Stream\StringStream
- * @uses WellRESTed\Stream\StreamStream
+ * @uses WellRESTed\Stream\Stream
  */
 class StringStreamTest extends \PHPUnit_Framework_TestCase
 {

@@ -9,7 +9,7 @@ use WellRESTed\Message\ServerRequest;
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
- * @uses WellRESTed\Stream\StreamStream
+ * @uses WellRESTed\Stream\Stream
  */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
 {

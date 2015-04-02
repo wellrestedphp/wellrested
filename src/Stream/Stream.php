@@ -4,7 +4,7 @@ namespace WellRESTed\Stream;
 
 use Psr\Http\Message\StreamableInterface;
 
-class StreamStream implements StreamableInterface
+class Stream implements StreamableInterface
 {
     /** @var resource */
     private $handle;

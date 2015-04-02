@@ -4,7 +4,7 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamableInterface;
-use WellRESTed\Stream\StreamStream;
+use WellRESTed\Stream\Stream;
 
 class ServerRequest extends Request implements ServerRequestInterface
 {
@@ -334,7 +334,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getStreamForBody()
     {
-        return new StreamStream(fopen("php://input", "r"));
+        return new Stream(fopen("php://input", "r"));
     }
 
     /**

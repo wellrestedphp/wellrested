@@ -2,7 +2,7 @@
 
 namespace WellRESTed\Stream;
 
-class StringStream extends StreamStream
+class StringStream extends Stream
 {
     public function __construct($string = "")
     {
