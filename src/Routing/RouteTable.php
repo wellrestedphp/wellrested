@@ -8,7 +8,7 @@ use WellRESTed\Routing\Route\PrefixRouteInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRouteInterface;
 
-class RouteTable implements MiddlewareInterface
+class RouteTable implements MiddlewareInterface, RouteTableInterface
 {
     /** @var RouteInterface[]  Array of Route objects */
     private $routes;
