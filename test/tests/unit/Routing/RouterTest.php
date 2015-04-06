@@ -9,6 +9,7 @@ use WellRESTed\Routing\Router;
 /**
  * @covers WellRESTed\Routing\Router
  * @uses WellRESTed\Routing\Dispatcher
+ * @uses WellRESTed\Routing\MethodMap
  * @uses WellRESTed\Routing\RouteTable
  * @uses WellRESTed\Routing\Route\RouteFactory
  * @uses WellRESTed\Routing\Route\RegexRoute
@@ -72,5 +73,17 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->dispatch($this->request->reveal(), $this->response->reveal());
 
         $statusMiddleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    public function testRegisterRouteWithMethodMap()
+    {
+        $this->request->getRequestTarget()->willReturn("/cats/");
+        $this->request->getMethod()->willReturn("GET");
+
+        $router = new Router();
+        $router->add("/cats/", ["GET" => $this->middleware->reveal()]);
+        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $this->middleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
 }

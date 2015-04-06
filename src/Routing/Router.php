@@ -43,6 +43,9 @@ class Router implements MiddlewareInterface
      */
     public function add($target, $middleware, $defaultPattern = null, $variablePatterns = null)
     {
+        if (is_array($middleware)) {
+            $middleware = $this->getMethodMap($middleware);
+        }
         $this->routeFactory->registerRoute($target, $middleware, $defaultPattern, $variablePatterns);
     }
 
@@ -65,5 +68,10 @@ class Router implements MiddlewareInterface
             $dispatcher = new Dispatcher();
             $dispatcher->dispatch($middleware, $request, $response);
         }
+    }
+
+    protected function getMethodMap(array $map)
+    {
+        return new MethodMap($map);
     }
 }
