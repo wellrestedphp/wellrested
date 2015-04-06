@@ -25,18 +25,16 @@ class TemplateRoute extends RegexRoute
      *
      * @param string $template URI template the path must match
      * @param mixed $target Handler to dispatch
-     * @param string $defaultPattern Regular expression for variables
-     * @param array $variablePatterns Map of variable names and partial regular expression
+     * @param string|array $variablePattern Regular expression for variables
      *
      * @see BaseRoute for details about $target
      */
     public function __construct(
         $template,
         $middleware,
-        $defaultPattern = self::RE_SLUG,
-        $variablePatterns = null
+        $variablePattern = self::RE_SLUG
     ) {
-        $pattern = $this->buildPattern($template, $defaultPattern, $variablePatterns);
+        $pattern = $this->buildPattern($template, $variablePattern);
         parent::__construct($pattern, $middleware);
     }
 
@@ -44,22 +42,21 @@ class TemplateRoute extends RegexRoute
      * Translate the URI template into a regular expression.
      *
      * @param string $template URI template the path must match
-     * @param string $defaultPattern Regular expression for variables
-     * @param array $variablePatterns Map of variable names and regular expression
+     * @param string|array $variablePattern Regular expression for variables
      * @return string
      */
-    private function buildPattern($template, $defaultPattern, $variablePatterns)
+    private function buildPattern($template, $variablePattern)
     {
-        // Ensure $variablePatterns is an array.
-        if (is_null($variablePatterns)) {
-            $variablePatterns = array();
-        } elseif (is_object($variablePatterns)) {
-            $variablePatterns = (array) $variablePatterns;
-        }
+        $defaultPattern = self::RE_SLUG;
+        $variablePatterns = [];
 
-        // Ensure a default is set.
-        if (!$defaultPattern) {
-            $defaultPattern = self::RE_SLUG;
+        if (is_string($variablePattern)) {
+            $defaultPattern = $variablePattern;
+        } elseif (is_array($variablePattern)) {
+            $variablePatterns = $variablePattern;
+            if (isset($variablePatterns["*"])) {
+                $defaultPattern = $variablePatterns["*"];
+            }
         }
 
         // Convert the template into the pattern

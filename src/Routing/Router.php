@@ -38,15 +38,14 @@ class Router implements MiddlewareInterface
      *
      * @param string $target Path, prefix, or pattern to match
      * @param mixed $middleware Middleware to dispatch
-     * @param $defaultPattern @see TemplateRoute
-     * @param $variablePatterns @see TemplateRoute
+     * @param mixed $extra
      */
-    public function add($target, $middleware, $defaultPattern = null, $variablePatterns = null)
+    public function add($target, $middleware, $extra = null)
     {
         if (is_array($middleware)) {
             $middleware = $this->getMethodMap($middleware);
         }
-        $this->routeFactory->registerRoute($target, $middleware, $defaultPattern, $variablePatterns);
+        $this->routeFactory->registerRoute($target, $middleware, $extra);
     }
 
     public function setStatusHandler($statusCode, $middleware)

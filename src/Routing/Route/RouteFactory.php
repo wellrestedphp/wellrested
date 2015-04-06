@@ -32,10 +32,9 @@ class RouteFactory
      *
      * @param string $target Path, prefix, or pattern to match
      * @param mixed $middleware Middleware to dispatch
-     * @param $defaultPattern @see TemplateRoute
-     * @param $variablePatterns @see TemplateRoute
+     * @param string|array $variablePattern @see TemplateRoute
      */
-    public function registerRoute($target, $middleware, $defaultPattern = null, $variablePatterns = null)
+    public function registerRoute($target, $middleware, $variablePattern = null)
     {
         if ($target[0] === "/") {
 
@@ -51,7 +50,7 @@ class RouteFactory
 
             // TempalateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
-                $route = new TemplateRoute($target, $middleware, $defaultPattern, $variablePatterns);
+                $route = new TemplateRoute($target, $middleware, $variablePattern);
                 $this->table->addRoute($route);
             }
 

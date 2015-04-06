@@ -26,18 +26,18 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider matchingTemplateProvider
      */
-    public function testMatchesTemplate($template, $default, $vars, $path)
+    public function testMatchesTemplate($template, $vars, $path)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $default, $vars);
+        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
         $this->assertTrue($route->matchesRequestTarget($path));
     }
 
     /**
      * @dataProvider matchingTemplateProvider
      */
-    public function testExtractsCaptures($template, $default, $vars, $path, $expectedCaptures)
+    public function testExtractsCaptures($template, $vars, $path, $expectedCaptures)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $default, $vars);
+        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
         $route->matchesRequestTarget($path, $captures);
         $this->assertEquals(0, count(array_diff_assoc($expectedCaptures, $captures)));
     }
@@ -45,11 +45,9 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     public function matchingTemplateProvider()
     {
         return [
-            ["/cat/{id}", TemplateRoute::RE_NUM, null, "/cat/12", ["id" => "12"]],
-            [
-                "/cat/{catId}/{dogId}",
+            ["/cat/{id}", TemplateRoute::RE_NUM, "/cat/12", ["id" => "12"]],
+            ["/cat/{catId}/{dogId}",
                 TemplateRoute::RE_SLUG,
-                null,
                 "/cat/molly/bear",
                 [
                     "catId" => "molly",
@@ -58,7 +56,6 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
             ],
             [
                 "/cat/{catId}/{dogId}",
-                TemplateRoute::RE_NUM,
                 [
                     "catId" => TemplateRoute::RE_SLUG,
                     "dogId" => TemplateRoute::RE_SLUG
@@ -69,24 +66,10 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
                     "dogId" => "bear"
                 ]
             ],
-            [
-                "/cat/{catId}/{dogId}",
-                TemplateRoute::RE_NUM,
-                (object) [
-                    "catId" => TemplateRoute::RE_SLUG,
-                    "dogId" => TemplateRoute::RE_SLUG
-                ],
-                "/cat/molly/bear",
-                [
-                    "catId" => "molly",
-                    "dogId" => "bear"
-                ]
-            ],
-            ["/cat/{id}/*", null, null, "/cat/12/molly", ["id" => "12"]],
+            ["/cat/{id}/*", null, "/cat/12/molly", ["id" => "12"]],
             [
                 "/cat/{id}-{width}x{height}.jpg",
                 TemplateRoute::RE_NUM,
-                null,
                 "/cat/17-200x100.jpg",
                 [
                     "id" => "17",
@@ -94,7 +77,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
                     "height" => "100"
                 ]
             ],
-            ["/cat/{path}", ".*", null, "/cat/this/section/has/slashes", ["path" => "this/section/has/slashes"]]
+            ["/cat/{path}", ".*", "/cat/this/section/has/slashes", ["path" => "this/section/has/slashes"]]
         ];
     }
 
@@ -141,26 +124,26 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider nonmatchingTemplateProvider
      */
-    public function testFailsToMatchNonmatchingTemplate($template, $default, $vars, $path)
+    public function testFailsToMatchNonmatchingTemplate($template, $vars, $path)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $default, $vars);
+        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
         $this->assertFalse($route->matchesRequestTarget($path, $captures));
     }
 
     public function nonmatchingTemplateProvider()
     {
-        return array(
-            array("/cat/{id}", TemplateRoute::RE_NUM, null, "/cat/molly"),
-            array("/cat/{catId}/{dogId}", TemplateRoute::RE_ALPHA, null, "/cat/12/13"),
-            array(
+        return [
+            ["/cat/{id}", TemplateRoute::RE_NUM, "/cat/molly"],
+            ["/cat/{catId}/{dogId}", TemplateRoute::RE_ALPHA, "/cat/12/13"],
+            [
                 "/cat/{catId}/{dogId}",
-                TemplateRoute::RE_NUM,
-                array(
+                [
+                    "*" => TemplateRoute::RE_NUM,
                     "catId" => TemplateRoute::RE_ALPHA,
                     "dogId" => TemplateRoute::RE_ALPHA
-                ),
+                ],
                 "/cat/12/13"
-            )
-        );
+            ]
+        ];
     }
 }
