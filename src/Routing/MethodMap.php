@@ -90,8 +90,10 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
     }
 
     /**
-     * Return an instance that can dispatch middleware. Uses Dispatcher by default.
+     * Return an instance that can dispatch middleware.
      * Override to provide a custom class.
+     *
+     * @return DispatcherInterface
      */
     protected function getDispatcher()
     {

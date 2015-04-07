@@ -5,13 +5,12 @@ namespace WellRESTed\Routing;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class Dispatcher
+class Dispatcher implements DispatcherInterface
 {
     /**
      * @param $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
-     * @return mixed
      */
     public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface &$response)
     {

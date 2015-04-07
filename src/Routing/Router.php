@@ -75,6 +75,8 @@ class Router implements MiddlewareInterface
     /**
      * Return an instance that can dispatch middleware.
      * Override to provide a custom class.
+     *
+     * @return DispatcherInterface
      */
     protected function getDispatcher()
     {
