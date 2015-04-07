@@ -28,29 +28,29 @@ class RouteFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testRegistersStaticRoute()
     {
-        $factory = new RouteFactory($this->routeTable->reveal());
-        $factory->registerRoute("/cats/", null);
+        $factory = new RouteFactory();
+        $factory->registerRoute($this->routeTable->reveal(), "/cats/", null);
         $this->routeTable->addStaticRoute(Argument::any())->shouldHaveBeenCalled();
     }
 
     public function testRegistersPrefixRoute()
     {
-        $factory = new RouteFactory($this->routeTable->reveal());
-        $factory->registerRoute("/cats/*", null);
+        $factory = new RouteFactory();
+        $factory->registerRoute($this->routeTable->reveal(), "/cats/*", null);
         $this->routeTable->addPrefixRoute(Argument::any())->shouldHaveBeenCalled();
     }
 
     public function testRegistersTemplateRoute()
     {
-        $factory = new RouteFactory($this->routeTable->reveal());
-        $factory->registerRoute("/cats/{catId}", null);
+        $factory = new RouteFactory();
+        $factory->registerRoute($this->routeTable->reveal(), "/cats/{catId}", null);
         $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\TemplateRoute"))->shouldHaveBeenCalled();
     }
 
     public function testRegistersRegexRoute()
     {
-        $factory = new RouteFactory($this->routeTable->reveal());
-        $factory->registerRoute("~/cat/[0-9]+~", null);
+        $factory = new RouteFactory();
+        $factory->registerRoute($this->routeTable->reveal(), "~/cat/[0-9]+~", null);
         $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\RegexRoute"))->shouldHaveBeenCalled();
         $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\TemplateRoute"))->shouldNotHaveBeenCalled();
     }

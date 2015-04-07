@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\HttpExceptions\HttpException;
 use WellRESTed\Routing\Route\RouteFactory;
+use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Stream\StringStream;
 
 class Router implements MiddlewareInterface
@@ -14,13 +15,13 @@ class Router implements MiddlewareInterface
     private $statusHandlers;
     /** @var RouteTable Collection of routes */
     private $routeTable;
-    /** @var RouteFactory */
+    /** @var RouteFactoryInterface */
     private $routeFactory;
 
     public function __construct()
     {
+        $this->routeFactory = $this->getRouteFactory();
         $this->routeTable = new RouteTable();
-        $this->routeFactory = new RouteFactory($this->routeTable);
         $this->statusHandlers = [];
     }
 
@@ -45,7 +46,7 @@ class Router implements MiddlewareInterface
         if (is_array($middleware)) {
             $middleware = $this->getMethodMap($middleware);
         }
-        $this->routeFactory->registerRoute($target, $middleware, $extra);
+        $this->routeFactory->registerRoute($this->routeTable, $target, $middleware, $extra);
     }
 
     public function setStatusHandler($statusCode, $middleware)
@@ -72,5 +73,13 @@ class Router implements MiddlewareInterface
     protected function getMethodMap(array $map)
     {
         return new MethodMap($map);
+    }
+
+    /**
+     * @return RouteFactoryInterface
+     */
+    protected function getRouteFactory()
+    {
+        return new RouteFactory();
     }
 }

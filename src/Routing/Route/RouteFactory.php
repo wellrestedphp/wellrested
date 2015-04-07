@@ -2,39 +2,28 @@
 
 namespace WellRESTed\Routing\Route;
 
-use ReflectionClass;
 use WellRESTed\Routing\RouteTableInterface;
 
 /**
  * Class for creating routes
  */
-class RouteFactory
+class RouteFactory implements RouteFactoryInterface
 {
-    /** @var RouteTableInterface */
-    private $table;
-
-    public function __construct(RouteTableInterface $table)
-    {
-        $this->table = $table;
-    }
-
     /**
-     * Create and return a route given a string path, a handler, and optional
-     * extra arguments.
-     *
      * The method will determine the most appropriate route subclass to use
      * and will forward the arguments on to the subclass's constructor.
      *
-     * - Paths with no special characters will generate StaticRoutes
-     * - Paths ending with * will generate PrefixRoutes
-     * - Paths containing URI variables (e.g., {id}) will generate TemplateRoutes
-     * - Regular exressions will generate RegexRoutes
+     * - Paths with no special characters will register StaticRoutes
+     * - Paths ending with * will register PrefixRoutes
+     * - Paths containing URI variables (e.g., {id}) will register TemplateRoutes
+     * - Regular exressions will register RegexRoutes
      *
+     * @param RouteTableInterface $routeTable Table to add the route to
      * @param string $target Path, prefix, or pattern to match
      * @param mixed $middleware Middleware to dispatch
-     * @param string|array $variablePattern @see TemplateRoute
+     * @param mixed $extra Additional options to pass to a route constructor
      */
-    public function registerRoute($target, $middleware, $variablePattern = null)
+    public function registerRoute(RouteTableInterface $routeTable, $target, $middleware, $extra = null)
     {
         if ($target[0] === "/") {
 
@@ -45,22 +34,22 @@ class RouteFactory
                 // Remove the trailing *, since the PrefixRoute constructor doesn't expect it.
                 $target = substr($target, 0, -1);
                 $route = new PrefixRoute($target, $middleware);
-                $this->table->addPrefixRoute($route);
+                $routeTable->addPrefixRoute($route);
             }
 
             // TempalateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
-                $route = new TemplateRoute($target, $middleware, $variablePattern);
-                $this->table->addRoute($route);
+                $route = new TemplateRoute($target, $middleware, $extra);
+                $routeTable->addRoute($route);
             }
 
             // StaticRoute
             $route = new StaticRoute($target, $middleware);
-            $this->table->addStaticRoute($route);
+            $routeTable->addStaticRoute($route);
         }
 
         // Regex
         $route = new RegexRoute($target, $middleware);
-        $this->table->addRoute($route);
+        $routeTable->addRoute($route);
     }
 }
