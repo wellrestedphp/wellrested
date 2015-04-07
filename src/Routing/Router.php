@@ -44,7 +44,9 @@ class Router implements MiddlewareInterface
     public function add($target, $middleware, $extra = null)
     {
         if (is_array($middleware)) {
-            $middleware = $this->getMethodMap($middleware);
+            $map = $this->getMethodMap();
+            $map->addMap($middleware);
+            $middleware = $map;
         }
         $this->routeFactory->registerRoute($this->routeTable, $target, $middleware, $extra);
     }
@@ -70,9 +72,12 @@ class Router implements MiddlewareInterface
         }
     }
 
-    protected function getMethodMap(array $map)
+    /**
+     * @return MethodMapInterface
+     */
+    protected function getMethodMap()
     {
-        return new MethodMap($map);
+        return new MethodMap();
     }
 
     /**

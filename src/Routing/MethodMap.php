@@ -5,20 +5,28 @@ namespace WellRESTed\Routing;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class MethodMap implements MiddlewareInterface
+class MethodMap implements MiddlewareInterface, MethodMapInterface
 {
     protected $map;
 
     /**
      * @param array $map
      */
-    public function __construct(array $map = null)
+    public function __construct($map = null)
     {
         $this->map = [];
         if ($map) {
-            foreach ($map as $method => $middleware) {
-                $this->add($method, $middleware);
-            }
+            $this->addMap($map);
+        }
+    }
+
+    /**
+     * @param array $map
+     */
+    public function addMap($map)
+    {
+        foreach ($map as $method => $middleware) {
+            $this->add($method, $middleware);
         }
     }
 
