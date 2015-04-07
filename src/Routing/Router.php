@@ -67,9 +67,18 @@ class Router implements MiddlewareInterface
         $statusCode = $response->getStatusCode();
         if (isset($this->statusHandlers[$statusCode])) {
             $middleware = $this->statusHandlers[$statusCode];
-            $dispatcher = new Dispatcher();
+            $dispatcher = $this->getDispatcher();
             $dispatcher->dispatch($middleware, $request, $response);
         }
+    }
+
+    /**
+     * Return an instance that can dispatch middleware.
+     * Override to provide a custom class.
+     */
+    protected function getDispatcher()
+    {
+        return new Dispatcher();
     }
 
     /**
