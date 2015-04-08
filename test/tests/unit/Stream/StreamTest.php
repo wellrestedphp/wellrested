@@ -108,10 +108,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * @covers WellRESTed\Stream\Stream::getSize
      * @uses WellRESTed\Stream\Stream
      */
-    public function testReturnsNullForSize()
+    public function testReturnsSize()
     {
         $stream = new Stream($this->handle);
-        $this->assertNull($stream->getSize());
+        $this->assertEquals(strlen($this->content), $stream->getSize());
     }
 
     /**

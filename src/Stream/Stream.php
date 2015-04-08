@@ -68,7 +68,8 @@ class Stream implements StreamableInterface
      */
     public function getSize()
     {
-        return null;
+        $statistics = fstat($this->handle);
+        return $statistics["size"] ?: null;
     }
 
     /**
