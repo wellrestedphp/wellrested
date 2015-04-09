@@ -285,6 +285,42 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Molly", $attributes["cat"]);
         $this->assertEquals("Bear", $attributes["dog"]);
     }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testReadsApacheRequestHeaders()
+    {
+        // This file adds a dummy apache_request_headers in the global namespace.
+        require_once(__DIR__ . "/../../../src/apache_request_headers.php");
+
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_ACCEPT" => "application/json",
+            "QUERY_STRING" => "guinea_pig=Claude&hamster=Fizzgig"
+        ];
+        $_COOKIE = [
+            "cat" => "Molly"
+        ];
+        $_FILES = [
+            "file" => [
+                "name" => "MyFile.jpg",
+                "type" => "image/jpeg",
+                "tmp_name" => "/tmp/php/php6hst32",
+                "error" => "UPLOAD_ERR_OK",
+                "size" => 98174
+            ]
+        ];
+        $_POST = [
+            "dog" => "Bear"
+        ];
+
+        $request = ServerRequest::getServerRequest();
+        $headers = $request->getHeaders();
+        $this->assertNotNull($headers);
+    }
 }
 
 // ----------------------------------------------------------------------------
