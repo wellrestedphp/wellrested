@@ -125,8 +125,6 @@ class Response extends Message implements ResponseInterface
             }
             if (isset($reasonPhraseLookup[$code])) {
                 $reasonPhrase = $reasonPhraseLookup[$code];
-            } else {
-                $reasonPhrase = "Unknown";
             }
         }
         $response->reasonPhrase = $reasonPhrase;
