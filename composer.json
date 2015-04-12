@@ -16,9 +16,7 @@
         "psr/http-message": "dev-master"
     },
     "require-dev": {
-        "fzaninotto/faker": "1.5.*@dev",
-        "phpunit/phpunit": "~4.5",
-        "pjdietz/shamserver": "dev-master"
+        "phpunit/phpunit": "~4.5"
     },
     "autoload": {
         "psr-4": { "WellRESTed\\" : "src/" },
