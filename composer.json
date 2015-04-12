@@ -12,15 +12,16 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "psr/http-message": "dev-master"
+        "php": ">=5.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.5"
     },
     "autoload": {
-        "psr-4": { "WellRESTed\\" : "src/" },
-        "psr-0": { "pjdietz\\WellRESTed": "src/" },
+        "psr-4": {
+            "WellRESTed\\" : "src/",
+            "Psr\\Http\\Message\\": "srcPsr/"
+        },
         "classmap": ["src/HttpExceptions.php"]
     }
 }
