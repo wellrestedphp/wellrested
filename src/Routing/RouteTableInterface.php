@@ -6,7 +6,7 @@ use WellRESTed\Routing\Route\PrefixRouteInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRouteInterface;
 
-interface RouteTableInterface
+interface RouteTableInterface extends MiddlewareInterface
 {
     public function addRoute(RouteInterface $route);
 

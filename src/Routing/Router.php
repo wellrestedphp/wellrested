@@ -5,6 +5,8 @@ namespace WellRESTed\Routing;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\HttpExceptions\HttpException;
+use WellRESTed\Message\Response;
+use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Stream\StringStream;
@@ -21,7 +23,7 @@ class Router implements MiddlewareInterface
     public function __construct()
     {
         $this->routeFactory = $this->getRouteFactory();
-        $this->routeTable = new RouteTable();
+        $this->routeTable = $this->getRouteTable();
         $this->statusHandlers = [];
     }
 
@@ -72,6 +74,21 @@ class Router implements MiddlewareInterface
         }
     }
 
+    public function respond()
+    {
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        $this->dispatch($request, $response);
+        $responder = $this->getResponder();
+        $responder->respond($response);
+    }
+
+    // ------------------------------------------------------------------------
+    // The following methods provide instaces the router will use. Override
+    // to provide custom classes or configured instances.
+
+    // @codeCoverageIgnoreStart
+
     /**
      * Return an instance that can dispatch middleware.
      * Override to provide a custom class.
@@ -92,10 +109,44 @@ class Router implements MiddlewareInterface
     }
 
     /**
+     * @return ServerRequestInterface
+     */
+    protected function getRequest()
+    {
+        return ServerRequest::getServerRequest();
+    }
+
+    /**
+     * @return ResponderInterface
+     */
+    protected function getResponder()
+    {
+        return new Responder();
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    protected function getResponse()
+    {
+        return new Response();
+    }
+
+    /**
      * @return RouteFactoryInterface
      */
     protected function getRouteFactory()
     {
         return new RouteFactory();
     }
+
+    /**
+     * @return RouteTableInterface
+     */
+    protected function getRouteTable()
+    {
+        return new RouteTable();
+    }
+
+    // @codeCoverageIgnoreEnd
 }

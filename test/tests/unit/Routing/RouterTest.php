@@ -22,9 +22,10 @@ use WellRESTed\Routing\Router;
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
     private $middleware;
+    private $request;
+    private $responder;
+    private $response;
 
     public function setUp()
     {
@@ -35,9 +36,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->response->getStatusCode()->willReturn(200);
         $this->middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
         $this->middleware->dispatch(Argument::cetera())->willReturn();
+        $this->responder = $this->prophesize("\\WellRESTed\\Routing\\ResponderInterface");
+        $this->responder->respond(Argument::any())->willReturn();
     }
 
-    public function testDispatchedRoute()
+    public function testDispatchesRoute()
     {
         $this->request->getRequestTarget()->willReturn("/cats/");
 
@@ -77,13 +80,60 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function testRegisterRouteWithMethodMap()
     {
-        $this->request->getRequestTarget()->willReturn("/cats/");
-        $this->request->getMethod()->willReturn("GET");
+        $router = new SettableRouter();
+        $methodMap = $this->prophesize('\WellRESTed\Routing\MethodMapInterface');
+        $router->methodMap = $methodMap->reveal();
 
-        $router = new Router();
         $router->add("/cats/", ["GET" => $this->middleware->reveal()]);
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+        $methodMap->addMap(["GET" => $this->middleware->reveal()])->shouldHaveBeenCalled();
+    }
+
+    public function testRespondDispatchesRequest()
+    {
+        $this->request->getRequestTarget()->willReturn("/cats/");
+
+        $router = new SettableRouter();
+        $router->request = $this->request->reveal();
+        $router->response = $this->response->reveal();
+        $router->responder = $this->responder->reveal();
+        $router->add("/cats/", $this->middleware->reveal());
+        $router->respond();
 
         $this->middleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
 }
+
+// ----------------------------------------------------------------------------
+
+/**
+ * Overrides the methods that return new instances to return public ivars for
+ * easy testing.
+ */
+class SettableRouter extends Router
+{
+    public $methodMap;
+    public $request;
+    public $response;
+    public $responder;
+
+    public function getMethodMap()
+    {
+        return $this->methodMap ?: parent::getMethodMap();
+    }
+
+    public function getRequest()
+    {
+        return $this->request ?: parent::getRequest();
+    }
+
+    public function getResponse()
+    {
+        return $this->response ?: parent::getResponse();
+    }
+
+    public function getResponder()
+    {
+        return $this->responder ?: parent::getResponder();
+    }
+}
+
