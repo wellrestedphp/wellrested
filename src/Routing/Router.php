@@ -9,7 +9,7 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
-use WellRESTed\Stream\StringStream;
+use WellRESTed\Stream\Stream;
 
 class Router implements MiddlewareInterface
 {
@@ -64,7 +64,7 @@ class Router implements MiddlewareInterface
             $this->routeTable->dispatch($request, $response);
         } catch (HttpException $e) {
             $response = $response->withStatus($e->getCode());
-            $response = $response->withBody(new StringStream($e->getMessage()));
+            $response = $response->withBody(new Stream($e->getMessage()));
         }
         $statusCode = $response->getStatusCode();
         if (isset($this->statusHandlers[$statusCode])) {

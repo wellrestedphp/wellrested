@@ -18,7 +18,6 @@ use WellRESTed\Routing\Router;
  * @uses WellRESTed\Routing\Route\StaticRoute
  * @uses WellRESTed\Routing\Route\Route
  * @uses WellRESTed\Stream\Stream
- * @uses WellRESTed\Stream\StringStream
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {

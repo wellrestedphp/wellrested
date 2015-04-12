@@ -7,15 +7,27 @@ use Psr\Http\Message\StreamableInterface;
 class Stream implements StreamableInterface
 {
     /** @var resource */
-    private $handle;
+    private $resource;
 
     /**
-     * @param resource $handle A file system pointer resource that is typically created using fopen().
+     * Create a new Stream passing either a stream resource handle (e.g.,
+     * from fopen) or a string.
+     *
+     * If $resource is a string, the Stream will open a php://temp stream,
+     * write the string to the stream, and use that temp resource.
+     *
+     * @param resource|string $resource A file system pointer resource or
+     *     string
      */
-    public function __construct($handle)
+    public function __construct($resource)
     {
-        if (is_resource($handle)) {
-            $this->handle = $handle;
+        if (is_resource($resource) && get_resource_type($resource) === "stream") {
+            $this->resource = $resource;
+        } elseif (is_string($resource)) {
+            $this->resource = fopen("php://temp", "r+");
+            if ($resource !== "") {
+                $this->write($resource);
+            }
         } else {
             throw new \InvalidArgumentException("Expected a resource handler.");
         }
@@ -33,7 +45,7 @@ class Stream implements StreamableInterface
      */
     public function __toString()
     {
-        rewind($this->handle);
+        rewind($this->resource);
         return $this->getContents();
     }
 
@@ -44,7 +56,7 @@ class Stream implements StreamableInterface
      */
     public function close()
     {
-        fclose($this->handle);
+        fclose($this->resource);
     }
 
     /**
@@ -56,8 +68,8 @@ class Stream implements StreamableInterface
      */
     public function detach()
     {
-        $stream = $this->handle;
-        $this->handle = null;
+        $stream = $this->resource;
+        $this->resource = null;
         return $stream;
     }
 
@@ -68,7 +80,7 @@ class Stream implements StreamableInterface
      */
     public function getSize()
     {
-        $statistics = fstat($this->handle);
+        $statistics = fstat($this->resource);
         return $statistics["size"] ?: null;
     }
 
@@ -79,7 +91,7 @@ class Stream implements StreamableInterface
      */
     public function tell()
     {
-        return ftell($this->handle);
+        return ftell($this->resource);
     }
 
     /**
@@ -89,7 +101,7 @@ class Stream implements StreamableInterface
      */
     public function eof()
     {
-        return feof($this->handle);
+        return feof($this->resource);
     }
 
     /**
@@ -116,7 +128,7 @@ class Stream implements StreamableInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        fseek($this->handle, $offset, $whence);
+        fseek($this->resource, $offset, $whence);
     }
 
     /**
@@ -132,7 +144,7 @@ class Stream implements StreamableInterface
      */
     public function rewind()
     {
-        rewind($this->handle);
+        rewind($this->resource);
     }
 
     /**
@@ -155,7 +167,7 @@ class Stream implements StreamableInterface
      */
     public function write($string)
     {
-        return fwrite($this->handle, $string);
+        return fwrite($this->resource, $string);
     }
 
     /**
@@ -180,7 +192,7 @@ class Stream implements StreamableInterface
      */
     public function read($length)
     {
-        return fread($this->handle, $length);
+        return fread($this->resource, $length);
     }
 
     /**
@@ -190,7 +202,7 @@ class Stream implements StreamableInterface
      */
     public function getContents()
     {
-        return stream_get_contents($this->handle);
+        return stream_get_contents($this->resource);
     }
 
     /**
@@ -207,7 +219,7 @@ class Stream implements StreamableInterface
      */
     public function getMetadata($key = null)
     {
-        $metadata = stream_get_meta_data($this->handle);
+        $metadata = stream_get_meta_data($this->resource);
         if ($key === null) {
             return $metadata;
         } else {
