@@ -110,6 +110,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         });
 
         $responder = new Responder();
+        $responder->setChunkSize($chunkSize);
 
         ob_start();
         $responder->respond($this->response->reveal(), $chunkSize);

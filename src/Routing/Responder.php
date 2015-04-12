@@ -5,9 +5,16 @@ namespace WellRESTed\Routing;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamableInterface;
 
-class Responder
+class Responder implements ResponderInterface
 {
-    public function respond(ResponseInterface $response, $chunkSize = 0)
+    private $chunkSize = 0;
+
+    /**
+     * Outputs a response.
+     *
+     * @param ResponseInterface $response Response to output
+     */
+    public function respond(ResponseInterface $response)
     {
         // Status Line
         header($this->getStatusLine($response));
@@ -22,8 +29,16 @@ class Responder
         // Body
         $body = $response->getBody();
         if ($body->isReadable()) {
-            $this->outputBody($response->getBody(), $chunkSize);
+            $this->outputBody($response->getBody());
         }
+    }
+
+    /**
+     * @param int $chunkSize
+     */
+    public function setChunkSize($chunkSize)
+    {
+        $this->chunkSize = $chunkSize;
     }
 
     private function getStatusLine(ResponseInterface $response)
@@ -38,12 +53,12 @@ class Responder
         }
     }
 
-    private function outputBody(StreamableInterface $body, $chunkSize)
+    private function outputBody(StreamableInterface $body)
     {
-        if ($chunkSize > 0) {
+        if ($this->chunkSize > 0) {
             $body->rewind();
             while (!$body->eof()) {
-                print $body->read($chunkSize);
+                print $body->read($this->chunkSize);
             }
         } else {
             print (string) $body;
