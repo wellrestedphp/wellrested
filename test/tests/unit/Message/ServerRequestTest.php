@@ -321,6 +321,84 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $headers = $request->getHeaders();
         $this->assertNotNull($headers);
     }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @preserveGlobalState disabled
+     * @dataProvider protocolVersionProvider
+     */
+    public function testReadsProtocolVersionFromFromRequest($expectedProtocol, $serverProtocol)
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "SERVER_PROTOCOL" => $serverProtocol,
+            "REQUEST_METHOD" => "GET"
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($expectedProtocol, $request->getProtocolVersion());
+    }
+
+    public function protocolVersionProvider()
+    {
+        return [
+            ["1.1", "HTTP/1.1"],
+            ["1.0", "HTTP/1.0"],
+            ["1.1", null],
+            ["1.1", "INVALID"]
+        ];
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @preserveGlobalState disabled
+     * @dataProvider methodProvider
+     */
+    public function testReadsMethodFromFromRequest($exectedMethod, $serverMethod)
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "REQUEST_METHOD" => $serverMethod
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($exectedMethod, $request->getMethod());
+    }
+
+    public function methodProvider()
+    {
+        return [
+            ["GET", "GET"],
+            ["POST", "POST"],
+            ["DELETE", "DELETE"],
+            ["PUT", "PUT"],
+            ["OPTIONS", "OPTIONS"],
+            ["GET", null]
+        ];
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @preserveGlobalState disabled
+     * @dataProvider requestTargetProvider
+     */
+    public function testReadsRequestTargetFromServer($exectedRequestTarget, $serverRequestUri)
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "REQUEST_URI" => $serverRequestUri
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($exectedRequestTarget, $request->getRequestTarget());
+    }
+
+    public function requestTargetProvider()
+    {
+        return [
+            ["/", "/"],
+            ["/hello", "/hello"],
+            ["/my/path.txt", "/my/path.txt"],
+            ["/", null]
+        ];
+    }
 }
 
 // ----------------------------------------------------------------------------

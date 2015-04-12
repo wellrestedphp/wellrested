@@ -299,6 +299,16 @@ class ServerRequest extends Request implements ServerRequestInterface
         if (isset($_SERVER["QUERY_STRING"])) {
             parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
         }
+        if (isset($_SERVER["SERVER_PROTOCOL"]) && $_SERVER["SERVER_PROTOCOL"] === "HTTP/1.0") {
+            // The default is 1.1, so only update if 1.0
+            $this->protcolVersion = "1.0";
+        }
+        if (isset($_SERVER["REQUEST_METHOD"])) {
+            $this->method = $_SERVER["REQUEST_METHOD"];
+        }
+        if (isset($_SERVER["REQUEST_URI"])) {
+            $this->requestTarget = $_SERVER["REQUEST_URI"];
+        }
         $headers = $this->getServerRequestHeaders();
         foreach ($headers as $key => $value) {
             $this->headers[$key] = $value;

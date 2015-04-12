@@ -8,11 +8,11 @@ use Psr\Http\Message\UriInterface;
 class Request extends Message implements RequestInterface
 {
     /** @var string  */
-    private $method = "GET";
+    protected $method = "GET";
     /** @var string */
-    private $requestTarget;
+    protected $requestTarget;
     /** @var UriInterface */
-    private $uri;
+    protected $uri;
 
     // ------------------------------------------------------------------------
     // Psr\Http\Message\RequestInterface
