@@ -105,7 +105,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     public function testServerRequestProvidesHeaders($request)
     {
         /** @var ServerRequest $request */
-        $this->assertEquals("application/json", $request->getHeader("Accept"));
+        $this->assertEquals(["application/json"], $request->getHeader("Accept"));
     }
 
     public function testServerRequestProvidesBody()

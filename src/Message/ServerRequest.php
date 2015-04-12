@@ -316,7 +316,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         $this->body = $this->getStreamForBody();
 
         $contentType = $this->getHeader("Content-type");
-        if ($contentType === "application/x-www-form-urlencoded" || $contentType === "multipart/form-data") {
+        if ($contentType === ["application/x-www-form-urlencoded"] || $contentType === ["multipart/form-data"]) {
             $this->parsedBody = $_POST;
         }
     }

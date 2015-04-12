@@ -4,14 +4,16 @@ namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\Response;
 
+/**
+ * @uses WellRESTed\Message\Response
+ * @uses WellRESTed\Message\Message
+ * @uses WellRESTed\Message\HeaderCollection
+ */
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @covers WellRESTed\Message\Response::withStatus
      * @covers WellRESTed\Message\Response::getStatusCode
-     * @uses   WellRESTed\Message\Response::__clone
-     * @uses   WellRESTed\Message\Message
-     * @uses   WellRESTed\Message\HeaderCollection
      */
     public function testCreatesNewInstanceWithStatusCode()
     {
@@ -23,9 +25,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\Response::withStatus
      * @covers WellRESTed\Message\Response::getReasonPhrase
-     * @uses   WellRESTed\Message\Response::__clone
-     * @uses   WellRESTed\Message\Message
-     * @uses   WellRESTed\Message\HeaderCollection
      * @dataProvider statusProvider
      */
     public function testCreatesNewInstanceWithReasonPhrase($code, $reasonPhrase, $expected)
@@ -83,9 +82,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\Response::withStatus
      * @covers WellRESTed\Message\Response::getStatusCode
-     * @uses   WellRESTed\Message\Response::__clone
-     * @uses   WellRESTed\Message\Message
-     * @uses   WellRESTed\Message\HeaderCollection
      */
     public function testWithStatusCodePreservesOriginalResponse()
     {
@@ -96,11 +92,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response2 = $response1->withStatus(404);
         $response2 = $response2->withHeader("Content-type", "text/plain");
 
-
         $this->assertEquals(200, $response1->getStatusCode());
-        $this->assertEquals("application/json", $response1->getHeader("Content-type"));
+        $this->assertEquals(["application/json"], $response1->getHeader("Content-type"));
 
         $this->assertEquals(404, $response2->getStatusCode());
-        $this->assertEquals("text/plain", $response2->getHeader("Content-type"));
+        $this->assertEquals(["text/plain"], $response2->getHeader("Content-type"));
     }
 }
