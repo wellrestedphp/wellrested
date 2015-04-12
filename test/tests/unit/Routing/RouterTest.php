@@ -21,6 +21,7 @@ use WellRESTed\Routing\Router;
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
+    private $dispatcher;
     private $middleware;
     private $request;
     private $responder;
@@ -28,6 +29,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $this->dispatcher = $this->prophesize('\WellRESTed\Routing\DispatcherInterface');
+        $this->dispatcher->dispatch(Argument::any())->willReturn();
         $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
         $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
@@ -48,6 +51,36 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->dispatch($this->request->reveal(), $this->response->reveal());
 
         $this->middleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    public function testDispatchesPreRouteHooks()
+    {
+        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
+        $hook->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/");
+
+        $router = new Router();
+        $router->addPreRouteHook($hook->reveal());
+        $router->add("/cats/", $this->middleware->reveal());
+        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    public function testDispatchesPostRouteHooks()
+    {
+        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
+        $hook->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/");
+
+        $router = new Router();
+        $router->addPostRouteHook($hook->reveal());
+        $router->add("/cats/", $this->middleware->reveal());
+        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
 
     public function testRespondsWithErrorResponseForHttpException()
@@ -110,10 +143,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
  */
 class SettableRouter extends Router
 {
+    public $dispatcher;
     public $methodMap;
     public $request;
     public $response;
     public $responder;
+
+    public function getDispatcher()
+    {
+        return $this->dispatcher;
+    }
 
     public function getMethodMap()
     {

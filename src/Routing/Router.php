@@ -13,6 +13,12 @@ use WellRESTed\Stream\Stream;
 
 class Router implements MiddlewareInterface
 {
+    /** @var DispatcherInterface  */
+    protected $dispatcher;
+    /** @var array Middleware to dispatch before the router evaluates the route. */
+    private $preRouteHooks;
+    /** @var array Middleware to dispatch after the router dispatches all other middleware */
+    private $postRouteHooks;
     /** @var array  Hash array of status code => error handler */
     private $statusHandlers;
     /** @var RouteTable Collection of routes */
@@ -20,12 +26,16 @@ class Router implements MiddlewareInterface
     /** @var RouteFactoryInterface */
     private $routeFactory;
 
+    // ------------------------------------------------------------------------
+
     public function __construct()
     {
         $this->routeFactory = $this->getRouteFactory();
         $this->routeTable = $this->getRouteTable();
         $this->statusHandlers = [];
     }
+
+    // ------------------------------------------------------------------------
 
     /**
      * Create and return a route given a string path, a handler, and optional
@@ -53,6 +63,22 @@ class Router implements MiddlewareInterface
         $this->routeFactory->registerRoute($this->routeTable, $target, $middleware, $extra);
     }
 
+    public function addPreRouteHook($middleware)
+    {
+        if (!isset($this->preRouteHooks)) {
+            $this->preRouteHooks = [];
+        }
+        $this->preRouteHooks[] = $middleware;
+    }
+
+    public function addPostRouteHook($middleware)
+    {
+        if (!isset($this->postRouteHooks)) {
+            $this->postRouteHooks = [];
+        }
+        $this->postRouteHooks[] = $middleware;
+    }
+
     public function setStatusHandler($statusCode, $middleware)
     {
         $this->statusHandlers[$statusCode] = $middleware;
@@ -60,6 +86,7 @@ class Router implements MiddlewareInterface
 
     public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
     {
+        $this->disptachPreRouteHooks($request, $response);
         try {
             $this->routeTable->dispatch($request, $response);
         } catch (HttpException $e) {
@@ -72,6 +99,7 @@ class Router implements MiddlewareInterface
             $dispatcher = $this->getDispatcher();
             $dispatcher->dispatch($middleware, $request, $response);
         }
+        $this->disptachPostRouteHooks($request, $response);
     }
 
     public function respond()
@@ -97,7 +125,10 @@ class Router implements MiddlewareInterface
      */
     protected function getDispatcher()
     {
-        return new Dispatcher();
+        if (!isset($this->dispatcher)) {
+            $this->dispatcher = new Dispatcher();
+        }
+        return $this->dispatcher;
     }
 
     /**
@@ -149,4 +180,26 @@ class Router implements MiddlewareInterface
     }
 
     // @codeCoverageIgnoreEnd
+
+    // ------------------------------------------------------------------------
+
+    private function disptachPreRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    {
+        if ($this->preRouteHooks) {
+            $dispatcher = $this->getDispatcher();
+            foreach ($this->preRouteHooks as $hook) {
+                $dispatcher->dispatch($hook, $request, $response);
+            }
+        }
+    }
+
+    private function disptachPostRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    {
+        if ($this->postRouteHooks) {
+            $dispatcher = $this->getDispatcher();
+            foreach ($this->postRouteHooks as $hook) {
+                $dispatcher->dispatch($hook, $request, $response);
+            }
+        }
+    }
 }
