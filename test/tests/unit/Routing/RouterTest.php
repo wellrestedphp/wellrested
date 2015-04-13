@@ -48,7 +48,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
         $router->add("/cats/", $this->middleware->reveal());
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $router->dispatch($request, $response);
 
         $this->middleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -63,7 +66,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router = new Router();
         $router->addPreRouteHook($hook->reveal());
         $router->add("/cats/", $this->middleware->reveal());
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $router->dispatch($request, $response);
 
         $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -78,7 +84,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router = new Router();
         $router->addPostRouteHook($hook->reveal());
         $router->add("/cats/", $this->middleware->reveal());
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $router->dispatch($request, $response);
 
         $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -90,7 +99,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
         $router->add("/cats/", $this->middleware->reveal());
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $router->dispatch($request, $response);
 
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
@@ -105,7 +117,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router = new Router();
         $router->add("/cats/", $this->middleware->reveal());
         $router->setStatusHandler(403, $statusMiddleware->reveal());
-        $router->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $router->dispatch($request, $response);
 
         $statusMiddleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }

@@ -28,7 +28,9 @@ class RouteTest extends \PHPUnit_Framework_TestCase
             $response = $response->withStatus(200);
         };
         $route = new StaticRoute("/", $middleware);
-        $route->dispatch($this->request->reveal(), $this->response->reveal());
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $route->dispatch($request, $response);
         $this->response->withStatus(200)->shouldHaveBeenCalled();
     }
 }

@@ -27,9 +27,11 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
 
         $table = new RouteTable();
         $table->addStaticRoute($route->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
 
-        $route->dispatch($this->request->reveal(),  $this->response->reveal())->shouldHaveBeenCalled();
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
+        $route->dispatch($request, $response)->shouldHaveBeenCalled();
     }
 
     public function testMatchesPrefixRoute()
@@ -42,9 +44,11 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
 
         $table = new RouteTable();
         $table->addPrefixRoute($route->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
 
-        $route->dispatch($this->request->reveal(),  $this->response->reveal())->shouldHaveBeenCalled();
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
+        $route->dispatch($request, $response)->shouldHaveBeenCalled();
     }
 
     public function testMatchesBestPrefixRoute()
@@ -62,7 +66,10 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
         $table = new RouteTable();
         $table->addPrefixRoute($route1->reveal());
         $table->addPrefixRoute($route2->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
 
         $route1->dispatch(Argument::cetera())->shouldNotHaveBeenCalled();
         $route2->dispatch(Argument::cetera())->shouldHaveBeenCalled();
@@ -83,7 +90,10 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
         $table = new RouteTable();
         $table->addPrefixRoute($route1->reveal());
         $table->addStaticRoute($route2->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
 
         $route1->dispatch(Argument::cetera())->shouldNotHaveBeenCalled();
         $route2->dispatch(Argument::cetera())->shouldHaveBeenCalled();
@@ -103,7 +113,10 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
         $table = new RouteTable();
         $table->addPrefixRoute($route1->reveal());
         $table->addRoute($route2->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
 
         $route1->dispatch(Argument::cetera())->shouldHaveBeenCalled();
         $route2->dispatch(Argument::cetera())->shouldNotHaveBeenCalled();
@@ -128,7 +141,10 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
 
         $table = new RouteTable();
         $table->addRoute($route);
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
 
         $this->request->withAttribute("id", "molly")->shouldHaveBeenCalled();
     }
@@ -151,7 +167,10 @@ class RouteTableTest extends \PHPUnit_Framework_TestCase
         $table->addRoute($route1->reveal());
         $table->addRoute($route2->reveal());
         $table->addRoute($route3->reveal());
-        $table->dispatch($this->request->reveal(), $this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $table->dispatch($request, $response);
 
         $route1->dispatch(Argument::cetera())->shouldNotHaveBeenCalled();
         $route2->dispatch(Argument::cetera())->shouldHaveBeenCalled();
