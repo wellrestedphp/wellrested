@@ -5,7 +5,6 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\An;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use WellRESTed\Stream\Stream;
 
 class ServerRequest extends Request implements ServerRequestInterface
 {

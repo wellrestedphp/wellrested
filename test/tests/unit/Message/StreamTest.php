@@ -1,11 +1,11 @@
 <?php
 
-namespace WellRESTed\Test\Stream;
+namespace WellRESTed\Test\Message;
 
-use WellRESTed\Stream\Stream;
+use WellRESTed\Message\Stream;
 
 /**
- * @uses WellRESTed\Stream\Stream
+ * @uses WellRESTed\Message\Stream
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -26,28 +26,28 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::__construct()
+     * @covers WellRESTed\Message\Stream::__construct()
      */
     public function testCreatesInstanceWithStreamResource()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $this->assertNotNull($stream);
     }
 
     public function testCreatesInstanceWithString()
     {
-        $stream = new Stream("Hello, world!");
+        $stream = new \WellRESTed\Message\Stream("Hello, world!");
         $this->assertNotNull($stream);
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::__construct()
+     * @covers WellRESTed\Message\Stream::__construct()
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidResourceProvider
      */
     public function testThrowsExceptiondWithInvalidResource($resource)
     {
-        new Stream($resource);
+        new \WellRESTed\Message\Stream($resource);
     }
 
     public function invalidResourceProvider()
@@ -61,16 +61,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::__toString()
+     * @covers WellRESTed\Message\Stream::__toString()
      */
     public function testCastsToString()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $this->assertEquals($this->content, (string) $stream);
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::close()
+     * @covers WellRESTed\Message\Stream::close()
      */
     public function testClosesHandle()
     {
@@ -80,7 +80,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::detach()
+     * @covers WellRESTed\Message\Stream::detach()
      */
     public function testDetachReturnsHandle()
     {
@@ -89,36 +89,36 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::detach()
+     * @covers WellRESTed\Message\Stream::detach()
      */
     public function testDetachUnsetsInstanceVariable()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $stream->detach();
         $this->assertNull($stream->detach());
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::getSize
+     * @covers WellRESTed\Message\Stream::getSize
      */
     public function testReturnsSize()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $this->assertEquals(strlen($this->content), $stream->getSize());
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::tell
+     * @covers WellRESTed\Message\Stream::tell
      */
     public function testTellReturnsHandlePosition()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         fseek($this->resource, 10);
         $this->assertEquals(10, $stream->tell());
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::eof
+     * @covers WellRESTed\Message\Stream::eof
      */
     public function testReturnsOef()
     {
@@ -130,28 +130,28 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::isSeekable
+     * @covers WellRESTed\Message\Stream::isSeekable
      */
     public function testReadsSeekableStatusFromMetadata()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $metadata = stream_get_meta_data($this->resource);
         $seekable = $metadata["seekable"] == 1;
         $this->assertEquals($seekable, $stream->isSeekable());
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::seek
+     * @covers WellRESTed\Message\Stream::seek
      */
     public function testSeeksToPosition()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $stream->seek(10);
         $this->assertEquals(10, ftell($this->resource));
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::rewind
+     * @covers WellRESTed\Message\Stream::rewind
      */
     public function testRewindReturnsToBeginning()
     {
@@ -162,29 +162,29 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::write
+     * @covers WellRESTed\Message\Stream::write
      */
     public function testWritesToHandle()
     {
         $message = "\nThis is a stream.";
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $stream->write($message);
         $this->assertEquals($this->content . $message, (string) $stream);
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::read
+     * @covers WellRESTed\Message\Stream::read
      */
     public function testReadsFromStream()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $stream->seek(7);
         $string = $stream->read(5);
         $this->assertEquals("world", $string);
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::getContents
+     * @covers WellRESTed\Message\Stream::getContents
      */
     public function testReadsToEnd()
     {
@@ -195,16 +195,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::getMetadata
+     * @covers WellRESTed\Message\Stream::getMetadata
      */
     public function testReturnsMetadataArray()
     {
-        $stream = new Stream($this->resource);
+        $stream = new \WellRESTed\Message\Stream($this->resource);
         $this->assertEquals(stream_get_meta_data($this->resource), $stream->getMetadata());
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::getMetadata
+     * @covers WellRESTed\Message\Stream::getMetadata
      */
     public function testReturnsMetadataItem()
     {
@@ -214,7 +214,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::isReadable
+     * @covers WellRESTed\Message\Stream::isReadable
      * @dataProvider modeProvider
      */
     public function testReturnsIsReadableForReadableStreams($mode, $readable, $writeable)
@@ -229,7 +229,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\Stream::isWritable
+     * @covers WellRESTed\Message\Stream::isWritable
      * @dataProvider modeProvider
      */
     public function testReturnsIsWritableForWritableStreams($mode, $readable, $writeable)
@@ -239,7 +239,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
             unlink($tmp);
         }
         $resource = fopen($tmp, $mode);
-        $stream = new Stream($resource);
+        $stream = new \WellRESTed\Message\Stream($resource);
         $this->assertEquals($writeable, $stream->isWritable());
     }
 

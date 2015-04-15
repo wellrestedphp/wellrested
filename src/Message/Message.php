@@ -4,7 +4,6 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use WellRESTed\Stream\NullStream;
 
 abstract class Message implements MessageInterface
 {

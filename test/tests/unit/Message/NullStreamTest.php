@@ -1,13 +1,13 @@
 <?php
 
-namespace WellRESTed\Test\Stream;
+namespace WellRESTed\Test\Message;
 
-use WellRESTed\Stream\NullStream;
+use WellRESTed\Message\NullStream;
 
 class NullStreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers WellRESTed\Stream\NullStream::__toString()
+     * @covers WellRESTed\Message\NullStream::__toString()
      */
     public function testCastsToString()
     {
@@ -17,59 +17,59 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testCloseDoesNothing()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertNull($stream->close());
     }
     /**
-     * @covers WellRESTed\Stream\NullStream::detach()
-     * @uses WellRESTed\Stream\Stream
+     * @covers WellRESTed\Message\NullStream::detach()
+     * @uses WellRESTed\Message\Stream
      */
     public function testDetachReturnsNull()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertNull($stream->detach());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::getSize
-     * @uses WellRESTed\Stream\Stream
+     * @covers WellRESTed\Message\NullStream::getSize
+     * @uses WellRESTed\Message\Stream
      */
     public function testSizeReturnsZero()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertEquals(0, $stream->getSize());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::tell
+     * @covers WellRESTed\Message\NullStream::tell
      */
     public function testTellReturnsFalse()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertFalse($stream->tell());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::eof
+     * @covers WellRESTed\Message\NullStream::eof
      */
     public function testEofReturnsReturnsTrue()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertTrue($stream->eof());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::isSeekable
-     * @uses WellRESTed\Stream\Stream
+     * @covers WellRESTed\Message\NullStream::isSeekable
+     * @uses WellRESTed\Message\Stream
      */
     public function testIsSeekableReturnsFalse()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertFalse($stream->isSeekable());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::seek
+     * @covers WellRESTed\Message\NullStream::seek
      */
     public function testSeekReturnsFalse()
     {
@@ -78,16 +78,16 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::rewind
+     * @covers WellRESTed\Message\NullStream::rewind
      */
     public function testRewindReturnsFalse()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertFalse($stream->rewind());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::isWritable
+     * @covers WellRESTed\Message\NullStream::isWritable
      */
     public function testIsWritableReturnsFalse()
     {
@@ -96,34 +96,34 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::write
+     * @covers WellRESTed\Message\NullStream::write
      */
     public function testWriteReturnsFalse()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertFalse($stream->write(""));
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::isReadable
+     * @covers WellRESTed\Message\NullStream::isReadable
      */
     public function testIsReableReturnsTrue()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertTrue($stream->isReadable());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::read
+     * @covers WellRESTed\Message\NullStream::read
      */
     public function testReadReturnsEmptyString()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertEquals("", $stream->read(100));
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::getContents
+     * @covers WellRESTed\Message\NullStream::getContents
      */
     public function testGetContentsReturnsEmptyString()
     {
@@ -132,20 +132,20 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::getMetadata
+     * @covers WellRESTed\Message\NullStream::getMetadata
      */
     public function testGetMetadataReturnsNull()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertNull($stream->getMetadata());
     }
 
     /**
-     * @covers WellRESTed\Stream\NullStream::getMetadata
+     * @covers WellRESTed\Message\NullStream::getMetadata
      */
     public function testGetMetadataReturnsNullWithKey()
     {
-        $stream = new NullStream();
+        $stream = new \WellRESTed\Message\NullStream();
         $this->assertNull($stream->getMetadata("size"));
     }
 }

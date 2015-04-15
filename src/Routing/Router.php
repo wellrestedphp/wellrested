@@ -7,9 +7,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\HttpExceptions\HttpException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Message\Stream;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
-use WellRESTed\Stream\Stream;
 
 class Router implements MiddlewareInterface
 {

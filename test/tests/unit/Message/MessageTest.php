@@ -224,7 +224,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\Message::getBody
-     * @uses WellRESTed\Stream\NullStream
+     * @uses WellRESTed\Message\NullStream
      */
     public function testGetBodyReturnsEmptyStreamByDefault()
     {

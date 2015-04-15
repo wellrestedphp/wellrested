@@ -1,38 +1,11 @@
 <?php
 
-namespace WellRESTed\Stream;
+namespace WellRESTed\Message;
 
 use Psr\Http\Message\StreamInterface;
 
-class Stream implements StreamInterface
+class NullStream implements StreamInterface
 {
-    /** @var resource */
-    private $resource;
-
-    /**
-     * Create a new Stream passing either a stream resource handle (e.g.,
-     * from fopen) or a string.
-     *
-     * If $resource is a string, the Stream will open a php://temp stream,
-     * write the string to the stream, and use that temp resource.
-     *
-     * @param resource|string $resource A file system pointer resource or
-     *     string
-     */
-    public function __construct($resource)
-    {
-        if (is_resource($resource) && get_resource_type($resource) === "stream") {
-            $this->resource = $resource;
-        } elseif (is_string($resource)) {
-            $this->resource = fopen("php://temp", "r+");
-            if ($resource !== "") {
-                $this->write($resource);
-            }
-        } else {
-            throw new \InvalidArgumentException("Expected a resource handler.");
-        }
-    }
-
     /**
      * Reads all data from the stream into a string, from the beginning to end.
      *
@@ -45,8 +18,7 @@ class Stream implements StreamInterface
      */
     public function __toString()
     {
-        rewind($this->resource);
-        return $this->getContents();
+        return "";
     }
 
     /**
@@ -56,7 +28,6 @@ class Stream implements StreamInterface
      */
     public function close()
     {
-        fclose($this->resource);
     }
 
     /**
@@ -68,9 +39,6 @@ class Stream implements StreamInterface
      */
     public function detach()
     {
-        $stream = $this->resource;
-        $this->resource = null;
-        return $stream;
     }
 
     /**
@@ -80,8 +48,7 @@ class Stream implements StreamInterface
      */
     public function getSize()
     {
-        $statistics = fstat($this->resource);
-        return $statistics["size"] ?: null;
+        return 0;
     }
 
     /**
@@ -91,7 +58,7 @@ class Stream implements StreamInterface
      */
     public function tell()
     {
-        return ftell($this->resource);
+        return false;
     }
 
     /**
@@ -101,7 +68,7 @@ class Stream implements StreamInterface
      */
     public function eof()
     {
-        return feof($this->resource);
+        return true;
     }
 
     /**
@@ -111,7 +78,7 @@ class Stream implements StreamInterface
      */
     public function isSeekable()
     {
-        return $this->getMetadata("seekable") == 1;
+        return false;
     }
 
     /**
@@ -128,7 +95,7 @@ class Stream implements StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        fseek($this->resource, $offset, $whence);
+        return false;
     }
 
     /**
@@ -144,7 +111,7 @@ class Stream implements StreamInterface
      */
     public function rewind()
     {
-        rewind($this->resource);
+        return false;
     }
 
     /**
@@ -154,8 +121,7 @@ class Stream implements StreamInterface
      */
     public function isWritable()
     {
-        $mode = $this->getMetadata("mode");
-        return $mode[0] !== "r" || strpos($mode, "+") !== false;
+        return false;
     }
 
     /**
@@ -167,7 +133,7 @@ class Stream implements StreamInterface
      */
     public function write($string)
     {
-        return fwrite($this->resource, $string);
+        return false;
     }
 
     /**
@@ -177,8 +143,7 @@ class Stream implements StreamInterface
      */
     public function isReadable()
     {
-        $mode = $this->getMetadata("mode");
-        return strpos($mode, "r") !== false || strpos($mode, "+") !== false;
+        return true;
     }
 
     /**
@@ -192,7 +157,7 @@ class Stream implements StreamInterface
      */
     public function read($length)
     {
-        return fread($this->resource, $length);
+        return "";
     }
 
     /**
@@ -202,7 +167,7 @@ class Stream implements StreamInterface
      */
     public function getContents()
     {
-        return stream_get_contents($this->resource);
+        return "";
     }
 
     /**
@@ -219,11 +184,6 @@ class Stream implements StreamInterface
      */
     public function getMetadata($key = null)
     {
-        $metadata = stream_get_meta_data($this->resource);
-        if ($key === null) {
-            return $metadata;
-        } else {
-            return $metadata[$key];
-        }
+        return null;
     }
 }
