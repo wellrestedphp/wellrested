@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Stream;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
-class Stream implements StreamableInterface
+class Stream implements StreamInterface
 {
     /** @var resource */
     private $resource;

@@ -238,7 +238,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetBodyReturnsAttachedStream()
     {
-        $stream = $this->prophesize('\Psr\Http\Message\StreamableInterface');
+        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream = $stream->reveal();
 
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');

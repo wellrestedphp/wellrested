@@ -2,8 +2,9 @@
 
 namespace WellRESTed\Message;
 
+use Psr\Http\Message\An;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 use WellRESTed\Stream\Stream;
 
 class ServerRequest extends Request implements ServerRequestInterface
@@ -338,9 +339,9 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * Return a stream representing the request's body.
      *
-     * Override this method to use a specific StreamableInterface implementation.
+     * Override this method to use a specific StreamInterface implementation.
      *
-     * @return StreamableInterface
+     * @return StreamInterface
      */
     protected function getStreamForBody()
     {
@@ -367,5 +368,38 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
         }
         return $headers;
+    }
+
+    /**
+     * Retrieve normalized file upload data.
+     *
+     * This method returns upload metadata in a normalized tree, with each leaf
+     * an instance of Psr\Http\Message\UploadedFileInterface.
+     *
+     * These values MAY be prepared from $_FILES or the message body during
+     * instantiation, or MAY be injected via withUploadedFiles().
+     *
+     * @return array An array tree of UploadedFileInterface instances; an empty
+     *     array MUST be returned if no data is present.
+     */
+    public function getUploadedFiles()
+    {
+        // TODO: Implement getUploadedFiles() method.
+    }
+
+    /**
+     * Create a new instance with the specified uploaded files.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated body parameters.
+     *
+     * @param array An array tree of UploadedFileInterface instances.
+     * @return self
+     * @throws \InvalidArgumentException if an invalid structure is provided.
+     */
+    public function withUploadedFiles(array $uploadedFiles)
+    {
+        // TODO: Implement withUploadedFiles() method.
     }
 }

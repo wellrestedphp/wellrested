@@ -19,7 +19,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         HeaderStack::reset();
-        $this->body = $this->prophesize('\Psr\Http\Message\StreamableInterface');
+        $this->body = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $this->body->isReadable()->willReturn(false);
         $this->response = $this->prophesize('\Psr\Http\Message\ResponseInterface');
         $this->response->getHeaders()->willReturn([]);

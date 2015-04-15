@@ -3,14 +3,14 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 use WellRESTed\Stream\NullStream;
 
 abstract class Message implements MessageInterface
 {
     /** @var HeaderCollection */
     protected $headers;
-    /** @var StreamableInterface */
+    /** @var StreamInterface */
     protected $body;
     /** @var string */
     protected $protcolVersion = "1.1";
@@ -224,7 +224,7 @@ abstract class Message implements MessageInterface
     /**
      * Gets the body of the message.
      *
-     * @return StreamableInterface Returns the body as a stream.
+     * @return StreamInterface Returns the body as a stream.
      */
     public function getBody()
     {
@@ -234,17 +234,17 @@ abstract class Message implements MessageInterface
     /**
      * Create a new instance, with the specified message body.
      *
-     * The body MUST be a StreamableInterface object.
+     * The body MUST be a StreamInterface object.
      *
      * This method MUST be implemented in such a way as to retain the
      * immutability of the message, and MUST return a new instance that has the
      * new body stream.
      *
-     * @param StreamableInterface $body Body.
+     * @param StreamInterface $body Body.
      * @return self
      * @throws \InvalidArgumentException When the body is not valid.
      */
-    public function withBody(StreamableInterface $body)
+    public function withBody(StreamInterface $body)
     {
         $message = clone $this;
         $message->body = $body;

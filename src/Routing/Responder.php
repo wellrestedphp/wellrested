@@ -3,7 +3,7 @@
 namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 class Responder implements ResponderInterface
 {
@@ -53,7 +53,7 @@ class Responder implements ResponderInterface
         }
     }
 
-    private function outputBody(StreamableInterface $body)
+    private function outputBody(StreamInterface $body)
     {
         if ($this->chunkSize > 0) {
             $body->rewind();

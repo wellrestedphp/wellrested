@@ -110,7 +110,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     public function testServerRequestProvidesBody()
     {
-        $body = $this->prophesize('Psr\Http\Message\StreamableInterface');
+        $body = $this->prophesize('Psr\Http\Message\StreamInterface');
         MockServerRequestTest::$bodyStream = $body->reveal();
         $request = MockServerRequestTest::getServerRequest();
         $this->assertSame($body->reveal(), $request->getBody());

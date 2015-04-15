@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Stream;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
-class NullStream implements StreamableInterface
+class NullStream implements StreamInterface
 {
     /**
      * Reads all data from the stream into a string, from the beginning to end.
