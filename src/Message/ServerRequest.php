@@ -354,11 +354,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getServerRequestHeaders()
     {
-        // Prefer apache_request_headers is available.
-        if (function_exists("apache_request_headers")) {
-            return apache_request_headers();
-        }
-
         // http://www.php.net/manual/en/function.getallheaders.php#84262
         $headers = array();
         foreach ($_SERVER as $name => $value) {
