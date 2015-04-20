@@ -12,8 +12,6 @@ class Uri implements UriInterface
     /** @var string */
     private $scheme = "";
     /** @var string  */
-    private $authority = "";
-    /** @var string  */
     private $user = "";
     /** @var string|null */
     private $password;
@@ -67,7 +65,31 @@ class Uri implements UriInterface
      */
     public function getAuthority()
     {
-        return $this->authority;
+        $authority = "";
+
+        $host = $this->getHost();
+        if ($host !== "") {
+
+            // User Info
+            $userInfo = $this->getUserInfo();
+            if ($userInfo !== "") {
+                $authority = $userInfo .= "@";
+            }
+
+            // Host
+            $authority .= $host;
+
+            // Port: Include only if set AND non-standard.
+            $port = $this->getPort();
+            if ($port !== null) {
+                $scheme = $this->getScheme();
+                if (($scheme === "http" && $port !== 80 ) || ($scheme === "https" && $port !== 443)) {
+                    $authority .= ":" . $port;
+                }
+            }
+        }
+
+        return $authority;
     }
 
     /**
@@ -419,7 +441,34 @@ class Uri implements UriInterface
      */
     public function __toString()
     {
-        // TODO: Implement __toString() method.
+        $string = "";
+
+        $authority = $this->getAuthority();
+        if ($authority !== "") {
+            $scheme = $this->getScheme();
+            if ($scheme !== "") {
+                $string = $scheme . ":";
+            }
+            $string .= "//$authority";
+        }
+
+        $path = $this->getPath();
+        if ($path !== "") {
+            $string .= $path;
+        }
+
+        $query = $this->getQuery();
+        if ($query !== "") {
+            $string .= "?$query";
+        }
+
+        $fragment = $this->getFragment();
+        if ($fragment !== "") {
+            $string .= "#$fragment";
+        }
+
+        return $string;
+
     }
 
     /**

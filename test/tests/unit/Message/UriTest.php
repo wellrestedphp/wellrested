@@ -22,7 +22,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withScheme
+     * @covers       WellRESTed\Message\Uri::withScheme
      * @dataProvider schemeProvider
      * @param string $expected The expected result of getScheme
      * @param string $scheme The scheme to pass to withScheme
@@ -73,6 +73,116 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * @covers WellRESTed\Message\Uri::getAuthority
+     * @dataProvider authorityProvider
+     * @param string $expected
+     * @param array $components
+     */
+    public function testConcatenatesAuthorityFromHostAndUserInfo($expected, $components)
+    {
+        $uri = new Uri();
+
+        if (isset($components["scheme"])) {
+            $uri = $uri->withScheme($components["scheme"]);
+        }
+
+        if (isset($components["user"])) {
+            $user = $components["user"];
+            $password = null;
+            if (isset($components["password"])) {
+                $password = $components["password"];
+            }
+            $uri = $uri->withUserInfo($user, $password);
+        }
+
+        if (isset($components["host"])) {
+            $uri = $uri->withHost($components["host"]);
+        }
+
+        if (isset($components["port"])) {
+            $uri = $uri->withPort($components["port"]);
+        }
+
+        $this->assertEquals($expected, $uri->getAuthority());
+    }
+
+    public function authorityProvider()
+    {
+        return [
+            [
+                "localhost",
+                [
+                    "host" => "localhost"
+                ]
+            ],
+            [
+                "user@localhost",
+                [
+                    "host" => "localhost",
+                    "user" => "user"
+                ]
+            ],
+            [
+                "user:password@localhost",
+                [
+                    "host" => "localhost",
+                    "user" => "user",
+                    "password" => "password"
+                ]
+            ],
+            [
+                "localhost",
+                [
+                    "host" => "localhost",
+                    "password" => "password"
+                ]
+            ],
+            [
+                "localhost",
+                [
+                    "scheme" => "http",
+                    "host" => "localhost",
+                    "port" => 80
+                ]
+            ],
+            [
+                "localhost",
+                [
+                    "scheme" => "https",
+                    "host" => "localhost",
+                    "port" => 443
+                ]
+            ],
+            [
+                "localhost:4430",
+                [
+                    "scheme" => "https",
+                    "host" => "localhost",
+                    "port" => 4430
+                ]
+            ],
+            [
+                "localhost:8080",
+                [
+                    "scheme" => "http",
+                    "host" => "localhost",
+                    "port" => 8080
+                ]
+            ],
+            [
+                "user:password@localhost:4430",
+                [
+                    "scheme" => "https",
+                    "user" => "user",
+                    "password" => "password",
+                    "host" => "localhost",
+                    "port" => 4430
+                ]
+            ],
+        ];
+    }
+
     // ------------------------------------------------------------------------
     // User Info
 
@@ -86,8 +196,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getUserInfo
-     * @covers WellRESTed\Message\Uri::withUserInfo
+     * @covers       WellRESTed\Message\Uri::getUserInfo
+     * @covers       WellRESTed\Message\Uri::withUserInfo
      * @dataProvider userInfoProvider
      *
      * @param string $expected The combined user:password value
@@ -125,8 +235,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getHost
-     * @covers WellRESTed\Message\Uri::withHost
+     * @covers       WellRESTed\Message\Uri::getHost
+     * @covers       WellRESTed\Message\Uri::withHost
      * @dataProvider hostProvider
      * @param $expected
      * @param $host
@@ -147,7 +257,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withHost
+     * @covers       WellRESTed\Message\Uri::withHost
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidHostProvider
      * @param $host
@@ -198,8 +308,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPort
-     * @covers WellRESTed\Message\Uri::withPort
+     * @covers       WellRESTed\Message\Uri::getPort
+     * @covers       WellRESTed\Message\Uri::withPort
      * @dataProvider portAndSchemeProvider
      *
      * @param int|null $expectedPort
@@ -226,7 +336,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withPort
+     * @covers       WellRESTed\Message\Uri::withPort
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPortProvider
      * @param int $port
@@ -260,9 +370,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPath
-     * @covers WellRESTed\Message\Uri::withPath
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getPath
+     * @covers       WellRESTed\Message\Uri::withPath
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -275,9 +385,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPath
-     * @covers WellRESTed\Message\Uri::withPath
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getPath
+     * @covers       WellRESTed\Message\Uri::withPath
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -316,9 +426,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getQuery
-     * @covers WellRESTed\Message\Uri::withQuery
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getQuery
+     * @covers       WellRESTed\Message\Uri::withQuery
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -331,9 +441,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getQuery
-     * @covers WellRESTed\Message\Uri::withQuery
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getQuery
+     * @covers       WellRESTed\Message\Uri::withQuery
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -356,7 +466,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withPath
+     * @covers       WellRESTed\Message\Uri::withPath
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPathProvider
      * @param $path
@@ -389,9 +499,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getFragment
-     * @covers WellRESTed\Message\Uri::withFragment
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getFragment
+     * @covers       WellRESTed\Message\Uri::withFragment
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment
@@ -404,9 +514,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getFragment
-     * @covers WellRESTed\Message\Uri::withFragment
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers       WellRESTed\Message\Uri::getFragment
+     * @covers       WellRESTed\Message\Uri::withFragment
+     * @covers       WellRESTed\Message\Uri::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment
@@ -428,4 +538,114 @@ class UriTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    // ------------------------------------------------------------------------
+    // Concatenation
+
+    /**
+     * @covers WellRESTed\Message\Uri::__toString
+     * @dataProvider componentProvider
+     * @param string $expected
+     * @param array $components
+     */
+    public function testConcatenatesComponents($expected, $components)
+    {
+        $uri = new Uri();
+
+        if (isset($components["scheme"])) {
+            $uri = $uri->withScheme($components["scheme"]);
+        }
+
+        if (isset($components["user"])) {
+            $user = $components["user"];
+            $password = null;
+            if (isset($components["password"])) {
+                $password = $components["password"];
+            }
+            $uri = $uri->withUserInfo($user, $password);
+        }
+
+        if (isset($components["host"])) {
+            $uri = $uri->withHost($components["host"]);
+        }
+
+        if (isset($components["port"])) {
+            $uri = $uri->withPort($components["port"]);
+        }
+
+        if (isset($components["path"])) {
+            $uri = $uri->withPath($components["path"]);
+        }
+
+        if (isset($components["query"])) {
+            $uri = $uri->withQuery($components["query"]);
+        }
+
+        if (isset($components["fragment"])) {
+            $uri = $uri->withFragment($components["fragment"]);
+        }
+
+        $this->assertEquals($expected, (string) $uri);
+    }
+
+    public function componentProvider()
+    {
+        return [
+            [
+                "http://localhost/path",
+                [
+                    "scheme" => "http",
+                    "host" => "localhost",
+                    "path" => "/path"
+                ]
+            ],
+            [
+                "//localhost/path",
+                [
+                    "host" => "localhost",
+                    "path" => "/path"
+                ]
+            ],
+            [
+                "/path",
+                [
+                    "path" => "/path"
+                ]
+            ],
+            [
+                "/path?cat=molly&dog=bear",
+                [
+                    "path" => "/path",
+                    "query" => "cat=molly&dog=bear"
+                ]
+            ],
+            [
+                "/path?cat=molly&dog=bear#fragment",
+                [
+                    "path" => "/path",
+                    "query" => "cat=molly&dog=bear",
+                    "fragment" => "fragment"
+                ]
+            ],
+            [
+                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment",
+                [
+                    "scheme" => "https",
+                    "user" => "user",
+                    "password" => "password",
+                    "host" => "localhost",
+                    "port" => 4430,
+                    "path" => "/path",
+                    "query" => "cat=molly&dog=bear",
+                    "fragment" => "fragment"
+                ]
+            ],
+            // Asterisk Form
+            [
+                "*",
+                [
+                    "path" => "*"
+                ]
+            ],
+        ];
+    }
 }
