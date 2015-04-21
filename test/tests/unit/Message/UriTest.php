@@ -648,4 +648,53 @@ class UriTest extends \PHPUnit_Framework_TestCase
             ],
         ];
     }
+
+    /**
+     * @covers WellRESTed\Message\Uri::__construct()
+     * @covers WellRESTed\Message\Uri::__toString()
+     * @dataProvider stringUriProvider
+     */
+    public function testUriCreatedFromStringNormalizesString($expected, $input)
+    {
+        $uri = new Uri($input);
+        $this->assertSame($expected, (string) $uri);
+    }
+
+    public function stringUriProvider()
+    {
+        return [
+            [
+                "http://localhost/path",
+                "http://localhost:80/path"
+            ],
+            [
+                "https://localhost/path",
+                "https://localhost:443/path"
+            ],
+            [
+                "https://my.sub.sub.domain.com/path",
+                "https://my.sub.sub.domain.com/path"
+            ],
+            [
+                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment",
+                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment"
+            ],
+            [
+                "/path",
+                "/path"
+            ],
+            [
+                "//double/slash",
+                "//double/slash"
+            ],
+            [
+                "no/slash",
+                "no/slash"
+            ],
+            [
+                "*",
+                "*"
+            ]
+        ];
+    }
 }

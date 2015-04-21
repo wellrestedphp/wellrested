@@ -27,6 +27,42 @@ class Uri implements UriInterface
     private $fragment = "";
 
     /**
+     * @param string $uri A string representation of a URI.
+     */
+    public function __construct($uri = "")
+    {
+        if (is_string($uri) && $uri !== "") {
+            $parsed = parse_url($uri);
+            if ($parsed !== false) {
+                if (isset($parsed["scheme"])) {
+                    $this->scheme = $parsed["scheme"];
+                }
+                if (isset($parsed["host"])) {
+                    $this->host = $parsed["host"];
+                }
+                if (isset($parsed["port"])) {
+                    $this->port = $parsed["port"];
+                }
+                if (isset($parsed["user"])) {
+                    $this->user = $parsed["user"];
+                }
+                if (isset($parsed["pass"])) {
+                    $this->password = $parsed["pass"];
+                }
+                if (isset($parsed["path"])) {
+                    $this->path = $parsed["path"];
+                }
+                if (isset($parsed["query"])) {
+                    $this->query = $parsed["query"];
+                }
+                if (isset($parsed["fragment"])) {
+                    $this->fragment = $parsed["fragment"];
+                }
+            }
+        }
+    }
+
+    /**
      * Retrieve the scheme component of the URI.
      *
      * If no scheme is present, this method MUST return an empty string.
@@ -78,6 +114,7 @@ class Uri implements UriInterface
 
             // Host
             $authority .= $host;
+
 
             // Port: Include only if set AND non-standard.
             $port = $this->getPort();
@@ -468,7 +505,6 @@ class Uri implements UriInterface
         }
 
         return $string;
-
     }
 
     /**
