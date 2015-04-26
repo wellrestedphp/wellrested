@@ -18,86 +18,6 @@ class Request extends Message implements RequestInterface
     // Psr\Http\Message\RequestInterface
 
     /**
-     * Extends MessageInterface::getHeaders() to provide request-specific
-     * behavior.
-     *
-     * Retrieves all message headers.
-     *
-     * This method acts exactly like MessageInterface::getHeaders(), with one
-     * behavioral change: if the Host header has not been previously set, the
-     * method MUST attempt to pull the host segment of the composed URI, if
-     * present.
-     *
-     * @see MessageInterface::getHeaders()
-     * @see UriInterface::getHost()
-     * @return array Returns an associative array of the message's headers. Each
-     *     key MUST be a header name, and each value MUST be an array of strings.
-     */
-    public function getHeaders()
-    {
-        $headers = parent::getHeaders();
-        // Add a host header, if none is present.
-        if (!$this->hasHeader("host") && isset($this->uri)) {
-            $headers["Host"] = [$this->uri->getHost()];
-        }
-        return $headers;
-    }
-
-    /**
-     * Extends MessageInterface::getHeader() to provide request-specific
-     * behavior.
-     *
-     * This method acts exactly like MessageInterface::getHeader(), with
-     * one behavioral change: if the Host header is requested, but has
-     * not been previously set, the method MUST attempt to pull the host
-     * component of the composed URI, if present.
-     *
-     * @see MessageInterface::getHeader()
-     * @see UriInterface::getHost()
-     * @param string $name Case-insensitive header field name.
-     * @return string[] An array of string values as provided for the given
-     *    header. If the header does not appear in the message, this method MUST
-     *    return an empty array.
-     */
-    public function getHeader($name)
-    {
-        $header = parent::getHeader($name);
-        if ($header === [] && (strtolower($name) === "host") && isset($this->uri)) {
-            $header = [$this->uri->getHost()];
-        }
-        return $header;
-    }
-
-    /**
-     * Extends MessageInterface::getHeaderLines() to provide request-specific
-     * behavior.
-     *
-     * This method returns all of the header values of the given
-     * case-insensitive header name as a string concatenated together using
-     * a comma.
-     *
-     * This method acts exactly like MessageInterface::getHeaderLines(), with
-     * one behavioral change: if the Host header is requested, but has
-     * not been previously set, the method MUST attempt to pull the host
-     * component of the composed URI, if present.
-     *
-     * @see MessageInterface::getHeaderLine()
-     * @see UriInterface::getHost()
-     * @param string $name Case-insensitive header field name.
-     * @return string|null A string of values as provided for the given header
-     *    concatenated together using a comma. If the header does not appear in
-     *    the message, this method MUST return a null value.
-     */
-    public function getHeaderLine($name)
-    {
-        $headerLine = parent::getHeaderLine($name);
-        if ($headerLine === null && (strtolower($name) === "host") && isset($this->uri)) {
-            $headerLine = $this->uri->getHost();
-        }
-        return $headerLine;
-    }
-
-    /**
      * Retrieves the message's request target.
      *
      * Retrieves the message's request-target either as it will appear (for
@@ -226,6 +146,23 @@ class Request extends Message implements RequestInterface
     public function withUri(UriInterface $uri, $preserveHost = false)
     {
         $request = clone $this;
+
+        $newHost = $uri->getHost();
+        $oldHost = isset($request->headers["Host"]) ? $request->headers["Host"] : "";
+
+        if ($preserveHost === false) {
+            // Update Host
+            if ($newHost && $newHost !== $oldHost) {
+                unset($request->headers["Host"]);
+                $request->headers["Host"] = $newHost;
+            }
+        } else {
+            // Preserve Host
+            if (!$oldHost && $newHost) {
+                $request->headers["Host"] = $newHost;
+            }
+        }
+
         $request->uri = $uri;
         return $request;
     }

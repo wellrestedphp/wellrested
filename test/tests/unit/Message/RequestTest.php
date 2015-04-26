@@ -12,90 +12,8 @@ use WellRESTed\Message\Request;
  */
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @covers WellRESTed\Message\Request::getHeaders
-     */
-    public function testGetHeadersReturnsHostFromUri()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhost");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-
-        $headers = $request->getHeaders();
-        $this->assertEquals(["localhost"], $headers["Host"]);
-    }
-
-    /**
-     * @covers WellRESTed\Message\Request::getHeaders
-     */
-    public function testGetHeadersPrefersExplicitHostHeader()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhost");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-        $request = $request->withHeader("Host", "www.mysite.com");
-
-        $headers = $request->getHeaders();
-        $this->assertEquals(["www.mysite.com"], $headers["Host"]);
-    }
-
-    /**
-     * @covers WellRESTed\Message\Request::getHeader
-     */
-    public function testGetHeaderReturnsHostFromUri()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhost");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-        $this->assertEquals(["localhost"], $request->getHeader("host"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Request::getHeader
-     */
-    public function testGetHeaderPrefersExplicitHostHeader()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhot");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-        $request = $request->withHeader("Host", "www.mysite.com");
-        $this->assertEquals(["www.mysite.com"], $request->getHeader("host"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Request::getHeaderLine
-     */
-    public function testGetHeaderLineReturnsHostFromUri()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhost");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-        $this->assertEquals("localhost", $request->getHeaderLine("host"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Request::getHeaderLine
-     */
-    public function testGetHeaderLinePrefersExplicitHostHeader()
-    {
-        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
-        $uri->getHost()->willReturn("localhost");
-
-        $request = new Request();
-        $request = $request->withUri($uri->reveal());
-        $request = $request->withHeader("Host", "www.mysite.com");
-        $this->assertEquals("www.mysite.com", $request->getHeaderLine("host"));
-    }
+    // ------------------------------------------------------------------------
+    // Request Target
 
     /**
      * @covers WellRESTed\Message\Request::getRequestTarget
@@ -113,6 +31,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     public function testGetRequestTargetUsesOriginFormOfUri()
     {
         $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn("");
         $uri->getPath()->willReturn("/my/path");
         $uri->getQuery()->willReturn("cat=Molly&dog=Bear");
 
@@ -129,6 +48,20 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request = new Request();
         $this->assertEquals("/", $request->getRequestTarget());
     }
+
+    /**
+     * @covers WellRESTed\Message\Request::withRequestTarget
+     * @covers WellRESTed\Message\Request::getRequestTarget
+     */
+    public function testWithRequestTargetCreatesNewInstance()
+    {
+        $request = new Request();
+        $request = $request->withRequestTarget("*");
+        $this->assertEquals("*", $request->getRequestTarget());
+    }
+
+    // ------------------------------------------------------------------------
+    // Method
 
     /**
      * @covers WellRESTed\Message\Request::getMethod
@@ -150,16 +83,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("POST", $request->getMethod());
     }
 
-    /**
-     * @covers WellRESTed\Message\Request::withRequestTarget
-     * @covers WellRESTed\Message\Request::getRequestTarget
-     */
-    public function testWithRequestTargetCreatesNewInstance()
-    {
-        $request = new Request();
-        $request = $request->withRequestTarget("*");
-        $this->assertEquals("*", $request->getRequestTarget());
-    }
+    // ------------------------------------------------------------------------
+    // Request URI
 
     /**
      * @covers WellRESTed\Message\Request::withUri
@@ -198,5 +123,77 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($uri2, $request2->getUri());
         $this->assertEquals(["text/plain"], $request2->getHeader("Accept"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::withUri
+     */
+    public function testWithUriUpdatesHostHeader()
+    {
+        $hostname = "bar.com";
+        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn($hostname);
+
+        $request = new Request();
+        $request = $request->withHeader("Host", "foo.com");
+        $request = $request->withUri($uri->reveal());
+        $this->assertSame([$hostname], $request->getHeader("Host"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::withUri
+     */
+    public function testWithUriDoesNotUpdatesHostHeaderWhenUriHasNoHost()
+    {
+        $hostname = "foo.com";
+        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn("");
+
+        $request = new Request();
+        $request = $request->withHeader("Host", $hostname);
+        $request = $request->withUri($uri->reveal());
+        $this->assertSame([$hostname], $request->getHeader("Host"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::withUri
+     */
+    public function testPreserveHostUpdatesHostHeaderWhenHeaderIsOriginallyMissing()
+    {
+        $hostname = "foo.com";
+        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn($hostname);
+
+        $request = new Request();
+        $request = $request->withUri($uri->reveal(), true);
+        $this->assertSame([$hostname], $request->getHeader("Host"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::withUri
+     */
+    public function testPreserveHostDoesNotUpdatesWhenBothAreMissingHosts()
+    {
+        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn("");
+
+        $request = new Request();
+        $request = $request->withUri($uri->reveal(), true);
+        $this->assertSame([], $request->getHeader("Host"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::withUri
+     */
+    public function testPreserveHostDoesNotUpdateHostHeader()
+    {
+        $hostname = "foo.com";
+        $uri = $this->prophesize('\Psr\Http\Message\UriInterface');
+        $uri->getHost()->willReturn("bar.com");
+
+        $request = new Request();
+        $request = $request->withHeader("Host", $hostname);
+        $request = $request->withUri($uri->reveal(), true);
+        $this->assertSame([$hostname], $request->getHeader("Host"));
     }
 }
