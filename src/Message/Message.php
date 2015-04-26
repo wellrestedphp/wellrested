@@ -20,6 +20,11 @@ abstract class Message implements MessageInterface
         $this->body = new NullStream();
     }
 
+    public function __clone()
+    {
+        $this->headers = clone $this->headers;
+    }
+
     // ------------------------------------------------------------------------
     // Psr\Http\Message\MessageInterface
 
@@ -171,9 +176,13 @@ abstract class Message implements MessageInterface
      */
     public function withHeader($name, $value)
     {
+        $values = $this->getValidatedHeaders($name, $value);
+
         $message = clone $this;
         unset($message->headers[$name]);
-        $message->headers[$name] = $value;
+        foreach ($values as $value) {
+            $message->headers[$name] = (string) $value;
+        }
         return $message;
     }
 
@@ -196,8 +205,12 @@ abstract class Message implements MessageInterface
      */
     public function withAddedHeader($name, $value)
     {
+        $values = $this->getValidatedHeaders($name, $value);
+
         $message = clone $this;
-        $message->headers[$name] = $value;
+        foreach ($values as $value) {
+            $message->headers[$name] = (string) $value;
+        }
         return $message;
     }
 
@@ -252,9 +265,23 @@ abstract class Message implements MessageInterface
 
     // ------------------------------------------------------------------------
 
-    public function __clone()
+    private function getValidatedHeaders($name, $value)
     {
-        $this->headers = clone $this->headers;
+        $is_allowed = function ($item) {
+            return is_string($item) || is_numeric($item);
+        };
+
+        if (!is_string($name)) {
+            throw new \InvalidArgumentException("Header name must be a string");
+        }
+
+        if ($is_allowed($value)) {
+            return [$value];
+        } elseif (is_array($value) && count($value) === count(array_filter($value, $is_allowed))) {
+            return $value;
+        } else {
+            throw new \InvalidArgumentException("Header values must be a string or string[]");
+        }
     }
 }
 
