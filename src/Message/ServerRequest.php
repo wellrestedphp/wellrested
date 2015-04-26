@@ -13,7 +13,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     /** @var array */
     private $cookieParams;
     /** @var array */
-    private $fileParams;
+    private $uploadedFiles;
     /** @var array */
     private $queryParams;
     /** @var array */
@@ -27,6 +27,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         parent::__construct();
         $this->attributes = [];
+        $this->uploadedFiles = [];
     }
 
     public function __clone()
@@ -150,7 +151,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getUploadedFiles()
     {
-        // TODO: Implement getUploadedFiles() method.
+        return $this->uploadedFiles;
     }
 
     /**
@@ -307,13 +308,12 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // ------------------------------------------------------------------------
 
-
     protected function readFromServerRequest(array $attributes = null)
     {
         $this->attributes = $attributes ?: [];
         $this->serverParams = $_SERVER;
         $this->cookieParams = $_COOKIE;
-        $this->fileParams = $_FILES;
+        $this->readUploadedFiles($_FILES);
         $this->queryParams = [];
         if (isset($_SERVER["QUERY_STRING"])) {
             parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
@@ -338,6 +338,32 @@ class ServerRequest extends Request implements ServerRequestInterface
         if ($contentType === ["application/x-www-form-urlencoded"] || $contentType === ["multipart/form-data"]) {
             $this->parsedBody = $_POST;
         }
+    }
+
+    protected function readUploadedFiles($files)
+    {
+        $uploadedFiles = [];
+        foreach ($files as $name => $file) {
+            if (is_array($file["name"])) {
+                for ($index = 0, $u = count($file["name"]); $index < $u; ++$index) {
+                    $uploadedFile = new UploadedFile(
+                        $file["name"][$index],
+                        $file["type"][$index],
+                        $file["size"][$index],
+                        $file["tmp_name"][$index],
+                        $file["error"][$index]
+                    );
+                    $uploadedFiles[$name][$index] = $uploadedFile;
+                }
+            } else {
+                $index = 0;
+                $uploadedFile = new UploadedFile(
+                    $file["name"], $file["type"], $file["size"], $file["tmp_name"], $file["error"]
+                );
+                $uploadedFiles[$name][$index] = $uploadedFile;
+            }
+        }
+        $this->uploadedFiles = $uploadedFiles;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Message\UploadedFile;
 
 /**
  * @uses WellRESTed\Message\ServerRequest
@@ -10,6 +11,7 @@ use WellRESTed\Message\ServerRequest;
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
  * @uses WellRESTed\Message\Stream
+ * @uses WellRESTed\Message\UploadedFile
  */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,15 +45,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $_COOKIE = [
             "cat" => "Molly"
         ];
-        $_FILES = [
-            "file" => [
-                "name" => "MyFile.jpg",
-                "type" => "image/jpeg",
-                "tmp_name" => "/tmp/php/php6hst32",
-                "error" => "UPLOAD_ERR_OK",
-                "size" => 98174
-            ]
-        ];
+        $_FILES = [];
         $_POST = [
             "dog" => "Bear"
         ];
@@ -233,6 +227,80 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Uploaded Files
 
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     * @preserveGlobalState disabled
+     */
+    public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_ACCEPT" => "application/json",
+            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded"
+        ];
+        $_FILES = [];
+        $request = ServerRequest::getServerRequest();
+        $this->assertSame([], $request->getUploadedFiles());
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getServerRequest
+     * @covers WellRESTed\Message\ServerRequest::readUploadedFiles
+     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     * @preserveGlobalState disabled
+     * @dataProvider uploadedFileProvider
+     */
+    public function testGetServerRequestProvidesUploadedFiles($file, $name, $index)
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_ACCEPT" => "application/json",
+            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded"
+        ];
+        $_FILES = [
+            "file" => [
+                "name" => "index.html",
+                "type" => "text/html",
+                "tmp_name" => "/tmp/php9hNlHe",
+                "error" => 0,
+                "size" => 524
+            ],
+            "fileList" => [
+                "name" => [
+                    "data.json",
+                    ""
+                ],
+                "type" => [
+                    "application/json",
+                    ""
+                ],
+                "tmp_name" => [
+                    "/tmp/phpUigZSO",
+                    ""
+                ],
+                "error" => [
+                    0,
+                    4
+                ],
+                "size" => [
+                    1024,
+                    0
+                ]
+            ]
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($file, $request->getUploadedFiles()[$name][$index]);
+    }
+
+    public function uploadedFileProvider()
+    {
+        return [
+            [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0), "file", 0],
+            [new UploadedFile("data.json", "application/json", 1024, "/tmp/phpUigZSO", 0), "fileList", 0],
+            [new UploadedFile("", "", 0, "", 4), "fileList", 1]
+        ];
+    }
+
     // ------------------------------------------------------------------------
     // Parsed Body
 
@@ -380,18 +448,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Molly", $attributes["cat"]);
         $this->assertEquals("Bear", $attributes["dog"]);
     }
-
-//
-//    /**
-//     * @covers WellRESTed\Message\ServerRequest::getFileParams
-//     * @depends testGetServerRequestReadsFromRequest
-//     */
-//    public function testServerRequestProvidesFilesParams($request)
-//    {
-//        /** @var ServerRequest $request */
-//        $this->assertEquals("MyFile.jpg", $request->getFileParams()["file"]["name"]);
-//    }
-//
 }
 
 // ----------------------------------------------------------------------------
