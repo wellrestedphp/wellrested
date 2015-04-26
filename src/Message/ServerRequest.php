@@ -21,10 +21,20 @@ class ServerRequest extends Request implements ServerRequestInterface
     /** @var mixed */
     private $parsedBody;
 
+    // ------------------------------------------------------------------------
+
     public function __construct()
     {
         parent::__construct();
         $this->attributes = [];
+    }
+
+    public function __clone()
+    {
+        if (is_object($this->parsedBody)) {
+            $this->parsedBody = clone $this->parsedBody;
+        }
+        parent::__clone();
     }
 
     // ------------------------------------------------------------------------
@@ -127,20 +137,36 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
 
     /**
-     * Retrieve the upload file metadata.
+     * Retrieve normalized file upload data.
      *
-     * This method MUST return file upload metadata in the same structure
-     * as PHP's $_FILES superglobal.
+     * This method returns upload metadata in a normalized tree, with each leaf
+     * an instance of Psr\Http\Message\UploadedFileInterface.
      *
-     * These values MUST remain immutable over the course of the incoming
-     * request. They SHOULD be injected during instantiation, such as from PHP's
-     * $_FILES superglobal, but MAY be derived from other sources.
+     * These values MAY be prepared from $_FILES or the message body during
+     * instantiation, or MAY be injected via withUploadedFiles().
      *
-     * @return array Upload file(s) metadata, if any.
+     * @return array An array tree of UploadedFileInterface instances; an empty
+     *     array MUST be returned if no data is present.
      */
-    public function getFileParams()
+    public function getUploadedFiles()
     {
-        return $this->fileParams;
+        // TODO: Implement getUploadedFiles() method.
+    }
+
+    /**
+     * Create a new instance with the specified uploaded files.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the message, and MUST return an instance that has the
+     * updated body parameters.
+     *
+     * @param array An array tree of UploadedFileInterface instances.
+     * @return self
+     * @throws \InvalidArgumentException if an invalid structure is provided.
+     */
+    public function withUploadedFiles(array $uploadedFiles)
+    {
+        // TODO: Implement withUploadedFiles() method.
     }
 
     /**
@@ -281,13 +307,6 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // ------------------------------------------------------------------------
 
-    public function __clone()
-    {
-        if (is_object($this->parsedBody)) {
-            $this->parsedBody = clone $this->parsedBody;
-        }
-        parent::__clone();
-    }
 
     protected function readFromServerRequest(array $attributes = null)
     {
@@ -364,36 +383,4 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $headers;
     }
 
-    /**
-     * Retrieve normalized file upload data.
-     *
-     * This method returns upload metadata in a normalized tree, with each leaf
-     * an instance of Psr\Http\Message\UploadedFileInterface.
-     *
-     * These values MAY be prepared from $_FILES or the message body during
-     * instantiation, or MAY be injected via withUploadedFiles().
-     *
-     * @return array An array tree of UploadedFileInterface instances; an empty
-     *     array MUST be returned if no data is present.
-     */
-    public function getUploadedFiles()
-    {
-        // TODO: Implement getUploadedFiles() method.
-    }
-
-    /**
-     * Create a new instance with the specified uploaded files.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return an instance that has the
-     * updated body parameters.
-     *
-     * @param array An array tree of UploadedFileInterface instances.
-     * @return self
-     * @throws \InvalidArgumentException if an invalid structure is provided.
-     */
-    public function withUploadedFiles(array $uploadedFiles)
-    {
-        // TODO: Implement withUploadedFiles() method.
-    }
 }
