@@ -15,6 +15,20 @@ class Request extends Message implements RequestInterface
     protected $uri;
 
     // ------------------------------------------------------------------------
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->uri = new Uri();
+    }
+
+    public function __clone()
+    {
+        $this->uri = clone $this->uri;
+        parent::__clone();
+    }
+
+    // ------------------------------------------------------------------------
     // Psr\Http\Message\RequestInterface
 
     /**
@@ -35,17 +49,20 @@ class Request extends Message implements RequestInterface
      */
     public function getRequestTarget()
     {
+        // Use the explicitly set request target first.
         if (isset($this->requestTarget)) {
             return $this->requestTarget;
-        } elseif (isset($this->uri)) {
-            $target = $this->uri->getPath();
-            $query = $this->uri->getQuery();
-            if ($query) {
-                $target .= "?" . $query;
-            }
-            return $target;
         }
-        return "/";
+
+        // Build the origin form from the composed URI.
+        $target = $this->uri->getPath();
+        $query = $this->uri->getQuery();
+        if ($query) {
+            $target .= "?" . $query;
+        }
+
+        // Return "/" if the origin form is empty.
+        return $target ?: "/";
     }
 
     /**
@@ -100,7 +117,7 @@ class Request extends Message implements RequestInterface
     public function withMethod($method)
     {
         $request = clone $this;
-        $request->method = $method;
+        $request->method = $this->getValidatedMethod($method);
         return $request;
     }
 
@@ -169,11 +186,20 @@ class Request extends Message implements RequestInterface
 
     // ------------------------------------------------------------------------
 
-    public function __clone()
+    /**
+     * @param string $method
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    private function getValidatedMethod($method)
     {
-        if (isset($this->uri)) {
-            $this->uri = clone $this->uri;
+        if (!is_string($method)) {
+            throw new \InvalidArgumentException("Method must be a string.");
         }
-        parent::__clone();
+        $method = trim($method);
+        if (strpos($method, " ") !== false) {
+            throw new \InvalidArgumentException("Method cannot contain spaces.");
+        }
+        return $method;
     }
 }

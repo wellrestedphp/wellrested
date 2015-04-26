@@ -3,15 +3,28 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\Request;
+use WellRESTed\Message\Uri;
 
 /**
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
+ * @uses WellRESTed\Message\Uri
  */
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
+    // ------------------------------------------------------------------------
+
+    /**
+     * @covers WellRESTed\Message\Request::__construct
+     */
+    public function testCreatesInstance()
+    {
+        $request = new Request();
+        $this->assertNotNull($request);
+    }
+
     // ------------------------------------------------------------------------
     // Request Target
 
@@ -74,6 +87,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\Request::withMethod
+     * @covers WellRESTed\Message\Request::getValidatedMethod
      * @covers WellRESTed\Message\Request::getMethod
      */
     public function testWithMethodCreatesNewInstance()
@@ -83,8 +97,40 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("POST", $request->getMethod());
     }
 
+    /**
+     * @covers WellRESTed\Message\Request::withMethod
+     * @covers WellRESTed\Message\Request::getValidatedMethod
+     * @dataProvider invalidMethodProvider
+     * @expectedException \InvalidArgumentException
+     */
+    public function testWithMethoThrowsExceptionOnInvalidMethod($method)
+    {
+        $request = new Request();
+        $request->withMethod($method);
+    }
+
+    public function invalidMethodProvider()
+    {
+        return [
+            [0],
+            [false],
+            ["WITH SPACE"]
+        ];
+    }
+
     // ------------------------------------------------------------------------
     // Request URI
+
+    /**
+     * @covers WellRESTed\Message\Request::getUri
+     * @
+     */
+    public function testGetUriReturnsEmptyUriByDefault()
+    {
+        $request = new Request();
+        $uri = new Uri();
+        $this->assertEquals($uri, $request->getUri());
+    }
 
     /**
      * @covers WellRESTed\Message\Request::withUri

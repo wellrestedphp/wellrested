@@ -12,6 +12,7 @@ use WellRESTed\Message\UploadedFile;
  * @uses WellRESTed\Message\HeaderCollection
  * @uses WellRESTed\Message\Stream
  * @uses WellRESTed\Message\UploadedFile
+ * @uses WellRESTed\Message\Uri
  */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
 {
