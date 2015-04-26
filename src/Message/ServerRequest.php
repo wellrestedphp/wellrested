@@ -2,7 +2,6 @@
 
 namespace WellRESTed\Message;
 
-use Psr\Http\Message\An;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -167,7 +166,14 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
-        // TODO: Implement withUploadedFiles() method.
+        if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
+            throw new \InvalidArgumentException(
+                "withUploadedFiles expects an array with string keys and UploadedFileInterface[] values");
+        }
+
+        $request = clone $this;
+        $request->uploadedFiles = $uploadedFiles;
+        return $request;
     }
 
     /**
@@ -407,6 +413,43 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
         }
         return $headers;
+    }
+
+    private function isValidUploadedFilesTree(array $uploadedFiles)
+    {
+        // Ensure all keys are strings.
+        $keys = array_keys($uploadedFiles);
+        if (count($keys) !== count(array_filter($keys, "is_string"))) {
+            return false;
+        }
+
+        // All values must be UploadedFileInterface[].
+
+        // Ensure all values are arrays.
+        $values = array_values($uploadedFiles);
+        if (count($values) !== count(array_filter($values, "is_array"))) {
+            return false;
+        }
+
+        $isUploadedFileInterface = function ($object) {
+            return is_object($object) && in_array('Psr\Http\Message\UploadedFileInterface', class_implements($object));
+        };
+
+        foreach ($values as $items) {
+
+            // Ensure values are list arrays.
+            if (array_keys($items) !== range(0, count($items) - 1)) {
+                return false;
+            }
+
+            // Ensure all items are UploadedFileInterfaces
+            $itemValues = array_values($items);
+            if (count($itemValues) !== count(array_filter($itemValues, $isUploadedFileInterface))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

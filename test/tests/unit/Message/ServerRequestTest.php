@@ -301,6 +301,85 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+    /**
+     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
+     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     */
+    public function testWithUploadedFilesCreatesNewInstance()
+    {
+        $uploadedFiles = [
+            "file" => [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]
+        ];
+        $request = new ServerRequest();
+        $request1 = $request->withUploadedFiles([]);
+        $request2 = $request1->withUploadedFiles($uploadedFiles);
+        $this->assertNotSame($request2, $request1);
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
+     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     */
+    public function testWithUploadedFilesReturnsPassedUploadedFiles()
+    {
+        $uploadedFiles = [
+            "file" => [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]
+        ];
+        $request = new ServerRequest();
+        $request = $request->withUploadedFiles($uploadedFiles);
+        $this->assertSame($uploadedFiles, $request->getUploadedFiles());
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
+     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     * @expectedException \InvalidArgumentException
+     * @dataProvider invalidUploadedFilesProvider
+     */
+    public function testWithUploadedFilesThrowsExceptionWithInvalidTree($uploadedFiles)
+    {
+        $request = new ServerRequest();
+        $request->withUploadedFiles($uploadedFiles);
+    }
+
+    public function invalidUploadedFilesProvider()
+    {
+        return [
+            // All keys must be strings
+            [[new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]],
+
+            // All values must be arrays.
+            [["file" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]],
+
+            // All values must be list arrays.
+            [
+                [
+                    "file" =>
+                        [
+                            "file1" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
+                        ]
+                ]
+            ],
+            [
+                [
+                    "file" => [
+                        0 => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
+                        2 => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
+                    ]
+                ]
+            ],
+            [
+                [
+                    "file" => [
+                        new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
+                        new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
+                        "index.html"
+                    ]
+                ]
+            ]
+        ];
+    }
+
     // ------------------------------------------------------------------------
     // Parsed Body
 
