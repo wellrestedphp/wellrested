@@ -328,6 +328,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         $this->cookieParams = $_COOKIE;
         $this->readUploadedFiles($_FILES);
         $this->queryParams = [];
+        $this->uri = $this->readUri();
         if (isset($_SERVER["QUERY_STRING"])) {
             parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
         }
@@ -337,9 +338,6 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         if (isset($_SERVER["REQUEST_METHOD"])) {
             $this->method = $_SERVER["REQUEST_METHOD"];
-        }
-        if (isset($_SERVER["REQUEST_URI"])) {
-            $this->requestTarget = $_SERVER["REQUEST_URI"];
         }
         $headers = $this->getServerRequestHeaders();
         foreach ($headers as $key => $value) {
@@ -377,6 +375,28 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
         }
         $this->uploadedFiles = $uploadedFiles;
+    }
+
+    protected function readUri()
+    {
+        $uri = "";
+
+        $scheme = "http";
+        if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] && $_SERVER["HTTPS"] !== "off") {
+            $scheme = "https";
+        }
+
+        if (isset($_SERVER["HTTP_HOST"])) {
+            $authority = $_SERVER["HTTP_HOST"];
+            $uri .= "$scheme://$authority";
+        }
+
+        // Path and query string
+        if (isset($_SERVER["REQUEST_URI"])) {
+            $uri .= $_SERVER["REQUEST_URI"];
+        }
+
+        return new Uri($uri);
     }
 
     /**

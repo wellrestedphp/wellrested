@@ -4,6 +4,7 @@ namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
+use WellRESTed\Message\Uri;
 
 /**
  * @uses WellRESTed\Message\ServerRequest
@@ -600,6 +601,57 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $attributes = $request->getAttributes();
         $this->assertEquals("Molly", $attributes["cat"]);
         $this->assertEquals("Bear", $attributes["dog"]);
+    }
+
+    // ------------------------------------------------------------------------
+    // URI
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getServerRequest
+     * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
+     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @covers WellRESTed\Message\ServerRequest::readUri
+     * @preserveGlobalState disabled
+     * @dataProvider uriProvider
+     */
+    public function testGetServerRequestProvidesUri($expected, $server)
+    {
+        $_SERVER = $server;
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($expected, $request->getUri());
+    }
+
+    public function uriProvider()
+    {
+        return [
+            [
+                new Uri("http://localhost/path"),
+                [
+                    "HTTPS" => "off",
+                    "HTTP_HOST" => "localhost",
+                    "REQUEST_URI" => "/path",
+                    "QUERY_STRING" => ""
+                ]
+            ],
+            [
+                new Uri("https://foo.com/path/to/stuff?cat=molly"),
+                [
+                    "HTTPS" => "1",
+                    "HTTP_HOST" => "foo.com",
+                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
+                    "QUERY_STRING" => "cat=molly"
+                ]
+            ],
+            [
+                new Uri("http://foo.com:8080/path/to/stuff?cat=molly"),
+                [
+                    "HTTP" => "1",
+                    "HTTP_HOST" => "foo.com:8080",
+                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
+                    "QUERY_STRING" => "cat=molly"
+                ]
+            ]
+        ];
     }
 }
 
