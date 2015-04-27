@@ -163,6 +163,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getServerParams
+     */
+    public function testServerParamsIsEmptyByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getServerParams());
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getServerParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesServerParams($request)
@@ -173,6 +182,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     // ------------------------------------------------------------------------
     // Cookies
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getCookieParams
+     */
+    public function testCookieParamsIsEmptyByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getCookieParams());
+    }
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getCookieParams
@@ -203,6 +221,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getQueryParams
+     */
+    public function testQueryParamsIsEmptyByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getQueryParams());
+    }
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getQueryParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesQueryParams($request)
@@ -227,6 +254,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     // ------------------------------------------------------------------------
     // Uploaded Files
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     */
+    public function testUploadedFilesIsEmptyByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getUploadedFiles());
+    }
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
@@ -385,6 +421,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Parsed Body
 
     /**
+     * @covers WellRESTed\Message\ServerRequest::getParsedBody
+     */
+    public function testParsedBodyIsNullByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertNull($request->getParsedBody());
+    }
+
+    /**
      * @covers WellRESTed\Message\ServerRequest::getServerRequest
      * @covers WellRESTed\Message\ServerRequest::getParsedBody
      * @preserveGlobalState disabled
@@ -432,6 +477,25 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers WellRESTed\Message\ServerRequest::withParsedBody
+     * @expectedException \InvalidArgumentException
+     * @dataProvider invalidParsedBodyProvider
+     */
+    public function testWithParsedBodyThrowsExceptionWithInvalidType($body)
+    {
+        $request = new ServerRequest();
+        $request->withParsedBody($body);
+    }
+
+    public function invalidParsedBodyProvider()
+    {
+        return [
+            [false],
+            [1]
+        ];
+    }
+
+    /**
      * @covers WellRESTed\Message\ServerRequest::__clone
      */
     public function testCloneMakesDeepCopiesOfParsedBody()
@@ -449,6 +513,15 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
 
     // ------------------------------------------------------------------------
     // Attributes
+
+    /**
+     * @covers WellRESTed\Message\ServerRequest::getAttributes
+     */
+    public function testAttributesIsEmptyByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getAttributes());
+    }
 
     /**
      * @covers WellRESTed\Message\ServerRequest::getAttribute

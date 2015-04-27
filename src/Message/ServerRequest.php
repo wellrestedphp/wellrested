@@ -11,14 +11,14 @@ class ServerRequest extends Request implements ServerRequestInterface
     private $attributes;
     /** @var array */
     private $cookieParams;
-    /** @var array */
-    private $uploadedFiles;
+    /** @var mixed */
+    private $parsedBody;
     /** @var array */
     private $queryParams;
     /** @var array */
     private $serverParams;
-    /** @var mixed */
-    private $parsedBody;
+    /** @var array */
+    private $uploadedFiles;
 
     // ------------------------------------------------------------------------
 
@@ -26,6 +26,9 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         parent::__construct();
         $this->attributes = [];
+        $this->cookieParams = [];
+        $this->queryParams = [];
+        $this->serverParams = [];
         $this->uploadedFiles = [];
     }
 
@@ -224,6 +227,10 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withParsedBody($data)
     {
+        if (!(is_null($data) || is_array($data) || is_object($data))) {
+            throw new \InvalidArgumentException("Parsed body must be null, array, or object.");
+        }
+
         $request = clone $this;
         $request->parsedBody = $data;
         return $request;
