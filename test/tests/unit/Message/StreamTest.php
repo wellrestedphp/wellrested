@@ -173,6 +173,30 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers WellRESTed\Message\Stream::write
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionOnErrorWriting()
+    {
+        $filename = tempnam(sys_get_temp_dir(), "php");
+        $handle = fopen($filename, "r");
+        $stream = new \WellRESTed\Message\Stream($handle);
+        $stream->write("Hello, world!");
+    }
+
+    /**
+     * @covers WellRESTed\Message\Stream::read
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionOnErrorReading()
+    {
+        $filename = tempnam(sys_get_temp_dir(), "php");
+        $handle = fopen($filename, "w");
+        $stream = new \WellRESTed\Message\Stream($handle);
+        $stream->read(10);
+    }
+
+    /**
      * @covers WellRESTed\Message\Stream::read
      */
     public function testReadsFromStream()
@@ -181,6 +205,18 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->seek(7);
         $string = $stream->read(5);
         $this->assertEquals("world", $string);
+    }
+
+    /**
+     * @covers WellRESTed\Message\Stream::getContents
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionOnErrorReadingToEnd()
+    {
+        $filename = tempnam(sys_get_temp_dir(), "php");
+        $handle = fopen($filename, "w");
+        $stream = new \WellRESTed\Message\Stream($handle);
+        $stream->getContents();
     }
 
     /**

@@ -20,6 +20,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
         $stream = new \WellRESTed\Message\NullStream();
         $this->assertNull($stream->close());
     }
+
     /**
      * @covers WellRESTed\Message\NullStream::detach()
      * @uses WellRESTed\Message\Stream
@@ -43,10 +44,10 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\NullStream::tell
      */
-    public function testTellReturnsFalse()
+    public function testTellReturnsZero()
     {
         $stream = new \WellRESTed\Message\NullStream();
-        $this->assertFalse($stream->tell());
+        $this->assertEquals(0, $stream->tell());
     }
 
     /**
@@ -70,20 +71,22 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\NullStream::seek
+     * @expectedException \RuntimeException
      */
     public function testSeekReturnsFalse()
     {
         $stream = new NullStream();
-        $this->assertFalse($stream->seek(10));
+        $stream->seek(10);
     }
 
     /**
      * @covers WellRESTed\Message\NullStream::rewind
+     * @expectedException \RuntimeException
      */
     public function testRewindReturnsFalse()
     {
         $stream = new \WellRESTed\Message\NullStream();
-        $this->assertFalse($stream->rewind());
+        $stream->rewind();
     }
 
     /**
@@ -97,11 +100,12 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers WellRESTed\Message\NullStream::write
+     * @expectedException \RuntimeException
      */
-    public function testWriteReturnsFalse()
+    public function testWriteThrowsException()
     {
         $stream = new \WellRESTed\Message\NullStream();
-        $this->assertFalse($stream->write(""));
+        $stream->write("");
     }
 
     /**

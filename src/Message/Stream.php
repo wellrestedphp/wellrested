@@ -41,6 +41,10 @@ class Stream implements StreamInterface
      *
      * Warning: This could attempt to load a large amount of data into memory.
      *
+     * This method MUST NOT raise an exception in order to conform with PHP's
+     * string casting operations.
+     *
+     * @see http://php.net/manual/en/language.oop5.magic.php#object.tostring
      * @return string
      */
     public function __toString()
@@ -87,11 +91,18 @@ class Stream implements StreamInterface
     /**
      * Returns the current position of the file read/write pointer
      *
-     * @return int|bool Position of the file pointer or false on error.
+     * @return int Position of the file pointer
+     * @throws \RuntimeException on error.
      */
     public function tell()
     {
-        return ftell($this->resource);
+        $position = ftell($this->resource);
+        if ($position === false) {
+            // @codeCoverageIgnoreStart
+            throw new \RuntimeException("Unable to retrieve current position of file pointer.");
+            // @codeCoverageIgnoreEnd
+        }
+        return $position;
     }
 
     /**
@@ -124,11 +135,19 @@ class Stream implements StreamInterface
      *     PHP $whence values for `fseek()`.  SEEK_SET: Set position equal to
      *     offset bytes SEEK_CUR: Set position to current location plus offset
      *     SEEK_END: Set position to end-of-stream plus offset.
-     * @return bool Returns TRUE on success or FALSE on failure.
+     * @throws \RuntimeException on failure.
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        fseek($this->resource, $offset, $whence);
+        $result = -1;
+        if ($this->isSeekable()) {
+            $result = fseek($this->resource, $offset, $whence);
+        }
+        if ($result === -1) {
+            // @codeCoverageIgnoreStart
+            throw new \RuntimeException("Unable to seek to position.");
+            // @codeCoverageIgnoreEnd
+        }
     }
 
     /**
@@ -144,7 +163,15 @@ class Stream implements StreamInterface
      */
     public function rewind()
     {
-        rewind($this->resource);
+        $result = false;
+        if ($this->isSeekable()) {
+            $result = rewind($this->resource);
+        }
+        if ($result === false) {
+            // @codeCoverageIgnoreStart
+            throw new \RuntimeException("Unable to seek to position.");
+            // @codeCoverageIgnoreEnd
+        }
     }
 
     /**
@@ -162,12 +189,19 @@ class Stream implements StreamInterface
      * Write data to the stream.
      *
      * @param string $string The string that is to be written.
-     * @return int|bool Returns the number of bytes written to the stream on
-     *     success or FALSE on failure.
+     * @return int Returns the number of bytes written to the stream.
+     * @throws \RuntimeException on failure.
      */
     public function write($string)
     {
-        return fwrite($this->resource, $string);
+        $result = false;
+        if ($this->isWritable()) {
+            $result = fwrite($this->resource, $string);
+        }
+        if ($result === false) {
+            throw new \RuntimeException("Unable to write to stream.");
+        }
+        return $result;
     }
 
     /**
@@ -192,17 +226,33 @@ class Stream implements StreamInterface
      */
     public function read($length)
     {
-        return fread($this->resource, $length);
+        $result = false;
+        if ($this->isReadable()) {
+            $result = fread($this->resource, $length);
+        }
+        if ($result === false) {
+            throw new \RuntimeException("Unable to read from stream.");
+        }
+        return $result;
     }
 
     /**
      * Returns the remaining contents in a string
      *
      * @return string
+     * @throws \RuntimeException if unable to read or an error occurs while
+     *     reading.
      */
     public function getContents()
     {
-        return stream_get_contents($this->resource);
+        $result = false;
+        if ($this->isReadable()) {
+            $result = stream_get_contents($this->resource);
+        }
+        if ($result === false) {
+            throw new \RuntimeException("Unable to read from stream.");
+        }
+        return $result;
     }
 
     /**
