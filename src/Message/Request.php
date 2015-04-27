@@ -3,12 +3,13 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 class Request extends Message implements RequestInterface
 {
     /** @var string  */
-    protected $method = "GET";
+    protected $method;
     /** @var string */
     protected $requestTarget;
     /** @var UriInterface */
@@ -16,10 +17,39 @@ class Request extends Message implements RequestInterface
 
     // ------------------------------------------------------------------------
 
-    public function __construct()
-    {
+    /**
+     * @param UriInterface $uri
+     * @param string $method
+     * @param array $headers
+     * @param StreamInterface $body
+     */
+    public function __construct(
+        UriInterface $uri = null,
+        $method = "GET",
+        array $headers = null,
+        StreamInterface $body = null
+    ) {
         parent::__construct();
-        $this->uri = new Uri();
+
+        if ($uri !== null) {
+            $this->uri = $uri;
+        } else {
+            $this->uri = new Uri();
+        }
+
+        $this->method = $method;
+
+        if ($headers) {
+            foreach ($headers as $name => $values) {
+                foreach ($values as $value) {
+                    $this->headers[$name] = $value;
+                }
+            }
+        }
+
+        if ($body !== null) {
+            $this->body = $body;
+        }
     }
 
     public function __clone()

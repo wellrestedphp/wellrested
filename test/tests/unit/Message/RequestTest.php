@@ -15,6 +15,7 @@ use WellRESTed\Message\Uri;
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     // ------------------------------------------------------------------------
+    // Construction
 
     /**
      * @covers WellRESTed\Message\Request::__construct
@@ -23,6 +24,48 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $request = new Request();
         $this->assertNotNull($request);
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::__construct
+     */
+    public function testCreatesInstanceWithUri()
+    {
+        $uri = $this->prophesize('Psr\Http\Message\UriInterface');
+        $uri = $uri->reveal();
+        $request = new Request($uri);
+        $this->assertSame($uri, $request->getUri());
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::__construct
+     */
+    public function testCreatesInstanceWithMethod()
+    {
+        $method = "POST";
+        $request = new Request(null, $method);
+        $this->assertSame($method, $request->getMethod());
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::__construct
+     */
+    public function testSetsHeadersOnConstruction()
+    {
+        $request = new Request(null, null, [
+            "X-foo" => ["bar","baz"]
+        ]);
+        $this->assertEquals(["bar","baz"], $request->getHeader("X-foo"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Request::__construct
+     */
+    public function testSetsBodyOnConstruction()
+    {
+        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $request = new Request(null, null, [], $body->reveal());
+        $this->assertSame($body->reveal(), $request->getBody());
     }
 
     // ------------------------------------------------------------------------
