@@ -14,10 +14,26 @@ abstract class Message implements MessageInterface
     /** @var string */
     protected $protcolVersion = "1.1";
 
-    public function __construct()
+    /**
+     * @param array $headers
+     * @param StreamInterface $body
+     */
+    public function __construct(array $headers = null, StreamInterface $body = null)
     {
         $this->headers = new HeaderCollection();
-        $this->body = new NullStream();
+        if ($headers) {
+            foreach ($headers as $name => $values) {
+                foreach ($values as $value) {
+                    $this->headers[$name] = $value;
+                }
+            }
+        }
+
+        if ($body !== null) {
+            $this->body = $body;
+        } else {
+            $this->body = new NullStream();
+        }
     }
 
     public function __clone()

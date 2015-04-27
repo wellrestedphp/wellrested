@@ -26,21 +26,9 @@ class Response extends Message implements ResponseInterface
      */
     public function __construct($statusCode = 500, array $headers = null, StreamInterface $body = null)
     {
-        parent::__construct();
+        parent::__construct($headers, $body);
         $this->statusCode = $statusCode;
         $this->reasonPhrase = $this->getDefaultReasonPhraseForStatusCode($statusCode);
-
-        if ($headers) {
-            foreach ($headers as $name => $values) {
-                foreach ($values as $value) {
-                    $this->headers[$name] = $value;
-                }
-            }
-        }
-
-        if ($body !== null) {
-            $this->body = $body;
-        }
     }
 
     // ------------------------------------------------------------------------

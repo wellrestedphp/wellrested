@@ -29,7 +29,7 @@ class Request extends Message implements RequestInterface
         array $headers = null,
         StreamInterface $body = null
     ) {
-        parent::__construct();
+        parent::__construct($headers, $body);
 
         if ($uri !== null) {
             $this->uri = $uri;
@@ -38,18 +38,6 @@ class Request extends Message implements RequestInterface
         }
 
         $this->method = $method;
-
-        if ($headers) {
-            foreach ($headers as $name => $values) {
-                foreach ($values as $value) {
-                    $this->headers[$name] = $value;
-                }
-            }
-        }
-
-        if ($body !== null) {
-            $this->body = $body;
-        }
     }
 
     public function __clone()

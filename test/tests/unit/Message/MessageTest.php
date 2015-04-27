@@ -18,6 +18,28 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers WellRESTed\Message\Message::__construct
+     */
+    public function testSetsHeadersOnConstruction()
+    {
+        $headers = ["X-foo" => ["bar", "baz"]];
+        $body = null;
+        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message', [$headers, $body]);
+        $this->assertEquals(["bar", "baz"], $message->getHeader("X-foo"));
+    }
+
+    /**
+     * @covers WellRESTed\Message\Message::__construct
+     */
+    public function testSetsBodyOnConstruction()
+    {
+        $headers = null;
+        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message', [$headers, $body->reveal()]);
+        $this->assertSame($body->reveal(), $message->getBody());
+    }
+
+    /**
      * @covers WellRESTed\Message\Message::__clone
      */
     public function testCloneMakesDeepCopyOfHeaders()
