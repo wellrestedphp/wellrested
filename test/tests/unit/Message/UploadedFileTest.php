@@ -74,13 +74,13 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
      * @covers WellRESTed\Message\UploadedFile::getStream
      * @expectedException \RuntimeException
      */
-    public function testGetStreamThrowsExceptionAfterMove()
+    public function testGetStreamThrowsExceptionAfterMoveTo()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
 
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
-        $file->move($this->movePath);
+        $file->moveTo($this->movePath);
         $file->getStream();
     }
 
@@ -88,32 +88,32 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     // move
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::move
+     * @covers WellRESTed\Message\UploadedFile::moveTo
      */
-    public function testMoveRelocatesUploadedFileToDestiationIfExists()
+    public function testMoveToRelocatesUploadedFileToDestiationIfExists()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
         $originalMd5 = md5_file($this->tmpName);
 
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
-        $file->move($this->movePath);
+        $file->moveTo($this->movePath);
 
         $this->assertEquals($originalMd5, md5_file($this->movePath));
     }
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::move
+     * @covers WellRESTed\Message\UploadedFile::moveTo
      * @expectedException \RuntimeException
      */
-    public function testThrowsExcpetionOnSubsequentCallToMove()
+    public function testThrowsExcpetionOnSubsequentCallToMoveTo()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
 
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
-        $file->move($this->movePath);
-        $file->move($this->movePath);
+        $file->moveTo($this->movePath);
+        $file->moveTo($this->movePath);
     }
 
     // ------------------------------------------------------------------------

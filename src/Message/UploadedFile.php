@@ -79,7 +79,7 @@ class UploadedFile implements UploadedFileInterface
      * @throws \RuntimeException on any error during the move operation, or on
      *     the second or subsequent call to the method.
      */
-    public function move($path)
+    public function moveTo($path)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
             throw new \RuntimeException("File " . $this->tmpName . " does not exist.");
