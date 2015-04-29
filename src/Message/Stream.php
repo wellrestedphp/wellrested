@@ -49,8 +49,14 @@ class Stream implements StreamInterface
      */
     public function __toString()
     {
-        rewind($this->resource);
-        return $this->getContents();
+        $string = "";
+        try {
+            rewind($this->resource);
+            $string = $this->getContents();
+        } catch (Exception $e) {
+            // Silence exceptions in order to conform with PHP's string casting operations.
+        }
+        return $string;
     }
 
     /**

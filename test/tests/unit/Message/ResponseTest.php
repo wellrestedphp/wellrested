@@ -76,7 +76,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
             [503, null, "Service Unavailable"],
             [504, null, "Gateway Timeout"],
             [505, null, "HTTP Version Not Supported"],
-            [598, null, null],
+            [598, null, ""],
             [599, "Nonstandard", "Nonstandard"]
         ];
     }
