@@ -186,10 +186,10 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\Message::getHeaderLine
      */
-    public function testGetHeaderLineReturnsNullForUnsetHeader()
+    public function testGetHeaderLineReturnsEmptyStringForUnsetHeader()
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertNull($message->getHeaderLine("X-not-set"));
+        $this->assertSame("", $message->getHeaderLine("X-not-set"));
     }
 
     /**
