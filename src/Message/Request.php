@@ -6,6 +6,18 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * Representation of an outgoing, client-side request.
+ *
+ * Per the HTTP specification, this interface includes properties for
+ * each of the following:
+ *
+ * - Protocol version
+ * - HTTP method
+ * - URI
+ * - Headers
+ * - Message body
+ */
 class Request extends Message implements RequestInterface
 {
     /** @var string  */
@@ -18,6 +30,9 @@ class Request extends Message implements RequestInterface
     // ------------------------------------------------------------------------
 
     /**
+     * Create a new Request.
+     *
+     * @see WellRESTed\Message\Message
      * @param UriInterface $uri
      * @param string $method
      * @param array $headers
@@ -61,7 +76,7 @@ class Request extends Message implements RequestInterface
      * withRequestTarget() below).
      *
      * If no URI is available, and no request-target has been specifically
-     * provided, this method MUST return the string "/".
+     * provided, this method will return the string "/".
      *
      * @return string
      */
@@ -91,10 +106,6 @@ class Request extends Message implements RequestInterface
      * this method may be used to create an instance with the specified
      * request-target, verbatim.
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * changed request target.
-     *
      * @link http://tools.ietf.org/html/rfc7230#section-2.7 (for the various
      *     request-target forms allowed in request messages)
      * @param mixed $requestTarget
@@ -121,12 +132,8 @@ class Request extends Message implements RequestInterface
      * Create a new instance with the provided HTTP method.
      *
      * While HTTP method names are typically all uppercase characters, HTTP
-     * method names are case-sensitive and thus implementations SHOULD NOT
+     * method names are case-sensitive. Therefore, this method will not
      * modify the given string.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * changed request method.
      *
      * @param string $method Case-insensitive method.
      * @return self
@@ -142,11 +149,9 @@ class Request extends Message implements RequestInterface
     /**
      * Retrieves the URI instance.
      *
-     * This method MUST return a UriInterface instance.
-     *
      * @link http://tools.ietf.org/html/rfc3986#section-4.3
      * @return UriInterface Returns a UriInterface instance
-     *     representing the URI of the request, if any.
+     *     representing the URI of the request.
      */
     public function getUri()
     {
@@ -156,22 +161,23 @@ class Request extends Message implements RequestInterface
     /**
      * Returns an instance with the provided URI.
      *
-     * This method will update the Host header of the returned request by
+     * This method updates the Host header of the returned request by
      * default if the URI contains a host component. If the URI does not
      * contain a host component, any pre-existing Host header will be carried
      * over to the returned request.
      *
      * You can opt-in to preserving the original state of the Host header by
      * setting `$preserveHost` to `true`. When `$preserveHost` is set to
-     * `true`, the returned request will not update the Host header of the
-     * returned message -- even if the message contains no Host header. This
-     * means that a call to `getHeader('Host')` on the original request MUST
-     * equal the return value of a call to `getHeader('Host')` on the returned
-     * request.
+     * `true`, this method interacts with the Host header in the following ways:
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return an instance that has the
-     * new UriInterface instance.
+     * - If the the Host header is missing or empty, and the new URI contains
+     *   a host component, this method will update the Host header in the returned
+     *   request.
+     * - If the Host header is missing or empty, and the new URI does not contain a
+     *   host component, this method will not update the Host header in the returned
+     *   request.
+     * - If a Host header is present and non-empty, this method will not update
+     *   the Host header in the returned request.
      *
      * @link http://tools.ietf.org/html/rfc3986#section-4.3
      * @param UriInterface $uri New request URI to use.

@@ -22,7 +22,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::withScheme
+     * @covers WellRESTed\Message\Uri::withScheme
      * @dataProvider schemeProvider
      * @param string $expected The expected result of getScheme
      * @param string $scheme The scheme to pass to withScheme
@@ -196,8 +196,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getUserInfo
-     * @covers       WellRESTed\Message\Uri::withUserInfo
+     * @covers WellRESTed\Message\Uri::getUserInfo
+     * @covers WellRESTed\Message\Uri::withUserInfo
      * @dataProvider userInfoProvider
      *
      * @param string $expected The combined user:password value
@@ -235,8 +235,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getHost
-     * @covers       WellRESTed\Message\Uri::withHost
+     * @covers WellRESTed\Message\Uri::getHost
+     * @covers WellRESTed\Message\Uri::withHost
      * @dataProvider hostProvider
      * @param $expected
      * @param $host
@@ -252,12 +252,14 @@ class UriTest extends \PHPUnit_Framework_TestCase
     {
         return [
             ["", ""],
-            ["localhost", "localhost"]
+            ["localhost", "localhost"],
+            ["localhost", "LOCALHOST"],
+            ["foo.com", "FOO.com"]
         ];
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::withHost
+     * @covers WellRESTed\Message\Uri::withHost
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidHostProvider
      * @param $host
@@ -308,8 +310,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getPort
-     * @covers       WellRESTed\Message\Uri::withPort
+     * @covers WellRESTed\Message\Uri::getPort
+     * @covers WellRESTed\Message\Uri::withPort
      * @dataProvider portAndSchemeProvider
      *
      * @param int|null $expectedPort
@@ -336,7 +338,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::withPort
+     * @covers WellRESTed\Message\Uri::withPort
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPortProvider
      * @param int $port
@@ -370,9 +372,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getPath
-     * @covers       WellRESTed\Message\Uri::withPath
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getPath
+     * @covers WellRESTed\Message\Uri::withPath
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -385,9 +387,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getPath
-     * @covers       WellRESTed\Message\Uri::withPath
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getPath
+     * @covers WellRESTed\Message\Uri::withPath
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -426,9 +428,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getQuery
-     * @covers       WellRESTed\Message\Uri::withQuery
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getQuery
+     * @covers WellRESTed\Message\Uri::withQuery
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -441,9 +443,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getQuery
-     * @covers       WellRESTed\Message\Uri::withQuery
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getQuery
+     * @covers WellRESTed\Message\Uri::withQuery
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -466,7 +468,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::withPath
+     * @covers WellRESTed\Message\Uri::withPath
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPathProvider
      * @param $path
@@ -499,9 +501,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getFragment
-     * @covers       WellRESTed\Message\Uri::withFragment
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getFragment
+     * @covers WellRESTed\Message\Uri::withFragment
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment
@@ -514,9 +516,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers       WellRESTed\Message\Uri::getFragment
-     * @covers       WellRESTed\Message\Uri::withFragment
-     * @covers       WellRESTed\Message\Uri::percentEncode
+     * @covers WellRESTed\Message\Uri::getFragment
+     * @covers WellRESTed\Message\Uri::withFragment
+     * @covers WellRESTed\Message\Uri::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment

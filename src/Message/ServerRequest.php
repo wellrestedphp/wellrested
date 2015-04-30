@@ -5,6 +5,34 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Representation of an incoming, server-side HTTP request.
+ *
+ * Per the HTTP specification, this interface includes properties for
+ * each of the following:
+ *
+ * - Protocol version
+ * - HTTP method
+ * - URI
+ * - Headers
+ * - Message body
+ *
+ * Additionally, it encapsulates all data as it has arrived to the
+ * application from the CGI and/or PHP environment, including:
+ *
+ * - The values represented in $_SERVER.
+ * - Any cookies provided (generally via $_COOKIE)
+ * - Query string arguments (generally via $_GET, or as parsed via parse_str())
+ * - Upload files, if any (as represented by $_FILES)
+ * - Deserialized body parameters (generally from $_POST)
+ *
+ * $_SERVER values MUST be treated as immutable, as they represent application
+ * state at the time of request; as such, no methods are provided to allow
+ * modification of those values. The other values provide such methods, as they
+ * can be restored from $_SERVER or the request body, and may need treatment
+ * during the application (e.g., body parameters may be deserialized based on
+ * content type).
+ */
 class ServerRequest extends Request implements ServerRequestInterface
 {
     /** @var array */
@@ -22,6 +50,15 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates a new, empty representation of a server-side HTTP request.
+     *
+     * To obtain a ServerRequest representing the request sent to the server
+     * instantiaing the request, use the factory method
+     * ServerRequest::getServerRequest
+     *
+     * @see ServerRequest::getServerRequest
+     */
     public function __construct()
     {
         parent::__construct();
@@ -62,9 +99,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * Retrieves cookies sent by the client to the server.
      *
-     * The data MUST be compatible with the structure of the $_COOKIE
-     * superglobal.
-     *
      * @return array
      */
     public function getCookieParams()
@@ -78,10 +112,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      * The data IS NOT REQUIRED to come from the $_COOKIE superglobal, but MUST
      * be compatible with the structure of $_COOKIE. Typically, this data will
      * be injected at instantiation.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * updated cookie values.
      *
      * @param array $cookies Array of key/value pairs representing cookies.
      * @return self
@@ -98,10 +128,10 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * Retrieves the deserialized query string arguments, if any.
      *
-     * Note: the query params might not be in sync with the URL or server
+     * Note: the query params might not be in sync with the URI or server
      * params. If you need to ensure you are only getting the original
-     * values, you may need to parse the composed URL or the `QUERY_STRING`
-     * composed in the server params.
+     * values, you may need to parse the query string from `getUri()->getQuery()`
+     * or from the `QUERY_STRING` server param.
      *
      * @return array
      */
@@ -124,10 +154,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      * Setting query string arguments MUST NOT change the URL stored by the
      * request, nor the values in the server params.
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * updated query string arguments.
-     *
      * @param array $query Array of query string arguments, typically from
      *     $_GET.
      * @return self
@@ -149,7 +175,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * instantiation, or MAY be injected via withUploadedFiles().
      *
      * @return array An array tree of UploadedFileInterface instances; an empty
-     *     array MUST be returned if no data is present.
+     *     array will be returned if no data is present.
      */
     public function getUploadedFiles()
     {
@@ -158,10 +184,6 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     /**
      * Create a new instance with the specified uploaded files.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return an instance that has the
-     * updated body parameters.
      *
      * @param array An array tree of UploadedFileInterface instances.
      * @return self
@@ -183,7 +205,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * Retrieve any parameters provided in the request body.
      *
      * If the request Content-Type is either application/x-www-form-urlencoded
-     * or multipart/form-data, and the request method is POST, this method MUST
+     * or multipart/form-data, and the request method is POST, this method will
      * return the contents of $_POST.
      *
      * Otherwise, this method may return any results of deserializing
@@ -216,10 +238,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      * As an example, if content negotiation determines that the request data
      * is a JSON payload, this method could be used to create a request
      * instance with the deserialized parameters.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * updated body parameters.
      *
      * @param null|array|object $data The deserialized body data. This will
      *     typically be in an array or object.
@@ -280,10 +298,6 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * This method allows setting a single derived request attribute as
      * described in getAttributes().
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * updated attribute.
      *
      * @see getAttributes()
      * @param string $name The attribute name.
@@ -478,5 +492,4 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         return true;
     }
-
 }

@@ -5,6 +5,9 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Message defines core functionality for classes that represent HTTP messages.
+ */
 abstract class Message implements MessageInterface
 {
     /** @var HeaderCollection */
@@ -15,8 +18,19 @@ abstract class Message implements MessageInterface
     protected $protcolVersion = "1.1";
 
     /**
-     * @param array $headers
-     * @param StreamInterface $body
+     * Create a new Message, optionally with headers and a body.
+     *
+     * If provided, $headers MUST by an associative array with header field
+     * names as (string) keys and lists of header field values (string[])
+     * as values.
+     *
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
+     * @param array $headers Associative array of headers fields with header
+     *     field names as keys and list arrays of field values as values
+     * @param StreamInterface $body A stream representation of the message
+     *     entity body
      */
     public function __construct(array $headers = null, StreamInterface $body = null)
     {
@@ -62,10 +76,6 @@ abstract class Message implements MessageInterface
      * The version string MUST contain only the HTTP version number (e.g.,
      * "1.1", "1.0").
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * new protocol version.
-     *
      * @param string $version HTTP protocol version
      * @return self
      */
@@ -77,7 +87,7 @@ abstract class Message implements MessageInterface
     }
 
     /**
-     * Retrieves all message headers.
+     * Retrieve all message headers.
      *
      * The keys represent the header name as it will be sent over the wire, and
      * each value is an array of strings associated with the header.
@@ -97,8 +107,7 @@ abstract class Message implements MessageInterface
      * While header names are not case-sensitive, getHeaders() will preserve the
      * exact case in which headers were originally specified.
      *
-     * @return array Returns an associative array of the message's headers. Each
-     *     key MUST be a header name, and each value MUST be an array of strings.
+     * @return array Returns an associative array of the message's headers.
      */
     public function getHeaders()
     {
@@ -128,13 +137,13 @@ abstract class Message implements MessageInterface
      * This method returns an array of all the header values of the given
      * case-insensitive header name.
      *
-     * If the header does not appear in the message, this method MUST return an
+     * If the header does not appear in the message, this method returns an
      * empty array.
      *
      * @param string $name Case-insensitive header field name.
      * @return string[] An array of string values as provided for the given
-     *    header. If the header does not appear in the message, this method MUST
-     *    return an empty array.
+     *    header. If the header does not appear in the message, this method
+     *    returns an empty array.
      */
     public function getHeader($name)
     {
@@ -157,13 +166,13 @@ abstract class Message implements MessageInterface
      * comma concatenation. For such headers, use getHeader() instead
      * and supply your own delimiter when concatenating.
      *
-     * If the header does not appear in the message, this method MUST return
-     * an empty string.
+     * If the header does not appear in the message, this method returns an
+     * empty string.
      *
      * @param string $name Case-insensitive header field name.
      * @return string A string of values as provided for the given header
      *    concatenated together using a comma. If the header does not appear in
-     *    the message, this method MUST return an empty string.
+     *    the message, this method returns an empty string.
      */
     public function getHeaderLine($name)
     {
@@ -181,10 +190,6 @@ abstract class Message implements MessageInterface
      * While header names are case-insensitive, the casing of the header will
      * be preserved by this function, and returned from getHeaders().
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * new and/or updated header and value.
-     *
      * @param string $name Case-insensitive header field name.
      * @param string|string[] $value Header value(s).
      * @return self
@@ -193,7 +198,6 @@ abstract class Message implements MessageInterface
     public function withHeader($name, $value)
     {
         $values = $this->getValidatedHeaders($name, $value);
-
         $message = clone $this;
         unset($message->headers[$name]);
         foreach ($values as $value) {
@@ -209,10 +213,6 @@ abstract class Message implements MessageInterface
      * Existing values for the specified header will be maintained. The new
      * value(s) will be appended to the existing list. If the header did not
      * exist previously, it will be added.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * new header and/or value.
      *
      * @param string $name Case-insensitive header field name to add.
      * @param string|string[] $value Header value(s).
@@ -232,12 +232,6 @@ abstract class Message implements MessageInterface
 
     /**
      * Creates a new instance, without the specified header.
-     *
-     * Header resolution MUST be done without case-sensitivity.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that removes
-     * the named header.
      *
      * @param string $name Case-insensitive header field name to remove.
      * @return self
@@ -263,10 +257,6 @@ abstract class Message implements MessageInterface
      * Create a new instance, with the specified message body.
      *
      * The body MUST be a StreamInterface object.
-     *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * new body stream.
      *
      * @param StreamInterface $body Body.
      * @return self
@@ -300,4 +290,3 @@ abstract class Message implements MessageInterface
         }
     }
 }
-

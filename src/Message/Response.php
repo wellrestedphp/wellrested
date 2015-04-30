@@ -5,21 +5,35 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Representation of an outgoing, server-side response.
+ *
+ * Per the HTTP specification, this interface includes properties for
+ * each of the following:
+ *
+ * - Protocol version
+ * - Status code and reason phrase
+ * - Headers
+ * - Message body
+ */
 class Response extends Message implements ResponseInterface
 {
-    /**
-     * Text explanation of the HTTP Status Code. You only need to set this if
-     * you are using nonstandard status codes. Otherwise, the instance will
-     * set the when you update the status code.
-     *
-     * @var string
-     */
+    /** @var string Text explanation of the HTTP Status Code. */
     private $reasonPhrase;
     /** @var int  HTTP status code */
     private $statusCode;
-    /** @var string HTTP protocol and version */
 
     /**
+     * Create a new Response, optionally with status code, headers, and a body.
+     *
+     * If provided, $headers MUST by an associative array with header field
+     * names as (string) keys and lists of header field values (string[])
+     * as values.
+     *
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
+     * @see WellRESTed\Message\Message
      * @param int $statusCode
      * @param array $headers
      * @param StreamInterface $body
@@ -35,9 +49,9 @@ class Response extends Message implements ResponseInterface
     // Psr\Http\Message\ResponseInterface
 
     /**
-     * Gets the response Status-Code.
+     * Gets the response status code.
      *
-     * The Status-Code is a 3-digit integer result code of the server's attempt
+     * The status code is a 3-digit integer result code of the server's attempt
      * to understand and satisfy the request.
      *
      * @return integer Status code.
@@ -51,15 +65,9 @@ class Response extends Message implements ResponseInterface
      * Create a new instance with the specified status code, and optionally
      * reason phrase, for the response.
      *
-     * If no Reason-Phrase is specified, implementations MAY choose to default
-     * to the RFC 7231 or IANA recommended reason phrase for the response's
-     * Status-Code.
+     * If no reason phrase is specified, this method will provide a standard
+     * reason phrase, if possible.
      *
-     * This method MUST be implemented in such a way as to retain the
-     * immutability of the message, and MUST return a new instance that has the
-     * updated status and reason phrase.
-     *
-     * @link http://tools.ietf.org/html/rfc7231#section-6
      * @link http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
      * @param integer $code The 3-digit integer result code to set.
      * @param string $reasonPhrase The reason phrase to use with the
@@ -80,17 +88,13 @@ class Response extends Message implements ResponseInterface
     }
 
     /**
-     * Gets the response Reason-Phrase, a short textual description of the Status-Code.
+     * Gets the response reason phrase, a short textual description of the status code.
      *
-     * Because a Reason-Phrase is not a required element in a response
-     * Status-Line, the Reason-Phrase value MAY be null. Implementations MAY
-     * choose to return the default RFC 7231 recommended reason phrase (or those
-     * listed in the IANA HTTP Status Code Registry) for the response's
-     * Status-Code.
+     * The reason phrase is not required and may be an empty string.
      *
      * @link http://tools.ietf.org/html/rfc7231#section-6
      * @link http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-     * @return string|null Reason phrase, or null if unknown.
+     * @return string Reason phrase, or an empty string if unknown.
      */
     public function getReasonPhrase()
     {

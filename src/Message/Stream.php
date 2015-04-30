@@ -36,13 +36,10 @@ class Stream implements StreamInterface
     /**
      * Reads all data from the stream into a string, from the beginning to end.
      *
-     * This method MUST attempt to seek to the beginning of the stream before
+     * This method will attempt to seek to the beginning of the stream before
      * reading data and read the stream until the end is reached.
      *
      * Warning: This could attempt to load a large amount of data into memory.
-     *
-     * This method MUST NOT raise an exception in order to conform with PHP's
-     * string casting operations.
      *
      * @see http://php.net/manual/en/language.oop5.magic.php#object.tostring
      * @return string
@@ -53,7 +50,7 @@ class Stream implements StreamInterface
         try {
             rewind($this->resource);
             $string = $this->getContents();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Silence exceptions in order to conform with PHP's string casting operations.
         }
         return $string;
@@ -74,7 +71,7 @@ class Stream implements StreamInterface
      *
      * After the stream has been detached, the stream is in an unusable state.
      *
-     * @return resource|null Underlying PHP stream, if any
+     * @return resource|null Underlying file-pointer handler
      */
     public function detach()
     {
@@ -159,13 +156,12 @@ class Stream implements StreamInterface
     /**
      * Seek to the beginning of the stream.
      *
-     * If the stream is not seekable, this method will return FALSE, indicating
-     * failure; otherwise, it will perform a seek(0), and return the status of
-     * that operation.
+     * If the stream is not seekable, this method will raise an exception;
+     * otherwise, it will perform a seek(0).
      *
      * @see seek()
      * @link http://www.php.net/manual/en/function.fseek.php
-     * @return bool Returns TRUE on success or FALSE on failure.
+     * @throws \RuntimeException on failure.
      */
     public function rewind()
     {
@@ -227,8 +223,9 @@ class Stream implements StreamInterface
      * @param int $length Read up to $length bytes from the object and return
      *     them. Fewer than $length bytes may be returned if underlying stream
      *     call returns fewer bytes.
-     * @return string|false Returns the data read from the stream, false if
-     *     unable to read or if an error occurs.
+     * @return string Returns the data read from the stream, or an empty string
+     *     if no bytes are available.
+     * @throws \RuntimeException if an error occurs.
      */
     public function read($length)
     {

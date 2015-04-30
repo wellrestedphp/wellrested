@@ -4,20 +4,16 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * NullStream is a minimal, always-empty, non-writeable stream.
+ *
+ * Use this for messages with no body.
+ */
 class NullStream implements StreamInterface
 {
     /**
-     * Reads all data from the stream into a string, from the beginning to end.
+     * Returns an empty string
      *
-     * This method MUST attempt to seek to the beginning of the stream before
-     * reading data and read the stream until the end is reached.
-     *
-     * Warning: This could attempt to load a large amount of data into memory.
-     *
-     * This method MUST NOT raise an exception in order to conform with PHP's
-     * string casting operations.
-     *
-     * @see http://php.net/manual/en/language.oop5.magic.php#object.tostring
      * @return string
      */
     public function __toString()
@@ -26,7 +22,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Closes the stream and any underlying resources.
+     * No-op
      *
      * @return void
      */
@@ -35,9 +31,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Separates any underlying resources from the stream.
-     *
-     * After the stream has been detached, the stream is in an unusable state.
+     * No-op
      *
      * @return resource|null Underlying PHP stream, if any
      */
@@ -46,7 +40,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Get the size of the stream if known
+     * Returns 0
      *
      * @return int|null Returns the size in bytes if known, or null if unknown.
      */
@@ -56,7 +50,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns the current position of the file read/write pointer
+     * Returns 0
      *
      * @return int|bool Position of the file pointer or false on error.
      */
@@ -66,7 +60,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns true if the stream is at the end of the stream.
+     * Returns true
      *
      * @return bool
      */
@@ -76,7 +70,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns whether or not the stream is seekable.
+     * Returns false
      *
      * @return bool
      */
@@ -86,7 +80,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Seek to a position in the stream.
+     * Always throws exception
      *
      * @link http://www.php.net/manual/en/function.fseek.php
      * @param int $offset Stream offset
@@ -103,10 +97,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Seek to the beginning of the stream.
-     *
-     * If the stream is not seekable, this method will raise an exception;
-     * otherwise, it will perform a seek(0).
+     * Always throws exception
      *
      * @see seek()
      * @link http://www.php.net/manual/en/function.fseek.php
@@ -118,7 +109,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns whether or not the stream is writable.
+     * Returns false.
      *
      * @return bool
      */
@@ -128,7 +119,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Write data to the stream.
+     * Always throws exception
      *
      * @param string $string The string that is to be written.
      * @return int Returns the number of bytes written to the stream.
@@ -140,7 +131,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns whether or not the stream is readable.
+     * Returns true
      *
      * @return bool
      */
@@ -150,7 +141,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Read data from the stream.
+     * Returns an empty string
      *
      * @param int $length Read up to $length bytes from the object and return
      *     them. Fewer than $length bytes may be returned if underlying stream
@@ -177,10 +168,7 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Get stream metadata as an associative array or retrieve a specific key.
-     *
-     * The keys returned are identical to the keys returned from PHP's
-     * stream_get_meta_data() function.
+     * Returns null
      *
      * @link http://php.net/manual/en/function.stream-get-meta-data.php
      * @param string $key Specific metadata to retrieve.
