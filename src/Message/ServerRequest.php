@@ -365,30 +365,49 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
     }
 
-    protected function readUploadedFiles($files)
+    protected function readUploadedFiles($input)
     {
         $uploadedFiles = [];
-        foreach ($files as $name => $file) {
-            if (is_array($file["name"])) {
-                for ($index = 0, $u = count($file["name"]); $index < $u; ++$index) {
-                    $uploadedFile = new UploadedFile(
-                        $file["name"][$index],
-                        $file["type"][$index],
-                        $file["size"][$index],
-                        $file["tmp_name"][$index],
-                        $file["error"][$index]
-                    );
-                    $uploadedFiles[$name][$index] = $uploadedFile;
-                }
-            } else {
-                $index = 0;
-                $uploadedFile = new UploadedFile(
-                    $file["name"], $file["type"], $file["size"], $file["tmp_name"], $file["error"]
-                );
-                $uploadedFiles[$name][$index] = $uploadedFile;
-            }
+        foreach ($input as $name => $value) {
+            $this->addUploadedFilesToBranch($uploadedFiles, $name, $value);
         }
         $this->uploadedFiles = $uploadedFiles;
+    }
+
+    protected function addUploadedFilesToBranch(&$branch, $name, $value)
+    {
+        if (isset($value["name"], $value["type"], $value["tmp_name"], $value["error"], $value["size"])) {
+            // This is a file. It may be a single file, or a list of files.
+
+            // Check if the "name" element is a list array.
+            if (is_array($value["name"]) && (array_keys($value["name"]) === range(0, count($value["name"]) - 1))) {
+                $list = [];
+                for ($index = 0, $u = count($value["name"]); $index < $u; ++$index) {
+                    $uploadedFile = new UploadedFile(
+                        $value["name"][$index],
+                        $value["type"][$index],
+                        $value["size"][$index],
+                        $value["tmp_name"][$index],
+                        $value["error"][$index]
+                    );
+                    $list[] = $uploadedFile;
+                }
+                $branch[$name] = $list;
+            } else {
+                // All expected keys are present. This is an uploaded file.
+                $uploadedFile = new UploadedFile(
+                    $value["name"], $value["type"], $value["size"], $value["tmp_name"], $value["error"]
+                );
+                $branch[$name] = $uploadedFile;
+            }
+        } else {
+            // Add another branch
+            $nextBranch = [];
+            foreach ($value as $nextName => $nextValue) {
+                $this->addUploadedFilesToBranch($nextBranch, $nextName, $nextValue);
+            }
+            $branch[$name] = $nextBranch;
+        }
     }
 
     protected function readUri()

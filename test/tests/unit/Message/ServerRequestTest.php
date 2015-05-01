@@ -285,10 +285,11 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @covers WellRESTed\Message\ServerRequest::getServerRequest
      * @covers WellRESTed\Message\ServerRequest::readUploadedFiles
      * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     * @covers WellRESTed\Message\ServerRequest::addUploadedFilesToBranch
      * @preserveGlobalState disabled
      * @dataProvider uploadedFileProvider
      */
-    public function testGetServerRequestProvidesUploadedFiles($file, $name, $index)
+    public function testGetServerRequestProvidesUploadedFiles($file, $path)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -296,46 +297,68 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
             "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded"
         ];
         $_FILES = [
-            "file" => [
-                "name" => "index.html",
-                "type" => "text/html",
+            "single" => [
+                "name" => "single.txt",
+                "type" => "text/plain",
                 "tmp_name" => "/tmp/php9hNlHe",
-                "error" => 0,
+                "error" => UPLOAD_ERR_OK,
                 "size" => 524
             ],
-            "fileList" => [
-                "name" => [
-                    "data.json",
-                    ""
-                ],
-                "type" => [
-                    "application/json",
-                    ""
-                ],
-                "tmp_name" => [
-                    "/tmp/phpUigZSO",
-                    ""
-                ],
-                "error" => [
-                    0,
-                    4
-                ],
-                "size" => [
-                    1024,
-                    0
+            "nested" => [
+                "level2" => [
+                    "name" => "nested.json",
+                    "type" => "application/json",
+                    "tmp_name" => "/tmp/phpadhjk",
+                    "error" => UPLOAD_ERR_OK,
+                    "size" => 1024
+                ]
+            ],
+            "nestedList" => [
+                "level2" => [
+                    "name" => [
+                        0 => "nestedList0.jpg",
+                        1 => "nestedList1.jpg",
+                        2 => ""
+                    ],
+                    "type" => [
+                        0 => "image/jpeg",
+                        1 => "image/jpeg",
+                        2 => ""
+                    ],
+                    "tmp_name" => [
+                        0 => "/tmp/phpjpg0",
+                        1 => "/tmp/phpjpg1",
+                        2 => ""
+                    ],
+                    "error" => [
+                        0 => UPLOAD_ERR_OK,
+                        1 => UPLOAD_ERR_OK,
+                        2 => UPLOAD_ERR_NO_FILE
+                    ],
+                    "size" => [
+                        0 => 256,
+                        1 => 4096,
+                        2 => 0
+                    ]
                 ]
             ]
         ];
         $request = ServerRequest::getServerRequest();
-        $this->assertEquals($file, $request->getUploadedFiles()[$name][$index]);
+        $current = $request->getUploadedFiles();
+        foreach ($path as $item) {
+            $current = $current[$item];
+        }
+        $this->assertEquals($file, $current);
     }
 
     public function uploadedFileProvider()
     {
         return [
-            [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0), "file", 0],
-            [new UploadedFile("data.json", "application/json", 1024, "/tmp/phpUigZSO", 0), "fileList", 0],
-            [new UploadedFile("", "", 0, "", 4), "fileList", 1]
+            [new UploadedFile("single.txt", "text/plain", 524, "/tmp/php9hNlHe", UPLOAD_ERR_OK), ["single"]],
+            [new UploadedFile("nested.json", "application/json", 1024, "/tmp/phpadhjk", UPLOAD_ERR_OK), ["nested", "level2"]],
+            [new UploadedFile("nestedList0.jpg", "image/jpeg", 256, "/tmp/phpjpg0", UPLOAD_ERR_OK), ["nestedList", "level2", 0]],
+            [new UploadedFile("nestedList1.jpg", "image/jpeg", 4096, "/tmp/phpjpg1", UPLOAD_ERR_OK), ["nestedList", "level2", 1]],
+            [new UploadedFile("", "", 0, "", UPLOAD_ERR_NO_FILE), ["nestedList", "level2", 2]]
         ];
     }
 
