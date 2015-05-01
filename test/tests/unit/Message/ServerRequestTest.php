@@ -369,7 +369,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     public function testWithUploadedFilesCreatesNewInstance()
     {
         $uploadedFiles = [
-            "file" => [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]
+            "file" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
         ];
         $request = new ServerRequest();
         $request1 = $request->withUploadedFiles([]);
@@ -380,15 +380,30 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
      * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     * @dataProvider validUploadedFilesProvider
      */
-    public function testWithUploadedFilesReturnsPassedUploadedFiles()
+    public function testWithUploadedFilesReturnsPassedUploadedFiles($uploadedFiles)
     {
-        $uploadedFiles = [
-            "file" => [new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]
-        ];
         $request = new ServerRequest();
         $request = $request->withUploadedFiles($uploadedFiles);
         $this->assertSame($uploadedFiles, $request->getUploadedFiles());
+    }
+
+    public function validUploadedFilesProvider()
+    {
+        return [
+            [[]],
+            [["files" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]],
+            [["nested" => [
+                "level2" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
+            ]]],
+            [["nestedList" => [
+                "level2" => [
+                    new UploadedFile("file1.html", "text/html", 524, "/tmp/php9hNlHe", 0),
+                    new UploadedFile("file2.html", "text/html", 524, "/tmp/php9hNshj", 0)
+                ]
+            ]]]
+        ];
     }
 
     /**
@@ -408,33 +423,54 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         return [
             // All keys must be strings
             [[new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]],
-
-            // All values must be arrays.
-            [["file" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)]],
-
-            // All values must be list arrays.
             [
-                [
-                    "file" =>
-                        [
-                            "file1" => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
-                        ]
-                ]
+                [new UploadedFile("index1.html", "text/html", 524, "/tmp/php9hNlHe", 0)],
+                [new UploadedFile("index2.html", "text/html", 524, "/tmp/php9hNlHe", 0)]
             ],
             [
-                [
-                    "file" => [
-                        0 => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
-                        2 => new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0)
+                "single" => [
+                    "name" => "single.txt",
+                    "type" => "text/plain",
+                    "tmp_name" => "/tmp/php9hNlHe",
+                    "error" => UPLOAD_ERR_OK,
+                    "size" => 524
+                ],
+                "nested" => [
+                    "level2" => [
+                        "name" => "nested.json",
+                        "type" => "application/json",
+                        "tmp_name" => "/tmp/phpadhjk",
+                        "error" => UPLOAD_ERR_OK,
+                        "size" => 1024
                     ]
-                ]
-            ],
-            [
-                [
-                    "file" => [
-                        new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
-                        new UploadedFile("index.html", "text/html", 524, "/tmp/php9hNlHe", 0),
-                        "index.html"
+                ],
+                "nestedList" => [
+                    "level2" => [
+                        "name" => [
+                            0 => "nestedList0.jpg",
+                            1 => "nestedList1.jpg",
+                            2 => ""
+                        ],
+                        "type" => [
+                            0 => "image/jpeg",
+                            1 => "image/jpeg",
+                            2 => ""
+                        ],
+                        "tmp_name" => [
+                            0 => "/tmp/phpjpg0",
+                            1 => "/tmp/phpjpg1",
+                            2 => ""
+                        ],
+                        "error" => [
+                            0 => UPLOAD_ERR_OK,
+                            1 => UPLOAD_ERR_OK,
+                            2 => UPLOAD_ERR_NO_FILE
+                        ],
+                        "size" => [
+                            0 => 256,
+                            1 => 4096,
+                            2 => 0
+                        ]
                     ]
                 ]
             ]

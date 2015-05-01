@@ -4,6 +4,7 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -193,7 +194,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
             throw new \InvalidArgumentException(
-                "withUploadedFiles expects an array with string keys and UploadedFileInterface[] values");
+                "withUploadedFiles expects an array tree with UploadedFileInterface leaves.");
         }
 
         $request = clone $this;
@@ -475,36 +476,45 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $headers;
     }
 
+    /**
+     * @param array $uploadedFiles
+     * @return bool
+     */
     private function isValidUploadedFilesTree(array $uploadedFiles)
     {
-        // Ensure all keys are strings.
+        // Allow empty array.
+        if (count($uploadedFiles) === 0) {
+            return true;
+        }
+
+        // All keys MUST be strings.
         $keys = array_keys($uploadedFiles);
         if (count($keys) !== count(array_filter($keys, "is_string"))) {
             return false;
         }
 
-        // All values must be UploadedFileInterface[].
+        foreach ($uploadedFiles as $branch) {
+            if (!$this->isValidUploadedFilesBranch($branch)) {
+                return false;
+            }
+        }
 
-        // Ensure all values are arrays.
-        $values = array_values($uploadedFiles);
-        if (count($values) !== count(array_filter($values, "is_array"))) {
+        return true;
+    }
+
+    private function isValidUploadedFilesBranch($branch)
+    {
+        if ($branch instanceof UploadedFileInterface) {
+            return true;
+        }
+
+        if (!is_array($branch)) {
             return false;
         }
 
-        $isUploadedFileInterface = function ($object) {
-            return is_object($object) && in_array('Psr\Http\Message\UploadedFileInterface', class_implements($object));
-        };
-
-        foreach ($values as $items) {
-
-            // Ensure values are list arrays.
-            if (array_keys($items) !== range(0, count($items) - 1)) {
-                return false;
-            }
-
-            // Ensure all items are UploadedFileInterfaces
-            $itemValues = array_values($items);
-            if (count($itemValues) !== count(array_filter($itemValues, $isUploadedFileInterface))) {
+        $values = array_values($branch);
+        foreach ($values as $value) {
+            if (!$this->isValidUploadedFilesBranch($value)) {
                 return false;
             }
         }
