@@ -6,8 +6,6 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\Uri;
 
-// TODO Remove concrete class used for testing
-
 /**
  * @coversDefaultClass WellRESTed\Message\ServerRequest
  * @uses WellRESTed\Message\ServerRequest
@@ -157,8 +155,24 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     public function testGetServerRequestReadsBody()
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
-        MockServerRequest::$bodyStream = $body->reveal();
-        $request = MockServerRequest::getServerRequest();
+
+        // Create a stub for the SomeClass class.
+        $request = $this->getMockBuilder('WellRESTed\Message\ServerRequest')
+            ->setMethods(["getStreamForBody"])
+            ->getMock();
+
+        $request->expects($this->any())
+            ->method("getStreamForBody")
+            ->will($this->returnValue($body->reveal()));
+
+        $called = false;
+        $callReadFromServerRequest = function () use (&$called) {
+            $called = true;
+            $this->readFromServerRequest();
+        };
+        $callReadFromServerRequest = $callReadFromServerRequest->bindTo($request, $request);
+        $callReadFromServerRequest();
+
         $this->assertSame($body->reveal(), $request->getBody());
     }
 
@@ -751,17 +765,5 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request = $request->withoutAttribute("cat");
         $this->assertEquals("Bear", $request->getAttribute("dog"));
         $this->assertEquals("Oscar", $request->getAttribute("cat", "Oscar"));
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-class MockServerRequest extends ServerRequest
-{
-    public static $bodyStream;
-
-    protected function getStreamForBody()
-    {
-        return self::$bodyStream;
     }
 }
