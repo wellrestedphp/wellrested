@@ -3,8 +3,13 @@
 namespace WellRESTed\Test\Message;
 
 use WellRESTed\Message\UploadedFile;
+use WellRESTed\Message\UploadedFileState;
+
+// Hides several php core functions for testing.
+require_once __DIR__ . "/../../../src/UploadedFileState.php";
 
 /**
+ * @coversDefaultClass WellRESTed\Message\UploadedFile
  * @uses WellRESTed\Message\UploadedFile
  * @uses WellRESTed\Message\Stream
  * @uses WellRESTed\Message\NullStream
@@ -17,6 +22,7 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         parent::setUp();
+        UploadedFileState::$php_sapi_name = "cli";
         $this->tmpName = tempnam(sys_get_temp_dir(), "tst");
         $this->movePath = tempnam(sys_get_temp_dir(), "tst");
     }
@@ -36,8 +42,8 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     // getStream
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::__construct
-     * @covers WellRESTed\Message\UploadedFile::getStream
+     * @covers ::__construct
+     * @covers ::getStream
      */
     public function testGetStreamReturnsStreamInterface()
     {
@@ -46,22 +52,21 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::__construct
-     * @covers WellRESTed\Message\UploadedFile::getStream
+     * @covers ::__construct
+     * @covers ::getStream
      */
     public function testGetStreamReturnsStreamWrappingUploadedFile()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
-
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
         $stream = $file->getStream();
         $this->assertEquals($content, (string) $stream);
     }
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::__construct
-     * @covers WellRESTed\Message\UploadedFile::getStream
+     * @covers ::__construct
+     * @covers ::getStream
      */
     public function testGetStreamReturnsEmptyStreamForNoFile()
     {
@@ -70,27 +75,56 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::__construct
-     * @covers WellRESTed\Message\UploadedFile::getStream
+     * @covers ::__construct
+     * @covers ::getStream
      * @expectedException \RuntimeException
      */
     public function testGetStreamThrowsExceptionAfterMoveTo()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
-
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
         $file->moveTo($this->movePath);
         $file->getStream();
     }
 
+    /**
+     * @covers ::__construct
+     * @covers ::getStream
+     * @expectedException \RuntimeException
+     */
+    public function testGetStreamThrowsExceptionForNonUploadedFile()
+    {
+        UploadedFileState::$php_sapi_name = "apache";
+        UploadedFileState::$is_uploaded_file = false;
+        $file = new UploadedFile("", "", 0, "", 0);
+        $file->getStream();
+    }
+
     // ------------------------------------------------------------------------
-    // move
+    // moveTo
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::moveTo
+     * @covers ::moveTo
      */
-    public function testMoveToRelocatesUploadedFileToDestiationIfExists()
+    public function testMoveToSapiRelocatesUploadedFileToDestiationIfExists()
+    {
+        UploadedFileState::$php_sapi_name = "fpm-fcgi";
+
+        $content = "Hello, World!";
+        file_put_contents($this->tmpName, $content);
+        $originalMd5 = md5_file($this->tmpName);
+
+        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file->moveTo($this->movePath);
+
+        $this->assertEquals($originalMd5, md5_file($this->movePath));
+    }
+
+    /**
+     * @covers ::moveTo
+     */
+    public function testMoveToNonSapiRelocatesUploadedFileToDestiationIfExists()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
@@ -103,10 +137,10 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\UploadedFile::moveTo
+     * @covers ::moveTo
      * @expectedException \RuntimeException
      */
-    public function testThrowsExcpetionOnSubsequentCallToMoveTo()
+    public function testMoveToThrowsExcpetionOnSubsequentCall()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);

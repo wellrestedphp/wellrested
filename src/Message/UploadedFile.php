@@ -19,11 +19,35 @@ class UploadedFile implements UploadedFileInterface
     private $tmpName;
 
     /**
-     * @param string $name
-     * @param string $type
-     * @param int $size
-     * @param string $tmpName
-     * @param int $error
+     * Create a new Uri. The arguments correspond with keys from arrays
+     * provided by $_FILES. For example, given this structure for $_FILES:
+     *
+     *     array(
+     *         'avatar' => arrary(
+     *             'name' => 'my-avatar.png',
+     *             'type' => 'image/png',
+     *             'size' => 90996,
+     *             'tmp_name' => 'phpUxcOty',
+     *             'error' => 0
+     *         )
+     *     )
+     *
+     *  ...use this call:
+     *
+     *     new UploadedFile(
+     *         $_FILES['avatar']['name'],
+     *         $_FILES['avatar']['type'],
+     *         $_FILES['avatar']['size'],
+     *         $_FILES['avatar']['tmp_name'],
+     *         $_FILES['avatar']['error']
+     *     );
+     *
+     * @param string $name Name of the file; provided by the client
+     * @param string $type Media type of the file; provided by the client
+     * @param int $size The file size in bytes.
+     * @param string $tmpName Local filesystem name of the file
+     * @param int $error One of PHP's UPLOAD_ERR_XXX constants.
+     *     @see http://php.net/manual/en/features.file-upload.errors.php
      */
     public function __construct($name, $type, $size, $tmpName, $error)
     {
@@ -44,22 +68,25 @@ class UploadedFile implements UploadedFileInterface
      * Retrieve a stream representing the uploaded file.
      *
      * This method returns a StreamInterface instance, representing the
-     * uploaded file. The purpose of this method is to allow utilizing native PHP
+     * uploaded file. The purpose of this method is to allow using native PHP
      * stream functionality to manipulate the file upload, such as
-     * stream_copy_to_stream() (though the result will need to be decorated in a
-     * native PHP stream wrapper to work with such functions).
+     * stream_copy_to_stream() (though the result will need to be decorated in
+     * a native PHP stream wrapper to work with such functions).
      *
-     * If the moveTo() method has been called previously, this method will raise
-     * an exception.
+     * If the moveTo() method has been called previously, this method will
+     * raise an exception.
      *
      * @return StreamInterface Stream representation of the uploaded file.
-     * @throws \RuntimeException in cases when no stream is available or can be
-     *     created.
+     * @throws \RuntimeException in cases when no stream is available or can
+     *     be created.
      */
     public function getStream()
     {
         if ($this->moved) {
             throw new \RuntimeException("File has already been moved");
+        }
+        if (php_sapi_name() !== "cli" && !is_uploaded_file($this->tmpName)) {
+            throw new \RuntimeException("File is not an uploaded file.");
         }
         return $this->stream;
     }
@@ -67,8 +94,8 @@ class UploadedFile implements UploadedFileInterface
     /**
      * Move the uploaded file to a new location.
      *
-     * Use this method as an alternative to move_uploaded_file(). This method is
-     * guaranteed to work in both SAPI and non-SAPI environments.
+     * Use this method as an alternative to move_uploaded_file(). This method
+     * is guaranteed to work in both SAPI and non-SAPI environments.
      *
      * The original file or stream will be removed on completion.
      *
@@ -87,14 +114,10 @@ class UploadedFile implements UploadedFileInterface
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
             throw new \RuntimeException("File " . $this->tmpName . " does not exist.");
         }
-        $sapi = php_sapi_name();
-        $whitelist = ["apache", "apache2filter", "apache2handler", "cgi", "fpm-fcgi", "cgi-fcgi"];
-        if (in_array($sapi, $whitelist)) {
-            // @codeCoverageIgnoreStart
-            move_uploaded_file($this->tmpName, $path);
-        } else {
-            // @codeCoverageIgnoreEnd
+        if (php_sapi_name() === "cli") {
             rename($this->tmpName, $path);
+        } else {
+            move_uploaded_file($this->tmpName, $path);
         }
         $this->moved = true;
     }
