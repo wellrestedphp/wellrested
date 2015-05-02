@@ -485,48 +485,44 @@ class ServerRequest extends Request implements ServerRequestInterface
     }
 
     /**
-     * @param array $uploadedFiles
+     * @param array $root
      * @return bool
      */
-    private function isValidUploadedFilesTree(array $uploadedFiles)
+    private function isValidUploadedFilesTree(array $root)
     {
         // Allow empty array.
-        if (count($uploadedFiles) === 0) {
+        if (count($root) === 0) {
             return true;
         }
 
-        // All keys MUST be strings.
-        $keys = array_keys($uploadedFiles);
+        // If not empty, the array MUST have all string keys.
+        $keys = array_keys($root);
         if (count($keys) !== count(array_filter($keys, "is_string"))) {
             return false;
         }
 
-        foreach ($uploadedFiles as $branch) {
+        // Valid if each child branch is valid.
+        foreach ($root as $branch) {
             if (!$this->isValidUploadedFilesBranch($branch)) {
                 return false;
             }
         }
-
         return true;
     }
 
     private function isValidUploadedFilesBranch($branch)
     {
-        if ($branch instanceof UploadedFileInterface) {
-            return true;
-        }
-
-        if (!is_array($branch)) {
-            return false;
-        }
-
-        $values = array_values($branch);
-        foreach ($values as $value) {
-            if (!$this->isValidUploadedFilesBranch($value)) {
-                return false;
+        if (is_array($branch)) {
+            // Branch.
+            foreach ($branch as $child) {
+                if (!$this->isValidUploadedFilesBranch($child)) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            // Leaf. Valid only if this is an UploadedFileInterface.
+            return $branch instanceof UploadedFileInterface;
         }
-
-        return true;
     }
 }

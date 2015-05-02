@@ -447,6 +447,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::withUploadedFiles
      * @covers ::isValidUploadedFilesTree
+     * @covers ::isValidUploadedFilesBranch
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidUploadedFilesProvider
      */
@@ -481,7 +482,9 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                         "error" => UPLOAD_ERR_OK,
                         "size" => 1024
                     ]
-                ],
+                ]
+            ],
+            [
                 "nestedList" => [
                     "level2" => [
                         "name" => [
