@@ -5,6 +5,19 @@ namespace WellRESTed\Message;
 use ArrayAccess;
 use Iterator;
 
+/**
+ * HeaderCollection provides case-insenstive access to lists of header values.
+ *
+ * This class is an internal class used by Message and is not intended for
+ * direct use by consumers.
+ *
+ * HeaderCollection preserves the cases of keys as they are set, but treats key
+ * access case insesitively.
+ *
+ * Any values added to HeaderCollection are added to list arrays. Subsequent
+ * calls to add a value for a given key will append the new value to the list
+ * array of values for that key.
+ */
 class HeaderCollection implements ArrayAccess, Iterator
 {
     /**

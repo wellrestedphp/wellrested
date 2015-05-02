@@ -4,10 +4,14 @@ namespace WellRESTed\Test\Message;
 
 use WellRESTed\Message\NullStream;
 
+/**
+ * @coversDefaultClass WellRESTed\Message\NullStream
+ * @uses WellRESTed\Message\NullStream
+ */
 class NullStreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers WellRESTed\Message\NullStream::__toString()
+     * @covers ::__toString()
      */
     public function testCastsToString()
     {
@@ -18,12 +22,12 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     public function testCloseDoesNothing()
     {
         $stream = new \WellRESTed\Message\NullStream();
-        $this->assertNull($stream->close());
+        $stream->close();
+        $this->assertTrue(true); // Asserting no exception occured.
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::detach()
-     * @uses WellRESTed\Message\Stream
+     * @covers ::detach()
      */
     public function testDetachReturnsNull()
     {
@@ -32,8 +36,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::getSize
-     * @uses WellRESTed\Message\Stream
+     * @covers ::getSize
      */
     public function testSizeReturnsZero()
     {
@@ -42,7 +45,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::tell
+     * @covers ::tell
      */
     public function testTellReturnsZero()
     {
@@ -51,17 +54,16 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::eof
+     * @covers ::eof
      */
-    public function testEofReturnsReturnsTrue()
+    public function testEofReturnsTrue()
     {
         $stream = new \WellRESTed\Message\NullStream();
         $this->assertTrue($stream->eof());
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::isSeekable
-     * @uses WellRESTed\Message\Stream
+     * @covers ::isSeekable
      */
     public function testIsSeekableReturnsFalse()
     {
@@ -70,7 +72,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::seek
+     * @covers ::seek
      * @expectedException \RuntimeException
      */
     public function testSeekReturnsFalse()
@@ -80,17 +82,17 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::rewind
+     * @covers ::rewind
      * @expectedException \RuntimeException
      */
-    public function testRewindReturnsFalse()
+    public function testRewindThrowsException()
     {
         $stream = new \WellRESTed\Message\NullStream();
         $stream->rewind();
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::isWritable
+     * @covers ::isWritable
      */
     public function testIsWritableReturnsFalse()
     {
@@ -99,7 +101,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::write
+     * @covers ::write
      * @expectedException \RuntimeException
      */
     public function testWriteThrowsException()
@@ -109,16 +111,16 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::isReadable
+     * @covers ::isReadable
      */
-    public function testIsReableReturnsTrue()
+    public function testIsReadableReturnsTrue()
     {
         $stream = new \WellRESTed\Message\NullStream();
         $this->assertTrue($stream->isReadable());
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::read
+     * @covers ::read
      */
     public function testReadReturnsEmptyString()
     {
@@ -127,7 +129,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::getContents
+     * @covers ::getContents
      */
     public function testGetContentsReturnsEmptyString()
     {
@@ -136,7 +138,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::getMetadata
+     * @covers ::getMetadata
      */
     public function testGetMetadataReturnsNull()
     {
@@ -145,7 +147,7 @@ class NullStreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\NullStream::getMetadata
+     * @covers ::getMetadata
      */
     public function testGetMetadataReturnsNullWithKey()
     {

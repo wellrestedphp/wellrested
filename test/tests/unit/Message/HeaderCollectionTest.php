@@ -4,10 +4,14 @@ namespace WellRESTed\Test\Message;
 
 use WellRESTed\Message\HeaderCollection;
 
+/**
+ * @coversDefaultClass WellRESTed\Message\HeaderCollection
+ * @uses WellRESTed\Message\HeaderCollection
+ */
 class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers WellRESTed\Message\HeaderCollection::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstance()
     {
@@ -16,9 +20,8 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::offsetSet
-     * @covers WellRESTed\Message\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @covers ::offsetSet
+     * @covers ::offsetExists
      */
     public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
     {
@@ -28,9 +31,8 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::offsetSet
-     * @covers WellRESTed\Message\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @covers ::offsetSet
+     * @covers ::offsetExists
      */
     public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset()
     {
@@ -41,9 +43,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::offsetGet
-     * @uses WellRESTed\Message\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\HeaderCollection::__construct
+     * @covers ::offsetGet
      */
     public function testReturnsHeadersWithCaseInsensitiveHeaderName()
     {
@@ -57,10 +57,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::offsetUnset
-     * @uses WellRESTed\Message\HeaderCollection::__construct
-     * @uses WellRESTed\Message\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\HeaderCollection::offsetExists
+     * @covers ::offsetUnset
      */
     public function testRemovesHeadersWithCaseInsensitiveHeaderName()
     {
@@ -72,10 +69,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @uses WellRESTed\Message\HeaderCollection::__construct
-     * @uses WellRESTed\Message\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
+     * @coversNothing
      */
     public function testCloneMakesDeepCopyOfHeaders()
     {
@@ -90,15 +84,11 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::current
-     * @covers WellRESTed\Message\HeaderCollection::next
-     * @covers WellRESTed\Message\HeaderCollection::key
-     * @covers WellRESTed\Message\HeaderCollection::valid
-     * @covers WellRESTed\Message\HeaderCollection::rewind
-     * @uses WellRESTed\Message\HeaderCollection::__construct
-     * @uses WellRESTed\Message\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
+     * @covers ::current
+     * @covers ::next
+     * @covers ::key
+     * @covers ::valid
+     * @covers ::rewind
      */
     public function testIteratesWithOriginalKeys()
     {
@@ -121,15 +111,11 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\HeaderCollection::current
-     * @covers WellRESTed\Message\HeaderCollection::next
-     * @covers WellRESTed\Message\HeaderCollection::key
-     * @covers WellRESTed\Message\HeaderCollection::valid
-     * @covers WellRESTed\Message\HeaderCollection::rewind
-     * @uses WellRESTed\Message\HeaderCollection::__construct
-     * @uses WellRESTed\Message\HeaderCollection::offsetSet
-     * @uses WellRESTed\Message\HeaderCollection::offsetExists
-     * @uses WellRESTed\Message\HeaderCollection::offsetUnset
+     * @covers ::current
+     * @covers ::next
+     * @covers ::key
+     * @covers ::valid
+     * @covers ::rewind
      */
     public function testIteratesWithOriginalKeysAndValues()
     {

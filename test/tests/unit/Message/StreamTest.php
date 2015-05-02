@@ -5,6 +5,7 @@ namespace WellRESTed\Test\Message;
 use WellRESTed\Message\Stream;
 
 /**
+ * @coversDefaultClass WellRESTed\Message\Stream
  * @uses WellRESTed\Message\Stream
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
@@ -26,7 +27,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::__construct()
+     * @covers ::__construct
      */
     public function testCreatesInstanceWithStreamResource()
     {
@@ -41,7 +42,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::__construct()
+     * @covers ::__construct
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidResourceProvider
      */
@@ -61,7 +62,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::__toString()
+     * @covers ::__toString
      */
     public function testCastsToString()
     {
@@ -70,7 +71,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::close()
+     * @covers ::close
      */
     public function testClosesHandle()
     {
@@ -80,7 +81,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::detach()
+     * @covers ::detach
      */
     public function testDetachReturnsHandle()
     {
@@ -89,7 +90,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::detach()
+     * @covers ::detach
      */
     public function testDetachUnsetsInstanceVariable()
     {
@@ -99,7 +100,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::getSize
+     * @covers ::getSize
      */
     public function testReturnsSize()
     {
@@ -108,7 +109,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::tell
+     * @covers ::tell
      */
     public function testTellReturnsHandlePosition()
     {
@@ -118,7 +119,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::eof
+     * @covers ::eof
      */
     public function testReturnsOef()
     {
@@ -130,7 +131,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::isSeekable
+     * @covers ::isSeekable
      */
     public function testReadsSeekableStatusFromMetadata()
     {
@@ -141,7 +142,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::seek
+     * @covers ::seek
      */
     public function testSeeksToPosition()
     {
@@ -151,7 +152,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::rewind
+     * @covers ::rewind
      */
     public function testRewindReturnsToBeginning()
     {
@@ -162,7 +163,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::write
+     * @covers ::write
      */
     public function testWritesToHandle()
     {
@@ -173,7 +174,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::write
+     * @covers ::write
      * @expectedException \RuntimeException
      */
     public function testThrowsExceptionOnErrorWriting()
@@ -185,7 +186,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::read
+     * @covers ::read
      * @expectedException \RuntimeException
      */
     public function testThrowsExceptionOnErrorReading()
@@ -197,7 +198,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::read
+     * @covers ::read
      */
     public function testReadsFromStream()
     {
@@ -208,7 +209,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::getContents
+     * @covers ::getContents
      * @expectedException \RuntimeException
      */
     public function testThrowsExceptionOnErrorReadingToEnd()
@@ -220,7 +221,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::getContents
+     * @covers ::getContents
      */
     public function testReadsToEnd()
     {
@@ -231,7 +232,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::getMetadata
+     * @covers ::getMetadata
      */
     public function testReturnsMetadataArray()
     {
@@ -240,7 +241,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::getMetadata
+     * @covers ::getMetadata
      */
     public function testReturnsMetadataItem()
     {
@@ -250,7 +251,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::isReadable
+     * @covers ::isReadable
      * @dataProvider modeProvider
      */
     public function testReturnsIsReadableForReadableStreams($mode, $readable, $writeable)
@@ -265,7 +266,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Stream::isWritable
+     * @covers ::isWritable
      * @dataProvider modeProvider
      */
     public function testReturnsIsWritableForWritableStreams($mode, $readable, $writeable)

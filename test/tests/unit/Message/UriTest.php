@@ -5,6 +5,7 @@ namespace WellRESTed\Test\Message;
 use WellRESTed\Message\Uri;
 
 /**
+ * @coversDefaultClass WellRESTed\Message\Uri
  * @uses WellRESTed\Message\Uri
  */
 class UriTest extends \PHPUnit_Framework_TestCase
@@ -13,7 +14,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Scheme
 
     /**
-     * @covers WellRESTed\Message\Uri::getScheme
+     * @covers ::getScheme
      */
     public function testDefaultSchemeIsEmpty()
     {
@@ -22,7 +23,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withScheme
+     * @covers ::withScheme
      * @dataProvider schemeProvider
      * @param string $expected The expected result of getScheme
      * @param string $scheme The scheme to pass to withScheme
@@ -47,7 +48,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withScheme
+     * @covers ::withScheme
      * @expectedException \InvalidArgumentException
      */
     public function testInvalidSchemeThrowsException()
@@ -60,7 +61,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Authority
 
     /**
-     * @covers WellRESTed\Message\Uri::getAuthority
+     * @covers ::getAuthority
      */
     public function testDefaultAuthorityIsEmpty()
     {
@@ -68,13 +69,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("", $uri->getAuthority());
     }
 
-    public function testRespectsMyAuthoritai()
+    public function testRespectsMyAuthoritah()
     {
         $this->assertTrue(true);
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getAuthority
+     * @covers ::getAuthority
      * @dataProvider authorityProvider
      * @param string $expected
      * @param array $components
@@ -187,7 +188,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // User Info
 
     /**
-     * @covers WellRESTed\Message\Uri::getUserInfo
+     * @covers ::getUserInfo
      */
     public function testDefaultUserInfoIsEmpty()
     {
@@ -196,8 +197,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getUserInfo
-     * @covers WellRESTed\Message\Uri::withUserInfo
+     * @covers ::getUserInfo
+     * @covers ::withUserInfo
      * @dataProvider userInfoProvider
      *
      * @param string $expected The combined user:password value
@@ -226,7 +227,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Host
 
     /**
-     * @covers WellRESTed\Message\Uri::getHost
+     * @covers ::getHost
      */
     public function testDefaultHostIsEmpty()
     {
@@ -235,8 +236,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getHost
-     * @covers WellRESTed\Message\Uri::withHost
+     * @covers ::getHost
+     * @covers ::withHost
      * @dataProvider hostProvider
      * @param $expected
      * @param $host
@@ -259,7 +260,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withHost
+     * @covers ::withHost
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidHostProvider
      * @param $host
@@ -283,7 +284,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Port
 
     /**
-     * @covers WellRESTed\Message\Uri::getPort
+     * @covers ::getPort
      */
     public function testDefaultPortWithNoSchemeIsNull()
     {
@@ -292,7 +293,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPort
+     * @covers ::getPort
      */
     public function testDefaultPortForHttpSchemeIs80()
     {
@@ -301,7 +302,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPort
+     * @covers ::getPort
      */
     public function testDefaultPortForHttpsSchemeIs443()
     {
@@ -310,8 +311,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPort
-     * @covers WellRESTed\Message\Uri::withPort
+     * @covers ::getPort
+     * @covers ::withPort
      * @dataProvider portAndSchemeProvider
      *
      * @param int|null $expectedPort
@@ -338,7 +339,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withPort
+     * @covers ::withPort
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPortProvider
      * @param int $port
@@ -363,7 +364,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Path
 
     /**
-     * @covers WellRESTed\Message\Uri::getPath
+     * @covers ::getPath
      */
     public function testDefaultPathIsEmpty()
     {
@@ -372,9 +373,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPath
-     * @covers WellRESTed\Message\Uri::withPath
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getPath
+     * @covers ::withPath
+     * @covers ::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -387,9 +388,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getPath
-     * @covers WellRESTed\Message\Uri::withPath
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getPath
+     * @covers ::withPath
+     * @covers ::percentEncode
      * @dataProvider pathProvider
      * @param $expected
      * @param $path
@@ -419,7 +420,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Query
 
     /**
-     * @covers WellRESTed\Message\Uri::getQuery
+     * @covers ::getQuery
      */
     public function testDefaultQueryIsEmpty()
     {
@@ -428,9 +429,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getQuery
-     * @covers WellRESTed\Message\Uri::withQuery
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getQuery
+     * @covers ::withQuery
+     * @covers ::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -443,9 +444,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getQuery
-     * @covers WellRESTed\Message\Uri::withQuery
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getQuery
+     * @covers ::withQuery
+     * @covers ::percentEncode
      * @dataProvider queryProvider
      * @param $expected
      * @param $query
@@ -468,7 +469,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::withPath
+     * @covers ::withPath
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPathProvider
      * @param $path
@@ -492,7 +493,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Fragment
 
     /**
-     * @covers WellRESTed\Message\Uri::getFragment
+     * @covers ::getFragment
      */
     public function testDefaultFragmentIsEmpty()
     {
@@ -501,9 +502,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getFragment
-     * @covers WellRESTed\Message\Uri::withFragment
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getFragment
+     * @covers ::withFragment
+     * @covers ::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment
@@ -516,9 +517,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::getFragment
-     * @covers WellRESTed\Message\Uri::withFragment
-     * @covers WellRESTed\Message\Uri::percentEncode
+     * @covers ::getFragment
+     * @covers ::withFragment
+     * @covers ::percentEncode
      * @dataProvider fragmentProvider
      * @param $expected
      * @param $fragment
@@ -544,7 +545,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // Concatenation
 
     /**
-     * @covers WellRESTed\Message\Uri::__toString
+     * @covers ::__toString
      * @dataProvider componentProvider
      * @param string $expected
      * @param array $components
@@ -652,8 +653,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Uri::__construct()
-     * @covers WellRESTed\Message\Uri::__toString()
+     * @covers ::__construct()
+     * @covers ::__toString()
      * @dataProvider stringUriProvider
      */
     public function testUriCreatedFromStringNormalizesString($expected, $input)

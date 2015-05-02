@@ -3,13 +3,14 @@
 namespace WellRESTed\Test\Unit\Message;
 
 /**
+ * @coversDefaultClass WellRESTed\Message\Message
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
  */
 class MessageTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers WellRESTed\Message\Message::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstance()
     {
@@ -18,7 +19,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::__construct
+     * @covers ::__construct
      */
     public function testSetsHeadersOnConstruction()
     {
@@ -29,7 +30,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::__construct
+     * @covers ::__construct
      */
     public function testSetsBodyOnConstruction()
     {
@@ -40,7 +41,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::__clone
+     * @covers ::__clone
      */
     public function testCloneMakesDeepCopyOfHeaders()
     {
@@ -55,18 +56,18 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     // Protocol Version
 
     /**
-     * @covers WellRESTed\Message\Message::getProtocolVersion
+     * @covers ::getProtocolVersion
      */
-    public function testReturnsProtocolVersion1Point1ByDefault()
+    public function testGetProtocolVersionReturnsProtocolVersion1Point1ByDefault()
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
         $this->assertEquals("1.1", $message->getProtocolVersion());
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getProtocolVersion
+     * @covers ::getProtocolVersion
      */
-    public function testReturnsProtocolVersion()
+    public function testGetProtocolVersionReturnsProtocolVersion()
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
         $message = $message->withProtocolVersion("1.0");
@@ -74,9 +75,9 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::withProtocolVersion
+     * @covers ::withProtocolVersion
      */
-    public function testReplacesProtocolVersion()
+    public function testGetProtocolVersionReplacesProtocolVersion()
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
         $message = $message->withProtocolVersion("1.0");
@@ -87,8 +88,8 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     // Headers
 
     /**
-     * @covers WellRESTed\Message\Message::withHeader
-     * @covers WellRESTed\Message\Message::getValidatedHeaders
+     * @covers ::withHeader
+     * @covers ::getValidatedHeaders
      * @dataProvider validHeaderValueProvider
      */
     public function testWithHeaderReplacesHeader($expected, $value)
@@ -108,12 +109,12 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::withHeader
-     * @covers WellRESTed\Message\Message::getValidatedHeaders
+     * @covers ::withHeader
+     * @covers ::getValidatedHeaders
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidHeaderProvider
      */
-    public function testWithHeaderThrowExceptionWithInvalidArgument($name, $value)
+    public function testWithHeaderThrowsExceptionWithInvalidArgument($name, $value)
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
         $message->withHeader($name, $value);
@@ -124,12 +125,12 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         return [
             [0, 1024],
             ["Content-length", false],
-            ["Content-length", [false]],
+            ["Content-length", [false]]
         ];
     }
 
     /**
-     * @covers WellRESTed\Message\Message::withAddedHeader
+     * @covers ::withAddedHeader
      */
     public function testWithAddedHeaderSetsHeader()
     {
@@ -139,7 +140,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::withAddedHeader
+     * @covers ::withAddedHeader
      */
     public function testWithAddedHeaderAppendsValue()
     {
@@ -152,7 +153,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::withoutHeader
+     * @covers ::withoutHeader
      */
     public function testWithoutHeaderRemovesHeader()
     {
@@ -163,7 +164,16 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getHeader
+     * @covers ::getHeader
+     */
+    public function testGetHeaderReturnsEmptyArrayForUnsetHeader()
+    {
+        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
+        $this->assertEquals([], $message->getHeader("X-name"));
+    }
+
+    /**
+     * @covers ::getHeader
      */
     public function testGetHeaderReturnsSingleHeader()
     {
@@ -173,27 +183,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getHeaderLine
-     */
-    public function testGetHeaderReturnsMultipleHeadersJoinedByCommas()
-    {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("X-name", "cat=Molly");
-        $message = $message->withAddedHeader("X-name", "dog=Bear");
-        $this->assertEquals("cat=Molly, dog=Bear", $message->getHeaderLine("X-name"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Message::getHeaderLine
-     */
-    public function testGetHeaderLineReturnsEmptyStringForUnsetHeader()
-    {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertSame("", $message->getHeaderLine("X-not-set"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Message::getHeader
+     * @covers ::getHeader
      */
     public function testGetHeaderReturnsMultipleValuesForHeader()
     {
@@ -204,16 +194,27 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getHeader
+     * @covers ::getHeaderLine
      */
-    public function testGetHeaderReturnsEmptyArrayForUnsetHeader()
+    public function testGetHeaderLineReturnsEmptyStringForUnsetHeader()
     {
         $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertEquals([], $message->getHeader("X-name"));
+        $this->assertSame("", $message->getHeaderLine("X-not-set"));
     }
 
     /**
-     * @covers WellRESTed\Message\Message::hasHeader
+     * @covers ::getHeaderLine
+     */
+    public function testGetHeaderLineReturnsMultipleHeadersJoinedByCommas()
+    {
+        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
+        $message = $message->withAddedHeader("X-name", "cat=Molly");
+        $message = $message->withAddedHeader("X-name", "dog=Bear");
+        $this->assertEquals("cat=Molly, dog=Bear", $message->getHeaderLine("X-name"));
+    }
+
+    /**
+     * @covers ::hasHeader
      */
     public function testHasHeaderReturnsTrueWhenHeaderIsSet()
     {
@@ -223,7 +224,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::hasHeader
+     * @covers ::hasHeader
      */
     public function testHasHeaderReturnsFalseWhenHeaderIsNotSet()
     {
@@ -232,7 +233,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getHeaders
+     * @covers ::getHeaders
      */
     public function testGetHeadersReturnOriginalHeaderNamesAsKeys()
     {
@@ -252,7 +253,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getHeaders
+     * @covers ::getHeaders
      */
     public function testGetHeadersReturnOriginalHeaderNamesAndValues()
     {
@@ -285,7 +286,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     // Body
 
     /**
-     * @covers WellRESTed\Message\Message::getBody
+     * @covers ::getBody
      * @uses WellRESTed\Message\NullStream
      */
     public function testGetBodyReturnsEmptyStreamByDefault()
@@ -295,8 +296,8 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Message::getBody
-     * @covers WellRESTed\Message\Message::withBody
+     * @covers ::getBody
+     * @covers ::withBody
      */
     public function testGetBodyReturnsAttachedStream()
     {

@@ -6,6 +6,7 @@ use WellRESTed\Message\Request;
 use WellRESTed\Message\Uri;
 
 /**
+ * @coversDefaultClass WellRESTed\Message\Request
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Message
@@ -18,7 +19,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     // Construction
 
     /**
-     * @covers WellRESTed\Message\Request::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstance()
     {
@@ -27,7 +28,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstanceWithUri()
     {
@@ -38,7 +39,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstanceWithMethod()
     {
@@ -48,7 +49,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::__construct
+     * @covers ::__construct
      */
     public function testSetsHeadersOnConstruction()
     {
@@ -59,7 +60,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::__construct
+     * @covers ::__construct
      */
     public function testSetsBodyOnConstruction()
     {
@@ -72,9 +73,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     // Request Target
 
     /**
-     * @covers WellRESTed\Message\Request::getRequestTarget
+     * @covers ::getRequestTarget
      */
-    public function testGetRequestTargetPrefersConreteRequestTarget()
+    public function testGetRequestTargetPrefersExplicitRequestTarget()
     {
         $request = new Request();
         $request = $request->withRequestTarget("*");
@@ -82,7 +83,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::getRequestTarget
+     * @covers ::getRequestTarget
      */
     public function testGetRequestTargetUsesOriginFormOfUri()
     {
@@ -97,7 +98,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::getRequestTarget
+     * @covers ::getRequestTarget
      */
     public function testGetRequestTargetReturnsSlashByDefault()
     {
@@ -106,8 +107,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withRequestTarget
-     * @covers WellRESTed\Message\Request::getRequestTarget
+     * @covers ::withRequestTarget
+     * @covers ::getRequestTarget
      */
     public function testWithRequestTargetCreatesNewInstance()
     {
@@ -120,7 +121,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     // Method
 
     /**
-     * @covers WellRESTed\Message\Request::getMethod
+     * @covers ::getMethod
      */
     public function testGetMethodReturnsGetByDefault()
     {
@@ -129,9 +130,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withMethod
-     * @covers WellRESTed\Message\Request::getValidatedMethod
-     * @covers WellRESTed\Message\Request::getMethod
+     * @covers ::withMethod
+     * @covers ::getValidatedMethod
+     * @covers ::getMethod
      */
     public function testWithMethodCreatesNewInstance()
     {
@@ -141,12 +142,12 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withMethod
-     * @covers WellRESTed\Message\Request::getValidatedMethod
+     * @covers ::withMethod
+     * @covers ::getValidatedMethod
      * @dataProvider invalidMethodProvider
      * @expectedException \InvalidArgumentException
      */
-    public function testWithMethoThrowsExceptionOnInvalidMethod($method)
+    public function testWithMethodThrowsExceptionOnInvalidMethod($method)
     {
         $request = new Request();
         $request->withMethod($method);
@@ -165,8 +166,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     // Request URI
 
     /**
-     * @covers WellRESTed\Message\Request::getUri
-     * @
+     * @covers ::getUri
      */
     public function testGetUriReturnsEmptyUriByDefault()
     {
@@ -176,8 +176,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
-     * @covers WellRESTed\Message\Request::getUri
+     * @covers ::withUri
+     * @covers ::getUri
      */
     public function testWithUriCreatesNewInstance()
     {
@@ -190,7 +190,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::__clone
+     * @covers ::__clone
      */
     public function testWithUriPreservesOriginalRequest()
     {
@@ -215,7 +215,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
+     * @covers ::withUri
      */
     public function testWithUriUpdatesHostHeader()
     {
@@ -230,7 +230,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
+     * @covers ::withUri
      */
     public function testWithUriDoesNotUpdatesHostHeaderWhenUriHasNoHost()
     {
@@ -245,7 +245,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
+     * @covers ::withUri
      */
     public function testPreserveHostUpdatesHostHeaderWhenHeaderIsOriginallyMissing()
     {
@@ -259,7 +259,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
+     * @covers ::withUri
      */
     public function testPreserveHostDoesNotUpdatesWhenBothAreMissingHosts()
     {
@@ -272,7 +272,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Request::withUri
+     * @covers ::withUri
      */
     public function testPreserveHostDoesNotUpdateHostHeader()
     {

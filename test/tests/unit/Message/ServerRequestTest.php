@@ -6,7 +6,6 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\Uri;
 
-// TODO Test nested $_FILES with associative array for last level
 // TODO Remove concrete class used for testing
 
 /**
@@ -62,14 +61,14 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     // ------------------------------------------------------------------------
-    // Request
+    // Marshalling Request Information
 
     /**
      * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider protocolVersionProvider
      */
-    public function testReadsProtocolVersionFromFromRequest($expectedProtocol, $serverProtocol)
+    public function testGetServerRequestReadsProtocolVersion($expectedProtocol, $serverProtocol)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -95,7 +94,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @preserveGlobalState disabled
      * @dataProvider methodProvider
      */
-    public function testReadsMethodFromFromRequest($exectedMethod, $serverMethod)
+    public function testGetServerRequestReadsMethod($exectedMethod, $serverMethod)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -122,7 +121,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @preserveGlobalState disabled
      * @dataProvider requestTargetProvider
      */
-    public function testReadsRequestTargetFromServer($exectedRequestTarget, $serverRequestUri)
+    public function testGetServerRequestReadsRequestTargetFromRequest($exectedRequestTarget, $serverRequestUri)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -146,7 +145,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @covers ::getHeader
      * @depends testGetServerRequestReadsFromRequest
      */
-    public function testServerRequestProvidesHeaders($request)
+    public function testGetServerRequestReadsHeaders($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals(["application/json"], $request->getHeader("Accept"));
@@ -155,7 +154,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::getBody
      */
-    public function testServerRequestProvidesBody()
+    public function testGetServerRequestReadsBody()
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
         MockServerRequest::$bodyStream = $body->reveal();
@@ -163,126 +162,85 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($body->reveal(), $request->getBody());
     }
 
-    // ------------------------------------------------------------------------
-    // Server Params
-
     /**
-     * @covers ::getServerParams
+     * @covers ::getServerRequest
+     * @covers ::getServerRequestHeaders
+     * @covers ::readFromServerRequest
+     * @covers ::readUri
+     * @preserveGlobalState disabled
+     * @dataProvider uriProvider
      */
-    public function testServerParamsIsEmptyByDefault()
+    public function testGetServerRequestReadsUri($expected, $server)
     {
-        $request = new ServerRequest();
-        $this->assertEquals([], $request->getServerParams());
+        $_SERVER = $server;
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals($expected, $request->getUri());
     }
+
+    public function uriProvider()
+    {
+        return [
+            [
+                new Uri("http://localhost/path"),
+                [
+                    "HTTPS" => "off",
+                    "HTTP_HOST" => "localhost",
+                    "REQUEST_URI" => "/path",
+                    "QUERY_STRING" => ""
+                ]
+            ],
+            [
+                new Uri("https://foo.com/path/to/stuff?cat=molly"),
+                [
+                    "HTTPS" => "1",
+                    "HTTP_HOST" => "foo.com",
+                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
+                    "QUERY_STRING" => "cat=molly"
+                ]
+            ],
+            [
+                new Uri("http://foo.com:8080/path/to/stuff?cat=molly"),
+                [
+                    "HTTP" => "1",
+                    "HTTP_HOST" => "foo.com:8080",
+                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
+                    "QUERY_STRING" => "cat=molly"
+                ]
+            ]
+        ];
+    }
+
+    // ------------------------------------------------------------------------
+    // Marshalling ServerRequest Information
 
     /**
      * @covers ::getServerParams
      * @depends testGetServerRequestReadsFromRequest
      */
-    public function testServerRequestProvidesServerParams($request)
+    public function testGetServerRequestReadsServerParams($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals("localhost", $request->getServerParams()["HTTP_HOST"]);
     }
 
-    // ------------------------------------------------------------------------
-    // Cookies
-
-    /**
-     * @covers ::getCookieParams
-     */
-    public function testCookieParamsIsEmptyByDefault()
-    {
-        $request = new ServerRequest();
-        $this->assertEquals([], $request->getCookieParams());
-    }
-
     /**
      * @covers ::getCookieParams
      * @depends testGetServerRequestReadsFromRequest
      */
-    public function testServerRequestProvidesCookieParams($request)
+    public function testGetServerRequestReadsCookieParams($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals("Molly", $request->getCookieParams()["cat"]);
     }
 
     /**
-     * @covers ::withCookieParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
-    public function testWithCookieParamsCreatesNewInstance($request1)
-    {
-        /** @var ServerRequest $request1 */
-        $request2 = $request1->withCookieParams([
-            "cat" => "Oscar"
-        ]);
-        $this->assertEquals("Molly", $request1->getCookieParams()["cat"]);
-        $this->assertEquals("Oscar", $request2->getCookieParams()["cat"]);
-    }
-
-    // ------------------------------------------------------------------------
-    // Query
-
-    /**
-     * @covers ::getQueryParams
-     */
-    public function testQueryParamsIsEmptyByDefault()
-    {
-        $request = new ServerRequest();
-        $this->assertEquals([], $request->getQueryParams());
-    }
-
-    /**
      * @covers ::getQueryParams
      * @depends testGetServerRequestReadsFromRequest
      */
-    public function testServerRequestProvidesQueryParams($request)
+    public function testGetServerRequestReadsQueryParams($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals("Claude", $request->getQueryParams()["guinea_pig"]);
-    }
-
-    /**
-     * @covers ::withQueryParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
-    public function testWithQueryParamsCreatesNewInstance($request1)
-    {
-        /** @var ServerRequest $request1 */
-        $request2 = $request1->withQueryParams([
-            "guinea_pig" => "Clyde"
-        ]);
-        $this->assertEquals("Claude", $request1->getQueryParams()["guinea_pig"]);
-        $this->assertEquals("Clyde", $request2->getQueryParams()["guinea_pig"]);
-    }
-
-    // ------------------------------------------------------------------------
-    // Uploaded Files
-
-    /**
-     * @covers ::getUploadedFiles
-     */
-    public function testUploadedFilesIsEmptyByDefault()
-    {
-        $request = new ServerRequest();
-        $this->assertEquals([], $request->getUploadedFiles());
-    }
-
-    /**
-     * @covers ::getUploadedFiles
-     * @preserveGlobalState disabled
-     */
-    public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
-    {
-        $_SERVER = [
-            "HTTP_HOST" => "localhost",
-            "HTTP_ACCEPT" => "application/json",
-            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded"
-        ];
-        $_FILES = [];
-        $request = ServerRequest::getServerRequest();
-        $this->assertSame([], $request->getUploadedFiles());
     }
 
     /**
@@ -293,7 +251,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @preserveGlobalState disabled
      * @dataProvider uploadedFileProvider
      */
-    public function testGetServerRequestProvidesUploadedFiles($file, $path)
+    public function testGetServerRequestReadsUploadedFiles($file, $path)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
@@ -393,6 +351,137 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::getServerRequest
+     * @covers ::getParsedBody
+     * @preserveGlobalState disabled
+     * @dataProvider formContentTypeProvider
+     */
+    public function testGetServerRequestParsesFormBody($contentType)
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_CONTENT_TYPE" => $contentType,
+        ];
+        $_COOKIE = [];
+        $_FILES = [];
+        $_POST = [
+            "dog" => "Bear"
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals("Bear", $request->getParsedBody()["dog"]);
+    }
+
+    public function formContentTypeProvider()
+    {
+        return [
+            ["application/x-www-form-urlencoded"],
+            ["multipart/form-data"]
+        ];
+    }
+
+    /**
+     * @covers ::getAttribute
+     * @depends testGetServerRequestReadsFromRequest
+     */
+    public function testGetServerRequestProvidesAttributesIfPassed($request)
+    {
+        /** @var ServerRequest $request */
+        $this->assertEquals("Claude", $request->getAttribute("guinea_pig"));
+    }
+
+    // ------------------------------------------------------------------------
+    // Server Params
+
+    /**
+     * @covers ::getServerParams
+     */
+    public function testGetServerParamsReturnsEmptyArrayByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getServerParams());
+    }
+
+    // ------------------------------------------------------------------------
+    // Cookies
+
+    /**
+     * @covers ::getCookieParams
+     */
+    public function testGetCookieParamsReturnsEmptyArrayByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getCookieParams());
+    }
+
+    /**
+     * @covers ::withCookieParams
+     * @depends testGetServerRequestReadsFromRequest
+     */
+    public function testWithCookieParamsCreatesNewInstance($request1)
+    {
+        /** @var ServerRequest $request1 */
+        $request2 = $request1->withCookieParams([
+            "cat" => "Oscar"
+        ]);
+        $this->assertEquals("Molly", $request1->getCookieParams()["cat"]);
+        $this->assertEquals("Oscar", $request2->getCookieParams()["cat"]);
+    }
+
+    // ------------------------------------------------------------------------
+    // Query
+
+    /**
+     * @covers ::getQueryParams
+     */
+    public function testGetQueryParamsReturnsEmptyArrayByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getQueryParams());
+    }
+
+    /**
+     * @covers ::withQueryParams
+     * @depends testGetServerRequestReadsFromRequest
+     */
+    public function testWithQueryParamsCreatesNewInstance($request1)
+    {
+        /** @var ServerRequest $request1 */
+        $request2 = $request1->withQueryParams([
+            "guinea_pig" => "Clyde"
+        ]);
+        $this->assertEquals("Claude", $request1->getQueryParams()["guinea_pig"]);
+        $this->assertEquals("Clyde", $request2->getQueryParams()["guinea_pig"]);
+    }
+
+    // ------------------------------------------------------------------------
+    // Uploaded Files
+
+    /**
+     * @covers ::getUploadedFiles
+     */
+    public function testGetUploadedFilesReturnsEmptyArrayByDefault()
+    {
+        $request = new ServerRequest();
+        $this->assertEquals([], $request->getUploadedFiles());
+    }
+
+    /**
+     * @covers ::getUploadedFiles
+     * @preserveGlobalState disabled
+     */
+    public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
+    {
+        $_SERVER = [
+            "HTTP_HOST" => "localhost",
+            "HTTP_ACCEPT" => "application/json",
+            "HTTP_CONTENT_TYPE" => "application/x-www-form-urlencoded"
+        ];
+        $_FILES = [];
+        $request = ServerRequest::getServerRequest();
+        $this->assertSame([], $request->getUploadedFiles());
+    }
+
+    /**
      * @covers ::withUploadedFiles
      * @covers ::isValidUploadedFilesBranch
      * @covers ::isValidUploadedFilesTree
@@ -414,7 +503,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      * @covers ::isValidUploadedFilesBranch
      * @dataProvider validUploadedFilesProvider
      */
-    public function testWithUploadedFilesReturnsPassedUploadedFiles($uploadedFiles)
+    public function testWithUploadedFilesStoresPassedUploadedFiles($uploadedFiles)
     {
         $request = new ServerRequest();
         $request = $request->withUploadedFiles($uploadedFiles);
@@ -524,39 +613,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::getParsedBody
      */
-    public function testParsedBodyIsNullByDefault()
+    public function testGetParsedBodyReturnsNullByDefault()
     {
         $request = new ServerRequest();
         $this->assertNull($request->getParsedBody());
-    }
-
-    /**
-     * @covers ::getServerRequest
-     * @covers ::getParsedBody
-     * @preserveGlobalState disabled
-     * @dataProvider formContentTypeProvider
-     */
-    public function testGetServerRequestParsesFormBody($contentType)
-    {
-        $_SERVER = [
-            "HTTP_HOST" => "localhost",
-            "HTTP_CONTENT_TYPE" => $contentType,
-        ];
-        $_COOKIE = [];
-        $_FILES = [];
-        $_POST = [
-            "dog" => "Bear"
-        ];
-        $request = ServerRequest::getServerRequest();
-        $this->assertEquals("Bear", $request->getParsedBody()["dog"]);
-    }
-
-    public function formContentTypeProvider()
-    {
-        return [
-            ["application/x-www-form-urlencoded"],
-            ["multipart/form-data"]
-        ];
     }
 
     /**
@@ -618,20 +678,23 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::getAttributes
      */
-    public function testAttributesIsEmptyByDefault()
+    public function testGetAttributesReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getAttributes());
     }
 
     /**
-     * @covers ::getAttribute
-     * @depends testGetServerRequestReadsFromRequest
+     * @covers ::getAttributes
      */
-    public function testServerRequestProvidesAttributesIfPassed($request)
+    public function testGetAttributesReturnsAllAttributes()
     {
-        /** @var ServerRequest $request */
-        $this->assertEquals("Claude", $request->getAttribute("guinea_pig"));
+        $request = new ServerRequest();
+        $request = $request->withAttribute("cat", "Molly");
+        $request = $request->withAttribute("dog", "Bear");
+        $attributes = $request->getAttributes();
+        $this->assertEquals("Molly", $attributes["cat"]);
+        $this->assertEquals("Bear", $attributes["dog"]);
     }
 
     /**
@@ -688,70 +751,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request = $request->withoutAttribute("cat");
         $this->assertEquals("Bear", $request->getAttribute("dog"));
         $this->assertEquals("Oscar", $request->getAttribute("cat", "Oscar"));
-    }
-
-    /**
-     * @covers ::getAttributes
-     */
-    public function testGetAttributesReturnsAllAttributes()
-    {
-        $request = new ServerRequest();
-        $request = $request->withAttribute("cat", "Molly");
-        $request = $request->withAttribute("dog", "Bear");
-        $attributes = $request->getAttributes();
-        $this->assertEquals("Molly", $attributes["cat"]);
-        $this->assertEquals("Bear", $attributes["dog"]);
-    }
-
-    // ------------------------------------------------------------------------
-    // URI
-
-    /**
-     * @covers ::getServerRequest
-     * @covers ::getServerRequestHeaders
-     * @covers ::readFromServerRequest
-     * @covers ::readUri
-     * @preserveGlobalState disabled
-     * @dataProvider uriProvider
-     */
-    public function testGetServerRequestProvidesUri($expected, $server)
-    {
-        $_SERVER = $server;
-        $request = ServerRequest::getServerRequest();
-        $this->assertEquals($expected, $request->getUri());
-    }
-
-    public function uriProvider()
-    {
-        return [
-            [
-                new Uri("http://localhost/path"),
-                [
-                    "HTTPS" => "off",
-                    "HTTP_HOST" => "localhost",
-                    "REQUEST_URI" => "/path",
-                    "QUERY_STRING" => ""
-                ]
-            ],
-            [
-                new Uri("https://foo.com/path/to/stuff?cat=molly"),
-                [
-                    "HTTPS" => "1",
-                    "HTTP_HOST" => "foo.com",
-                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
-                    "QUERY_STRING" => "cat=molly"
-                ]
-            ],
-            [
-                new Uri("http://foo.com:8080/path/to/stuff?cat=molly"),
-                [
-                    "HTTP" => "1",
-                    "HTTP_HOST" => "foo.com:8080",
-                    "REQUEST_URI" => "/path/to/stuff?cat=molly",
-                    "QUERY_STRING" => "cat=molly"
-                ]
-            ]
-        ];
     }
 }
 

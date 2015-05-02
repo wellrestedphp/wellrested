@@ -5,16 +5,53 @@ namespace WellRESTed\Test\Unit\Message;
 use WellRESTed\Message\Response;
 
 /**
+ * @coversDefaultClass WellRESTed\Message\Response
  * @uses WellRESTed\Message\Response
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
  */
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
+    // ------------------------------------------------------------------------
+    // Construction
+
     /**
-     * @covers WellRESTed\Message\Response::withStatus
-     * @covers WellRESTed\Message\Response::getStatusCode
-     * @covers WellRESTed\Message\Response::getDefaultReasonPhraseForStatusCode
+     * @covers ::__construct
+     */
+    public function testSetsStatusCodeOnConstruction()
+    {
+        $response = new Response(200);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    /**
+     * @covers ::__construct
+     */
+    public function testSetsHeadersOnConstruction()
+    {
+        $response = new Response(200, [
+            "X-foo" => ["bar","baz"]
+        ]);
+        $this->assertEquals(["bar","baz"], $response->getHeader("X-foo"));
+    }
+
+    /**
+     * @covers ::__construct
+     */
+    public function testSetsBodyOnConstruction()
+    {
+        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $response = new Response(200, [], $body->reveal());
+        $this->assertSame($body->reveal(), $response->getBody());
+    }
+
+    // ------------------------------------------------------------------------
+    // Status and Reason Phrase
+
+    /**
+     * @covers ::withStatus
+     * @covers ::getStatusCode
+     * @covers ::getDefaultReasonPhraseForStatusCode
      */
     public function testCreatesNewInstanceWithStatusCode()
     {
@@ -24,9 +61,9 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Response::withStatus
-     * @covers WellRESTed\Message\Response::getReasonPhrase
-     * @covers WellRESTed\Message\Response::getDefaultReasonPhraseForStatusCode
+     * @covers ::withStatus
+     * @covers ::getReasonPhrase
+     * @covers ::getDefaultReasonPhraseForStatusCode
      * @dataProvider statusProvider
      */
     public function testCreatesNewInstanceWithReasonPhrase($code, $reasonPhrase, $expected)
@@ -82,8 +119,8 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\Response::withStatus
-     * @covers WellRESTed\Message\Response::getStatusCode
+     * @covers ::withStatus
+     * @covers ::getStatusCode
      */
     public function testWithStatusCodePreservesOriginalResponse()
     {
@@ -99,38 +136,5 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(404, $response2->getStatusCode());
         $this->assertEquals(["text/plain"], $response2->getHeader("Content-type"));
-    }
-
-    // ------------------------------------------------------------------------
-    // Construction
-
-    /**
-     * @covers WellRESTed\Message\Response::__construct
-     */
-    public function testSetsStatusCodeOnConstruction()
-    {
-        $response = new Response(200);
-        $this->assertSame(200, $response->getStatusCode());
-    }
-
-    /**
-     * @covers WellRESTed\Message\Response::__construct
-     */
-    public function testSetsHeadersOnConstruction()
-    {
-        $response = new Response(200, [
-            "X-foo" => ["bar","baz"]
-        ]);
-        $this->assertEquals(["bar","baz"], $response->getHeader("X-foo"));
-    }
-
-    /**
-     * @covers WellRESTed\Message\Response::__construct
-     */
-    public function testSetsBodyOnConstruction()
-    {
-        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $response = new Response(200, [], $body->reveal());
-        $this->assertSame($body->reveal(), $response->getBody());
     }
 }
