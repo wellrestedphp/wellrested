@@ -6,7 +6,11 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\Uri;
 
+// TODO Test nested $_FILES with associative array for last level
+// TODO Remove concrete class used for testing
+
 /**
+ * @coversDefaultClass WellRESTed\Message\ServerRequest
  * @uses WellRESTed\Message\ServerRequest
  * @uses WellRESTed\Message\Request
  * @uses WellRESTed\Message\Message
@@ -21,7 +25,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Construction and Marshalling
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::__construct
+     * @covers ::__construct
      */
     public function testCreatesInstance()
     {
@@ -30,10 +34,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerRequest
-     * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
-     * @covers WellRESTed\Message\ServerRequest::getStreamForBody
+     * @covers ::getServerRequest
+     * @covers ::getServerRequestHeaders
+     * @covers ::readFromServerRequest
+     * @covers ::getStreamForBody
      * @preserveGlobalState disabled
      */
     public function testGetServerRequestReadsFromRequest()
@@ -61,7 +65,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Request
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider protocolVersionProvider
      */
@@ -87,7 +91,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider methodProvider
      */
@@ -114,7 +118,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
+     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider requestTargetProvider
      */
@@ -139,7 +143,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getHeader
+     * @covers ::getHeader
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesHeaders($request)
@@ -149,7 +153,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getBody
+     * @covers ::getBody
      */
     public function testServerRequestProvidesBody()
     {
@@ -163,7 +167,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Server Params
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerParams
+     * @covers ::getServerParams
      */
     public function testServerParamsIsEmptyByDefault()
     {
@@ -172,7 +176,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerParams
+     * @covers ::getServerParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesServerParams($request)
@@ -185,7 +189,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Cookies
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getCookieParams
+     * @covers ::getCookieParams
      */
     public function testCookieParamsIsEmptyByDefault()
     {
@@ -194,7 +198,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getCookieParams
+     * @covers ::getCookieParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesCookieParams($request)
@@ -204,7 +208,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withCookieParams
+     * @covers ::withCookieParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithCookieParamsCreatesNewInstance($request1)
@@ -221,7 +225,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Query
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getQueryParams
+     * @covers ::getQueryParams
      */
     public function testQueryParamsIsEmptyByDefault()
     {
@@ -230,7 +234,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getQueryParams
+     * @covers ::getQueryParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesQueryParams($request)
@@ -240,7 +244,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withQueryParams
+     * @covers ::withQueryParams
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithQueryParamsCreatesNewInstance($request1)
@@ -257,7 +261,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Uploaded Files
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     * @covers ::getUploadedFiles
      */
     public function testUploadedFilesIsEmptyByDefault()
     {
@@ -266,7 +270,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
+     * @covers ::getUploadedFiles
      * @preserveGlobalState disabled
      */
     public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
@@ -282,10 +286,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerRequest
-     * @covers WellRESTed\Message\ServerRequest::readUploadedFiles
-     * @covers WellRESTed\Message\ServerRequest::getUploadedFiles
-     * @covers WellRESTed\Message\ServerRequest::addUploadedFilesToBranch
+     * @covers ::getServerRequest
+     * @covers ::readUploadedFiles
+     * @covers ::getUploadedFiles
+     * @covers ::addUploadedFilesToBranch
      * @preserveGlobalState disabled
      * @dataProvider uploadedFileProvider
      */
@@ -341,6 +345,30 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                         2 => 0
                     ]
                 ]
+            ],
+            "nestedDictionary" => [
+                "level2" => [
+                    "name" => [
+                        "file0" => "nestedDictionary0.jpg",
+                        "file1" => "nestedDictionary1.jpg"
+                    ],
+                    "type" => [
+                        "file0" => "image/png",
+                        "file1" => "image/png"
+                    ],
+                    "tmp_name" => [
+                        "file0" => "/tmp/phppng0",
+                        "file1" => "/tmp/phppng1"
+                    ],
+                    "error" => [
+                        "file0" => UPLOAD_ERR_OK,
+                        "file1" => UPLOAD_ERR_OK
+                    ],
+                    "size" => [
+                        "file0" => 256,
+                        "file1" => 4096
+                    ]
+                ]
             ]
         ];
         $request = ServerRequest::getServerRequest();
@@ -358,13 +386,16 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
             [new UploadedFile("nested.json", "application/json", 1024, "/tmp/phpadhjk", UPLOAD_ERR_OK), ["nested", "level2"]],
             [new UploadedFile("nestedList0.jpg", "image/jpeg", 256, "/tmp/phpjpg0", UPLOAD_ERR_OK), ["nestedList", "level2", 0]],
             [new UploadedFile("nestedList1.jpg", "image/jpeg", 4096, "/tmp/phpjpg1", UPLOAD_ERR_OK), ["nestedList", "level2", 1]],
-            [new UploadedFile("", "", 0, "", UPLOAD_ERR_NO_FILE), ["nestedList", "level2", 2]]
+            [new UploadedFile("", "", 0, "", UPLOAD_ERR_NO_FILE), ["nestedList", "level2", 2]],
+            [new UploadedFile("nestedDictionary0.jpg", "image/png", 256, "/tmp/phppng0", UPLOAD_ERR_OK), ["nestedDictionary", "level2", "file0"]],
+            [new UploadedFile("nestedDictionary1.jpg", "image/png", 4096, "/tmp/phppngg1", UPLOAD_ERR_OK), ["nestedDictionary", "level2", "file1"]]
         ];
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
-     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     * @covers ::withUploadedFiles
+     * @covers ::isValidUploadedFilesBranch
+     * @covers ::isValidUploadedFilesTree
      */
     public function testWithUploadedFilesCreatesNewInstance()
     {
@@ -378,8 +409,9 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
-     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     * @covers ::withUploadedFiles
+     * @covers ::isValidUploadedFilesTree
+     * @covers ::isValidUploadedFilesBranch
      * @dataProvider validUploadedFilesProvider
      */
     public function testWithUploadedFilesReturnsPassedUploadedFiles($uploadedFiles)
@@ -402,13 +434,19 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
                     new UploadedFile("file1.html", "text/html", 524, "/tmp/php9hNlHe", 0),
                     new UploadedFile("file2.html", "text/html", 524, "/tmp/php9hNshj", 0)
                 ]
+            ]]],
+            [["nestedDictionary" => [
+                "level2" => [
+                    "file1" => new UploadedFile("file1.html", "text/html", 524, "/tmp/php9hNlHe", 0),
+                    "file2" => new UploadedFile("file2.html", "text/html", 524, "/tmp/php9hNshj", 0)
+                ]
             ]]]
         ];
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withUploadedFiles
-     * @covers WellRESTed\Message\ServerRequest::isValidUploadedFilesTree
+     * @covers ::withUploadedFiles
+     * @covers ::isValidUploadedFilesTree
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidUploadedFilesProvider
      */
@@ -481,7 +519,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Parsed Body
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getParsedBody
+     * @covers ::getParsedBody
      */
     public function testParsedBodyIsNullByDefault()
     {
@@ -490,8 +528,8 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerRequest
-     * @covers WellRESTed\Message\ServerRequest::getParsedBody
+     * @covers ::getServerRequest
+     * @covers ::getParsedBody
      * @preserveGlobalState disabled
      * @dataProvider formContentTypeProvider
      */
@@ -519,7 +557,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withParsedBody
+     * @covers ::withParsedBody
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testWithParsedBodyCreatesNewInstance($request1)
@@ -537,7 +575,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withParsedBody
+     * @covers ::withParsedBody
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidParsedBodyProvider
      */
@@ -556,7 +594,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::__clone
+     * @covers ::__clone
      */
     public function testCloneMakesDeepCopiesOfParsedBody()
     {
@@ -575,7 +613,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Attributes
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getAttributes
+     * @covers ::getAttributes
      */
     public function testAttributesIsEmptyByDefault()
     {
@@ -584,7 +622,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getAttribute
+     * @covers ::getAttribute
      * @depends testGetServerRequestReadsFromRequest
      */
     public function testServerRequestProvidesAttributesIfPassed($request)
@@ -594,7 +632,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getAttribute
+     * @covers ::getAttribute
      */
     public function testGetAttributeReturnsDefaultIfNotSet()
     {
@@ -603,8 +641,8 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withAttribute
-     * @covers WellRESTed\Message\ServerRequest::getAttribute
+     * @covers ::withAttribute
+     * @covers ::getAttribute
      */
     public function testWithAttributeCreatesNewInstance()
     {
@@ -614,7 +652,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withAttribute
+     * @covers ::withAttribute
      */
     public function testWithAttributePreserversOtherAttributes()
     {
@@ -626,7 +664,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withoutAttribute
+     * @covers ::withoutAttribute
      */
     public function testWithoutAttributeCreatesNewInstance()
     {
@@ -637,7 +675,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::withoutAttribute
+     * @covers ::withoutAttribute
      */
     public function testWithoutAttributePreservesOtherAttributes()
     {
@@ -650,7 +688,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getAttributes
+     * @covers ::getAttributes
      */
     public function testGetAttributesReturnsAllAttributes()
     {
@@ -666,10 +704,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // URI
 
     /**
-     * @covers WellRESTed\Message\ServerRequest::getServerRequest
-     * @covers WellRESTed\Message\ServerRequest::getServerRequestHeaders
-     * @covers WellRESTed\Message\ServerRequest::readFromServerRequest
-     * @covers WellRESTed\Message\ServerRequest::readUri
+     * @covers ::getServerRequest
+     * @covers ::getServerRequestHeaders
+     * @covers ::readFromServerRequest
+     * @covers ::readUri
      * @preserveGlobalState disabled
      * @dataProvider uriProvider
      */

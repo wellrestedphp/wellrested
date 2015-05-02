@@ -186,7 +186,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     /**
      * Create a new instance with the specified uploaded files.
      *
-     * @param array An array tree of UploadedFileInterface instances.
+     * @param array $uploadedFiles An array tree of UploadedFileInterface instances.
      * @return self
      * @throws \InvalidArgumentException if an invalid structure is provided.
      */
@@ -377,25 +377,32 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     protected function addUploadedFilesToBranch(&$branch, $name, $value)
     {
+        // Check for each of the expected keys.
         if (isset($value["name"], $value["type"], $value["tmp_name"], $value["error"], $value["size"])) {
             // This is a file. It may be a single file, or a list of files.
 
-            // Check if the "name" element is a list array.
-            if (is_array($value["name"]) && (array_keys($value["name"]) === range(0, count($value["name"]) - 1))) {
-                $list = [];
-                for ($index = 0, $u = count($value["name"]); $index < $u; ++$index) {
-                    $uploadedFile = new UploadedFile(
-                        $value["name"][$index],
-                        $value["type"][$index],
-                        $value["size"][$index],
-                        $value["tmp_name"][$index],
-                        $value["error"][$index]
+            // Check if these items are arrays.
+            if (is_array($value["name"])
+                && is_array($value["type"])
+                && is_array($value["tmp_name"])
+                && is_array($value["error"])
+                && is_array($value["size"])
+            ) {
+                // Each item is an array. This is a list of uploaded files.
+                $files = [];
+                $keys = array_keys($value["name"]);
+                foreach ($keys as $key) {
+                    $files[$key] = new UploadedFile(
+                        $value["name"][$key],
+                        $value["type"][$key],
+                        $value["size"][$key],
+                        $value["tmp_name"][$key],
+                        $value["error"][$key]
                     );
-                    $list[] = $uploadedFile;
                 }
-                $branch[$name] = $list;
+                $branch[$name] = $files;
             } else {
-                // All expected keys are present. This is an uploaded file.
+                // All expected keys are present and are not arrays. This is an uploaded file.
                 $uploadedFile = new UploadedFile(
                     $value["name"], $value["type"], $value["size"], $value["tmp_name"], $value["error"]
                 );
@@ -437,6 +444,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * Return a reference to the singleton instance of the Request derived
      * from the server's information about the request sent to the server.
      *
+     * @param array $attributes Key-value pairs to add to the request.
      * @return self
      * @static
      */
