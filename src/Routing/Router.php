@@ -8,6 +8,8 @@ use WellRESTed\HttpExceptions\HttpException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\Stream;
+use WellRESTed\Routing\ResponsePrep\ContentLengthPrep;
+use WellRESTed\Routing\ResponsePrep\HeadPrep;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 
@@ -15,14 +17,22 @@ class Router implements MiddlewareInterface
 {
     /** @var DispatcherInterface  */
     protected $dispatcher;
-    /** @var array Middleware to dispatch before the router evaluates the route. */
+
+    /** @var  MiddlewareInterface[] List of middleware to dispatch immediatly before outputting the response */
+    protected $responsePreparationHooks;
+
+    /** @var MiddlewareInterface[] List of middleware to dispatch before the router evaluates the route. */
     private $preRouteHooks;
-    /** @var array Middleware to dispatch after the router dispatches all other middleware */
+
+    /** @var MiddlewareInterface[] List of middleware to dispatch after the router dispatches all other middleware */
     private $postRouteHooks;
-    /** @var array  Hash array of status code => error handler */
+
+    /** @var array Hash array of status code => middleware */
     private $statusHandlers;
+
     /** @var RouteTable Collection of routes */
     private $routeTable;
+
     /** @var RouteFactoryInterface */
     private $routeFactory;
 
@@ -30,6 +40,7 @@ class Router implements MiddlewareInterface
 
     public function __construct()
     {
+        $this->responsePreparationHooks = $this->getResponsePreparationHooks();
         $this->routeFactory = $this->getRouteFactory();
         $this->routeTable = $this->getRouteTable();
         $this->statusHandlers = [];
@@ -79,6 +90,11 @@ class Router implements MiddlewareInterface
         $this->postRouteHooks[] = $middleware;
     }
 
+    public function addResponsePreparationHook($middleware)
+    {
+        $this->responsePreparationHooks[] = $middleware;
+    }
+
     public function setStatusHandler($statusCode, $middleware)
     {
         $this->statusHandlers[$statusCode] = $middleware;
@@ -100,6 +116,7 @@ class Router implements MiddlewareInterface
             $dispatcher->dispatch($middleware, $request, $response);
         }
         $this->disptachPostRouteHooks($request, $response);
+        $this->dispatchResponsePreparationHooks($request, $response);
     }
 
     public function respond()
@@ -164,6 +181,17 @@ class Router implements MiddlewareInterface
     }
 
     /**
+     * @return MiddlewareInterface[]
+     */
+    protected function getResponsePreparationHooks()
+    {
+        return [
+            new ContentLengthPrep(),
+            new HeadPrep()
+        ];
+    }
+
+    /**
      * @return RouteFactoryInterface
      */
     protected function getRouteFactory()
@@ -200,6 +228,14 @@ class Router implements MiddlewareInterface
             foreach ($this->postRouteHooks as $hook) {
                 $dispatcher->dispatch($hook, $request, $response);
             }
+        }
+    }
+
+    private function dispatchResponsePreparationHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    {
+        $dispatcher = $this->getDispatcher();
+        foreach ($this->responsePreparationHooks as $hook) {
+            $dispatcher->dispatch($hook, $request, $response);
         }
     }
 }
