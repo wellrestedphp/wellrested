@@ -156,11 +156,9 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     {
         $body = $this->prophesize('Psr\Http\Message\StreamInterface');
 
-        // Create a stub for the SomeClass class.
         $request = $this->getMockBuilder('WellRESTed\Message\ServerRequest')
             ->setMethods(["getStreamForBody"])
             ->getMock();
-
         $request->expects($this->any())
             ->method("getStreamForBody")
             ->will($this->returnValue($body->reveal()));
