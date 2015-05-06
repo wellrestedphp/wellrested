@@ -8,116 +8,92 @@ use WellRESTed\HttpExceptions\HttpException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\Stream;
-use WellRESTed\Routing\ResponsePrep\ContentLengthPrep;
-use WellRESTed\Routing\ResponsePrep\HeadPrep;
-use WellRESTed\Routing\Route\RouteFactory;
-use WellRESTed\Routing\Route\RouteFactoryInterface;
 
-class Router implements MiddlewareInterface
+class Router implements MiddlewareInterface, RouteMapInterface
 {
-    /** @var DispatcherInterface  */
-    protected $dispatcher;
+    /** @var DispatcherInterface */
+    private $dispatcher;
 
-    /** @var  MiddlewareInterface[] List of middleware to dispatch immediatly before outputting the response */
-    protected $responsePreparationHooks;
+    /** @var mixed[] List of middleware to dispatch immediately before concluding the request-response cycle. */
+    private $finalizationHooks;
 
-    /** @var MiddlewareInterface[] List of middleware to dispatch before the router evaluates the route. */
-    private $preRouteHooks;
-
-    /** @var MiddlewareInterface[] List of middleware to dispatch after the router dispatches all other middleware */
+    /** @var mixed[] List of middleware to dispatch after the router dispatches the matched route. */
     private $postRouteHooks;
 
+    /** @var mixed[] List of middleware to dispatch before the router dispatches the matched route. */
+    private $preRouteHooks;
+
     /** @var array Hash array of status code => middleware */
-    private $statusHandlers;
+    private $statusHooks;
 
-    /** @var RouteTable Collection of routes */
-    private $routeTable;
-
-    /** @var RouteFactoryInterface */
-    private $routeFactory;
+    /** @var RouteMapInterface */
+    private $routeMap;
 
     // ------------------------------------------------------------------------
 
     public function __construct()
     {
-        $this->responsePreparationHooks = $this->getResponsePreparationHooks();
-        $this->routeFactory = $this->getRouteFactory();
-        $this->routeTable = $this->getRouteTable();
-        $this->statusHandlers = [];
+        $this->dispatcher = $this->getDispatcher();
+        $this->finalizationHooks = $this->getFinalizationHooks();
+        $this->postRouteHooks = $this->getPostRouteHooks();
+        $this->preRouteHooks = $this->getPreRouteHooks();
+        $this->statusHooks = $this->getStatusHooks();
+        $this->routeMap = $this->getRouteMap();
     }
 
     // ------------------------------------------------------------------------
-
-    /**
-     * Create and return a route given a string path, a handler, and optional
-     * extra arguments.
-     *
-     * The method will determine the most appropriate route subclass to use
-     * and will forward the arguments on to the subclass's constructor.
-     *
-     * - Paths with no special characters will generate StaticRoutes
-     * - Paths ending with * will generate PrefixRoutes
-     * - Paths containing URI variables (e.g., {id}) will generate TemplateRoutes
-     * - Regular exressions will generate RegexRoutes
-     *
-     * @param string $target Path, prefix, or pattern to match
-     * @param mixed $middleware Middleware to dispatch
-     * @param mixed $extra
-     */
-    public function add($target, $middleware, $extra = null)
-    {
-        if (is_array($middleware)) {
-            $map = $this->getMethodMap();
-            $map->addMap($middleware);
-            $middleware = $map;
-        }
-        $this->routeFactory->registerRoute($this->routeTable, $target, $middleware, $extra);
-    }
-
-    public function addPreRouteHook($middleware)
-    {
-        if (!isset($this->preRouteHooks)) {
-            $this->preRouteHooks = [];
-        }
-        $this->preRouteHooks[] = $middleware;
-    }
-
-    public function addPostRouteHook($middleware)
-    {
-        if (!isset($this->postRouteHooks)) {
-            $this->postRouteHooks = [];
-        }
-        $this->postRouteHooks[] = $middleware;
-    }
-
-    public function addResponsePreparationHook($middleware)
-    {
-        $this->responsePreparationHooks[] = $middleware;
-    }
-
-    public function setStatusHandler($statusCode, $middleware)
-    {
-        $this->statusHandlers[$statusCode] = $middleware;
-    }
+    // MiddlewareInterface
 
     public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        $this->disptachPreRouteHooks($request, $response);
+        $this->dispatchPreRouteHooks($request, $response);
         try {
-            $this->routeTable->dispatch($request, $response);
+            $this->routeMap->dispatch($request, $response);
         } catch (HttpException $e) {
             $response = $response->withStatus($e->getCode());
             $response = $response->withBody(new Stream($e->getMessage()));
         }
-        $statusCode = $response->getStatusCode();
-        if (isset($this->statusHandlers[$statusCode])) {
-            $middleware = $this->statusHandlers[$statusCode];
-            $dispatcher = $this->getDispatcher();
-            $dispatcher->dispatch($middleware, $request, $response);
-        }
-        $this->disptachPostRouteHooks($request, $response);
-        $this->dispatchResponsePreparationHooks($request, $response);
+        $this->dispatchStatusHooks($request, $response);
+        $this->dispatchPostRouteHooks($request, $response);
+        $this->dispatchFinalizationHooks($request, $response);
     }
+
+    // ------------------------------------------------------------------------
+    // RouteMapInterface
+
+    /**
+     * Register middleware with the router for a given path and method.
+     *
+     * $method may be:
+     * - A single verb ("GET"),
+     * - A comma-separated list of verbs ("GET,PUT,DELETE")
+     * - "*" to indicate any method.
+     * @see MethodMapInterface::addMethod
+     *
+     * $target may be:
+     * - An exact path (e.g., "/path/")
+     * - An prefix path ending with "*"" ("/path/*"")
+     * - A URI template with variables enclosed in "{}" ("/path/{id}")
+     * - A regular expression ("~/cat/([0-9]+)~")
+     *
+     * $middleware may be:
+     * - An instance implementing MiddlewareInterface
+     * - A string containing the fully qualified class name of a class
+     *     implementing MiddlewareInterface
+     * - A callable that returns an instance implementing MiddleInterface
+     * - A callable maching the signature of MiddlewareInteraface::dispatch
+     * @see DispatchedInterface::dispatch
+     *
+     * @param string $target Request target or pattern to match
+     * @param string $method HTTP method(s) to match
+     * @param mixed $middleware Middleware to dispatch
+     */
+    public function add($method, $target, $middleware)
+    {
+        $this->routeMap->add($method, $target, $middleware);
+    }
+
+    // ------------------------------------------------------------------------
 
     public function respond()
     {
@@ -129,32 +105,89 @@ class Router implements MiddlewareInterface
     }
 
     // ------------------------------------------------------------------------
+    // Hooks
+
+    public function addPreRouteHook($middleware)
+    {
+        $this->preRouteHooks[] = $middleware;
+    }
+
+    public function addPostRouteHook($middleware)
+    {
+        $this->postRouteHooks[] = $middleware;
+    }
+
+    public function addFinalizationHook($middleware)
+    {
+        $this->finalizationHooks[] = $middleware;
+    }
+
+    public function setStatusHook($statusCode, $middleware)
+    {
+        $this->statusHooks[$statusCode] = $middleware;
+    }
+
+    // ------------------------------------------------------------------------
     // The following methods provide instaces the router will use. Override
     // to provide custom classes or configured instances.
 
-    // @codeCoverageIgnoreStart
-
     /**
      * Return an instance that can dispatch middleware.
+     *
      * Override to provide a custom class.
      *
      * @return DispatcherInterface
      */
     protected function getDispatcher()
     {
-        if (!isset($this->dispatcher)) {
-            $this->dispatcher = new Dispatcher();
-        }
-        return $this->dispatcher;
+        return new Dispatcher();
     }
 
     /**
-     * @return MethodMapInterface
+     * Return an instance that maps routes to middleware.
+     *
+     * Override to provide a custom class.
+     *
+     * @return RouteMapInterface
      */
-    protected function getMethodMap()
+    protected function getRouteMap()
     {
-        return new MethodMap();
+        return new RouteMap();
     }
+
+    /**
+     * @return array
+     */
+    protected function getPreRouteHooks()
+    {
+        return [];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getPostRouteHooks()
+    {
+        return [];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getStatusHooks()
+    {
+        return [];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getFinalizationHooks()
+    {
+        return [];
+    }
+
+    // @codeCoverageIgnoreStart
 
     /**
      * @return ServerRequestInterface
@@ -180,62 +213,38 @@ class Router implements MiddlewareInterface
         return new Response();
     }
 
-    /**
-     * @return MiddlewareInterface[]
-     */
-    protected function getResponsePreparationHooks()
-    {
-        return [
-            new ContentLengthPrep(),
-            new HeadPrep()
-        ];
-    }
-
-    /**
-     * @return RouteFactoryInterface
-     */
-    protected function getRouteFactory()
-    {
-        return new RouteFactory();
-    }
-
-    /**
-     * @return RouteTableInterface
-     */
-    protected function getRouteTable()
-    {
-        return new RouteTable();
-    }
-
     // @codeCoverageIgnoreEnd
 
     // ------------------------------------------------------------------------
 
-    private function disptachPreRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    private function dispatchPreRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        if ($this->preRouteHooks) {
-            $dispatcher = $this->getDispatcher();
-            foreach ($this->preRouteHooks as $hook) {
-                $dispatcher->dispatch($hook, $request, $response);
-            }
+        foreach ($this->preRouteHooks as $hook) {
+            $this->dispatcher->dispatch($hook, $request, $response);
         }
     }
 
-    private function disptachPostRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    private function dispatchPostRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        if ($this->postRouteHooks) {
-            $dispatcher = $this->getDispatcher();
-            foreach ($this->postRouteHooks as $hook) {
-                $dispatcher->dispatch($hook, $request, $response);
-            }
+        foreach ($this->postRouteHooks as $hook) {
+            $this->dispatcher->dispatch($hook, $request, $response);
         }
     }
 
-    private function dispatchResponsePreparationHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    private function dispatchFinalizationHooks(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        $dispatcher = $this->getDispatcher();
-        foreach ($this->responsePreparationHooks as $hook) {
-            $dispatcher->dispatch($hook, $request, $response);
+        foreach ($this->finalizationHooks as $hook) {
+            $this->dispatcher->dispatch($hook, $request, $response);
+        }
+    }
+
+    private function dispatchStatusHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    {
+        $statusCode = $response->getStatusCode();
+        if (isset($this->statusHooks[$statusCode])) {
+            $middleware = $this->statusHooks[$statusCode];
+            $dispatcher = $this->getDispatcher();
+            $dispatcher->dispatch($middleware, $request, $response);
         }
     }
 }
