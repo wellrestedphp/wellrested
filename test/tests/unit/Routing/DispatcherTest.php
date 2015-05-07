@@ -20,51 +20,64 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
     {
         $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
         $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+        $this->response->withStatus(Argument::any())->will(
+            function ($args) {
+                $this->getStatusCode()->willReturn($args[0]);
+                return $this;
+            }
+        );
     }
 
-    public function testDispatchedCallable()
+    public function testDispatchesCallable()
     {
         $middleware = function ($request, &$response) {
             $response = $response->withStatus(200);
         };
+
         $dispatcher = new Dispatcher();
+        $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $dispatcher->dispatch($middleware, $this->request->reveal(), $response);
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
-        $this->assertSame($this->response->reveal(), $response);
+        $dispatcher->dispatch($middleware, $request, $response);
+
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testDispatchedFromCallable()
+    public function testDispatchesMiddlewareInstanceFromCallable()
     {
         $middleware = function () {
             return new DispatcherTest_Middleware();
         };
-        $response = $this->response->reveal();
+
         $dispatcher = new Dispatcher();
-        $dispatcher->dispatch($middleware, $this->request->reveal(), $response);
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
-        $this->assertSame($this->response->reveal(), $response);
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $dispatcher->dispatch($middleware, $request, $response);
+
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testDispatchedFromString()
+    public function testDispatchesMiddlewareFromClassNameString()
     {
         $middleware = __NAMESPACE__ . "\\DispatcherTest_Middleware";
-        $response = $this->response->reveal();
+
         $dispatcher = new Dispatcher();
-        $dispatcher->dispatch($middleware, $this->request->reveal(), $response);
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
-        $this->assertSame($this->response->reveal(), $response);
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $dispatcher->dispatch($middleware, $request, $response);
+
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testDispatchedInstance()
+    public function testDispatchesMiddlewareInstance()
     {
         $middleware = new DispatcherTest_Middleware();
+
         $dispatcher = new Dispatcher();
+        $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $dispatcher->dispatch($middleware, $this->request->reveal(), $response);
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
-        $this->assertSame($this->response->reveal(), $response);
+        $dispatcher->dispatch($middleware, $request, $response);
+
+        $this->assertEquals(200, $response->getStatusCode());
     }
 }
 
