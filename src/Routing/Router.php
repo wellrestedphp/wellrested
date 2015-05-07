@@ -8,6 +8,8 @@ use WellRESTed\HttpExceptions\HttpException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\Stream;
+use WellRESTed\Routing\Hook\ContentLengthHook;
+use WellRESTed\Routing\Hook\HeadHook;
 
 class Router implements MiddlewareInterface, RouteMapInterface
 {
@@ -124,7 +126,7 @@ class Router implements MiddlewareInterface, RouteMapInterface
 
     public function setStatusHook($statusCode, $middleware)
     {
-        $this->statusHooks[$statusCode] = $middleware;
+        $this->statusHooks[(int) $statusCode] = $middleware;
     }
 
     // ------------------------------------------------------------------------
@@ -184,7 +186,10 @@ class Router implements MiddlewareInterface, RouteMapInterface
      */
     protected function getFinalizationHooks()
     {
-        return [];
+        return [
+            new ContentLengthHook(),
+            new HeadHook()
+        ];
     }
 
     // @codeCoverageIgnoreStart
@@ -240,7 +245,7 @@ class Router implements MiddlewareInterface, RouteMapInterface
 
     private function dispatchStatusHooks(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        $statusCode = $response->getStatusCode();
+        $statusCode = (int) $response->getStatusCode();
         if (isset($this->statusHooks[$statusCode])) {
             $middleware = $this->statusHooks[$statusCode];
             $dispatcher = $this->getDispatcher();
