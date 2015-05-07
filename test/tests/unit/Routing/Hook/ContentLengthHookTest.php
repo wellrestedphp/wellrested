@@ -1,14 +1,14 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Routing\Hook;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\ResponsePrep\ContentLengthPrep;
+use WellRESTed\Routing\Hook\ContentLengthHook;
 
 /**
- * @covers WellRESTed\Routing\ResponsePrep\ContentLengthPrep
+ * @covers WellRESTed\Routing\Hook\ContentLengthHook
  */
-class ContentLengthPrepTest extends \PHPUnit_Framework_TestCase
+class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
@@ -22,20 +22,39 @@ class ContentLengthPrepTest extends \PHPUnit_Framework_TestCase
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $this->response->getBody()->willReturn($this->body->reveal());
-        $this->response->withHeader(Argument::cetera())->willReturn($this->response->reveal());
+        $this->response->withHeader(Argument::cetera())->will(
+            function () {
+                $this->hasHeader("Content-length")->willReturn(true);
+                return $this;
+            }
+        );
     }
 
-    public function testAddContentLengthHeader()
+    public function testAddsContentLengthHeader()
     {
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new ContentLengthPrep();
-        $prep->dispatch($request, $response);
+        $hook = new ContentLengthHook();
+        $hook->dispatch($request, $response);
 
         $this->response->withHeader("Content-length", 1024)->shouldHaveBeenCalled();
+    }
+
+    public function testMultipleDispatchesHaveNoEffect()
+    {
+        $this->response->hasHeader("Content-length")->willReturn(false);
+        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $hook = new ContentLengthHook();
+        $hook->dispatch($request, $response);
+        $hook->dispatch($request, $response);
+
+        $this->response->withHeader("Content-length", 1024)->shouldHaveBeenCalledTimes(1);
     }
 
     public function testDoesNotAddHeaderWhenContentLenghtIsAlreadySet()
@@ -45,8 +64,8 @@ class ContentLengthPrepTest extends \PHPUnit_Framework_TestCase
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new ContentLengthPrep();
-        $prep->dispatch($request, $response);
+        $hook = new ContentLengthHook();
+        $hook->dispatch($request, $response);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }
@@ -58,8 +77,8 @@ class ContentLengthPrepTest extends \PHPUnit_Framework_TestCase
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new ContentLengthPrep();
-        $prep->dispatch($request, $response);
+        $hook = new ContentLengthHook();
+        $hook->dispatch($request, $response);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }
@@ -72,8 +91,8 @@ class ContentLengthPrepTest extends \PHPUnit_Framework_TestCase
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new ContentLengthPrep();
-        $prep->dispatch($request, $response);
+        $hook = new ContentLengthHook();
+        $hook->dispatch($request, $response);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }

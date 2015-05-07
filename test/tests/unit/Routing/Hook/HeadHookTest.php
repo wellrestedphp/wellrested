@@ -1,15 +1,15 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Routing\Hook;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\ResponsePrep\HeadPrep;
+use WellRESTed\Routing\Hook\HeadHook;
 
 /**
- * @covers WellRESTed\Routing\ResponsePrep\HeadPrep
+ * @covers WellRESTed\Routing\Hook\HeadHook
  * @uses WellRESTed\Message\NullStream
  */
-class HeadPrepTest extends \PHPUnit_Framework_TestCase
+class HeadHookTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
@@ -34,9 +34,20 @@ class HeadPrepTest extends \PHPUnit_Framework_TestCase
         $this->request->getMethod()->willReturn("HEAD");
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new HeadPrep();
-        $prep->dispatch($request, $response);
+        $hook = new HeadHook();
+        $hook->dispatch($request, $response);
         $this->assertSame(0, $response->getBody()->getSize());
+    }
+
+    public function testMultipleDispatchesHaveNoEffect()
+    {
+        $this->request->getMethod()->willReturn("HEAD");
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $hook = new HeadHook();
+        $hook->dispatch($request, $response);
+        $hook->dispatch($request, $response);
+        $this->response->withBody(Argument::any())->shouldHaveBeenCalledTimes(1);
     }
 
     public function testDoesNotReplaceBodyForNonHeadRequests()
@@ -44,8 +55,8 @@ class HeadPrepTest extends \PHPUnit_Framework_TestCase
         $this->request->getMethod()->willReturn("GET");
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $prep = new HeadPrep();
-        $prep->dispatch($request, $response);
+        $hook = new HeadHook();
+        $hook->dispatch($request, $response);
         $this->response->withBody(Argument::any())->shouldNotHaveBeenCalled();
     }
 }
