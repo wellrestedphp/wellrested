@@ -6,7 +6,8 @@ use Prophecy\Argument;
 use WellRESTed\Routing\MethodMap;
 
 /**
- * @covers WellRESTed\Routing\MethodMap
+ * @coversDefaultClass WellRESTed\Routing\MethodMap
+ * @uses WellRESTed\Routing\MethodMap
  * @uses WellRESTed\Routing\Dispatcher
  */
 class MethodMapTest extends \PHPUnit_Framework_TestCase
@@ -22,14 +23,30 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->response->withHeader(Argument::cetera())->willReturn($this->response->reveal());
     }
 
+    /**
+     * @covers ::__construct
+     */
+    public function testCreatesInstance()
+    {
+        $methodMap = new MethodMap();
+        $this->assertNotNull($methodMap);
+    }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::dispatchMiddleware
+     * @covers ::getDispatcher
+     * @covers ::setMethod
+     */
     public function testDispatchesMiddlewareWithMatchingMethod()
     {
         $this->request->getMethod()->willReturn("GET");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
         $middleware->dispatch(Argument::cetera())->willReturn();
 
-        $map = new MethodMap(["GET" => $middleware->reveal()]);
+        $map = new MethodMap();
+        $map->setMethod("GET", $middleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
@@ -38,14 +55,65 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $middleware->dispatch($request, $response)->shouldHaveBeenCalled();
     }
 
+    /**
+     * @coversNothing
+     */
+    public function testTreatsMethodNamesCaseSensitively()
+    {
+        $this->request->getMethod()->willReturn("get");
+
+        $middlewareUpper = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $middlewareUpper->dispatch(Argument::cetera())->willReturn();
+
+        $middlewareLower = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $middlewareLower->dispatch(Argument::cetera())->willReturn();
+
+        $map = new MethodMap();
+        $map->setMethod("GET", $middlewareUpper->reveal());
+        $map->setMethod("get", $middlewareLower->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $map->dispatch($request, $response);
+
+        $middlewareLower->dispatch($request, $response)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::dispatchMiddleware
+     * @covers ::getDispatcher
+     * @covers ::setMethod
+     */
+    public function testDispatchesWildcardMiddlewareWithNonMatchingMethod()
+    {
+        $this->request->getMethod()->willReturn("GET");
+
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $middleware->dispatch(Argument::cetera())->willReturn();
+
+        $map = new MethodMap();
+        $map->setMethod("*", $middleware->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $map->dispatch($request, $response);
+
+        $middleware->dispatch($request, $response)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::dispatch
+     */
     public function testDispatchesGetMiddlewareForHeadByDefault()
     {
         $this->request->getMethod()->willReturn("HEAD");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
         $middleware->dispatch(Argument::cetera())->willReturn();
 
-        $map = new MethodMap(["GET" => $middleware->reveal()]);
+        $map = new MethodMap();
+        $map->setMethod("GET", $middleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
@@ -54,13 +122,16 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $middleware->dispatch($request, $response)->shouldHaveBeenCalled();
     }
 
+    /*
+     * @covers ::setMethod
+     */
     public function testRegistersMiddlewareForMultipleMethods()
     {
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
         $middleware->dispatch(Argument::cetera())->willReturn();
 
         $map = new MethodMap();
-        $map->add("GET,POST", $middleware->reveal());
+        $map->setMethod("GET,POST", $middleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
@@ -74,13 +145,36 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $middleware->dispatch($request, $response)->shouldHaveBeenCalledTimes(2);
     }
 
+    public function testSettingNullUnregistersMiddleware()
+    {
+        $this->request->getMethod()->willReturn("POST");
+
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+
+        $map = new MethodMap();
+        $map->setMethod("POST", $middleware->reveal());
+        $map->setMethod("POST", null);
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $map->dispatch($request, $response);
+
+        $this->response->withStatus(405)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::addAllowHeader
+     * @covers ::getAllowedMethods
+     */
     public function testSetsStatusTo200ForOptions()
     {
         $this->request->getMethod()->willReturn("OPTIONS");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
 
-        $map = new MethodMap(["GET" => $middleware->reveal()]);
+        $map = new MethodMap();
+        $map->setMethod("GET", $middleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
@@ -90,17 +184,20 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::dispatch
+     * @covers ::addAllowHeader
+     * @covers ::getAllowedMethods
      * @dataProvider allowedMethodProvider
      */
     public function testSetsAllowHeaderForOptions($methodsDeclared, $methodsAllowed)
     {
         $this->request->getMethod()->willReturn("OPTIONS");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
 
         $map = new MethodMap();
         foreach ($methodsDeclared as $method) {
-            $map->add($method, $middleware->reveal());
+            $map->setMethod($method, $middleware->reveal());
         }
 
         $request = $this->request->reveal();
@@ -118,13 +215,20 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->response->withHeader("Allow", Argument::that($containsAllMethods))->shouldHaveBeenCalled();
     }
 
+    /**
+     * @covers ::dispatch
+     * @covers ::addAllowHeader
+     * @covers ::getAllowedMethods
+     * @dataProvider allowedMethodProvider
+     */
     public function testSetsStatusTo405ForBadMethod()
     {
         $this->request->getMethod()->willReturn("POST");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
 
-        $map = new MethodMap(["GET" => $middleware->reveal()]);
+        $map = new MethodMap();
+        $map->setMethod("GET", $middleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
@@ -134,17 +238,20 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::dispatch
+     * @covers ::addAllowHeader
+     * @covers ::getAllowedMethods
      * @dataProvider allowedMethodProvider
      */
-    public function testSetsAlloweHeaderForBadMethod($methodsDeclared, $methodsAllowed)
+    public function testSetsAllowHeaderForBadMethod($methodsDeclared, $methodsAllowed)
     {
         $this->request->getMethod()->willReturn("BAD");
 
-        $middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
 
         $map = new MethodMap();
         foreach ($methodsDeclared as $method) {
-            $map->add($method, $middleware->reveal());
+            $map->setMethod($method, $middleware->reveal());
         }
 
         $request = $this->request->reveal();

@@ -14,7 +14,7 @@ class RouteMap implements RouteMapInterface
      * - A single verb ("GET"),
      * - A comma-separated list of verbs ("GET,PUT,DELETE")
      * - "*" to indicate any method.
-     * @see MethodMapInterface::addMethod
+     * @see MethodMapInterface::setMethod
      *
      * $target may be:
      * - An exact path (e.g., "/path/")

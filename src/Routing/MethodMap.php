@@ -9,34 +9,40 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
 {
     protected $map;
 
-    /**
-     * @param array $map
-     */
-    public function __construct($map = null)
+    // ------------------------------------------------------------------------
+
+    public function __construct()
     {
         $this->map = [];
-        if ($map) {
-            $this->addMap($map);
-        }
     }
 
-    /**
-     * @param array $map
-     */
-    public function addMap($map)
-    {
-        foreach ($map as $method => $middleware) {
-            $this->add($method, $middleware);
-        }
-    }
+    // ------------------------------------------------------------------------
+    // MethodMapInterface
 
     /**
+     * Register middleware with a method.
+     *
+     * $method may be:
+     * - A single verb ("GET"),
+     * - A comma-separated list of verbs ("GET,PUT,DELETE")
+     * - "*" to indicate any method.
+     *
+     * $middleware may be:
+     * - An instance implementing MiddlewareInterface
+     * - A string containing the fully qualified class name of a class
+     *     implementing MiddlewareInterface
+     * - A callable that returns an instance implementing MiddleInterface
+     * - A callable maching the signature of MiddlewareInteraface::dispatch
+     * @see DispatchedInterface::dispatch
+     *
+     * $middleware may also be null, in which case any previously set
+     * middleware for that method or methods will be unset.
+     *
      * @param string $method
      * @param mixed $middleware
      */
-    public function add($method, $middleware)
+    public function setMethod($method, $middleware)
     {
-        $method = strtoupper($method);
         $methods = explode(",", $method);
         $methods = array_map("trim", $methods);
         foreach ($methods as $method) {
@@ -44,23 +50,32 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         }
     }
 
+    // ------------------------------------------------------------------------
+    // MiddlewareInterface
+
     public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
     {
-        $method = strtoupper($request->getMethod());
+        $method = $request->getMethod();
         // Dispatch middleware registered with the explicitly matching method.
         if (isset($this->map[$method])) {
             $middleware = $this->map[$method];
-            $this->disptchMiddleware($middleware, $request, $response);
+            $this->dispatchMiddleware($middleware, $request, $response);
             return;
         }
         // For HEAD, dispatch GET by default.
         if ($method === "HEAD" && isset($this->map["GET"])) {
             $middleware = $this->map["GET"];
-            $this->disptchMiddleware($middleware, $request, $response);
+            $this->dispatchMiddleware($middleware, $request, $response);
             return;
         }
-        // Method is not defined. Respond describing the allowed methods,
-        // either as a 405 response or in response to an OPTIONS request.
+        // Dispatch * middleware, if registered.
+        if (isset($this->map["*"])) {
+            $middleware = $this->map["*"];
+            $this->dispatchMiddleware($middleware, $request, $response);
+            return;
+        }
+        // Respond describing the allowed methods, either as a 405 response or
+        // in response to an OPTIONS request.
         if ($method === "OPTIONS") {
             $response = $response->withStatus(200);
         } else {
@@ -68,6 +83,8 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         }
         $this->addAllowHeader($response);
     }
+
+    // ------------------------------------------------------------------------
 
     protected function addAllowHeader(ResponseInterface &$response)
     {
@@ -100,7 +117,7 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         return new Dispatcher();
     }
 
-    private function disptchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response)
+    private function dispatchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response)
     {
         $dispatcher = $this->getDispatcher();
         $dispatcher->dispatch($middleware, $request, $response);
