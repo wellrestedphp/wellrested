@@ -31,6 +31,7 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->factory = $this->prophesize('WellRESTed\Routing\Route\RouteFactory');
         $this->factory->create(Argument::any())->willReturn($this->route->reveal());
@@ -128,9 +129,8 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
      */
     public function testDispatchesPrefixRoute()
     {
-        $target = "/*";
-
-        $this->request->getRequestTarget()->willReturn($target);
+        $target = "/animals/cats/*";
+        $this->request->getRequestTarget()->willReturn("/animals/cats/molly");
         $this->route->getTarget()->willReturn($target);
         $this->route->getType()->willReturn(RouteInterface::TYPE_PREFIX);
 
@@ -141,5 +141,74 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->routeMap->dispatch($request, $response);
 
         $this->route->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::getPrefixRoute
+     */
+    public function testDispatchesLongestMatchingPrefixRoute()
+    {
+        $routeAnimals = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $routeAnimals->getMethodMap()->willReturn($this->methodMap->reveal());
+        $routeAnimals->getTarget()->willReturn("/animals/*");
+        $routeAnimals->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $routeAnimals->dispatch(Argument::cetera())->willReturn();
+
+        $routeCats = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $routeCats->getMethodMap()->willReturn($this->methodMap->reveal());
+        $routeCats->getTarget()->willReturn("/animals/cats/*");
+        $routeCats->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $routeCats->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/animals/cats/molly");
+
+        $this->factory->create("/animals/*")->willReturn($routeAnimals->reveal());
+        $this->factory->create("/animals/cats/*")->willReturn($routeCats->reveal());
+
+        $this->routeMap->add("GET", "/animals/*", "middleware");
+        $this->routeMap->add("GET", "/animals/cats/*", "middleware");
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $this->routeMap->dispatch($request, $response);
+
+        $routeCats->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::registerRouteForTarget
+     */
+    public function testDispatchesPatternRoute()
+    {
+        $target = "/";
+
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+
+        $this->routeMap->add("GET", $target, "middleware");
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $this->routeMap->dispatch($request, $response);
+
+        $this->route->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::getStaticRoute
+     * @covers ::getPrefixRoute
+     */
+    public function testResponds404WhenNoRouteMatches()
+    {
+        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+
+        $request = $this->request->reveal();
+        $response = $this->response->reveal();
+        $this->routeMap->dispatch($request, $response);
+
+        $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
 }

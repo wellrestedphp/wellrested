@@ -79,6 +79,21 @@ class RouteMap implements RouteMapInterface
             return;
         }
 
+        // Try each of the routes.
+        foreach ($this->patternRoutes as $route) {
+            if ($route->matchesRequestTarget($requestTarget, $captures)) {
+                if (is_array($captures)) {
+                    foreach ($captures as $key => $value) {
+                        $request = $request->withAttribute($key, $value);
+                    }
+                }
+                $route->dispatch($request, $response);
+                return;
+            }
+        }
+
+        // If no route exists, set the status code of the response to 404.
+        $response = $response->withStatus(404);
     }
 
     /**
