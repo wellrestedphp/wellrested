@@ -3,6 +3,9 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Routing\MethodMapInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\RouteMap;
 
@@ -31,7 +34,6 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
-        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->factory = $this->prophesize('WellRESTed\Routing\Route\RouteFactory');
         $this->factory->create(Argument::any())->willReturn($this->route->reveal());
@@ -186,6 +188,7 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->request->getRequestTarget()->willReturn($target);
         $this->route->getTarget()->willReturn($target);
         $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->routeMap->add("GET", $target, "middleware");
 

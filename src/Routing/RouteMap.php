@@ -81,12 +81,7 @@ class RouteMap implements RouteMapInterface
 
         // Try each of the routes.
         foreach ($this->patternRoutes as $route) {
-            if ($route->matchesRequestTarget($requestTarget, $captures)) {
-                if (is_array($captures)) {
-                    foreach ($captures as $key => $value) {
-                        $request = $request->withAttribute($key, $value);
-                    }
-                }
+            if ($route->matchesRequestTarget($requestTarget)) {
                 $route->dispatch($request, $response);
                 return;
             }
