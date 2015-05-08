@@ -3,40 +3,43 @@
 namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
+use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRoute;
 
 /**
- * @covers WellRESTed\Routing\Route\StaticRoute
+ * @coversDefaultClass WellRESTed\Routing\Route\StaticRoute
+ * @uses WellRESTed\Routing\Route\StaticRoute
  * @uses WellRESTed\Routing\Route\Route
  */
 class StaticRouteTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
-    private $middleware;
-
-    public function setUp()
+    /**
+     * @covers ::getType
+     */
+    public function testReturnsStaticType()
     {
-        $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
-        $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new StaticRoute("/", $methodMap->reveal());
+        $this->assertSame(RouteInterface::TYPE_STATIC, $route->getType());
     }
 
-    public function testMatchesPath()
+    /**
+     * @covers ::matchesRequestTarget
+     */
+    public function testMatchesExactRequestTarget()
     {
-        $route = new StaticRoute("/cats/", $this->middleware->reveal());
-        $this->assertTrue($route->matchesRequestTarget("/cats/"));
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new StaticRoute("/", $methodMap->reveal());
+        $this->assertTrue($route->matchesRequestTarget("/"));
     }
 
-    public function testFailsToMatchWrongPath()
+    /**
+     * @covers ::matchesRequestTarget
+     */
+    public function testDoesNotMatchNonmatchingRequestTarget()
     {
-        $route = new StaticRoute("/dogs/", $this->middleware->reveal());
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new StaticRoute("/", $methodMap->reveal());
         $this->assertFalse($route->matchesRequestTarget("/cats/"));
-    }
-
-    public function testReturnsPaths()
-    {
-        $route = new StaticRoute("/cats/", $this->middleware->reveal());
-        $this->assertEquals("/cats/", $route->getPath());
     }
 }

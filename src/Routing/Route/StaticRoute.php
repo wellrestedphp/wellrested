@@ -2,31 +2,20 @@
 
 namespace WellRESTed\Routing\Route;
 
-class StaticRoute extends Route implements StaticRouteInterface
+class StaticRoute extends Route
 {
-    private $path;
-
-    public function __construct($path, $middleware)
+    public function getType()
     {
-        parent::__construct($middleware);
-        $this->path = $path;
+        return RouteInterface::TYPE_STATIC;
     }
 
     /**
-     * @param string $requestTarget
-     * @param array $captures
-     * @return bool
+     * Examines a path (request target) to see if it is a match for the route.
+     *
+     * @return boolean
      */
-    public function matchesRequestTarget($requestTarget, &$captures = null)
+    public function matchesRequestTarget($requestTarget)
     {
-        return $requestTarget == $this->path;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPath()
-    {
-        return $this->path;
+        return $requestTarget === $this->getTarget();
     }
 }
