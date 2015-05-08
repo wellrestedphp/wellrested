@@ -2,30 +2,40 @@
 
 namespace WellRESTed\Routing\Route;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
 class RegexRoute extends Route
 {
-    private $pattern;
+    private $captures;
 
-    public function __construct($pattern, $middleware)
+    public function getType()
     {
-        parent::__construct($middleware);
-        $this->pattern = $pattern;
+        return RouteInterface::TYPE_PATTERN;
     }
 
     /**
      * @param string $requestTarget
-     * @param array $captures
      * @return bool
      * @throws \RuntimeException
      */
-    public function matchesRequestTarget($requestTarget, &$captures = null)
+    public function matchesRequestTarget($requestTarget)
     {
-        $matched = @preg_match($this->pattern, $requestTarget, $captures);
+        $matched = @preg_match($this->getTarget(), $requestTarget, $captures);
         if ($matched) {
+            $this->captures = $captures;
             return true;
         } elseif ($matched === false) {
-            throw new \RuntimeException("Invalid regular expression: " . $this->pattern);
+            throw new \RuntimeException("Invalid regular expression: " . $this->getTarget());
         }
         return false;
+    }
+
+    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    {
+        if ($this->captures) {
+            $request = $request->withAttribute("path", $this->captures);
+        }
+        parent::dispatch($request, $response);
     }
 }

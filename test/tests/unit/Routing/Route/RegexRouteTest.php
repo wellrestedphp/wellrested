@@ -4,41 +4,56 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
 use WellRESTed\Routing\Route\RegexRoute;
+use WellRESTed\Routing\Route\RouteInterface;
 
 /**
- * @covers WellRESTed\Routing\Route\RegexRoute
+ * @coversDefaultClass WellRESTed\Routing\Route\RegexRoute
+ * @uses WellRESTed\Routing\Route\RegexRoute
  * @uses WellRESTed\Routing\Route\Route
  */
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
-    private $middleware;
+    private $methodMap;
 
     public function setUp()
     {
-        $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
-        $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
     }
 
     /**
+     * @covers ::getType
+     */
+    public function testReturnsPatternType()
+    {
+        $route = new RegexRoute("/", $this->methodMap->reveal());
+        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
+    }
+
+    /**
+     * @covers ::matchesRequestTarget
      * @dataProvider matchingRouteProvider
      */
-    public function testMatchesPattern($pattern, $path)
+    public function testMatchesTarget($pattern, $path)
     {
-        $route = new RegexRoute($pattern, $this->middleware->reveal());
+        $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($path));
     }
 
     /**
      * @dataProvider matchingRouteProvider
      */
-    public function testExtractsCaptures($pattern, $path, $expectedCaptures)
+    public function testProvidesCapturesAsRequestAttributes($pattern, $path, $expectedCaptures)
     {
-        $route = new RegexRoute($pattern, $this->middleware->reveal());
-        $route->matchesRequestTarget($path, $captures);
-        $this->assertEquals($expectedCaptures, $captures);
+        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
+        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $responseReveal = $response->reveal();
+
+        $route = new RegexRoute($pattern, $this->methodMap->reveal());
+        $route->matchesRequestTarget($path);
+        $route->dispatch($request->reveal(), $responseReveal);
+
+        $request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
     }
 
     public function matchingRouteProvider()
@@ -61,9 +76,9 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider mismatchingRouteProvider
      */
-    public function testFailsToMatchMismatchingPattern($pattern, $path)
+    public function testDoesNotMatchNonmatchingTarget($pattern, $path)
     {
-        $route = new RegexRoute($pattern, $this->middleware->reveal());
+        $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertFalse($route->matchesRequestTarget($path));
     }
 
@@ -82,7 +97,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testThrowsExceptionOnInvalidPattern($pattern)
     {
-        $route = new RegexRoute($pattern, $this->middleware->reveal());
+        $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $route->matchesRequestTarget("/");
     }
 
