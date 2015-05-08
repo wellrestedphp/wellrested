@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
+use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
 
 /**
@@ -12,42 +13,54 @@ use WellRESTed\Routing\Route\TemplateRoute;
  */
 class TemplateRouteTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
-    private $middleware;
+    private $methodMap;
 
     public function setUp()
     {
-        $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
-        $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+    }
+
+    /**
+     * @coversNothing
+     */
+    public function testReturnsPatternType()
+    {
+        $route = new TemplateRoute("/", $this->methodMap->reveal());
+        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
     /**
      * @dataProvider matchingTemplateProvider
      */
-    public function testMatchesTemplate($template, $vars, $path)
+    public function testMatchesTemplate($template, $requestTarget)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
-        $this->assertTrue($route->matchesRequestTarget($path));
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
+        $this->assertTrue($route->matchesRequestTarget($requestTarget));
     }
 
     /**
-     * @dataProvider matchingTemplateProvider
+     * @dataProvider matchingRouteProvider
      */
-    public function testExtractsCaptures($template, $vars, $path, $expectedCaptures)
+    public function testProvidesCapturesAsRequestAttributes($template, $path, $expectedCaptures)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
-        $route->matchesRequestTarget($path, $captures);
-        $this->assertEquals(0, count(array_diff_assoc($expectedCaptures, $captures)));
+        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
+        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $responseReveal = $response->reveal();
+
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
+        $route->matchesRequestTarget($path);
+        $route->dispatch($request->reveal(), $responseReveal);
+
+        $request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
     }
 
     public function matchingTemplateProvider()
     {
         return [
-            ["/cat/{id}", TemplateRoute::RE_NUM, "/cat/12", ["id" => "12"]],
+            ["/cat/{id}", "/cat/12", ["id" => "12"]],
+            ["/unreserved/{id}", "/unreserved/az0-._~", ["id" => "az0-._~"]],
             ["/cat/{catId}/{dogId}",
-                TemplateRoute::RE_SLUG,
                 "/cat/molly/bear",
                 [
                     "catId" => "molly",
@@ -56,28 +69,22 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
             ],
             [
                 "/cat/{catId}/{dogId}",
-                [
-                    "catId" => TemplateRoute::RE_SLUG,
-                    "dogId" => TemplateRoute::RE_SLUG
-                ],
                 "/cat/molly/bear",
                 [
                     "catId" => "molly",
                     "dogId" => "bear"
                 ]
             ],
-            ["/cat/{id}/*", null, "/cat/12/molly", ["id" => "12"]],
+            ["/cat/{id}/*", "/cat/12/molly", ["id" => "12"]],
             [
                 "/cat/{id}-{width}x{height}.jpg",
-                TemplateRoute::RE_NUM,
                 "/cat/17-200x100.jpg",
                 [
                     "id" => "17",
                     "width" => "200",
                     "height" => "100"
                 ]
-            ],
-            ["/cat/{path}", ".*", "/cat/this/section/has/slashes", ["path" => "this/section/has/slashes"]]
+            ]
         ];
     }
 
@@ -86,9 +93,18 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testMatchesAllowedVariablesNames($template, $path, $expectedCaptures)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal());
-        $route->matchesRequestTarget($path, $captures);
-        $this->assertEquals(0, count(array_diff_assoc($expectedCaptures, $captures)));
+        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
+        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $responseReveal = $response->reveal();
+
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
+        $route->matchesRequestTarget($path);
+        $route->dispatch($request->reveal(), $responseReveal);
+
+        $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
+            return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
+        }))->shouldHaveBeenCalled();
     }
 
     public function allowedVariableNamesProvider()
@@ -106,8 +122,8 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testFailsToMatchIllegalVariablesNames($template, $path)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal());
-        $this->assertFalse($route->matchesRequestTarget($path, $captures));
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
+        $this->assertFalse($route->matchesRequestTarget($path));
     }
 
     public function illegalVariableNamesProvider()
@@ -124,26 +140,17 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider nonmatchingTemplateProvider
      */
-    public function testFailsToMatchNonmatchingTemplate($template, $vars, $path)
+    public function testFailsToMatchNonmatchingTemplate($template, $path)
     {
-        $route = new TemplateRoute($template, $this->middleware->reveal(), $vars);
-        $this->assertFalse($route->matchesRequestTarget($path, $captures));
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
+        $this->assertFalse($route->matchesRequestTarget($path));
     }
 
     public function nonmatchingTemplateProvider()
     {
         return [
-            ["/cat/{id}", TemplateRoute::RE_NUM, "/cat/molly"],
-            ["/cat/{catId}/{dogId}", TemplateRoute::RE_ALPHA, "/cat/12/13"],
-            [
-                "/cat/{catId}/{dogId}",
-                [
-                    "*" => TemplateRoute::RE_NUM,
-                    "catId" => TemplateRoute::RE_ALPHA,
-                    "dogId" => TemplateRoute::RE_ALPHA
-                ],
-                "/cat/12/13"
-            ]
+            ["/cat/{id}", "/cat/molly/the/cat"],
+            ["/cat/{catId}/{dogId}", "/dog/12/13"]
         ];
     }
 }
