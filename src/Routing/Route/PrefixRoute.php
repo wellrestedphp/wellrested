@@ -2,14 +2,17 @@
 
 namespace WellRESTed\Routing\Route;
 
-class PrefixRoute extends Route implements PrefixRouteInterface
+class PrefixRoute extends Route
 {
-    private $prefix;
-
-    public function __construct($prefix, $middleware)
+    public function __construct($target, $methodMap)
     {
-        parent::__construct($middleware);
-        $this->prefix = $prefix;
+        $this->target = rtrim($target, "*");
+        $this->methodMap = $methodMap;
+    }
+
+    public function getType()
+    {
+        return RouteInterface::TYPE_PREFIX;
     }
 
     /**
@@ -19,14 +22,6 @@ class PrefixRoute extends Route implements PrefixRouteInterface
      */
     public function matchesRequestTarget($requestTarget, &$captures = null)
     {
-        return strrpos($requestTarget, $this->prefix, -strlen($requestTarget)) !== false;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPrefix()
-    {
-        return $this->prefix;
+        return strrpos($requestTarget, $this->target, -strlen($requestTarget)) !== false;
     }
 }

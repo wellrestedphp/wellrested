@@ -4,39 +4,62 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
 use WellRESTed\Routing\Route\PrefixRoute;
+use WellRESTed\Routing\Route\RouteInterface;
 
 /**
- * @covers WellRESTed\Routing\Route\PrefixRoute
+ * @coversDefaultClass WellRESTed\Routing\Route\PrefixRoute
+ * @uses WellRESTed\Routing\Route\PrefixRoute
  * @uses WellRESTed\Routing\Route\Route
  */
 class PrefixRouteTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
-    private $middleware;
-
-    public function setUp()
+    /**
+     * @covers ::__construct
+     */
+    public function testTrimsAsteriskFromEndOfTarget()
     {
-        $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
-        $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->middleware = $this->prophesize("\\WellRESTed\\Routing\\MiddlewareInterface");
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/cats/*", $methodMap->reveal());
+        $this->assertEquals("/cats/", $route->getTarget());
     }
 
-    public function testMatchesPrefix()
+    /**
+     * @covers ::getType
+     */
+    public function testReturnsPrefixType()
     {
-        $route = new PrefixRoute("/cats/", $this->middleware->reveal());
-        $this->assertTrue($route->matchesRequestTarget("/cats/molly"));
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/*", $methodMap->reveal());
+        $this->assertSame(RouteInterface::TYPE_PREFIX, $route->getType());
     }
 
-    public function testFailsToMatchWrongPath()
+    /**
+     * @covers ::matchesRequestTarget
+     */
+    public function testMatchesExactRequestTarget()
     {
-        $route = new PrefixRoute("/dogs/", $this->middleware->reveal());
-        $this->assertFalse($route->matchesRequestTarget("/cats/"));
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/*", $methodMap->reveal());
+        $this->assertTrue($route->matchesRequestTarget("/"));
     }
 
-    public function testReturnsPrefix()
+    /**
+     * @covers ::matchesRequestTarget
+     */
+    public function testMatchesRequestTargetWithSamePrefix()
     {
-        $route = new PrefixRoute("/cats/", $this->middleware->reveal());
-        $this->assertEquals("/cats/", $route->getPrefix());
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/*", $methodMap->reveal());
+        $this->assertTrue($route->matchesRequestTarget("/cats/"));
+    }
+
+    /**
+     * @covers ::matchesRequestTarget
+     */
+    public function testDoesNotMatchNonmatchingRequestTarget()
+    {
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/animals/cats/", $methodMap->reveal());
+        $this->assertFalse($route->matchesRequestTarget("/animals/dogs/"));
     }
 }
