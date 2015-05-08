@@ -3,34 +3,65 @@
 namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\Route\Route;
-use WellRESTed\Routing\Route\StaticRoute;
 
 /**
+ * @coversDefaultClass WellRESTed\Routing\Route\Route
  * @uses WellRESTed\Routing\Route\Route
- * @uses WellRESTed\Routing\Route\StaticRoute
  */
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
-    private $request;
-    private $response;
-
-    public function setUp()
+    /**
+     * @covers ::__construct
+     */
+    public function testCreatesInstance()
     {
-        $this->request = $this->prophesize("\\Psr\\Http\\Message\\ServerRequestInterface");
-        $this->response = $this->prophesize("\\Psr\\Http\\Message\\ResponseInterface");
-        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = $this->getMockForAbstractClass(
+            'WellRESTed\Routing\Route\Route',
+            ["/target", $methodMap->reveal()]);
+        $this->assertNotNull($route);
     }
 
-    public function testDispatchesMiddleware()
+    /**
+     * @covers ::getTarget
+     */
+    public function testReturnsTarget()
     {
-        $middleware = function ($request, &$response) {
-            $response = $response->withStatus(200);
-        };
-        $route = new StaticRoute("/", $middleware);
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = $this->getMockForAbstractClass(
+            'WellRESTed\Routing\Route\Route',
+            ["/target", $methodMap->reveal()]);
+        $this->assertSame("/target", $route->getTarget());
+    }
+
+    /**
+     * @covers ::getMethodMap
+     */
+    public function testReturnsMethodMap()
+    {
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = $this->getMockForAbstractClass(
+            'WellRESTed\Routing\Route\Route',
+            ["/target", $methodMap->reveal()]);
+        $this->assertSame($methodMap->reveal(), $route->getMethodMap());
+    }
+
+    /**
+     * @covers ::dispatch
+     */
+    public function testDispatchesMethodMap()
+    {
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $methodMap->dispatch(Argument::cetera())->willReturn();
+
+        $route = $this->getMockForAbstractClass(
+            'WellRESTed\Routing\Route\Route',
+            ["/target", $methodMap->reveal()]);
+
+        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface')->reveal();
+        $response = $this->prophesize('Psr\Http\Message\ResponseInterface')->reveal();
         $route->dispatch($request, $response);
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
+
+        $methodMap->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
 }
