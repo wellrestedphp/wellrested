@@ -4,6 +4,7 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteFactory;
+use WellRESTed\Routing\Route\RouteInterface;
 
 /**
  * @covers WellRESTed\Routing\Route\RouteFactory
@@ -12,46 +13,35 @@ use WellRESTed\Routing\Route\RouteFactory;
  * @uses WellRESTed\Routing\Route\PrefixRoute
  * @uses WellRESTed\Routing\Route\StaticRoute
  * @uses WellRESTed\Routing\Route\Route
+ * @uses WellRESTed\Routing\MethodMap
  */
 class RouteFactoryTest extends \PHPUnit_Framework_TestCase
 {
-    private $routeTable;
-
-    public function setUp()
-    {
-        parent::setUp();
-        $this->routeTable = $this->prophesize("\\WellRESTed\\Routing\\RouteTableInterface");
-        $this->routeTable->addStaticRoute(Argument::cetera())->willReturn();
-        $this->routeTable->addPrefixRoute(Argument::cetera())->willReturn();
-        $this->routeTable->addRoute(Argument::cetera())->willReturn();
-    }
-
-    public function testRegistersStaticRoute()
+    public function testCreatesStaticRoute()
     {
         $factory = new RouteFactory();
-        $factory->registerRoute($this->routeTable->reveal(), "/cats/", null);
-        $this->routeTable->addStaticRoute(Argument::any())->shouldHaveBeenCalled();
+        $route = $factory->create("/cats/");
+        $this->assertSame(RouteInterface::TYPE_STATIC, $route->getType());
     }
 
-    public function testRegistersPrefixRoute()
+    public function testCreatesPrefixRoute()
     {
         $factory = new RouteFactory();
-        $factory->registerRoute($this->routeTable->reveal(), "/cats/*", null);
-        $this->routeTable->addPrefixRoute(Argument::any())->shouldHaveBeenCalled();
+        $route = $factory->create("/cats/*");
+        $this->assertSame(RouteInterface::TYPE_PREFIX, $route->getType());
     }
 
-    public function testRegistersTemplateRoute()
+    public function testCreatesRegexRoute()
     {
         $factory = new RouteFactory();
-        $factory->registerRoute($this->routeTable->reveal(), "/cats/{catId}", null);
-        $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\TemplateRoute"))->shouldHaveBeenCalled();
+        $route = $factory->create("~/cat/[0-9]+~");
+        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
-    public function testRegistersRegexRoute()
+    public function testCreatesTemplateRoute()
     {
         $factory = new RouteFactory();
-        $factory->registerRoute($this->routeTable->reveal(), "~/cat/[0-9]+~", null);
-        $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\RegexRoute"))->shouldHaveBeenCalled();
-        $this->routeTable->addRoute(Argument::type("\\WellRESTed\\Routing\\Route\\TemplateRoute"))->shouldNotHaveBeenCalled();
+        $route = $factory->create("/cat/{id}");
+        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 }

@@ -21,14 +21,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
+    private $routeMap;
+    private $router;
 
     public function setUp()
     {
         parent::setUp();
+
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+
         $this->response->hasHeader("Content-length")->willReturn(true);
         $this->response->getStatusCode()->willReturn(200);
+
+        $this->routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
+        $this->routeMap->add(Argument::cetera())->willReturn();
+        $this->routeMap->dispatch(Argument::cetera())->willReturn();
+
+        $this->router = $this->getMockBuilder('WellRESTed\Routing\Router')
+            ->setMethods(["getRouteMap"])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->router->expects($this->any())
+            ->method("getRouteMap")
+            ->will($this->returnValue($this->routeMap->reveal()));
+        $this->router->__construct();
     }
 
     // ------------------------------------------------------------------------
@@ -57,24 +74,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddRegistersRouteWithRouteMap()
     {
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $routeMap->add(Argument::cetera())->willReturn();
-
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-
         $method = "GET";
         $target = "/path/{id}";
         $middleware = "Middleware";
 
-        $router->add($method, $target, $middleware);
-        $routeMap->add($method, $target, $middleware)->shouldHaveBeenCalled();
+        $this->router->add($method, $target, $middleware);
+        $this->routeMap->add($method, $target, $middleware)->shouldHaveBeenCalled();
     }
 
     /**
@@ -82,23 +87,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testDispatchesRouteMap()
     {
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $routeMap->dispatch(Argument::cetera())->willReturn();
-
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-
         $request = $this->request->reveal();
         $resonse = $this->response->reveal();
-        $router->dispatch($request, $resonse);
-
-        $routeMap->dispatch($request, Argument::any())->shouldHaveBeenCalled();
+        $this->router->dispatch($request, $resonse);
+        $this->routeMap->dispatch($request, Argument::any())->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -113,12 +105,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
         $hook->dispatch(Argument::cetera())->willReturn();
 
-        $router = new Router();
-        $router->addPreRouteHook($hook->reveal());
+        $this->router->addPreRouteHook($hook->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -135,12 +126,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $statusMiddleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
         $statusMiddleware->dispatch(Argument::cetera())->willReturn();
 
-        $router = new Router();
-        $router->setStatusHook(403, $statusMiddleware->reveal());
+        $this->router->setStatusHook(403, $statusMiddleware->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $statusMiddleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -150,13 +140,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @covers ::dispatchStatusHooks
      * @covers ::setStatusHook
      */
-    public function testDispatchesStatusHookForHttpException()
+    public function testConvertsHttpExceptionToResponse()
     {
         $statusMiddleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
         $statusMiddleware->dispatch(Argument::cetera())->willReturn();
 
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $routeMap->dispatch(Argument::cetera())->willThrow(new NotFoundException());
+        $this->routeMap->dispatch(Argument::cetera())->willThrow(new NotFoundException());
 
         $this->response->withStatus(Argument::any())->will(
             function ($args) {
@@ -166,18 +155,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         );
         $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
 
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
@@ -191,12 +171,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
         $hook->dispatch(Argument::cetera())->willReturn();
 
-        $router = new Router();
-        $router->addPostRouteHook($hook->reveal());
+        $this->router->addPostRouteHook($hook->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -210,12 +189,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
         $hook->dispatch(Argument::cetera())->willReturn();
 
-        $router = new Router();
-        $router->addFinalizationHook($hook->reveal());
+        $this->router->addFinalizationHook($hook->reveal());
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -228,34 +206,23 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Each middleware will push a value onto this array.
         $stack = [];
 
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-
         $response = $this->response;
-        $routeMap->dispatch(Argument::cetera())->will(function () use ($response, &$stack) {
+        $this->routeMap->dispatch(Argument::cetera())->will(function () use ($response, &$stack) {
             $stack[] = "routeMap";
             $response->getStatusCode()->willReturn(404);
         });
 
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-
-        $router->addPreRouteHook($this->createStackHook("pre1", $stack));
-        $router->addPreRouteHook($this->createStackHook("pre2", $stack));
-        $router->addPostRouteHook($this->createStackHook("post1", $stack));
-        $router->addPostRouteHook($this->createStackHook("post2", $stack));
-        $router->addFinalizationHook($this->createStackHook("final1", $stack));
-        $router->addFinalizationHook($this->createStackHook("final2", $stack));
-        $router->setStatusHook(404, $this->createStackHook("404", $stack));
+        $this->router->addPreRouteHook($this->createStackHook("pre1", $stack));
+        $this->router->addPreRouteHook($this->createStackHook("pre2", $stack));
+        $this->router->addPostRouteHook($this->createStackHook("post1", $stack));
+        $this->router->addPostRouteHook($this->createStackHook("post2", $stack));
+        $this->router->addFinalizationHook($this->createStackHook("final1", $stack));
+        $this->router->addFinalizationHook($this->createStackHook("final2", $stack));
+        $this->router->setStatusHook(404, $this->createStackHook("404", $stack));
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $this->assertEquals(["pre1","pre2","routeMap","404","post1","post2","final1","final2"], $stack);
     }
@@ -287,11 +254,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             }
         );
         $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
-        $router = new Router();
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $this->response->withHeader(Argument::cetera())->shouldHaveBeenCalled();
     }
@@ -314,11 +280,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             }
         );
         $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
-        $router = new Router();
 
         $request = $this->request->reveal();
         $response = $this->response->reveal();
-        $router->dispatch($request, $response);
+        $this->router->dispatch($request, $response);
 
         $this->response->withBody(Argument::that(function ($body) {
             return $body->getSize() === 0;

@@ -39,7 +39,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider matchingRouteProvider
+     * @dataProvider matchingTemplateProvider
      */
     public function testProvidesCapturesAsRequestAttributes($template, $path, $expectedCaptures)
     {
@@ -52,7 +52,11 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $route->matchesRequestTarget($path);
         $route->dispatch($request->reveal(), $responseReveal);
 
-        $request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
+        $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
+            return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
+        }))->shouldHaveBeenCalled();
+
+        //$request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
     }
 
     public function matchingTemplateProvider()

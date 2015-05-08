@@ -2,7 +2,7 @@
 
 namespace WellRESTed\Routing\Route;
 
-use WellRESTed\Routing\RouteTableInterface;
+use WellRESTed\Routing\MethodMap;
 
 /**
  * Class for creating routes
@@ -10,20 +10,17 @@ use WellRESTed\Routing\RouteTableInterface;
 class RouteFactory implements RouteFactoryInterface
 {
     /**
-     * The method will determine the most appropriate route subclass to use
-     * and will forward the arguments on to the subclass's constructor.
+     * Creates a route for the given target.
      *
-     * - Paths with no special characters will register StaticRoutes
-     * - Paths ending with * will register PrefixRoutes
-     * - Paths containing URI variables (e.g., {id}) will register TemplateRoutes
-     * - Regular exressions will register RegexRoutes
+     * - Target with no special characters will create StaticRoutes
+     * - Target ending with * will create PrefixRoutes
+     * - Target containing URI variables (e.g., {id}) will create TemplateRoutes
+     * - Regular exressions will create RegexRoutes
      *
-     * @param RouteTableInterface $routeTable Table to add the route to
-     * @param string $target Path, prefix, or pattern to match
-     * @param mixed $middleware Middleware to dispatch
-     * @param mixed $extra Additional options to pass to a route constructor
+     * @param string $target Route target or target pattern
+     * @return RouteInterface
      */
-    public function registerRoute(RouteTableInterface $routeTable, $target, $middleware, $extra = null)
+    public function create($target)
     {
         if ($target[0] === "/") {
 
@@ -31,25 +28,19 @@ class RouteFactory implements RouteFactoryInterface
 
             // PrefixRoutes end with *
             if (substr($target, -1) === "*") {
-                // Remove the trailing *, since the PrefixRoute constructor doesn't expect it.
-                $target = substr($target, 0, -1);
-                $route = new PrefixRoute($target, $middleware);
-                $routeTable->addPrefixRoute($route);
+                return new PrefixRoute($target, new MethodMap());
             }
 
             // TempalateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
-                $route = new TemplateRoute($target, $middleware, $extra);
-                $routeTable->addRoute($route);
+                return new TemplateRoute($target, new MethodMap());
             }
 
             // StaticRoute
-            $route = new StaticRoute($target, $middleware);
-            $routeTable->addStaticRoute($route);
+            return new StaticRoute($target, new MethodMap());
         }
 
         // Regex
-        $route = new RegexRoute($target, $middleware);
-        $routeTable->addRoute($route);
+        return new RegexRoute($target, new MethodMap());
     }
 }

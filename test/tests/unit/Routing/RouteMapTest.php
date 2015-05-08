@@ -3,11 +3,11 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Routing\MethodMapInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\RouteMap;
+
+// Test dispatch orders (static before prefix, prefix before pattern)
+// Test dispatches first matching pattern route
 
 /**
  * @coversDefaultClass WellRESTed\Routing\RouteMap
