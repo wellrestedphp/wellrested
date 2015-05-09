@@ -12,7 +12,9 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
+    private $next;
     private $body;
+
 
     public function setUp()
     {
@@ -23,11 +25,16 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $this->response->getBody()->willReturn($this->body->reveal());
         $this->response->withHeader(Argument::cetera())->will(
-            function () {
-                $this->hasHeader("Content-length")->willReturn(true);
+            function ($args) {
+                $this->hasHeader($args[0])->willReturn(true);
+                $this->getHeader($args[0])->willReturn([$args[1]]);
+                $this->getHeaderLine($args[0])->willReturn($args[1]);
                 return $this;
             }
         );
+        $this->next = function ($request, $response) {
+            return $response;
+        };
     }
 
     public function testAddsContentLengthHeader()
@@ -35,12 +42,10 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
         $hook = new ContentLengthHook();
-        $hook->dispatch($request, $response);
+        $response = $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->response->withHeader("Content-length", 1024)->shouldHaveBeenCalled();
+        $this->assertEquals([1024], $response->getHeader("Content-length"));
     }
 
     public function testMultipleDispatchesHaveNoEffect()
@@ -48,11 +53,11 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
         $hook = new ContentLengthHook();
-        $hook->dispatch($request, $response);
-        $hook->dispatch($request, $response);
+
+        $response = $this->response->reveal();
+        $response = $hook->dispatch($this->request->reveal(), $response, $this->next);
+        $hook->dispatch($this->request->reveal(), $response, $this->next);
 
         $this->response->withHeader("Content-length", 1024)->shouldHaveBeenCalledTimes(1);
     }
@@ -62,10 +67,8 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(true);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
         $hook = new ContentLengthHook();
-        $hook->dispatch($request, $response);
+        $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }
@@ -75,10 +78,8 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("CHUNKED");
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
         $hook = new ContentLengthHook();
-        $hook->dispatch($request, $response);
+        $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }
@@ -89,10 +90,8 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
         $this->body->getSize()->willReturn(null);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
         $hook = new ContentLengthHook();
-        $hook->dispatch($request, $response);
+        $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
     }

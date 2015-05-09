@@ -15,17 +15,18 @@ use WellRESTed\Routing\MiddlewareInterface;
  */
 class ContentLengthHook implements MiddlewareInterface
 {
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         if ($response->hasHeader("Content-length")) {
-            return;
+            return $next($request, $response);
         }
         if (strtolower($response->getHeaderLine("Transfer-encoding")) === "chunked") {
-            return;
+            return $next($request, $response);
         }
         $size = $response->getBody()->getSize();
         if ($size !== null) {
             $response = $response->withHeader("Content-length", (string) $size);
         }
+        return $next($request, $response);
     }
 }
