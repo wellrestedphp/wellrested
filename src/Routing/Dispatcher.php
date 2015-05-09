@@ -11,16 +11,22 @@ class Dispatcher implements DispatcherInterface
      * @param $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws \InvalidArgumentException $middleware is not a valid type.
      */
-    public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         if (is_callable($middleware)) {
-            $middleware = $middleware($request, $response);
+            $middleware = $middleware($request, $response, $next);
         } elseif (is_string($middleware)) {
             $middleware = new $middleware();
         }
         if ($middleware instanceof MiddlewareInterface) {
-            $middleware->dispatch($request, $response);
+            return $middleware->dispatch($request, $response, $next);
+        } elseif ($middleware instanceof ResponseInterface) {
+            return $middleware;
+        } else {
+            throw new \InvalidArgumentException("Unable to dispatch middleware.");
         }
     }
 }

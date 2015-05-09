@@ -16,6 +16,8 @@ interface DispatcherInterface
      * @param $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param callable $next
+     * @return ResponseInterface
      */
-    public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface &$response);
+    public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface $response, $next);
 }
