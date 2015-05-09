@@ -63,32 +63,29 @@ class RouteMap implements RouteMapInterface
         $route->getMethodMap()->register($method, $middleware);
     }
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $requestTarget = $request->getRequestTarget();
 
         $route = $this->getStaticRoute($requestTarget);
         if ($route) {
-            $route->dispatch($request, $response);
-            return;
+            return $route->dispatch($request, $response, $next);
         }
 
         $route = $this->getPrefixRoute($requestTarget);
         if ($route) {
-            $route->dispatch($request, $response);
-            return;
+            return $route->dispatch($request, $response, $next);
         }
 
         // Try each of the routes.
         foreach ($this->patternRoutes as $route) {
             if ($route->matchesRequestTarget($requestTarget)) {
-                $route->dispatch($request, $response);
-                return;
+                return $route->dispatch($request, $response, $next);
             }
         }
 
         // If no route exists, set the status code of the response to 404.
-        $response = $response->withStatus(404);
+        return $response->withStatus(404);
     }
 
     /**

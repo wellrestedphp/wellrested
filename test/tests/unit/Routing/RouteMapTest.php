@@ -21,13 +21,14 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
     private $response;
     private $route;
     private $routeMap;
+    private $next;
 
     public function setUp()
     {
         parent::setUp();
 
         $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
-        $this->methodMap->setMethod(Argument::cetera());
+        $this->methodMap->register(Argument::cetera());
 
         $this->route = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $this->route->dispatch(Argument::cetera())->willReturn();
@@ -39,8 +40,10 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->factory->create(Argument::any())->willReturn($this->route->reveal());
 
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $this->next = function ($request, $response) {
+            return $response;
+        };
 
         $this->routeMap = $this->getMockBuilder('WellRESTed\Routing\RouteMap')
             ->setMethods(["getRouteFactory"])
@@ -96,7 +99,7 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
     public function testAddPassesMethodAndMiddlewareToMethodMap()
     {
         $this->routeMap->add("GET", "/", "middleware");
-        $this->methodMap->setMethod("GET", "middleware")->shouldHaveBeenCalled();
+        $this->methodMap->register("GET", "middleware")->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -116,12 +119,9 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
 
         $this->routeMap->add("GET", $target, "middleware");
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->routeMap->dispatch($request, $response);
-
-        $this->route->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -137,12 +137,9 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->route->getType()->willReturn(RouteInterface::TYPE_PREFIX);
 
         $this->routeMap->add("GET", $target, "middleware");
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->routeMap->dispatch($request, $response);
-
-        $this->route->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -169,12 +166,9 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
 
         $this->routeMap->add("GET", "/animals/*", "middleware");
         $this->routeMap->add("GET", "/animals/cats/*", "middleware");
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->routeMap->dispatch($request, $response);
-
-        $routeCats->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $routeCats->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -191,12 +185,9 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->routeMap->add("GET", $target, "middleware");
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->routeMap->dispatch($request, $response);
-
-        $this->route->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -207,11 +198,7 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
     public function testResponds404WhenNoRouteMatches()
     {
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->routeMap->dispatch($request, $response);
-
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
 }
