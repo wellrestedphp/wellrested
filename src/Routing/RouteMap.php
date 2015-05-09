@@ -37,7 +37,7 @@ class RouteMap implements RouteMapInterface
      * - A single verb ("GET"),
      * - A comma-separated list of verbs ("GET,PUT,DELETE")
      * - "*" to indicate any method.
-     * @see MethodMapInterface::setMethod
+     * @see MethodMapInterface::register
      *
      * $target may be:
      * - An exact path (e.g., "/path/")
@@ -60,7 +60,7 @@ class RouteMap implements RouteMapInterface
     public function add($method, $target, $middleware)
     {
         $route = $this->getRouteForTarget($target);
-        $route->getMethodMap()->setMethod($method, $middleware);
+        $route->getMethodMap()->register($method, $middleware);
     }
 
     public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)

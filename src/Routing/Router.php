@@ -70,7 +70,7 @@ class Router implements MiddlewareInterface, RouteMapInterface
      * - A single verb ("GET"),
      * - A comma-separated list of verbs ("GET,PUT,DELETE")
      * - "*" to indicate any method.
-     * @see MethodMapInterface::setMethod
+     * @see MethodMapInterface::register
      *
      * $target may be:
      * - An exact path (e.g., "/path/")

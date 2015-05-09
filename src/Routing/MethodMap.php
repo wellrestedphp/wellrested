@@ -41,7 +41,7 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
      * @param string $method
      * @param mixed $middleware
      */
-    public function setMethod($method, $middleware)
+    public function register($method, $middleware)
     {
         $methods = explode(",", $method);
         $methods = array_map("trim", $methods);

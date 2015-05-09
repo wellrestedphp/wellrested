@@ -26,5 +26,5 @@ interface MethodMapInterface extends MiddlewareInterface
      * @param string $method
      * @param mixed $middleware
      */
-    public function setMethod($method, $middleware);
+    public function register($method, $middleware);
 }
