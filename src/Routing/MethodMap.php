@@ -53,26 +53,29 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
     // ------------------------------------------------------------------------
     // MiddlewareInterface
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable $next
+     * @return ResponseInterface
+     */
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $method = $request->getMethod();
         // Dispatch middleware registered with the explicitly matching method.
         if (isset($this->map[$method])) {
             $middleware = $this->map[$method];
-            $this->dispatchMiddleware($middleware, $request, $response);
-            return;
+            return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // For HEAD, dispatch GET by default.
         if ($method === "HEAD" && isset($this->map["GET"])) {
             $middleware = $this->map["GET"];
-            $this->dispatchMiddleware($middleware, $request, $response);
-            return;
+            return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Dispatch * middleware, if registered.
         if (isset($this->map["*"])) {
             $middleware = $this->map["*"];
-            $this->dispatchMiddleware($middleware, $request, $response);
-            return;
+            return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Respond describing the allowed methods, either as a 405 response or
         // in response to an OPTIONS request.
@@ -81,15 +84,15 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         } else {
             $response = $response->withStatus(405);
         }
-        $this->addAllowHeader($response);
+        return $this->addAllowHeader($response);
     }
 
     // ------------------------------------------------------------------------
 
-    protected function addAllowHeader(ResponseInterface &$response)
+    protected function addAllowHeader(ResponseInterface $response)
     {
         $methods = join(",", $this->getAllowedMethods());
-        $response = $response->withHeader("Allow", $methods);
+        return $response->withHeader("Allow", $methods);
     }
 
     protected function getAllowedMethods()
@@ -117,9 +120,16 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         return new Dispatcher();
     }
 
-    private function dispatchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response)
+    /**
+     * @param $middleware
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param $next
+     * @return ResponseInterface
+     */
+    private function dispatchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response, $next)
     {
         $dispatcher = $this->getDispatcher();
-        $dispatcher->dispatch($middleware, $request, $response);
+        return $dispatcher->dispatch($middleware, $request, $response, $next);
     }
 }
