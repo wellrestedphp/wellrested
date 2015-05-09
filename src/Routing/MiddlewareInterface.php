@@ -7,5 +7,11 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface MiddlewareInterface
 {
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response);
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable $next
+     * @return ResponseInterface
+     */
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next);
 }
