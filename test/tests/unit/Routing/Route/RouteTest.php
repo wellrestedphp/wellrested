@@ -7,6 +7,7 @@ use Prophecy\Argument;
 /**
  * @coversDefaultClass WellRESTed\Routing\Route\Route
  * @uses WellRESTed\Routing\Route\Route
+ * @group route
  */
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
@@ -60,7 +61,10 @@ class RouteTest extends \PHPUnit_Framework_TestCase
 
         $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface')->reveal();
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface')->reveal();
-        $route->dispatch($request, $response);
+        $next = function ($request, $response) {
+            return $response;
+        };
+        $route->dispatch($request, $response, $next);
 
         $methodMap->dispatch(Argument::cetera())->shouldHaveBeenCalled();
     }

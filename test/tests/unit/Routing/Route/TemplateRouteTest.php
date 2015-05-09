@@ -46,11 +46,13 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $responseReveal = $response->reveal();
+        $next = function ($request, $response) {
+            return $response;
+        };
 
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $responseReveal);
+        $route->dispatch($request->reveal(), $response->reveal(), $next);
 
         $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
             return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
@@ -100,11 +102,12 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $responseReveal = $response->reveal();
-
+        $next = function ($request, $response) {
+            return $response;
+        };
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $responseReveal);
+        $route->dispatch($request->reveal(), $response->reveal(), $next);
 
         $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
             return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;

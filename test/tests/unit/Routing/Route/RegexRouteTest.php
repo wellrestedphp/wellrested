@@ -47,11 +47,13 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
         $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $responseReveal = $response->reveal();
+        $next = function ($request, $response) {
+            return $response;
+        };
 
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $responseReveal);
+        $route->dispatch($request->reveal(), $response->reveal(), $next);
 
         $request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
     }

@@ -37,8 +37,8 @@ abstract class Route implements RouteInterface
         return $this->target;
     }
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
-        $this->methodMap->dispatch($request, $response);
+        return $this->methodMap->dispatch($request, $response, $next);
     }
 }

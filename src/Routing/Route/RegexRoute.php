@@ -31,11 +31,11 @@ class RegexRoute extends Route
         return false;
     }
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         if ($this->captures) {
             $request = $request->withAttribute("path", $this->captures);
         }
-        parent::dispatch($request, $response);
+        return parent::dispatch($request, $response, $next);
     }
 }
