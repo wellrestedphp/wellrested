@@ -201,4 +201,22 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
         $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
+
+    /**
+     * @covers ::dispatch
+     * @covers ::getStaticRoute
+     * @covers ::getPrefixRoute
+     */
+    public function testCallsNextWhenNoRouteMatches()
+    {
+        $calledNext = false;
+        $next = function ($request, $response) use (&$calledNext) {
+            $calledNext = true;
+            return $response;
+        };
+
+        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+        $this->routeMap->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->assertTrue($calledNext);
+    }
 }

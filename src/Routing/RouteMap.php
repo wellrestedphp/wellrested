@@ -85,7 +85,7 @@ class RouteMap implements RouteMapInterface
         }
 
         // If no route exists, set the status code of the response to 404.
-        return $response->withStatus(404);
+        return $next($request, $response->withStatus(404));
     }
 
     /**
