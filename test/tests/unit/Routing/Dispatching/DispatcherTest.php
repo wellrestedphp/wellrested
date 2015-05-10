@@ -6,7 +6,7 @@ use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Routing\MiddlewareInterface;
+use WellRESTed\MiddlewareInterface;
 
 /**
  * @covers WellRESTed\Dispatching\Dispatcher

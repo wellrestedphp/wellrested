@@ -4,7 +4,7 @@ namespace WellRESTed\Routing\Hook;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Routing\MiddlewareInterface;
+use WellRESTed\MiddlewareInterface;
 
 /**
  * Adds a Content-length header to the response when all of these are true:

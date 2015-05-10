@@ -5,7 +5,7 @@ namespace WellRESTed\Routing\Hook;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\NullStream;
-use WellRESTed\Routing\MiddlewareInterface;
+use WellRESTed\MiddlewareInterface;
 
 /**
  * Removes the body of a response to a HEAD request.

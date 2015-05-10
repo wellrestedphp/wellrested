@@ -2,6 +2,8 @@
 
 namespace WellRESTed\Routing;
 
+use WellRESTed\MiddlewareInterface;
+
 interface RouterInterface extends MiddlewareInterface
 {
     /**

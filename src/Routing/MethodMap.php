@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\MiddlewareInterface;
 
 class MethodMap implements MiddlewareInterface, MethodMapInterface
 {

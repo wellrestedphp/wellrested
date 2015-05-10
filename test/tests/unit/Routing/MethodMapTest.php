@@ -26,7 +26,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->next = function ($request, $response) {
             return $response;
         };
-        $this->middleware = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $this->middleware = $this->prophesize('WellRESTed\MiddlewareInterface');
         $this->middleware->dispatch(Argument::cetera())->willReturn();
     }
 
@@ -63,10 +63,10 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("get");
 
-        $middlewareUpper = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $middlewareUpper = $this->prophesize('WellRESTed\MiddlewareInterface');
         $middlewareUpper->dispatch(Argument::cetera())->willReturn();
 
-        $middlewareLower = $this->prophesize('WellRESTed\Routing\MiddlewareInterface');
+        $middlewareLower = $this->prophesize('WellRESTed\MiddlewareInterface');
         $middlewareLower->dispatch(Argument::cetera())->willReturn();
 
         $map = new MethodMap();

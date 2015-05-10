@@ -2,8 +2,8 @@
 
 namespace WellRESTed\Routing\Route;
 
+use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\MethodMapInterface;
-use WellRESTed\Routing\MiddlewareInterface;
 
 interface RouteInterface extends MiddlewareInterface
 {
