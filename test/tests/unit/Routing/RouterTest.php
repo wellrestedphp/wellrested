@@ -6,8 +6,6 @@ use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
 
-// TODO: register with array of middleware creates stack
-
 /**
  * @coversDefaultClass WellRESTed\Routing\Router
  * @uses WellRESTed\Routing\Router
@@ -16,7 +14,6 @@ use WellRESTed\Routing\Router;
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
     private $dispatcher;
-    private $dispatchProvider;
     private $methodMap;
     private $factory;
     private $request;
@@ -55,9 +52,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             }
         );
 
-        $this->dispatchProvider = $this->prophesize('WellRESTed\Dispatching\DispatchProviderInterface');
-        $this->dispatchProvider->getDispatcher()->willReturn($this->dispatcher->reveal());
-
         $this->router = $this->getMockBuilder('WellRESTed\Routing\Router')
             ->setMethods(["getRouteFactory"])
             ->disableOriginalConstructor()
@@ -65,7 +59,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->router->expects($this->any())
             ->method("getRouteFactory")
             ->will($this->returnValue($this->factory->reveal()));
-        $this->router->__construct($this->dispatchProvider->reveal());
+        $this->router->__construct($this->dispatcher->reveal());
     }
 
     // ------------------------------------------------------------------------
@@ -78,7 +72,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testCreatesInstance()
     {
-        $routeMap = new Router($this->dispatchProvider->reveal());
+        $routeMap = new Router($this->dispatcher->reveal());
+        $this->assertNotNull($routeMap);
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getRouteFactory
+     * @uses WellRESTed\Routing\Route\RouteFactory
+     * @uses WellRESTed\Dispatching\Dispatcher
+     */
+    public function testCreatesInstanceWithDispatcherByDefault()
+    {
+        $routeMap = new Router();
         $this->assertNotNull($routeMap);
     }
 
@@ -114,18 +120,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $this->router->register("GET", "/", "middleware");
         $this->methodMap->register("GET", "middleware")->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @covers ::register
-     */
-    public function testCreatesDispatchStackForMiddlewareArray()
-    {
-        $stack = $this->prophesize('WellRESTed\MiddlewareInterface');
-        $this->dispatchProvider->getDispatchStack(Argument::any())->willReturn($stack->reveal());
-
-        $this->router->register("GET", "/", ["middleware1", "middleware2"]);
-        $this->methodMap->register("GET", $stack->reveal())->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------

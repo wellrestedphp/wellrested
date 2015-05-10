@@ -4,15 +4,16 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\DispatchProviderInterface;
+use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 
 class Router implements RouterInterface
 {
-    /** @var DispatchProviderInterface */
-    private $dispatchProvider;
+    /** @var DispatcherInterface */
+    private $dispatcher;
     /** @var RouteFactoryInterface */
     private $factory;
     /** @var RouteInterface[] Array of Route objects */
@@ -24,10 +25,13 @@ class Router implements RouterInterface
     /** @var RouteInterface[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
 
-    public function __construct(DispatchProviderInterface $dispatchProvider)
+    public function __construct(DispatcherInterface $dispatcher = null)
     {
-        $this->dispatchProvider = $dispatchProvider;
-        $this->factory = $this->getRouteFactory($this->dispatchProvider->getDispatcher());
+        if ($dispatcher === null) {
+            $dispatcher = new Dispatcher();
+        }
+        $this->dispatcher = $dispatcher;
+        $this->factory = $this->getRouteFactory($this->dispatcher);
         $this->routes = [];
         $this->staticRoutes = [];
         $this->prefixRoutes = [];
@@ -65,9 +69,6 @@ class Router implements RouterInterface
     public function register($method, $target, $middleware)
     {
         $route = $this->getRouteForTarget($target);
-        if (is_array($middleware)) {
-            $middleware = $this->dispatchProvider->getDispatchStack($middleware);
-        }
         $route->getMethodMap()->register($method, $middleware);
         return $this;
     }
