@@ -74,7 +74,19 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
+     * @uses WellRESTed\Dispatching\DispatchStack
+     */
+    public function testDispatchesArrayAsDispatchStack()
+    {
+        $middleware = new DispatcherTest_Middleware();
+
+        $dispatcher = new Dispatcher();
+        $response = $dispatcher->dispatch([$middleware], $this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @expectedException \WellRESTed\Dispatching\DispatchException
      */
     public function testThrowsExceptionWhenUnableToDispatch()
     {

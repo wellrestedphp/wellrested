@@ -22,6 +22,8 @@ class Dispatcher implements DispatcherInterface
             $middleware = $middleware($request, $response, $next);
         } elseif (is_string($middleware)) {
             $middleware = new $middleware();
+        } elseif (is_array($middleware)) {
+            $middleware = $this->getDispatchStack($middleware);
         }
         if ($middleware instanceof MiddlewareInterface) {
             return $middleware->dispatch($request, $response, $next);
@@ -30,5 +32,14 @@ class Dispatcher implements DispatcherInterface
         } else {
             throw new DispatchException("Unable to dispatch middleware.");
         }
+    }
+
+    protected function getDispatchStack($middlewares)
+    {
+        $stack = new DispatchStack($this);
+        foreach ($middlewares as $middleware) {
+            $stack->add($middleware);
+        }
+        return $stack;
     }
 }
