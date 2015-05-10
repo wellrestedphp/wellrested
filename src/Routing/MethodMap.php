@@ -4,6 +4,8 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Dispatching\DispatcherInterface;
 
 class MethodMap implements MiddlewareInterface, MethodMapInterface
 {

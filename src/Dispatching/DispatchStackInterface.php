@@ -1,9 +1,10 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Routing\MiddlewareInterface;
 
 interface DispatchStackInterface extends MiddlewareInterface
 {

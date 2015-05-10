@@ -1,15 +1,16 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Dispatching;
 
 use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Routing\Dispatcher;
+use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Routing\MiddlewareInterface;
 
 /**
- * @covers WellRESTed\Routing\Dispatcher
+ * @covers WellRESTed\Dispatching\Dispatcher
+ * @group dispatching
  */
 class DispatcherTest extends \PHPUnit_Framework_TestCase
 {
@@ -75,7 +76,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testThrowExceptionWhenUnableToDispatch()
+    public function testThrowsExceptionWhenUnableToDispatch()
     {
         $middleware = null;
 

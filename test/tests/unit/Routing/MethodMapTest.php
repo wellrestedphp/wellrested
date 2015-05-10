@@ -8,7 +8,7 @@ use WellRESTed\Routing\MethodMap;
 /**
  * @coversDefaultClass WellRESTed\Routing\MethodMap
  * @uses WellRESTed\Routing\MethodMap
- * @uses WellRESTed\Routing\Dispatcher
+ * @uses WellRESTed\Dispatching\Dispatcher
  */
 class MethodMapTest extends \PHPUnit_Framework_TestCase
 {

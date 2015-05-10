@@ -1,18 +1,20 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Routing\MiddlewareInterface;
 
 class Dispatcher implements DispatcherInterface
 {
     /**
-     * @param $middleware
+     * @param mixed $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param callable $next
      * @return ResponseInterface
-     * @throws \InvalidArgumentException $middleware is not a valid type.
+     * @throws DispatchException Unable to dispatch $middleware
      */
     public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface $response, $next)
     {
@@ -26,7 +28,7 @@ class Dispatcher implements DispatcherInterface
         } elseif ($middleware instanceof ResponseInterface) {
             return $middleware;
         } else {
-            throw new \InvalidArgumentException("Unable to dispatch middleware.");
+            throw new DispatchException("Unable to dispatch middleware.");
         }
     }
 }

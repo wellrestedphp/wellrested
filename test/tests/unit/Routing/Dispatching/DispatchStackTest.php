@@ -3,18 +3,19 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\DispatchStack;
+use WellRESTed\Dispatching\DispatchStack;
 
 /**
- * @coversDefaultClass WellRESTed\Routing\DispatchStack
- * @uses WellRESTed\Routing\DispatchStack
- * @uses WellRESTed\Routing\Dispatcher
+ * @coversDefaultClass WellRESTed\Dispatching\DispatchStack
+ * @uses WellRESTed\Dispatching\DispatchStack
+ * @group dispatching
  */
 class DispatchStackTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
     private $next;
+    private $dispatcher;
 
     public function setUp()
     {
@@ -24,15 +25,19 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         $this->next = function ($request, $response) {
             return $response;
         };
+        $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
+        $this->dispatcher->dispatch(Argument::cetera())->will(function ($args) {
+            list($middleware, $request, $response, $next) = $args;
+            return $middleware($request, $response, $next);
+        });
     }
 
     /**
      * @covers ::__construct
-     * @covers ::getDispatcher
      */
     public function testCreatesInstance()
     {
-        $stack = new DispatchStack();
+        $stack = new DispatchStack($this->dispatcher->reveal());
         $this->assertNotNull($stack);
     }
 
@@ -41,19 +46,20 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddIsFluid()
     {
-        $stack = new DispatchStack();
+        $stack = new DispatchStack($this->dispatcher->reveal());
         $this->assertSame($stack, $stack->add("middleware1"));
     }
 
     /**
      * @covers ::dispatch
+     * @covers ::getCallableChain
      */
     public function testDispachesMiddlewareInOrderAdded()
     {
         // Each middelware will add its "name" to this array.
         $callOrder = [];
 
-        $stack = new DispatchStack();
+        $stack = new DispatchStack($this->dispatcher->reveal());
         $stack->add(function ($request, $response, $next) use (&$callOrder) {
             $callOrder[] = "first";
             return $next($request, $response);
@@ -70,6 +76,9 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["first", "second", "third"], $callOrder);
     }
 
+    /**
+     * @covers ::dispatch
+     */
     public function testCallsNextAfterDispatchingStack()
     {
         $nextCalled = false;
@@ -82,7 +91,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
             return $next($request, $response);
         };
 
-        $stack = new DispatchStack();
+        $stack = new DispatchStack($this->dispatcher->reveal());
         $stack->add($middleware);
         $stack->add($middleware);
         $stack->add($middleware);
@@ -102,7 +111,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
-        $stack = new DispatchStack();
+        $stack = new DispatchStack($this->dispatcher->reveal());
         $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($nextCalled);
     }

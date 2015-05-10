@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -10,9 +10,12 @@ class DispatchStack implements DispatchStackInterface
     private $stack;
     private $dispatcher;
 
-    public function __construct()
+    /**
+     * @param DispatcherInterface $dispatcher
+     */
+    public function __construct(DispatcherInterface $dispatcher)
     {
-        $this->dispatcher = $this->getDispatcher();
+        $this->dispatcher = $dispatcher;
         $this->stack = [];
     }
 
@@ -55,13 +58,6 @@ class DispatchStack implements DispatchStackInterface
         $chain = $this->getCallableChain();
         $response = $chain($request, $response);
         return $next($request, $response);
-    }
-
-    // ------------------------------------------------------------------------
-
-    protected function getDispatcher()
-    {
-        return new Dispatcher();
     }
 
     // ------------------------------------------------------------------------
