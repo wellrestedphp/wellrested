@@ -6,12 +6,17 @@ use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
 
+// TODO: register with array of middleware creates stack
+
 /**
  * @coversDefaultClass WellRESTed\Routing\Router
  * @uses WellRESTed\Routing\Router
+ * @group routing
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
+    private $dispatcher;
+    private $dispatchProvider;
     private $methodMap;
     private $factory;
     private $request;
@@ -42,6 +47,17 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
+        $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
+        $this->dispatcher->dispatch(Argument::cetera())->will(
+            function ($args) {
+                list($middleware, $request, $response, $next) = $args;
+                return $middleware->dispatch($request, $response, $next);
+            }
+        );
+
+        $this->dispatchProvider = $this->prophesize('WellRESTed\Dispatching\DispatchProviderInterface');
+        $this->dispatchProvider->getDispatcher()->willReturn($this->dispatcher->reveal());
+
         $this->router = $this->getMockBuilder('WellRESTed\Routing\Router')
             ->setMethods(["getRouteFactory"])
             ->disableOriginalConstructor()
@@ -49,7 +65,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->router->expects($this->any())
             ->method("getRouteFactory")
             ->will($this->returnValue($this->factory->reveal()));
-        $this->router->__construct();
+        $this->router->__construct($this->dispatchProvider->reveal());
     }
 
     // ------------------------------------------------------------------------
@@ -58,10 +74,11 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::__construct
      * @covers ::getRouteFactory
+     * @uses WellRESTed\Routing\Route\RouteFactory
      */
     public function testCreatesInstance()
     {
-        $routeMap = new Router();
+        $routeMap = new Router($this->dispatchProvider->reveal());
         $this->assertNotNull($routeMap);
     }
 

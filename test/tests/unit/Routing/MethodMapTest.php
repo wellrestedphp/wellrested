@@ -9,6 +9,7 @@ use WellRESTed\Routing\MethodMap;
  * @coversDefaultClass WellRESTed\Routing\MethodMap
  * @uses WellRESTed\Routing\MethodMap
  * @uses WellRESTed\Dispatching\Dispatcher
+ * @group routing
  */
 class MethodMapTest extends \PHPUnit_Framework_TestCase
 {

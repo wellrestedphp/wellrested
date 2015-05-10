@@ -2,7 +2,7 @@
 
 namespace WellRESTed\Dispatching;
 
-interface DispatchProvider
+interface DispatchProviderInterface
 {
     /**
      * @return DispatcherInterface

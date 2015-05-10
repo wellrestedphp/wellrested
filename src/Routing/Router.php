@@ -4,12 +4,15 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Dispatching\DispatchProviderInterface;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 
 class Router implements RouterInterface
 {
+    /** @var DispatchProviderInterface */
+    private $dispatchProvider;
     /** @var RouteFactoryInterface */
     private $factory;
     /** @var RouteInterface[] Array of Route objects */
@@ -21,9 +24,10 @@ class Router implements RouterInterface
     /** @var RouteInterface[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
 
-    public function __construct()
+    public function __construct(DispatchProviderInterface $dispatchProvider)
     {
-        $this->factory = $this->getRouteFactory();
+        $this->dispatchProvider = $dispatchProvider;
+        $this->factory = $this->getRouteFactory($this->dispatchProvider->getDispatcher());
         $this->routes = [];
         $this->staticRoutes = [];
         $this->prefixRoutes = [];
@@ -91,11 +95,12 @@ class Router implements RouterInterface
     }
 
     /**
+     * @param DispatcherInterface
      * @return RouteFactoryInterface
      */
-    protected function getRouteFactory()
+    protected function getRouteFactory($dispatcher)
     {
-        return new RouteFactory();
+        return new RouteFactory($dispatcher);
     }
 
     /**
