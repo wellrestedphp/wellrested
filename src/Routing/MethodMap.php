@@ -84,7 +84,7 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
         } else {
             $response = $response->withStatus(405);
         }
-        return $this->addAllowHeader($response);
+        return $next($request, $this->addAllowHeader($response));
     }
 
     // ------------------------------------------------------------------------

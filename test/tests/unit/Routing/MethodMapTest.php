@@ -198,6 +198,25 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @coversNothing
+     * @dataProvider allowedMethodProvider
+     */
+    public function testCallsNextForBadMethod()
+    {
+        $calledNext = false;
+        $next = function ($request, $response) use (&$calledNext) {
+            $calledNext = true;
+            return $response;
+        };
+        $this->request->getMethod()->willReturn("POST");
+
+        $map = new MethodMap();
+        $map->register("GET", $this->middleware->reveal());
+        $map->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->assertTrue($calledNext);
+    }
+
+    /**
      * @covers ::dispatch
      * @covers ::addAllowHeader
      * @covers ::getAllowedMethods
