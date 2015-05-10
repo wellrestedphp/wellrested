@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Dispatching;
 
 use Prophecy\Argument;
 use WellRESTed\Dispatching\DispatchStack;
