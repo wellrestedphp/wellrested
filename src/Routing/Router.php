@@ -65,6 +65,9 @@ class Router implements RouterInterface
     public function register($method, $target, $middleware)
     {
         $route = $this->getRouteForTarget($target);
+        if (is_array($middleware)) {
+            $middleware = $this->dispatchProvider->getDispatchStack($middleware);
+        }
         $route->getMethodMap()->register($method, $middleware);
         return $this;
     }

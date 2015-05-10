@@ -116,6 +116,18 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->methodMap->register("GET", "middleware")->shouldHaveBeenCalled();
     }
 
+    /**
+     * @covers ::register
+     */
+    public function testCreatesDispatchStackForMiddlewareArray()
+    {
+        $stack = $this->prophesize('WellRESTed\MiddlewareInterface');
+        $this->dispatchProvider->getDispatchStack(Argument::any())->willReturn($stack->reveal());
+
+        $this->router->register("GET", "/", ["middleware1", "middleware2"]);
+        $this->methodMap->register("GET", $stack->reveal())->shouldHaveBeenCalled();
+    }
+
     // ------------------------------------------------------------------------
     // Dispatching
 
