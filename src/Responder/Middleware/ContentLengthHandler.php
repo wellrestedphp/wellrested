@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Routing\Hook;
+namespace WellRESTed\Responder\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +13,7 @@ use WellRESTed\MiddlewareInterface;
  * - Response does not have a Tranfser-encoding: chunked header
  * - Response body stream reports a size
  */
-class ContentLengthHook implements MiddlewareInterface
+class ContentLengthHandler implements MiddlewareInterface
 {
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {

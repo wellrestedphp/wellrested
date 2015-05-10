@@ -3,18 +3,18 @@
 namespace WellRESTed\Test\Unit\Routing\Hook;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\Hook\ContentLengthHook;
+use WellRESTed\Responder\Middleware\ContentLengthHandler;
 
 /**
- * @covers WellRESTed\Routing\Hook\ContentLengthHook
+ * @covers WellRESTed\Responder\Middleware\ContentLengthHandler
+ * @group responder
  */
-class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
+class ContentLengthHandlerTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
     private $next;
     private $body;
-
 
     public function setUp()
     {
@@ -42,7 +42,7 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $hook = new ContentLengthHook();
+        $hook = new ContentLengthHandler();
         $response = $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->assertEquals([1024], $response->getHeader("Content-length"));
@@ -53,7 +53,7 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $hook = new ContentLengthHook();
+        $hook = new ContentLengthHandler();
 
         $response = $this->response->reveal();
         $response = $hook->dispatch($this->request->reveal(), $response, $this->next);
@@ -67,7 +67,7 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(true);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
 
-        $hook = new ContentLengthHook();
+        $hook = new ContentLengthHandler();
         $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
@@ -78,7 +78,7 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->hasHeader("Content-length")->willReturn(false);
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("CHUNKED");
 
-        $hook = new ContentLengthHook();
+        $hook = new ContentLengthHandler();
         $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();
@@ -90,7 +90,7 @@ class ContentLengthHookTest extends \PHPUnit_Framework_TestCase
         $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
         $this->body->getSize()->willReturn(null);
 
-        $hook = new ContentLengthHook();
+        $hook = new ContentLengthHandler();
         $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withHeader(Argument::cetera())->shouldNotHaveBeenCalled();

@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Routing\Hook;
+namespace WellRESTed\Responder\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -10,7 +10,7 @@ use WellRESTed\MiddlewareInterface;
 /**
  * Removes the body of a response to a HEAD request.
  */
-class HeadHook implements MiddlewareInterface
+class HeadHandler implements MiddlewareInterface
 {
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {

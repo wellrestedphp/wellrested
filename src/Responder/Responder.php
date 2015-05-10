@@ -1,8 +1,9 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Responder;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 
 class Responder implements ResponderInterface
@@ -12,9 +13,10 @@ class Responder implements ResponderInterface
     /**
      * Outputs a response.
      *
+     * @param ServerRequestInterface $request
      * @param ResponseInterface $response Response to output
      */
-    public function respond(ResponseInterface $response)
+    public function respond(ServerRequestInterface $request, ResponseInterface $response)
     {
         // Status Line
         header($this->getStatusLine($response));

@@ -1,15 +1,16 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Hook;
+namespace WellRESTed\Test\Unit\Responder\Middleware;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\Hook\HeadHook;
+use WellRESTed\Responder\Middleware\HeadHandler;
 
 /**
- * @covers WellRESTed\Routing\Hook\HeadHook
- * @uses WellRESTed\Message\NullStream
+ * @covers WellRESTed\Responder\Middleware\HeadHandler
+ * @uses   WellRESTed\Message\NullStream
+ * @group responder
  */
-class HeadHookTest extends \PHPUnit_Framework_TestCase
+class HeadHandlerTest extends \PHPUnit_Framework_TestCase
 {
     private $request;
     private $response;
@@ -24,10 +25,12 @@ class HeadHookTest extends \PHPUnit_Framework_TestCase
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $this->response->getBody()->willReturn($this->body->reveal());
-        $this->response->withBody(Argument::any())->will(function ($args) {
-            $this->getBody()->willReturn($args[0]);
-            return $this;
-        });
+        $this->response->withBody(Argument::any())->will(
+            function ($args) {
+                $this->getBody()->willReturn($args[0]);
+                return $this;
+            }
+        );
         $this->next = function ($request, $response) {
             return $response;
         };
@@ -36,7 +39,7 @@ class HeadHookTest extends \PHPUnit_Framework_TestCase
     public function testReplacesBodyForHeadRequest()
     {
         $this->request->getMethod()->willReturn("HEAD");
-        $hook = new HeadHook();
+        $hook = new HeadHandler();
         $response = $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->assertSame(0, $response->getBody()->getSize());
     }
@@ -44,7 +47,7 @@ class HeadHookTest extends \PHPUnit_Framework_TestCase
     public function testMultipleDispatchesHaveNoEffect()
     {
         $this->request->getMethod()->willReturn("HEAD");
-        $hook = new HeadHook();
+        $hook = new HeadHandler();
         $response = $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $hook->dispatch($this->request->reveal(), $response, $this->next);
         $this->response->withBody(Argument::any())->shouldHaveBeenCalledTimes(1);
@@ -53,7 +56,7 @@ class HeadHookTest extends \PHPUnit_Framework_TestCase
     public function testDoesNotReplaceBodyForNonHeadRequests()
     {
         $this->request->getMethod()->willReturn("GET");
-        $hook = new HeadHook();
+        $hook = new HeadHandler();
         $hook->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withBody(Argument::any())->shouldNotHaveBeenCalled();
     }

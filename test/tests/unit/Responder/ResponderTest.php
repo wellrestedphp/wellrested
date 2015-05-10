@@ -1,18 +1,20 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Responder;
 
 use Prophecy\Argument;
-use WellRESTed\Routing\HeaderStack;
-use WellRESTed\Routing\Responder;
+use WellRESTed\Responder\HeaderStack;
+use WellRESTed\Responder\Responder;
 
-require_once(__DIR__ . "/../../../src/HeaderStack.php");
+require_once __DIR__ . "/../../../src/HeaderStack.php";
 
 /**
- * @covers WellRESTed\Routing\Responder
+ * @covers WellRESTed\Responder\Responder
+ * @group responder
  */
 class ResponderTest extends \PHPUnit_Framework_TestCase
 {
+    private $request;
     private $response;
     private $body;
 
@@ -21,6 +23,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         HeaderStack::reset();
         $this->body = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $this->body->isReadable()->willReturn(false);
+        $this->request = $this->prophesize('\Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('\Psr\Http\Message\ResponseInterface');
         $this->response->getHeaders()->willReturn([]);
         $this->response->getProtocolVersion()->willReturn("1.1");
@@ -35,7 +38,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         $this->response->getReasonPhrase()->willReturn("Ok");
 
         $responder = new Responder();
-        $responder->respond($this->response->reveal());
+        $responder->respond($this->request->reveal(), $this->response->reveal());
         $this->assertContains("HTTP/1.1 200 Ok", HeaderStack::getHeaders());
     }
 
@@ -45,7 +48,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         $this->response->getReasonPhrase()->willReturn(null);
 
         $responder = new Responder();
-        $responder->respond($this->response->reveal());
+        $responder->respond($this->request->reveal(), $this->response->reveal());
         $this->assertContains("HTTP/1.1 999", HeaderStack::getHeaders());
     }
 
@@ -60,7 +63,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         ]);
 
         $responder = new Responder();
-        $responder->respond($this->response->reveal());
+        $responder->respond($this->request->reveal(), $this->response->reveal());
         $this->assertContains($header, HeaderStack::getHeaders());
     }
 
@@ -83,7 +86,7 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         $responder = new Responder();
 
         ob_start();
-        $responder->respond($this->response->reveal());
+        $responder->respond($this->request->reveal(), $this->response->reveal());
         $captured = ob_get_contents();
         ob_end_clean();
 
@@ -99,21 +102,23 @@ class ResponderTest extends \PHPUnit_Framework_TestCase
         $this->body->isReadable()->willReturn(true);
         $this->body->rewind()->willReturn(true);
         $this->body->eof()->willReturn(false);
-        $this->body->read(Argument::any())->will(function ($args) use ($content, &$position) {
-            $chunkSize = $args[0];
-            $chunk = substr($content, $position, $chunkSize);
-            $position += $chunkSize;
-            if ($position >= strlen($content)) {
-                $this->eof()->willReturn(true);
+        $this->body->read(Argument::any())->will(
+            function ($args) use ($content, &$position) {
+                $chunkSize = $args[0];
+                $chunk = substr($content, $position, $chunkSize);
+                $position += $chunkSize;
+                if ($position >= strlen($content)) {
+                    $this->eof()->willReturn(true);
+                }
+                return $chunk;
             }
-            return $chunk;
-        });
+        );
 
         $responder = new Responder();
         $responder->setChunkSize($chunkSize);
 
         ob_start();
-        $responder->respond($this->response->reveal(), $chunkSize);
+        $responder->respond($this->request->reveal(), $this->response->reveal(), $chunkSize);
         $captured = ob_get_contents();
         ob_end_clean();
 

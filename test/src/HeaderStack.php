@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Responder;
 
 class HeaderStack
 {
