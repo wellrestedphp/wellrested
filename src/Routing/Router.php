@@ -4,64 +4,31 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\HttpExceptions\HttpException;
-use WellRESTed\Message\Response;
-use WellRESTed\Message\ServerRequest;
-use WellRESTed\Message\Stream;
-use WellRESTed\Routing\Hook\ContentLengthHook;
-use WellRESTed\Routing\Hook\HeadHook;
+use WellRESTed\Routing\Route\RouteFactory;
+use WellRESTed\Routing\Route\RouteFactoryInterface;
+use WellRESTed\Routing\Route\RouteInterface;
 
-class Router implements MiddlewareInterface, RouteMapInterface
+class Router implements RouterInterface
 {
-    /** @var DispatcherInterface */
-    private $dispatcher;
-
-    /** @var mixed[] List of middleware to dispatch immediately before concluding the request-response cycle. */
-    private $finalizationHooks;
-
-    /** @var mixed[] List of middleware to dispatch after the router dispatches the matched route. */
-    private $postRouteHooks;
-
-    /** @var mixed[] List of middleware to dispatch before the router dispatches the matched route. */
-    private $preRouteHooks;
-
-    /** @var array Hash array of status code => middleware */
-    private $statusHooks;
-
-    /** @var RouteMapInterface */
-    private $routeMap;
-
-    // ------------------------------------------------------------------------
+    /** @var RouteFactoryInterface */
+    private $factory;
+    /** @var RouteInterface[] Array of Route objects */
+    private $routes;
+    /** @var RouteInterface[] Hash array mapping exact paths to routes */
+    private $staticRoutes;
+    /** @var RouteInterface[] Hash array mapping path prefixes to routes */
+    private $prefixRoutes;
+    /** @var RouteInterface[] Hash array mapping path prefixes to routes */
+    private $patternRoutes;
 
     public function __construct()
     {
-        $this->dispatcher = $this->getDispatcher();
-        $this->finalizationHooks = $this->getFinalizationHooks();
-        $this->postRouteHooks = $this->getPostRouteHooks();
-        $this->preRouteHooks = $this->getPreRouteHooks();
-        $this->statusHooks = $this->getStatusHooks();
-        $this->routeMap = $this->getRouteMap();
+        $this->factory = $this->getRouteFactory();
+        $this->routes = [];
+        $this->staticRoutes = [];
+        $this->prefixRoutes = [];
+        $this->patternRoutes = [];
     }
-
-    // ------------------------------------------------------------------------
-    // MiddlewareInterface
-
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
-    {
-        $this->dispatchPreRouteHooks($request, $response);
-        try {
-            $this->routeMap->dispatch($request, $response);
-        } catch (HttpException $e) {
-            $response = $response->withStatus($e->getCode());
-            $response = $response->withBody(new Stream($e->getMessage()));
-        }
-        $this->dispatchStatusHooks($request, $response);
-        $this->dispatchPostRouteHooks($request, $response);
-        $this->dispatchFinalizationHooks($request, $response);
-    }
-
-    // ------------------------------------------------------------------------
-    // RouteMapInterface
 
     /**
      * Register middleware with the router for a given path and method.
@@ -89,167 +56,114 @@ class Router implements MiddlewareInterface, RouteMapInterface
      * @param string $target Request target or pattern to match
      * @param string $method HTTP method(s) to match
      * @param mixed $middleware Middleware to dispatch
+     * @return self
      */
-    public function add($method, $target, $middleware)
+    public function register($method, $target, $middleware)
     {
-        $this->routeMap->add($method, $target, $middleware);
+        $route = $this->getRouteForTarget($target);
+        $route->getMethodMap()->register($method, $middleware);
+        return $this;
     }
 
-    // ------------------------------------------------------------------------
-
-    public function respond()
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-        $this->dispatch($request, $response);
-        $responder = $this->getResponder();
-        $responder->respond($response);
+        $requestTarget = $request->getRequestTarget();
+
+        $route = $this->getStaticRoute($requestTarget);
+        if ($route) {
+            return $route->dispatch($request, $response, $next);
+        }
+
+        $route = $this->getPrefixRoute($requestTarget);
+        if ($route) {
+            return $route->dispatch($request, $response, $next);
+        }
+
+        // Try each of the routes.
+        foreach ($this->patternRoutes as $route) {
+            if ($route->matchesRequestTarget($requestTarget)) {
+                return $route->dispatch($request, $response, $next);
+            }
+        }
+
+        // If no route exists, set the status code of the response to 404.
+        return $next($request, $response->withStatus(404));
     }
-
-    // ------------------------------------------------------------------------
-    // Hooks
-
-    public function addPreRouteHook($middleware)
-    {
-        $this->preRouteHooks[] = $middleware;
-    }
-
-    public function addPostRouteHook($middleware)
-    {
-        $this->postRouteHooks[] = $middleware;
-    }
-
-    public function addFinalizationHook($middleware)
-    {
-        $this->finalizationHooks[] = $middleware;
-    }
-
-    public function setStatusHook($statusCode, $middleware)
-    {
-        $this->statusHooks[(int) $statusCode] = $middleware;
-    }
-
-    // ------------------------------------------------------------------------
-    // The following methods provide instaces the router will use. Override
-    // to provide custom classes or configured instances.
 
     /**
-     * Return an instance that can dispatch middleware.
+     * @return RouteFactoryInterface
+     */
+    protected function getRouteFactory()
+    {
+        return new RouteFactory();
+    }
+
+    /**
+     * Return the route for a given target.
      *
-     * Override to provide a custom class.
-     *
-     * @return DispatcherInterface
+     * @param $target
+     * @return RouteInterface
      */
-    protected function getDispatcher()
+    private function getRouteForTarget($target)
     {
-        return new Dispatcher();
+        if (isset($this->routes[$target])) {
+            $route = $this->routes[$target];
+        } else {
+            $route = $this->factory->create($target);
+            $this->registerRouteForTarget($route, $target);
+        }
+        return $route;
     }
 
-    /**
-     * Return an instance that maps routes to middleware.
-     *
-     * Override to provide a custom class.
-     *
-     * @return RouteMapInterface
-     */
-    protected function getRouteMap()
+    private function registerRouteForTarget($route, $target)
     {
-        return new RouteMap();
-    }
+        // Store the route to the hash indexed by original target.
+        $this->routes[$target] = $route;
 
-    /**
-     * @return array
-     */
-    protected function getPreRouteHooks()
-    {
-        return [];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getPostRouteHooks()
-    {
-        return [];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getStatusHooks()
-    {
-        return [];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getFinalizationHooks()
-    {
-        return [
-            new ContentLengthHook(),
-            new HeadHook()
-        ];
-    }
-
-    // @codeCoverageIgnoreStart
-
-    /**
-     * @return ServerRequestInterface
-     */
-    protected function getRequest()
-    {
-        return ServerRequest::getServerRequest();
-    }
-
-    /**
-     * @return ResponderInterface
-     */
-    protected function getResponder()
-    {
-        return new Responder();
-    }
-
-    /**
-     * @return ResponseInterface
-     */
-    protected function getResponse()
-    {
-        return new Response();
-    }
-
-    // @codeCoverageIgnoreEnd
-
-    // ------------------------------------------------------------------------
-
-    private function dispatchPreRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
-    {
-        foreach ($this->preRouteHooks as $hook) {
-            $this->dispatcher->dispatch($hook, $request, $response);
+        // Store the route to the array of routes for its type.
+        switch ($route->getType()) {
+            case RouteInterface::TYPE_STATIC:
+                $this->staticRoutes[$route->getTarget()] = $route;
+                break;
+            case RouteInterface::TYPE_PREFIX:
+                $this->prefixRoutes[rtrim($route->getTarget(), "*")] = $route;
+                break;
+            case RouteInterface::TYPE_PATTERN:
+                $this->patternRoutes[] = $route;
+                break;
         }
     }
 
-    private function dispatchPostRouteHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    private function getStaticRoute($requestTarget)
     {
-        foreach ($this->postRouteHooks as $hook) {
-            $this->dispatcher->dispatch($hook, $request, $response);
+        if (isset($this->staticRoutes[$requestTarget])) {
+            return $this->staticRoutes[$requestTarget];
         }
+        return null;
     }
 
-    private function dispatchFinalizationHooks(ServerRequestInterface $request, ResponseInterface &$response)
+    private function getPrefixRoute($requestTarget)
     {
-        foreach ($this->finalizationHooks as $hook) {
-            $this->dispatcher->dispatch($hook, $request, $response);
-        }
-    }
+        // Find all prefixes that match the start of this path.
+        $prefixes = array_keys($this->prefixRoutes);
+        $matches = array_filter(
+            $prefixes,
+            function ($prefix) use ($requestTarget) {
+                return (strrpos($requestTarget, $prefix, -strlen($requestTarget)) !== false);
+            }
+        );
 
-    private function dispatchStatusHooks(ServerRequestInterface $request, ResponseInterface &$response)
-    {
-        $statusCode = (int) $response->getStatusCode();
-        if (isset($this->statusHooks[$statusCode])) {
-            $middleware = $this->statusHooks[$statusCode];
-            $dispatcher = $this->getDispatcher();
-            $dispatcher->dispatch($middleware, $request, $response);
+        if ($matches) {
+            if (count($matches) > 0) {
+                // If there are multiple matches, sort them to find the one with the longest string length.
+                $compareByLength = function ($a, $b) {
+                    return strlen($b) - strlen($a);
+                };
+                usort($matches, $compareByLength);
+            }
+            $route = $this->prefixRoutes[$matches[0]];
+            return $route;
         }
+        return null;
     }
 }

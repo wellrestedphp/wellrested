@@ -2,7 +2,7 @@
 
 namespace WellRESTed\Routing;
 
-interface RouteMapInterface extends MiddlewareInterface
+interface RouterInterface extends MiddlewareInterface
 {
     /**
      * Register middleware with the router for a given path and method.
@@ -30,6 +30,7 @@ interface RouteMapInterface extends MiddlewareInterface
      * @param string $target Request target or pattern to match
      * @param string $method HTTP method(s) to match
      * @param mixed $middleware Middleware to dispatch
+     * @return self
      */
-    public function add($method, $target, $middleware);
+    public function register($method, $target, $middleware);
 }

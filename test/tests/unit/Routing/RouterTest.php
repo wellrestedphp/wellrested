@@ -3,48 +3,52 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
-use WellRESTed\HttpExceptions\NotFoundException;
+use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
-
-// TODO Tests that ensure hooks are called at correct times
 
 /**
  * @coversDefaultClass WellRESTed\Routing\Router
  * @uses WellRESTed\Routing\Router
- * @uses WellRESTed\Message\Stream
- * @uses WellRESTed\Routing\Dispatcher
- * @uses WellRESTed\Routing\RouteMap
- * @uses WellRESTed\Routing\Hook\ContentLengthHook
- * @uses WellRESTed\Routing\Hook\HeadHook
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
+    private $methodMap;
+    private $factory;
     private $request;
     private $response;
-    private $routeMap;
+    private $route;
     private $router;
+    private $next;
 
     public function setUp()
     {
         parent::setUp();
 
+        $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $this->methodMap->register(Argument::cetera());
+
+        $this->route = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $this->route->dispatch(Argument::cetera())->willReturn();
+        $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
+        $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
+        $this->route->getTarget()->willReturn("/");
+
+        $this->factory = $this->prophesize('WellRESTed\Routing\Route\RouteFactory');
+        $this->factory->create(Argument::any())->willReturn($this->route->reveal());
+
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-
-        $this->response->hasHeader("Content-length")->willReturn(true);
-        $this->response->getStatusCode()->willReturn(200);
-
-        $this->routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $this->routeMap->add(Argument::cetera())->willReturn();
-        $this->routeMap->dispatch(Argument::cetera())->willReturn();
+        $this->next = function ($request, $response) {
+            return $response;
+        };
 
         $this->router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRouteMap"])
+            ->setMethods(["getRouteFactory"])
             ->disableOriginalConstructor()
             ->getMock();
         $this->router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($this->routeMap->reveal()));
+            ->method("getRouteFactory")
+            ->will($this->returnValue($this->factory->reveal()));
         $this->router->__construct();
     }
 
@@ -53,329 +57,296 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::getDispatcher
-     * @covers ::getRouteMap
-     * @covers ::getPreRouteHooks
-     * @covers ::getPostRouteHooks
-     * @covers ::getFinalizationHooks
-     * @covers ::getStatusHooks
+     * @covers ::getRouteFactory
      */
     public function testCreatesInstance()
     {
-        $router = new Router();
-        $this->assertNotNull($router);
+        $routeMap = new Router();
+        $this->assertNotNull($routeMap);
     }
 
     // ------------------------------------------------------------------------
-    // Routes
+    // Populating
 
     /**
-     * @covers ::add
+     * @covers ::register
+     * @covers ::getRouteForTarget
+     * @covers ::registerRouteForTarget
      */
-    public function testAddRegistersRouteWithRouteMap()
+    public function testCreatesRouteForTarget()
     {
-        $method = "GET";
-        $target = "/path/{id}";
-        $middleware = "Middleware";
-
-        $this->router->add($method, $target, $middleware);
-        $this->routeMap->add($method, $target, $middleware)->shouldHaveBeenCalled();
+        $this->router->register("GET", "/", "middleware");
+        $this->factory->create("/")->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::register
+     * @covers ::getRouteForTarget
      */
-    public function testDispatchesRouteMap()
+    public function testDoesNotRecreateRouteForExistingTarget()
     {
-        $request = $this->request->reveal();
-        $resonse = $this->response->reveal();
-        $this->router->dispatch($request, $resonse);
-        $this->routeMap->dispatch($request, Argument::any())->shouldHaveBeenCalled();
+        $this->router->register("GET", "/", "middleware");
+        $this->router->register("POST", "/", "middleware");
+        $this->factory->create("/")->shouldHaveBeenCalledTimes(1);
+    }
+
+    /**
+     * @covers ::register
+     */
+    public function testPassesMethodAndMiddlewareToMethodMap()
+    {
+        $this->router->register("GET", "/", "middleware");
+        $this->methodMap->register("GET", "middleware")->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
-    // Hooks
+    // Dispatching
 
     /**
-     * @covers ::addPreRouteHook
-     * @covers ::dispatchPreRouteHooks
+     * @covers ::dispatch
+     * @covers ::getStaticRoute
+     * @covers ::registerRouteForTarget
      */
-    public function testDispatchesPreRouteHooks()
+    public function testDispatchesStaticRoute()
     {
-        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $hook->dispatch(Argument::cetera())->willReturn();
+        $target = "/";
 
-        $this->router->addPreRouteHook($hook->reveal());
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
+        $this->router->register("GET", $target, "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
      * @covers ::dispatch
-     * @covers ::dispatchStatusHooks
-     * @covers ::setStatusHook
+     * @covers ::getPrefixRoute
+     * @covers ::registerRouteForTarget
      */
-    public function testDispatchesHookForStatusCode()
+    public function testDispatchesPrefixRoute()
     {
-        $this->response->getStatusCode()->willReturn(403);
+        $target = "/animals/cats/*";
+        $this->request->getRequestTarget()->willReturn("/animals/cats/molly");
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PREFIX);
 
-        $statusMiddleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $statusMiddleware->dispatch(Argument::cetera())->willReturn();
+        $this->router->register("GET", $target, "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->router->setStatusHook(403, $statusMiddleware->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $statusMiddleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
      * @covers ::dispatch
-     * @covers ::dispatchStatusHooks
-     * @covers ::setStatusHook
+     * @covers ::registerRouteForTarget
      */
-    public function testConvertsHttpExceptionToResponse()
+    public function testDispatchesPatternRoute()
     {
-        $statusMiddleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $statusMiddleware->dispatch(Argument::cetera())->willReturn();
+        $target = "/";
 
-        $this->routeMap->dispatch(Argument::cetera())->willThrow(new NotFoundException());
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
-        $this->response->withStatus(Argument::any())->will(
-            function ($args) {
-                $this->getStatusCode()->willReturn($args[0]);
-                return $this;
-            }
-        );
-        $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
+        $this->router->register("GET", $target, "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
+        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+    }
 
+    /**
+     * @coversNothing
+     */
+    public function testDispatchesStaticRouteBeforePrefixRoute()
+    {
+        $staticRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $staticRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $staticRoute->getTarget()->willReturn("/cats/");
+        $staticRoute->getType()->willReturn(RouteInterface::TYPE_STATIC);
+        $staticRoute->dispatch(Argument::cetera())->willReturn();
+
+        $prefixRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $prefixRoute->getTarget()->willReturn("/cats/*");
+        $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $prefixRoute->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/");
+
+        $this->factory->create("/cats/")->willReturn($staticRoute->reveal());
+        $this->factory->create("/cats/*")->willReturn($prefixRoute->reveal());
+
+        $this->router->register("GET", "/cats/", "middleware");
+        $this->router->register("GET", "/cats/*", "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $staticRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::getPrefixRoute
+     */
+    public function testDispatchesLongestMatchingPrefixRoute()
+    {
+        // Note: The longest route is also good for 2 points in Settlers of Catan.
+
+        $shortRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $shortRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $shortRoute->getTarget()->willReturn("/animals/*");
+        $shortRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $shortRoute->dispatch(Argument::cetera())->willReturn();
+
+        $longRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $longRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $longRoute->getTarget()->willReturn("/animals/cats/*");
+        $longRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $longRoute->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/animals/cats/molly");
+
+        $this->factory->create("/animals/*")->willReturn($shortRoute->reveal());
+        $this->factory->create("/animals/cats/*")->willReturn($longRoute->reveal());
+
+        $this->router->register("GET", "/animals/*", "middleware");
+        $this->router->register("GET", "/animals/cats/*", "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $longRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @coversNothing
+     */
+    public function testDispatchesPrefixRouteBeforePatternRoute()
+    {
+        $prefixRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $prefixRoute->getTarget()->willReturn("/cats/*");
+        $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
+        $prefixRoute->dispatch(Argument::cetera())->willReturn();
+
+        $patternRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $patternRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute->getTarget()->willReturn("/cats/{id}");
+        $patternRoute->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/");
+
+        $this->factory->create("/cats/*")->willReturn($prefixRoute->reveal());
+        $this->factory->create("/cats/{id}")->willReturn($patternRoute->reveal());
+
+        $this->router->register("GET", "/cats/*", "middleware");
+        $this->router->register("GET", "/cats/{id}", "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $prefixRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @coversNothing
+     */
+    public function testDispatchesFirstMatchingPatternRoute()
+    {
+        $patternRoute1 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute1->getTarget()->willReturn("/cats/{id}");
+        $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
+        $patternRoute1->dispatch(Argument::cetera())->willReturn();
+
+        $patternRoute2 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute2->getTarget()->willReturn("/cats/{name}");
+        $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
+        $patternRoute2->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/molly");
+
+        $this->factory->create("/cats/{id}")->willReturn($patternRoute1->reveal());
+        $this->factory->create("/cats/{name}")->willReturn($patternRoute2->reveal());
+
+        $this->router->register("GET", "/cats/{id}", "middleware");
+        $this->router->register("GET", "/cats/{name}", "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $patternRoute1->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+    }
+
+    /**
+     * @coversNothing
+     */
+    public function testStopsTestingPatternsAfterFirstSuccessfulMatch()
+    {
+        $patternRoute1 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute1->getTarget()->willReturn("/cats/{id}");
+        $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
+        $patternRoute1->dispatch(Argument::cetera())->willReturn();
+
+        $patternRoute2 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
+        $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute2->getTarget()->willReturn("/cats/{name}");
+        $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
+        $patternRoute2->dispatch(Argument::cetera())->willReturn();
+
+        $this->request->getRequestTarget()->willReturn("/cats/molly");
+
+        $this->factory->create("/cats/{id}")->willReturn($patternRoute1->reveal());
+        $this->factory->create("/cats/{name}")->willReturn($patternRoute2->reveal());
+
+        $this->router->register("GET", "/cats/{id}", "middleware");
+        $this->router->register("GET", "/cats/{name}", "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $patternRoute2->matchesRequestTarget(Argument::any())->shouldNotHaveBeenCalled();
+    }
+
+    // ------------------------------------------------------------------------
+    // No Matching Routes
+
+    /**
+     * @covers ::dispatch
+     * @covers ::getStaticRoute
+     * @covers ::getPrefixRoute
+     */
+    public function testResponds404WhenNoRouteMatches()
+    {
+        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::addPostRouteHook
-     * @covers ::dispatchPostRouteHooks
+     * @covers ::dispatch
+     * @covers ::getStaticRoute
+     * @covers ::getPrefixRoute
      */
-    public function testDispatchesPostRouteHooks()
+    public function testCallsNextWhenNoRouteMatches()
     {
-        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $hook->dispatch(Argument::cetera())->willReturn();
+        $calledNext = false;
+        $next = function ($request, $response) use (&$calledNext) {
+            $calledNext = true;
+            return $response;
+        };
 
-        $this->router->addPostRouteHook($hook->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->assertTrue($calledNext);
     }
 
-    /**
-     * @covers ::addFinalizationHook
-     * @covers ::dispatchFinalizationHooks
-     */
-    public function testDispatchesFinalizationHooks()
+    public function testRegisterIsFluid()
     {
-        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $hook->dispatch(Argument::cetera())->willReturn();
-
-        $this->router->addFinalizationHook($hook->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $hook->dispatch(Argument::cetera())->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @coversNothing
-     */
-    public function testDispatchesMiddlewareInCorrectSequence()
-    {
-        // Each middleware will push a value onto this array.
-        $stack = [];
-
-        $response = $this->response;
-        $this->routeMap->dispatch(Argument::cetera())->will(function () use ($response, &$stack) {
-            $stack[] = "routeMap";
-            $response->getStatusCode()->willReturn(404);
-        });
-
-        $this->router->addPreRouteHook($this->createStackHook("pre1", $stack));
-        $this->router->addPreRouteHook($this->createStackHook("pre2", $stack));
-        $this->router->addPostRouteHook($this->createStackHook("post1", $stack));
-        $this->router->addPostRouteHook($this->createStackHook("post2", $stack));
-        $this->router->addFinalizationHook($this->createStackHook("final1", $stack));
-        $this->router->addFinalizationHook($this->createStackHook("final2", $stack));
-        $this->router->setStatusHook(404, $this->createStackHook("404", $stack));
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $this->assertEquals(["pre1","pre2","routeMap","404","post1","post2","final1","final2"], $stack);
-    }
-
-    private function createStackHook($name, &$stack)
-    {
-        $hook = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $hook->dispatch(Argument::cetera())->will(function () use ($name, &$stack) {
-            $stack[] = $name;
-        });
-        return $hook->reveal();
-    }
-
-    /**
-     * @coversNothing
-     */
-    public function testProvidesContentLengthHeader()
-    {
-        $this->request->getMethod()->willReturn("HEAD");
-        $body = $this->prophesize('Psr\Http\Message\StreamInterface');
-        $body->getSize()->willReturn(1024);
-        $this->response->getBody()->willReturn($body->reveal());
-        $this->response->hasHeader("Content-length")->willReturn(false);
-        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
-        $this->response->withHeader(Argument::cetera())->will(
-            function () {
-                $this->hasHeader("Content-length")->willReturn(true);
-                return $this;
-            }
-        );
-        $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $this->response->withHeader(Argument::cetera())->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @coversNothing
-     */
-    public function testRemovesBodyForHeadRequest()
-    {
-        $this->request->getMethod()->willReturn("HEAD");
-        $body = $this->prophesize('Psr\Http\Message\StreamInterface');
-        $body->getSize()->willReturn(1024);
-        $this->response->getBody()->willReturn($body->reveal());
-        $this->response->hasHeader("Content-length")->willReturn(false);
-        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
-        $this->response->withHeader(Argument::cetera())->will(
-            function () {
-                $this->hasHeader("Content-length")->willReturn(true);
-                return $this;
-            }
-        );
-        $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
-
-        $request = $this->request->reveal();
-        $response = $this->response->reveal();
-        $this->router->dispatch($request, $response);
-
-        $this->response->withBody(Argument::that(function ($body) {
-            return $body->getSize() === 0;
-        }))->shouldHaveBeenCalled();
-    }
-
-    // ------------------------------------------------------------------------
-    // Respond
-
-    /**
-     * @covers ::respond
-     * @covers ::getRequest
-     * @covers ::getResponse
-     * @covers ::getResponder
-     */
-    public function testRespondDispatchesRequest()
-    {
-        $middleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $middleware->dispatch(Argument::cetera())->willReturn();
-
-        $responder = $this->prophesize('WellRESTed\Routing\ResponderInterface');
-        $responder->respond(Argument::any())->willReturn();
-
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $routeMap->dispatch(Argument::cetera())->will(
-            function ($args) use ($middleware) {
-                $middleware->reveal()->dispatch($args[0], $args[1]);
-            }
-        );
-
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRequest", "getResponse", "getResponder", "getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRequest")
-            ->will($this->returnValue($this->request->reveal()));
-        $router->expects($this->any())
-            ->method("getResponse")
-            ->will($this->returnValue($this->response->reveal()));
-        $router->expects($this->any())
-            ->method("getResponder")
-            ->will($this->returnValue($responder->reveal()));
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-        $router->respond();
-
-        $middleware->dispatch(Argument::cetera())->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @covers ::respond
-     * @covers ::getRequest
-     * @covers ::getResponse
-     * @covers ::getResponder
-     */
-    public function testSendsResponseToResponder()
-    {
-        $middleware = $this->prophesize('\WellRESTed\Routing\MiddlewareInterface');
-        $middleware->dispatch(Argument::cetera())->willReturn();
-
-        $responder = $this->prophesize('WellRESTed\Routing\ResponderInterface');
-        $responder->respond(Argument::any())->willReturn();
-
-        $routeMap = $this->prophesize('WellRESTed\Routing\RouteMapInterface');
-        $routeMap->dispatch(Argument::cetera())->will(
-            function ($args) use ($middleware) {
-                $middleware->reveal()->dispatch($args[0], $args[1]);
-            }
-        );
-
-        $router = $this->getMockBuilder('WellRESTed\Routing\Router')
-            ->setMethods(["getRequest", "getResponse", "getResponder", "getRouteMap"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $router->expects($this->any())
-            ->method("getRequest")
-            ->will($this->returnValue($this->request->reveal()));
-        $router->expects($this->any())
-            ->method("getResponse")
-            ->will($this->returnValue($this->response->reveal()));
-        $router->expects($this->any())
-            ->method("getResponder")
-            ->will($this->returnValue($responder->reveal()));
-        $router->expects($this->any())
-            ->method("getRouteMap")
-            ->will($this->returnValue($routeMap->reveal()));
-        $router->__construct();
-        $router->respond();
-
-        $responder->respond($this->response->reveal())->shouldHaveBeenCalled();
+        $router = $this->router
+            ->register("GET", "/", "middleware")
+            ->register("POST", "/", "middleware");
+        $this->assertSame($this->router, $router);
     }
 }
