@@ -12,7 +12,7 @@ use WellRESTed\Routing\MiddlewareInterface;
  */
 class HeadHook implements MiddlewareInterface
 {
-    public function dispatch(ServerRequestInterface $request, ResponseInterface &$response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $method = strtoupper($request->getMethod());
         if ($method === "HEAD") {
@@ -20,5 +20,6 @@ class HeadHook implements MiddlewareInterface
                 $response = $response->withBody(new NullStream());
             }
         }
+        return $next($request, $response);
     }
 }
