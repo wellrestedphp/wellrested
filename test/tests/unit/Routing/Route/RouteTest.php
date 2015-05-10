@@ -8,6 +8,7 @@ use Prophecy\Argument;
  * @coversDefaultClass WellRESTed\Routing\Route\Route
  * @uses WellRESTed\Routing\Route\Route
  * @group route
+ * @group routing
  */
 class RouteTest extends \PHPUnit_Framework_TestCase
 {

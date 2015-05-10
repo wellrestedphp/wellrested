@@ -10,6 +10,8 @@ use WellRESTed\Routing\Route\RouteInterface;
  * @coversDefaultClass WellRESTed\Routing\Route\PrefixRoute
  * @uses WellRESTed\Routing\Route\PrefixRoute
  * @uses WellRESTed\Routing\Route\Route
+ * @group route
+ * @group routing
  */
 class PrefixRouteTest extends \PHPUnit_Framework_TestCase
 {

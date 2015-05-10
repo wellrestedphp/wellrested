@@ -10,6 +10,8 @@ use WellRESTed\Routing\Route\RouteInterface;
  * @coversDefaultClass WellRESTed\Routing\Route\RegexRoute
  * @uses WellRESTed\Routing\Route\RegexRoute
  * @uses WellRESTed\Routing\Route\Route
+ * @group route
+ * @group routing
  */
 class RegexRouteTest extends \PHPUnit_Framework_TestCase
 {

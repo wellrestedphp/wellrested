@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Routing\Route;
 
+use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Routing\MethodMap;
 
 /**
@@ -9,6 +10,13 @@ use WellRESTed\Routing\MethodMap;
  */
 class RouteFactory implements RouteFactoryInterface
 {
+    private $dispatcher;
+
+    public function __construct(DispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
     /**
      * Creates a route for the given target.
      *
@@ -28,19 +36,19 @@ class RouteFactory implements RouteFactoryInterface
 
             // PrefixRoutes end with *
             if (substr($target, -1) === "*") {
-                return new PrefixRoute($target, new MethodMap());
+                return new PrefixRoute($target, new MethodMap($this->dispatcher));
             }
 
             // TempalateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
-                return new TemplateRoute($target, new MethodMap());
+                return new TemplateRoute($target, new MethodMap($this->dispatcher));
             }
 
             // StaticRoute
-            return new StaticRoute($target, new MethodMap());
+            return new StaticRoute($target, new MethodMap($this->dispatcher));
         }
 
         // Regex
-        return new RegexRoute($target, new MethodMap());
+        return new RegexRoute($target, new MethodMap($this->dispatcher));
     }
 }

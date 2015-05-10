@@ -10,6 +10,8 @@ use WellRESTed\Routing\Route\TemplateRoute;
  * @covers WellRESTed\Routing\Route\TemplateRoute
  * @uses WellRESTed\Routing\Route\RegexRoute
  * @uses WellRESTed\Routing\Route\Route
+ * @group route
+ * @group routing
  */
 class TemplateRouteTest extends \PHPUnit_Framework_TestCase
 {

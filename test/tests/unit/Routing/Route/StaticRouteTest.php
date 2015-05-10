@@ -10,6 +10,8 @@ use WellRESTed\Routing\Route\StaticRoute;
  * @coversDefaultClass WellRESTed\Routing\Route\StaticRoute
  * @uses WellRESTed\Routing\Route\StaticRoute
  * @uses WellRESTed\Routing\Route\Route
+ * @group route
+ * @group routing
  */
 class StaticRouteTest extends \PHPUnit_Framework_TestCase
 {
