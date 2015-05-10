@@ -5,10 +5,26 @@ namespace WellRESTed\Responder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Responder\Middleware\ContentLengthHandler;
+use WellRESTed\Responder\Middleware\HeadHandler;
 
 class Responder implements ResponderInterface
 {
+    /** @var int */
     private $chunkSize = 0;
+
+    /** @var DispatcherInterface */
+    private $dispatcher;
+
+    public function __construct(DispatcherInterface $dispatcher = null)
+    {
+        if ($dispatcher === null) {
+            $dispatcher = new Dispatcher();
+        }
+        $this->dispatcher = $dispatcher;
+    }
 
     /**
      * Outputs a response.
@@ -18,6 +34,9 @@ class Responder implements ResponderInterface
      */
     public function respond(ServerRequestInterface $request, ResponseInterface $response)
     {
+        // Prepare the response for output.
+        $response = $this->prepareResponse($request, $response);
+
         // Status Line
         header($this->getStatusLine($response));
         // Headers
@@ -41,6 +60,21 @@ class Responder implements ResponderInterface
     public function setChunkSize($chunkSize)
     {
         $this->chunkSize = $chunkSize;
+    }
+
+    protected function prepareResponse(ServerRequestInterface $request, ResponseInterface $response)
+    {
+        return $this->dispatcher->dispatch(
+            [
+                new ContentLengthHandler(),
+                new HeadHandler()
+            ],
+            $request,
+            $response,
+            function ($request, $response) {
+                return $response;
+            }
+        );
     }
 
     private function getStatusLine(ResponseInterface $response)
