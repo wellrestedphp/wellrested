@@ -4,19 +4,20 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
 
 class MethodMap implements MiddlewareInterface, MethodMapInterface
 {
-    protected $map;
+    private $dispatcher;
+    private $map;
 
     // ------------------------------------------------------------------------
 
-    public function __construct()
+    public function __construct(DispatcherInterface $dispatcher)
     {
         $this->map = [];
+        $this->dispatcher = $dispatcher;
     }
 
     // ------------------------------------------------------------------------
@@ -92,13 +93,13 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
 
     // ------------------------------------------------------------------------
 
-    protected function addAllowHeader(ResponseInterface $response)
+    private function addAllowHeader(ResponseInterface $response)
     {
         $methods = join(",", $this->getAllowedMethods());
         return $response->withHeader("Allow", $methods);
     }
 
-    protected function getAllowedMethods()
+    private function getAllowedMethods()
     {
         $methods = array_keys($this->map);
         // Add HEAD if GET is allowed and HEAD is not present.
@@ -113,17 +114,6 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
     }
 
     /**
-     * Return an instance that can dispatch middleware.
-     * Override to provide a custom class.
-     *
-     * @return DispatcherInterface
-     */
-    protected function getDispatcher()
-    {
-        return new Dispatcher();
-    }
-
-    /**
      * @param $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
@@ -132,7 +122,6 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
      */
     private function dispatchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response, $next)
     {
-        $dispatcher = $this->getDispatcher();
-        return $dispatcher->dispatch($middleware, $request, $response, $next);
+        return $this->dispatcher->dispatch($middleware, $request, $response, $next);
     }
 }

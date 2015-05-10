@@ -12,6 +12,7 @@ use WellRESTed\Routing\MethodMap;
  */
 class MethodMapTest extends \PHPUnit_Framework_TestCase
 {
+    private $dispatcher;
     private $request;
     private $response;
     private $next;
@@ -28,6 +29,13 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         };
         $this->middleware = $this->prophesize('WellRESTed\MiddlewareInterface');
         $this->middleware->dispatch(Argument::cetera())->willReturn();
+        $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
+        $this->dispatcher->dispatch(Argument::cetera())->will(
+            function ($args) {
+                list($middleware, $request, $response, $next) = $args;
+                return $middleware->dispatch($request, $response, $next);
+            }
+        );
     }
 
     /**
@@ -35,25 +43,28 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
      */
     public function testCreatesInstance()
     {
-        $methodMap = new MethodMap();
+        $methodMap = new MethodMap($this->dispatcher->reveal());
         $this->assertNotNull($methodMap);
     }
 
     /**
      * @covers ::dispatch
      * @covers ::dispatchMiddleware
-     * @covers ::getDispatcher
      * @covers ::register
      */
     public function testDispatchesMiddlewareWithMatchingMethod()
     {
         $this->request->getMethod()->willReturn("GET");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->middleware->dispatch(
+            $this->request->reveal(),
+            $this->response->reveal(),
+            $this->next
+        )->shouldHaveBeenCalled();
     }
 
     /**
@@ -69,29 +80,36 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $middlewareLower = $this->prophesize('WellRESTed\MiddlewareInterface');
         $middlewareLower->dispatch(Argument::cetera())->willReturn();
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $middlewareUpper->reveal());
         $map->register("get", $middlewareLower->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $middlewareLower->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $middlewareLower->dispatch(
+            $this->request->reveal(),
+            $this->response->reveal(),
+            $this->next
+        )->shouldHaveBeenCalled();
     }
 
     /**
      * @covers ::dispatch
      * @covers ::dispatchMiddleware
-     * @covers ::getDispatcher
      * @covers ::register
      */
     public function testDispatchesWildcardMiddlewareWithNonMatchingMethod()
     {
         $this->request->getMethod()->willReturn("GET");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("*", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->middleware->dispatch(
+            $this->request->reveal(),
+            $this->response->reveal(),
+            $this->next
+        )->shouldHaveBeenCalled();
     }
 
     /**
@@ -101,19 +119,23 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("HEAD");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->middleware->dispatch(
+            $this->request->reveal(),
+            $this->response->reveal(),
+            $this->next
+        )->shouldHaveBeenCalled();
     }
 
-    /*
+    /**
      * @covers ::register
      */
     public function testRegistersMiddlewareForMultipleMethods()
     {
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET,POST", $this->middleware->reveal());
 
         $this->request->getMethod()->willReturn("GET");
@@ -122,14 +144,18 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->request->getMethod()->willReturn("POST");
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalledTimes(2);
+        $this->middleware->dispatch(
+            $this->request->reveal(),
+            $this->response->reveal(),
+            $this->next
+        )->shouldHaveBeenCalledTimes(2);
     }
 
     public function testSettingNullUnregistersMiddleware()
     {
         $this->request->getMethod()->willReturn("POST");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("POST", $this->middleware->reveal());
         $map->register("POST", null);
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
@@ -146,7 +172,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("OPTIONS");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
@@ -163,7 +189,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("OPTIONS");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
@@ -190,7 +216,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("POST");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
 
@@ -210,7 +236,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         };
         $this->request->getMethod()->willReturn("POST");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map->dispatch($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($calledNext);
@@ -226,7 +252,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getMethod()->willReturn("BAD");
 
-        $map = new MethodMap();
+        $map = new MethodMap($this->dispatcher->reveal());
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
@@ -247,10 +273,10 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [["GET"], ["GET", "HEAD", "OPTIONS"]],
-            [["GET","POST"], ["GET", "POST", "HEAD", "OPTIONS"]],
+            [["GET", "POST"], ["GET", "POST", "HEAD", "OPTIONS"]],
             [["POST"], ["POST", "OPTIONS"]],
             [["POST"], ["POST", "OPTIONS"]],
-            [["GET","PUT,DELETE"], ["GET", "PUT", "DELETE", "HEAD", "OPTIONS"]],
+            [["GET", "PUT,DELETE"], ["GET", "PUT", "DELETE", "HEAD", "OPTIONS"]],
         ];
     }
 }
