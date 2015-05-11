@@ -9,6 +9,7 @@ use WellRESTed\Message\Response;
  * @uses WellRESTed\Message\Response
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
+ * @group message
  */
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {

@@ -7,6 +7,7 @@ use WellRESTed\Message\NullStream;
 /**
  * @coversDefaultClass WellRESTed\Message\NullStream
  * @uses WellRESTed\Message\NullStream
+ * @group message
  */
 class NullStreamTest extends \PHPUnit_Framework_TestCase
 {

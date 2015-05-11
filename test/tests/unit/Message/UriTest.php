@@ -7,6 +7,7 @@ use WellRESTed\Message\Uri;
 /**
  * @coversDefaultClass WellRESTed\Message\Uri
  * @uses WellRESTed\Message\Uri
+ * @group message
  */
 class UriTest extends \PHPUnit_Framework_TestCase
 {

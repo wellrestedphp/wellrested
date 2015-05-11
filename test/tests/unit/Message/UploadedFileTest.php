@@ -13,6 +13,7 @@ require_once __DIR__ . "/../../../src/UploadedFileState.php";
  * @uses WellRESTed\Message\UploadedFile
  * @uses WellRESTed\Message\Stream
  * @uses WellRESTed\Message\NullStream
+ * @group message
  */
 class UploadedFileTest extends \PHPUnit_Framework_TestCase
 {

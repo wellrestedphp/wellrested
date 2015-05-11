@@ -7,6 +7,7 @@ use WellRESTed\Message\Stream;
 /**
  * @coversDefaultClass WellRESTed\Message\Stream
  * @uses WellRESTed\Message\Stream
+ * @group message
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {

@@ -12,6 +12,7 @@ use WellRESTed\Message\Uri;
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
  * @uses WellRESTed\Message\Uri
+ * @group message
  */
 class RequestTest extends \PHPUnit_Framework_TestCase
 {

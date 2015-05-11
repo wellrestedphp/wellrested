@@ -6,6 +6,7 @@ namespace WellRESTed\Test\Unit\Message;
  * @coversDefaultClass WellRESTed\Message\Message
  * @uses WellRESTed\Message\Message
  * @uses WellRESTed\Message\HeaderCollection
+ * @group message
  */
 class MessageTest extends \PHPUnit_Framework_TestCase
 {

@@ -15,6 +15,7 @@ use WellRESTed\Message\Uri;
  * @uses WellRESTed\Message\Stream
  * @uses WellRESTed\Message\UploadedFile
  * @uses WellRESTed\Message\Uri
+ * @group message
  */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
 {

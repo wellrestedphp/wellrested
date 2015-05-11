@@ -7,6 +7,7 @@ use WellRESTed\Message\HeaderCollection;
 /**
  * @coversDefaultClass WellRESTed\Message\HeaderCollection
  * @uses WellRESTed\Message\HeaderCollection
+ * @group message
  */
 class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
 {
