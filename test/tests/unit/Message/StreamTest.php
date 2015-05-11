@@ -126,7 +126,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     {
         $stream = new Stream($this->resource);
         $stream->rewind();
-        $this->assertFalse($stream->eof());
         $stream->getContents();
         $this->assertTrue($stream->eof());
     }

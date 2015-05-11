@@ -49,8 +49,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message1 = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
         $message1 = $message1->withHeader("Content-type", "text/plain");
         $message2 = $message1->withHeader("Content-type", "application/json");
-        $this->assertEquals(["text/plain"], $message1->getHeader("Content-type"));
-        $this->assertEquals(["application/json"], $message2->getHeader("Content-type"));
+        $this->assertNotEquals($message1->getHeader("Content-type"), $message2->getHeader("Content-type"));
     }
 
     // ------------------------------------------------------------------------
@@ -149,8 +148,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message = $message->withAddedHeader("Set-Cookie", ["cat=Molly"]);
         $message = $message->withAddedHeader("Set-Cookie", ["dog=Bear"]);
         $cookies = $message->getHeader("Set-Cookie");
-        $this->assertContains("cat=Molly", $cookies);
-        $this->assertContains("dog=Bear", $cookies);
+        $this->assertTrue(in_array("cat=Molly", $cookies) && in_array("dog=Bear", $cookies));
     }
 
     /**
@@ -249,8 +247,8 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         }
 
         $expected = ["Content-type", "Set-Cookie"];
-        $this->assertEquals(0, count(array_diff($expected, $headers)));
-        $this->assertEquals(0, count(array_diff($headers, $expected)));
+        $countUnmatched = count(array_diff($expected, $headers)) + count(array_diff($headers, $expected));
+        $this->assertEquals(0, $countUnmatched);
     }
 
     /**

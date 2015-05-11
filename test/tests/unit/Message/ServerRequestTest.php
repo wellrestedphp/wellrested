@@ -436,8 +436,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request2 = $request1->withCookieParams([
             "cat" => "Oscar"
         ]);
-        $this->assertEquals("Molly", $request1->getCookieParams()["cat"]);
-        $this->assertEquals("Oscar", $request2->getCookieParams()["cat"]);
+        $this->assertNotEquals($request1->getCookieParams()["cat"], $request2->getCookieParams()["cat"]);
     }
 
     // ------------------------------------------------------------------------
@@ -462,8 +461,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request2 = $request1->withQueryParams([
             "guinea_pig" => "Clyde"
         ]);
-        $this->assertEquals("Claude", $request1->getQueryParams()["guinea_pig"]);
-        $this->assertEquals("Clyde", $request2->getQueryParams()["guinea_pig"]);
+        $this->assertNotEquals($request1->getQueryParams()["guinea_pig"], $request2->getQueryParams()["guinea_pig"]);
     }
 
     // ------------------------------------------------------------------------
@@ -646,8 +644,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         ]);
         $body2 = $request2->getParsedBody();
 
-        $this->assertEquals("Bear", $body1["dog"]);
-        $this->assertEquals("Clyde", $body2["guinea_pig"]);
+        $this->assertNotSame($body1, $body2);
     }
 
     /**
@@ -681,8 +678,11 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request1 = new ServerRequest();
         $request1 = $request1->withParsedBody($body);
         $request2 = $request1->withHeader("X-extra", "hello world");
-        $this->assertEquals($request1->getParsedBody(), $request2->getParsedBody());
-        $this->assertNotSame($request1->getParsedBody(), $request2->getParsedBody());
+
+        $this->assertTrue(
+            $request1->getParsedBody() == $request2->getParsedBody()
+            && $request1->getParsedBody() !== $request2->getParsedBody()
+        );
     }
 
     // ------------------------------------------------------------------------
@@ -705,9 +705,11 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request = new ServerRequest();
         $request = $request->withAttribute("cat", "Molly");
         $request = $request->withAttribute("dog", "Bear");
-        $attributes = $request->getAttributes();
-        $this->assertEquals("Molly", $attributes["cat"]);
-        $this->assertEquals("Bear", $attributes["dog"]);
+        $expected = [
+            "cat" => "Molly",
+            "dog" => "Bear"
+        ];
+        $this->assertEquals($expected, $request->getAttributes());
     }
 
     /**
@@ -738,14 +740,27 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request = new ServerRequest();
         $request = $request->withAttribute("cat", "Molly");
         $request = $request->withAttribute("dog", "Bear");
-        $this->assertEquals("Molly", $request->getAttribute("cat"));
-        $this->assertEquals("Bear", $request->getAttribute("dog"));
+        $expected = [
+            "cat" => "Molly",
+            "dog" => "Bear"
+        ];
+        $this->assertEquals($expected, $request->getAttributes());
     }
 
     /**
      * @covers ::withoutAttribute
      */
     public function testWithoutAttributeCreatesNewInstance()
+    {
+        $request = new ServerRequest();
+        $request = $request->withAttribute("cat", "Molly");
+        $this->assertNotEquals($request, $request->withoutAttribute("cat"));
+    }
+
+    /**
+     * @covers ::withoutAttribute
+     */
+    public function testWithoutAttributeRemovesAttribute()
     {
         $request = new ServerRequest();
         $request = $request->withAttribute("cat", "Molly");
@@ -763,6 +778,5 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $request = $request->withAttribute("dog", "Bear");
         $request = $request->withoutAttribute("cat");
         $this->assertEquals("Bear", $request->getAttribute("dog"));
-        $this->assertEquals("Oscar", $request->getAttribute("cat", "Oscar"));
     }
 }

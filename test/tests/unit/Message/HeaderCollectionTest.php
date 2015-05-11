@@ -53,8 +53,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $collection["SET-COOKIE"] = "dog=Bear";
 
         $headers = $collection["set-cookie"];
-        $this->assertContains("cat=Molly", $headers);
-        $this->assertContains("dog=Bear", $headers);
+        $this->assertEquals(2, count(array_intersect($headers, ["cat=Molly", "dog=Bear"])));
     }
 
     /**
@@ -80,8 +79,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $clone = clone $collection;
         unset($clone["Set-Cookie"]);
 
-        $this->assertTrue(isset($collection["set-cookie"]));
-        $this->assertFalse(isset($clone["set-cookie"]));
+        $this->assertTrue(isset($collection["set-cookie"]) && !isset($clone["set-cookie"]));
     }
 
     /**
@@ -107,8 +105,9 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         }
 
         $expected = ["Content-type", "Set-Cookie"];
-        $this->assertEquals(0, count(array_diff($expected, $headers)));
-        $this->assertEquals(0, count(array_diff($headers, $expected)));
+
+        $countUnmatched = count(array_diff($expected, $headers)) + count(array_diff($headers, $expected));
+        $this->assertEquals(0, $countUnmatched);
     }
 
     /**

@@ -208,11 +208,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request2 = $request1->withUri($uri2);
         $request2 = $request2->withHeader("Accept", "text/plain");
 
-        $this->assertEquals($uri1, $request1->getUri());
-        $this->assertEquals(["application/json"], $request1->getHeader("Accept"));
-
-        $this->assertEquals($uri2, $request2->getUri());
-        $this->assertEquals(["text/plain"], $request2->getHeader("Accept"));
+        $this->assertNotEquals($request1->getHeader("Accept"), $request2->getHeader("Accept"));
     }
 
     /**
