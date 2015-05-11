@@ -1,14 +1,14 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Responder\Middleware;
+namespace WellRESTed\Test\Unit\Transmission\Middleware;
 
 use Prophecy\Argument;
-use WellRESTed\Responder\Middleware\HeadHandler;
+use WellRESTed\Transmission\Middleware\HeadHandler;
 
 /**
- * @covers WellRESTed\Responder\Middleware\HeadHandler
- * @uses   WellRESTed\Message\NullStream
- * @group responder
+ * @covers WellRESTed\Transmission\Middleware\HeadHandler
+ * @uses WellRESTed\Message\NullStream
+ * @group transmission
  */
 class HeadHandlerTest extends \PHPUnit_Framework_TestCase
 {

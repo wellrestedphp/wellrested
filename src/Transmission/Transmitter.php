@@ -1,16 +1,16 @@
 <?php
 
-namespace WellRESTed\Responder;
+namespace WellRESTed\Transmission;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Responder\Middleware\ContentLengthHandler;
-use WellRESTed\Responder\Middleware\HeadHandler;
+use WellRESTed\Transmission\Middleware\ContentLengthHandler;
+use WellRESTed\Transmission\Middleware\HeadHandler;
 
-class Responder implements ResponderInterface
+class Transmitter implements TransmitterInterface
 {
     /** @var int */
     private $chunkSize = 0;
@@ -27,12 +27,17 @@ class Responder implements ResponderInterface
     }
 
     /**
-     * Outputs a response.
+     * Outputs a response to the client.
+     *
+     * This method outputs the status line, headers, and body to the client.
+     *
+     * This method will also provide a Content-length header if needed and
+     * supress the body for HEAD requests.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response Response to output
      */
-    public function respond(ServerRequestInterface $request, ResponseInterface $response)
+    public function transmit(ServerRequestInterface $request, ResponseInterface $response)
     {
         // Prepare the response for output.
         $response = $this->prepareResponse($request, $response);

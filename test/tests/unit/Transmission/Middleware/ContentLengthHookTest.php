@@ -1,13 +1,13 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Hook;
+namespace WellRESTed\Test\Unit\Transmission\Middleware;
 
 use Prophecy\Argument;
-use WellRESTed\Responder\Middleware\ContentLengthHandler;
+use WellRESTed\Transmission\Middleware\ContentLengthHandler;
 
 /**
- * @covers WellRESTed\Responder\Middleware\ContentLengthHandler
- * @group responder
+ * @covers WellRESTed\Transmission\Middleware\ContentLengthHandler
+ * @group transmission
  */
 class ContentLengthHandlerTest extends \PHPUnit_Framework_TestCase
 {

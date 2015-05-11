@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Responder;
+namespace WellRESTed\Transmission;
 
 class HeaderStack
 {

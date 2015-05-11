@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Responder\Middleware;
+namespace WellRESTed\Transmission\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

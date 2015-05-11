@@ -14,7 +14,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     private $dispatcher;
     private $request;
     private $response;
-    private $responder;
+    private $transmitter;
     private $server;
 
     public function setUp()
@@ -22,8 +22,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $this->responder = $this->prophesize('WellRESTed\Responder\ResponderInterface');
-        $this->responder->respond(Argument::cetera())->willReturn();
+        $this->transmitter = $this->prophesize('WellRESTed\Transmission\TransmitterInterface');
+        $this->transmitter->transmit(Argument::cetera())->willReturn();
         $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
         $this->dispatcher->dispatch(Argument::cetera())->will(
             function ($args) {
@@ -33,7 +33,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->server = $this->getMockBuilder('WellRESTed\Server')
-            ->setMethods(["getDispatcher", "getRequest", "getResponse", "getResponder"])
+            ->setMethods(["getDispatcher", "getRequest", "getResponse", "getTransmitter"])
             ->disableOriginalConstructor()
             ->getMock();
         $this->server->expects($this->any())
@@ -46,8 +46,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->method("getResponse")
             ->will($this->returnValue($this->response->reveal()));
         $this->server->expects($this->any())
-            ->method("getResponder")
-            ->will($this->returnValue($this->responder->reveal()));
+            ->method("getTransmitter")
+            ->will($this->returnValue($this->transmitter->reveal()));
         $this->server->__construct();
     }
 
@@ -132,7 +132,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     public function testRespondSendsResponseToResponder()
     {
         $this->server->respond();
-        $this->responder->respond(
+        $this->transmitter->transmit(
             $this->request->reveal(),
             $this->response->reveal()
         )->shouldHaveBeenCalled();

@@ -9,9 +9,9 @@ use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Dispatching\DispatchStackInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Responder\Responder;
-use WellRESTed\Responder\ResponderInterface;
 use WellRESTed\Routing\Router;
+use WellRESTed\Transmission\Transmitter;
+use WellRESTed\Transmission\TransmitterInterface;
 
 class Server implements DispatchStackInterface
 {
@@ -89,8 +89,8 @@ class Server implements DispatchStackInterface
             return $response;
         };
         $response = $this->dispatch($request, $response, $next);
-        $responder = $this->getResponder();
-        $responder->respond($request, $response);
+        $transmitter = $this->getTransmitter();
+        $transmitter->transmit($request, $response);
     }
 
     // ------------------------------------------------------------------------
@@ -122,11 +122,11 @@ class Server implements DispatchStackInterface
     /**
      * Return an instance that will output the response to the client.
      *
-     * @return ResponderInterface
+     * @return TransmitterInterface
      */
-    protected function getResponder()
+    protected function getTransmitter()
     {
-        return new Responder();
+        return new Transmitter();
     }
 
     /**
