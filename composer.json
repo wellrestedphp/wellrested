@@ -27,7 +27,6 @@
     "autoload": {
         "psr-4": {
             "WellRESTed\\" : "src/"
-        },
-        "classmap": ["src/HttpExceptions.php"]
+        }
     }
 }
