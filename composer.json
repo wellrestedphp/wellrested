@@ -11,15 +11,9 @@
             "email": "pj@pjdietz.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/pjdietz/http-message"
-        }
-    ],
     "require": {
         "php": ">=5.4.0",
-        "psr/http-message": "dev-sync as dev-master"
+        "psr/http-message": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.6"
