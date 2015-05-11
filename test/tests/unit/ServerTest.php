@@ -141,6 +141,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Router
 
+    /**
+     * @covers ::createRouter
+     * @uses WellRESTed\Routing\Router
+     * @uses WellRESTed\Routing\MethodMap
+     * @uses WellRESTed\Routing\Route\RouteFactory
+     * @uses WellRESTed\Routing\Route\Route
+     * @uses WellRESTed\Routing\Route\StaticRoute
+     */
     public function testCreatesRouterWithDispatcher()
     {
         $this->request->getMethod()->willReturn("GET");
@@ -150,7 +158,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
-        $router = $this->server->makeRouter();
+        $router = $this->server->createRouter();
         $router->register("GET", "/", "middleware");
         $router->dispatch($this->request->reveal(), $this->response->reveal(), $next);
 

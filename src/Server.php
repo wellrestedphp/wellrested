@@ -70,7 +70,7 @@ class Server implements DispatchStackInterface
      *
      * @return Router
      */
-    public function makeRouter()
+    public function createRouter()
     {
         return new Router($this->dispatcher);
     }
