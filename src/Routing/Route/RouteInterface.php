@@ -23,8 +23,9 @@ interface RouteInterface extends MiddlewareInterface
     public function getMethodMap();
 
     /**
-     * Examines a path (request target) to see if it is a match for the route.
+     * Examines a request target to see if it is a match for the route.
      *
+     * @param string $requestTarget
      * @return boolean
      */
     public function matchesRequestTarget($requestTarget);

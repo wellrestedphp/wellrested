@@ -16,11 +16,12 @@ class PrefixRoute extends Route
     }
 
     /**
+     * Examines a request target to see if it is a match for the route.
+     *
      * @param string $requestTarget
-     * @param array $captures
-     * @return bool
+     * @return boolean
      */
-    public function matchesRequestTarget($requestTarget, &$captures = null)
+    public function matchesRequestTarget($requestTarget)
     {
         return strrpos($requestTarget, $this->target, -strlen($requestTarget)) !== false;
     }
