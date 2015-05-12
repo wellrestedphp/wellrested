@@ -5,6 +5,9 @@ namespace WellRESTed\Dispatching;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Dispatches an ordered sequence of middleware.
+ */
 class DispatchStack implements DispatchStackInterface
 {
     private $stack;
@@ -22,8 +25,6 @@ class DispatchStack implements DispatchStackInterface
     /**
      * Push a new middleware onto the stack.
      *
-     * This method MUST preserve the order in which middleware added.
-     *
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return self
      */
@@ -36,17 +37,17 @@ class DispatchStack implements DispatchStackInterface
     /**
      * Dispatch the contained middleware in the order in which they were added.
      *
-     * The first middleware added to the stack MUST be the first to be
-     * dispatched.
+     * The first middleware that was added is dispatched first.
      *
-     * Each middleware, when dispatched, MUST receive a $next callable that
-     * dispatches the middleware that follows it. The only exception to this is
-     * the last middleware in the stack which much receive a $next callable the
-     * returns the response unchanged.
+     * Each middleware, when dispatched, receives a $next callable that, when
+     * called, will dispatch the next middleware in the sequence.
      *
-     * If the instance is dispatched with no middleware added, the instance
-     * MUST call $next passing $request and $response and return the returned
-     * response.
+     * When the stack is dispatched empty, or when all middleware in the stack
+     * call the $next argument they were passed, this method will call the
+     * $next it receieved.
+     *
+     * When any middleware in the stack returns a response without calling its
+     * $next, the stack will not call the $next it received.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
@@ -55,19 +56,15 @@ class DispatchStack implements DispatchStackInterface
      */
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
-        $chain = $this->getCallableChain();
-        $response = $chain($request, $response);
-        return $next($request, $response);
-    }
-
-    // ------------------------------------------------------------------------
-
-    private function getCallableChain()
-    {
         $dispatcher = $this->dispatcher;
 
-        // No-op function to use as the final middleware's $mext.
-        $next = function ($request, $response) {
+        // This flag will be set to true when the last middleware calls $next.
+        $stackCompleted = false;
+
+        // The final middleware's $next returns $response unchanged and sets
+        // the $stackCompleted flag to indicate the stack has completed.
+        $chain = function ($request, $response) use (&$stackCompleted) {
+            $stackCompleted = true;
             return $response;
         };
 
@@ -77,11 +74,17 @@ class DispatchStack implements DispatchStackInterface
         // contain a dispatcher, the associated middleware, and a $next
         // that is the links to the next middleware in the chain.
         foreach (array_reverse($this->stack) as $middleware) {
-            $next = function ($request, $response) use ($dispatcher, $middleware, $next) {
-                return $dispatcher->dispatch($middleware, $request, $response, $next);
+            $chain = function ($request, $response) use ($dispatcher, $middleware, $chain) {
+                return $dispatcher->dispatch($middleware, $request, $response, $chain);
             };
         }
 
-        return $next;
+        $response = $chain($request, $response);
+
+        if ($stackCompleted) {
+            return $next($request, $response);
+        } else {
+            return $response;
+        }
     }
 }

@@ -52,7 +52,6 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::dispatch
-     * @covers ::getCallableChain
      */
     public function testDispachesMiddlewareInOrderAdded()
     {
@@ -74,6 +73,22 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         });
         $stack->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->assertEquals(["first", "second", "third"], $callOrder);
+    }
+
+    /**
+     * @covers ::dispatch
+     */
+    public function testCallsNextAfterDispatchingEmptyStack()
+    {
+        $nextCalled = false;
+        $next = function ($request, $response) use (&$nextCalled) {
+            $nextCalled = true;
+            return $response;
+        };
+
+        $stack = new DispatchStack($this->dispatcher->reveal());
+        $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->assertTrue($nextCalled);
     }
 
     /**
@@ -103,7 +118,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::dispatch
      */
-    public function testCallsNextAfterDispatchingEmptyStack()
+    public function testDoesNotCallNextWhenStackStopsEarly()
     {
         $nextCalled = false;
         $next = function ($request, $response) use (&$nextCalled) {
@@ -111,8 +126,19 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
+        $middlewareGo = function ($request, $response, $next) use (&$callOrder) {
+            return $next($request, $response);
+        };
+        $middlewareStop = function ($request, $response, $next) use (&$callOrder) {
+            return $response;
+        };
+
         $stack = new DispatchStack($this->dispatcher->reveal());
+        $stack->add($middlewareGo);
+        $stack->add($middlewareStop);
+        $stack->add($middlewareStop);
+
         $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
-        $this->assertTrue($nextCalled);
+        $this->assertFalse($nextCalled);
     }
 }
