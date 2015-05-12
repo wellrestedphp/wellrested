@@ -42,6 +42,8 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::matchesRequestTarget
+     * @covers ::dispatch
      * @dataProvider matchingRouteProvider
      */
     public function testProvidesCapturesAsRequestAttributes($pattern, $path, $expectedCaptures)
@@ -57,7 +59,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $route->matchesRequestTarget($path);
         $route->dispatch($request->reveal(), $response->reveal(), $next);
 
-        $request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
+        $request->withAttribute("uriVariables", $expectedCaptures)->shouldHaveBeenCalled();
     }
 
     public function matchingRouteProvider()
@@ -78,6 +80,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::matchesRequestTarget
      * @dataProvider mismatchingRouteProvider
      */
     public function testDoesNotMatchNonmatchingTarget($pattern, $path)
@@ -96,6 +99,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::matchesRequestTarget
      * @dataProvider invalidRouteProvider
      * @expectedException  \RuntimeException
      */

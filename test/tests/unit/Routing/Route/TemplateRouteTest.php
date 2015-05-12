@@ -56,11 +56,9 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $route->matchesRequestTarget($path);
         $route->dispatch($request->reveal(), $response->reveal(), $next);
 
-        $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
+        $request->withAttribute("uriVariables", Argument::that(function ($path) use ($expectedCaptures) {
             return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
         }))->shouldHaveBeenCalled();
-
-        //$request->withAttribute("path", $expectedCaptures)->shouldHaveBeenCalled();
     }
 
     public function matchingTemplateProvider()
@@ -111,7 +109,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $route->matchesRequestTarget($path);
         $route->dispatch($request->reveal(), $response->reveal(), $next);
 
-        $request->withAttribute("path", Argument::that(function ($path) use ($expectedCaptures) {
+        $request->withAttribute("uriVariables", Argument::that(function ($path) use ($expectedCaptures) {
             return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
         }))->shouldHaveBeenCalled();
     }

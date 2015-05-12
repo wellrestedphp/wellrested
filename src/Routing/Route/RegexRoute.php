@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class RegexRoute extends Route
 {
+    private $capturesAttribute = "uriVariables";
     private $captures;
 
     public function getType()
@@ -35,7 +36,7 @@ class RegexRoute extends Route
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         if ($this->captures) {
-            $request = $request->withAttribute("path", $this->captures);
+            $request = $request->withAttribute($this->capturesAttribute, $this->captures);
         }
         return parent::dispatch($request, $response, $next);
     }
