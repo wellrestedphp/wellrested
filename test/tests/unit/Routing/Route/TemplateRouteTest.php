@@ -7,7 +7,8 @@ use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
 
 /**
- * @covers WellRESTed\Routing\Route\TemplateRoute
+ * @coversDefaultClass WellRESTed\Routing\Route\TemplateRoute
+ * @uses WellRESTed\Routing\Route\TemplateRoute
  * @uses WellRESTed\Routing\Route\RegexRoute
  * @uses WellRESTed\Routing\Route\Route
  * @group route
@@ -22,8 +23,34 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
     }
 
+    private function getExpectedValues($keys)
+    {
+        $expectedValues = [
+            "var" => "value",
+            "hello" => "Hello World!",
+            "x" => "1024",
+            "y" => "768",
+            "path" => "/foo/bar",
+            "who" => "fred",
+            "half" => "50%",
+            "empty" => "",
+            "count" => ["one", "two", "three"],
+            "list" => ["red", "green", "blue"]
+        ];
+        return array_intersect_key($expectedValues, array_flip($keys));
+    }
+
+    private function assertArrayHasSameContents($expected, $actual)
+    {
+        ksort($expected);
+        ksort($actual);
+        $this->assertEquals($expected, $actual);
+    }
+
+    // ------------------------------------------------------------------------
+
     /**
-     * @coversNothing
+     * @covers ::getType
      */
     public function testReturnsPatternType()
     {
@@ -31,133 +58,241 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
-    /**
-     * @dataProvider matchingTemplateProvider
-     */
-    public function testMatchesTemplate($template, $requestTarget)
-    {
-        $route = new TemplateRoute($template, $this->methodMap->reveal());
-        $this->assertTrue($route->matchesRequestTarget($requestTarget));
-    }
+    // ------------------------------------------------------------------------
+    // Matching
 
     /**
-     * @dataProvider matchingTemplateProvider
+     * @covers ::matchesRequestTarget
+     * @covers ::matchesStartOfRequestTarget
+     * @covers ::getMatchingPattern
+     * @dataProvider nonMatchingTargetProvider
+     * @param string $template
+     * @param string $target
      */
-    public function testProvidesCapturesAsRequestAttributes($template, $path, $expectedCaptures)
+    public function testFailsToMatchNonMatchingTarget($template, $target)
     {
-        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
-        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $next = function ($request, $response) {
-            return $response;
-        };
-
-        $route = new TemplateRoute($template, $this->methodMap->reveal());
-        $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $response->reveal(), $next);
-
-        $request->withAttribute("uriVariables", Argument::that(function ($path) use ($expectedCaptures) {
-            return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
-        }))->shouldHaveBeenCalled();
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertFalse($route->matchesRequestTarget($target));
     }
 
-    public function matchingTemplateProvider()
+    public function nonMatchingTargetProvider()
     {
         return [
-            ["/cat/{id}", "/cat/12", ["id" => "12"]],
-            ["/unreserved/{id}", "/unreserved/az0-._~", ["id" => "az0-._~"]],
-            ["/cat/{catId}/{dogId}",
-                "/cat/molly/bear",
-                [
-                    "catId" => "molly",
-                    "dogId" => "bear"
-                ]
-            ],
-            [
-                "/cat/{catId}/{dogId}",
-                "/cat/molly/bear",
-                [
-                    "catId" => "molly",
-                    "dogId" => "bear"
-                ]
-            ],
-            ["/cat/{id}/*", "/cat/12/molly", ["id" => "12"]],
-            [
-                "/cat/{id}-{width}x{height}.jpg",
-                "/cat/17-200x100.jpg",
-                [
-                    "id" => "17",
-                    "width" => "200",
-                    "height" => "100"
-                ]
-            ]
+            ["/foo/{var}", "/bar/12", false, "Mismatch before first template expression"],
+            ["/foo/{foo}/bar/{bar}", "/foo/12/13", false, "Mismatch after first template expression"],
+            ["/hello/{hello}", "/hello/Hello%20World!", false, "Requires + operator to match reserver characters"]
         ];
     }
 
-    /**
-     * @dataProvider allowedVariableNamesProvider
-     */
-    public function testMatchesAllowedVariablesNames($template, $path, $expectedCaptures)
-    {
-        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
-        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $next = function ($request, $response) {
-            return $response;
-        };
-        $route = new TemplateRoute($template, $this->methodMap->reveal());
-        $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $response->reveal(), $next);
+    // ------------------------------------------------------------------------
+    // Matching :: Simple Strings
 
-        $request->withAttribute("uriVariables", Argument::that(function ($path) use ($expectedCaptures) {
-            return array_intersect_assoc($path, $expectedCaptures) == $expectedCaptures;
-        }))->shouldHaveBeenCalled();
+    /**
+     * @covers ::matchesRequestTarget
+     * @covers ::getMatchingPattern
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider simpleStringProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesSimpleStrings($template, $target)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    public function allowedVariableNamesProvider()
+    /**
+     * @covers ::getPathVariables
+     * @covers ::processMatches
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider simpleStringProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] List of variables that should be extracted
+     */
+    public function testCapturesFromSimpleStrings($template, $target, $variables)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $route->matchesRequestTarget($target);
+        $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
+    }
+
+    public function simpleStringProvider()
     {
         return [
-            ["/{n}", "/lower", ["n" => "lower"]],
-            ["/{N}", "/UPPER", ["N" => "UPPER"]],
-            ["/{var1024}", "/digits", ["var1024" => "digits"]],
-            ["/{variable_name}", "/underscore", ["variable_name" => "underscore"]],
+            ["/foo", "/foo", []],
+            ["/{var}", "/value", ["var"]],
+            ["/{hello}", "/Hello%20World%21", ["hello"]],
+            ["/{x,hello,y}", "/1024,Hello%20World%21,768", ["x", "hello", "y"]],
+            ["/{x,hello,y}", "/1024,Hello%20World%21,768", ["x", "hello", "y"]],
         ];
     }
 
+    // ------------------------------------------------------------------------
+    // Matching :: Reservered
+
     /**
-     * @dataProvider illegalVariableNamesProvider
+     * @covers ::matchesRequestTarget
+     * @covers ::getMatchingPattern
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider reservedStringProvider
+     * @param string $template
+     * @param string $target
      */
-    public function testFailsToMatchIllegalVariablesNames($template, $path)
+    public function testMatchesReserveredStrings($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap->reveal());
-        $this->assertFalse($route->matchesRequestTarget($path));
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    public function illegalVariableNamesProvider()
+    /**
+     * @covers ::getPathVariables
+     * @covers ::processMatches
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider reservedStringProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] List of variables that should be extracted
+     */
+    public function testCapturesFromReservedStrings($template, $target, $variables)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $route->matchesRequestTarget($target);
+        $this->assertSame($this->getExpectedValues($variables), $route->getPathVariables());
+    }
+
+    public function reservedStringProvider()
     {
         return [
-            ["/{not-legal}", "/hyphen"],
-            ["/{1digitfirst}", "/digitfirst"],
-            ["/{%2f}", "/percent-encoded"],
-            ["/{}", "/empty"],
-            ["/{{nested}}", "/nested"]
+            ["/{+var}", "/value", ["var"]],
+            ["/{+hello}", "/Hello%20World!", ["hello"]],
+            ["{+path}/here", "/foo/bar/here", ["path"]],
         ];
     }
 
+    // ------------------------------------------------------------------------
+    // Matching :: Label Expansion
+
     /**
-     * @dataProvider nonmatchingTemplateProvider
+     * @covers ::matchesRequestTarget
+     * @covers ::getMatchingPattern
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider labelWithDotPrefixProvider
+     * @param string $template
+     * @param string $target
      */
-    public function testFailsToMatchNonmatchingTemplate($template, $path)
+    public function testMatchesLabelWithDotPrefix($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap->reveal());
-        $this->assertFalse($route->matchesRequestTarget($path));
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    public function nonmatchingTemplateProvider()
+    /**
+     * @covers ::getPathVariables
+     * @covers ::processMatches
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider labelWithDotPrefixProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] List of variables that should be extracted
+     */
+    public function testCapturesFromLabelWithDotPrefix($template, $target, $variables)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $route->matchesRequestTarget($target);
+        $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
+    }
+
+    public function labelWithDotPrefixProvider()
     {
         return [
-            ["/cat/{id}", "/cat/molly/the/cat"],
-            ["/cat/{catId}/{dogId}", "/dog/12/13"]
+            ["/{.who}", "/.fred", ["who"]],
+            ["/{.half,who}", "/.50%25.fred", ["half", "who"]],
+            ["/X{.empty}", "/X.", ["empty"]]
+        ];
+    }
+
+    // ------------------------------------------------------------------------
+    // Matching :: Path Segments
+
+    /**
+     * @covers ::matchesRequestTarget
+     * @covers ::getMatchingPattern
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider pathSegmentProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesPathSegments($template, $target)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertTrue($route->matchesRequestTarget($target));
+    }
+
+    /**
+     * @covers ::getPathVariables
+     * @covers ::processMatches
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider pathSegmentProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] List of variables that should be extracted
+     */
+    public function testCapturesFromPathSegments($template, $target, $variables)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $route->matchesRequestTarget($target);
+        $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
+    }
+
+    public function pathSegmentProvider()
+    {
+        return [
+            ["{/who}", "/fred", ["who"]],
+            ["{/half,who}", "/50%25/fred", ["half", "who"]],
+            ["{/var,empty}", "/value/", ["var", "empty"]]
+        ];
+    }
+
+    // ------------------------------------------------------------------------
+    // Matching :: Explosion
+
+    /**
+     * @covers ::matchesRequestTarget
+     * @covers ::getMatchingPattern
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider pathExplosionProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesExplosion($template, $target)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $this->assertTrue($route->matchesRequestTarget($target));
+    }
+
+    /**
+     * @covers ::getPathVariables
+     * @covers ::processMatches
+     * @covers ::uriVariableReplacementCallback
+     * @dataProvider pathExplosionProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] List of variables that should be extracted
+     */
+    public function testCapturesFromExplosion($template, $target, $variables)
+    {
+        $route = new TemplateRoute($template, $this->methodMap);
+        $route->matchesRequestTarget($target);
+        $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
+    }
+
+    public function pathExplosionProvider()
+    {
+        return [
+            ["/{count*}", "/one,two,three", ["count"]],
+            ["{/count*}", "/one/two/three", ["count"]],
+            ["X{.list*}", "X.red.green.blue", ["list"]]
         ];
     }
 }
