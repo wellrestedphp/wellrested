@@ -19,4 +19,12 @@ class StaticRoute extends Route
     {
         return $requestTarget === $this->getTarget();
     }
+
+    /**
+     * Always returns an empty array.
+     */
+    public function getPathVariables()
+    {
+        return [];
+    }
 }

@@ -25,4 +25,12 @@ class PrefixRoute extends Route
     {
         return strrpos($requestTarget, $this->target, -strlen($requestTarget)) !== false;
     }
+
+    /**
+     * Always returns an empty array.
+     */
+    public function getPathVariables()
+    {
+        return [];
+    }
 }

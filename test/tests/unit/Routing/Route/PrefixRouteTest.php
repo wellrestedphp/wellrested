@@ -36,6 +36,16 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::getPathVariables
+     */
+    public function testReturnsEmptyArrayForPathVariables()
+    {
+        $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $route = new PrefixRoute("/*", $methodMap->reveal());
+        $this->assertSame([], $route->getPathVariables());
+    }
+
+    /**
      * @covers ::matchesRequestTarget
      */
     public function testMatchesExactRequestTarget()

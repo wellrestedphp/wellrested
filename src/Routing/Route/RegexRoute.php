@@ -2,12 +2,8 @@
 
 namespace WellRESTed\Routing\Route;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
 class RegexRoute extends Route
 {
-    private $capturesAttribute = "uriVariables";
     private $captures;
 
     public function getType()
@@ -23,6 +19,7 @@ class RegexRoute extends Route
      */
     public function matchesRequestTarget($requestTarget)
     {
+        $this->captures = [];
         $matched = @preg_match($this->getTarget(), $requestTarget, $captures);
         if ($matched) {
             $this->captures = $captures;
@@ -33,11 +30,14 @@ class RegexRoute extends Route
         return false;
     }
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    /**
+     * Returns an array of matches from the last call to matchesRequestTarget.
+     *
+     * @see \preg_match
+     * @return array
+     */
+    public function getPathVariables()
     {
-        if ($this->captures) {
-            $request = $request->withAttribute($this->capturesAttribute, $this->captures);
-        }
-        return parent::dispatch($request, $response, $next);
+        return $this->captures;
     }
 }

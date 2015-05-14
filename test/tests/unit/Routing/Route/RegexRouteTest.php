@@ -43,23 +43,23 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::matchesRequestTarget
-     * @covers ::dispatch
      * @dataProvider matchingRouteProvider
      */
-    public function testProvidesCapturesAsRequestAttributes($pattern, $path, $expectedCaptures)
+    public function testMatchesTargetByRegex($pattern, $target)
     {
-        $request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-        $request->withAttribute(Argument::cetera())->willReturn($request->reveal());
-        $response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $next = function ($request, $response) {
-            return $response;
-        };
-
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
-        $route->matchesRequestTarget($path);
-        $route->dispatch($request->reveal(), $response->reveal(), $next);
+        $this->assertTrue($route->matchesRequestTarget($target));
+    }
 
-        $request->withAttribute("uriVariables", $expectedCaptures)->shouldHaveBeenCalled();
+    /**
+     * @covers ::getPathVariables
+     * @dataProvider matchingRouteProvider
+     */
+    public function testExtractsPathVariablesByRegex($pattern, $target, $expectedCaptures)
+    {
+        $route = new RegexRoute($pattern, $this->methodMap->reveal());
+        $route->matchesRequestTarget($target);
+        $this->assertEquals($expectedCaptures, $route->getPathVariables());
     }
 
     public function matchingRouteProvider()
