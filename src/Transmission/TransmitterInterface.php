@@ -12,9 +12,6 @@ interface TransmitterInterface
      *
      * This method MUST output the status line, headers, and body to the client.
      *
-     * This method MUST NOT alter the response body, unless it is to remove the
-     * body for a HEAD request.
-     *
      * Implementations MAY add response headers to ensure expected headers are
      * presents but MUST NOT alter existing headers.
      *

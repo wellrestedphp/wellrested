@@ -7,8 +7,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Transmission\Middleware\ContentLengthHandler;
-use WellRESTed\Transmission\Middleware\HeadHandler;
 
 class Transmitter implements TransmitterInterface
 {
@@ -31,8 +29,10 @@ class Transmitter implements TransmitterInterface
      *
      * This method outputs the status line, headers, and body to the client.
      *
-     * This method will also provide a Content-length header if needed and
-     * supress the body for HEAD requests.
+     * This method will also provide a Content-length header if:
+     *   - Response does not have a Content-length header
+     *   - Response does not have a Tranfser-encoding: chunked header
+     *   - Response body stream is readable and reports a non-null size
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response Response to output
@@ -69,17 +69,21 @@ class Transmitter implements TransmitterInterface
 
     protected function prepareResponse(ServerRequestInterface $request, ResponseInterface $response)
     {
-        return $this->dispatcher->dispatch(
-            [
-                new ContentLengthHandler(),
-                new HeadHandler()
-            ],
-            $request,
-            $response,
-            function ($request, $response) {
-                return $response;
+        // Add a Content-length header to the response when all of these are true:
+        //
+        // - Response does not have a Content-length header
+        // - Response does not have a Tranfser-encoding: chunked header
+        // - Response body stream is readable and reports a non-null size
+        //
+        if (!$response->hasHeader("Content-length")
+            && !(strtolower($response->getHeaderLine("Transfer-encoding")) === "chunked")
+        ) {
+            $size = $response->getBody()->getSize();
+            if ($size !== null) {
+                $response = $response->withHeader("Content-length", (string) $size);
             }
-        );
+        }
+        return $response;
     }
 
     private function getStatusLine(ResponseInterface $response)

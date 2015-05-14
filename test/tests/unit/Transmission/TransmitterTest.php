@@ -11,8 +11,6 @@ require_once __DIR__ . "/../../../src/HeaderStack.php";
 /**
  * @coversDefaultClass WellRESTed\Transmission\Transmitter
  * @uses WellRESTed\Transmission\Transmitter
- * @uses WellRESTed\Transmission\Middleware\ContentLengthHandler
- * @uses WellRESTed\Transmission\Middleware\HeadHandler
  * @uses WellRESTed\Dispatching\Dispatcher
  * @uses WellRESTed\Dispatching\DispatchStack
  * @group transmission
@@ -163,6 +161,9 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($content, $captured);
     }
 
+    // ------------------------------------------------------------------------
+    // Preparation
+
     /**
      * @covers ::prepareResponse
      */
@@ -184,16 +185,55 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::prepareResponse
      */
-    public function testReplacesBodyForHeadRequeset()
+    public function testDoesNotReplaceContentLengthHeaderWhenContentLenghtIsAlreadySet()
+    {
+        $bodySize = 1024;
+        $this->response->getStatusCode()->willReturn("200");
+        $this->response->getReasonPhrase()->willReturn("Ok");
+        $this->response->hasHeader("Content-length")->willReturn(true);
+        $this->body->isReadable()->willReturn(true);
+        $this->body->__toString()->willReturn("");
+        $this->body->getSize()->willReturn($bodySize);
+
+        $transmitter = new Transmitter();
+        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $this->response->withHeader("Content-length", $bodySize)->shouldNotHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::prepareResponse
+     */
+    public function testDoesNotAddContentLengthHeaderWhenTransferEncodingIsChunked()
+    {
+        $bodySize = 1024;
+        $this->response->getStatusCode()->willReturn("200");
+        $this->response->getReasonPhrase()->willReturn("Ok");
+        $this->response->hasHeader("Content-length")->willReturn(false);
+        $this->response->getHeaderLine("Transfer-encoding")->willReturn("CHUNKED");
+        $this->body->isReadable()->willReturn(true);
+        $this->body->__toString()->willReturn("");
+        $this->body->getSize()->willReturn($bodySize);
+
+        $transmitter = new Transmitter();
+        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $this->response->withHeader("Content-length", $bodySize)->shouldNotHaveBeenCalled();
+    }
+
+    /**
+     * @covers ::prepareResponse
+     */
+    public function testDoesNotAddContentLengthHeaderWhenBodySizeIsNull()
     {
         $this->response->getStatusCode()->willReturn("200");
         $this->response->getReasonPhrase()->willReturn("Ok");
         $this->response->hasHeader("Content-length")->willReturn(false);
+        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn("");
+        $this->body->getSize()->willReturn(null);
 
         $transmitter = new Transmitter();
         $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->response->withBody(Argument::any())->shouldHaveBeenCalled();
+        $this->response->withHeader("Content-length", Argument::any())->shouldNotHaveBeenCalled();
     }
 }
