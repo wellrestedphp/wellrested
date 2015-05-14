@@ -363,6 +363,25 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->request->withAttribute("pathVariables", $variables)->shouldHaveBeenCalled();
     }
 
+    /**
+     * @covers ::dispatch
+     * @covers ::registerRouteForTarget
+     */
+    public function testMatchesPathAgainstRouteWithoutQuery()
+    {
+        $target = "/my/path?cat=molly&dog=bear";
+
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
+
+        $this->router->register("GET", $target, "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $this->route->matchesRequestTarget("/my/path")->shouldHaveBeenCalled();
+    }
+
     // ------------------------------------------------------------------------
     // No Matching Routes
 

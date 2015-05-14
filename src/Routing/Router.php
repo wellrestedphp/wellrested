@@ -77,7 +77,8 @@ class Router implements RouterInterface
 
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
-        $requestTarget = $request->getRequestTarget();
+        // Use only the path for routing.
+        $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
 
         $route = $this->getStaticRoute($requestTarget);
         if ($route) {
