@@ -21,9 +21,18 @@ class Server implements DispatchStackInterface
     /** @var mixed[] List array of middleware */
     private $stack;
 
-    public function __construct()
+    /**
+     * Create a new router.
+     *
+     * @param DispatcherInterface $dispatcher Dispatches middleware. If no
+     *     object is passed, the Server will create a
+     *     WellRESTed\Dispatching\Dispatcher
+     */
+    public function __construct(DispatcherInterface $dispatcher = null)
     {
-        $this->dispatcher = $this->getDispatcher();
+        if ($dispatcher === null) {
+            $this->dispatcher = $this->getDispatcher();
+        }
         $this->stack = [];
     }
 
@@ -80,16 +89,32 @@ class Server implements DispatchStackInterface
      *
      * This method reads a server request, dispatches the request through the
      * server's stack of middleware, and outputs the response.
+     *
+     * @param ServerRequestInterface $request Request provided by the client
+     * @param ResponseInterface $response Initial starting place response to
+     *     propogate to middleware.
+     * @param TransmitterInterface $transmitter Instance to outputing the
+     *     final response to the client.
      */
-    public function respond()
-    {
-        $request = $this->getRequest();
-        $response = $this->getResponse();
+    public function respond(
+        ServerRequestInterface $request = null,
+        ResponseInterface $response = null,
+        TransmitterInterface $transmitter = null
+    ) {
+        if ($request === null) {
+            $request = $this->getRequest();
+        }
+        if ($response === null) {
+            $response = $this->getResponse();
+        }
+        if ($transmitter === null) {
+            $transmitter = $this->getTransmitter();
+        }
+
         $next = function ($request, $response) {
             return $response;
         };
         $response = $this->dispatch($request, $response, $next);
-        $transmitter = $this->getTransmitter();
         $transmitter->transmit($request, $response);
     }
 
