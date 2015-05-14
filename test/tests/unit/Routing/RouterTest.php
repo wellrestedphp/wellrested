@@ -34,11 +34,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
+        $this->route->getPathVariables()->willReturn([]);
 
         $this->factory = $this->prophesize('WellRESTed\Routing\Route\RouteFactory');
         $this->factory->create(Argument::any())->willReturn($this->route->reveal());
 
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
+        $this->request->withAttribute(Argument::cetera())->willReturn($this->request->reveal());
+
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $this->next = function ($request, $response) {
             return $response;
@@ -279,6 +282,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute1->dispatch(Argument::cetera())->willReturn();
 
@@ -286,6 +290,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute2->dispatch(Argument::cetera())->willReturn();
 
@@ -310,6 +315,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute1->dispatch(Argument::cetera())->willReturn();
 
@@ -317,6 +323,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute2->dispatch(Argument::cetera())->willReturn();
 
@@ -332,6 +339,30 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute2->matchesRequestTarget(Argument::any())->shouldNotHaveBeenCalled();
     }
 
+    /**
+     * @covers ::dispatch
+     * @group current
+     */
+    public function testSetPathVariablesAttributeBeforeDispatchingPatternRoute()
+    {
+        $target = "/";
+        $variables = [
+            "id" => "1024",
+            "name" => "Molly"
+        ];
+
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
+        $this->route->getPathVariables()->willReturn($variables);
+
+        $this->router->register("GET", $target, "middleware");
+        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $this->request->withAttribute("pathVariables", $variables)->shouldHaveBeenCalled();
+    }
+
     // ------------------------------------------------------------------------
     // No Matching Routes
 
@@ -342,6 +373,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testResponds404WhenNoRouteMatches()
     {
+        $this->request->getRequestTarget()->willReturn("/no/match");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
         $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withStatus(404)->shouldHaveBeenCalled();
@@ -360,6 +392,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
+        $this->request->getRequestTarget()->willReturn("/no/match");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
         $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($calledNext);

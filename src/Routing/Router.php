@@ -12,6 +12,8 @@ use WellRESTed\Routing\Route\RouteInterface;
 
 class Router implements RouterInterface
 {
+    /** @var string Key to ServerRequestInterface attribute for matched path variables */
+    public $pathVariablesAttributeKey = "pathVariables";
     /** @var DispatcherInterface */
     private $dispatcher;
     /** @var RouteFactoryInterface */
@@ -90,6 +92,8 @@ class Router implements RouterInterface
         // Try each of the routes.
         foreach ($this->patternRoutes as $route) {
             if ($route->matchesRequestTarget($requestTarget)) {
+                $pathVariables = $route->getPathVariables();
+                $request = $request->withAttribute($this->pathVariablesAttributeKey, $pathVariables);
                 return $route->dispatch($request, $response, $next);
             }
         }
