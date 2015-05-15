@@ -20,7 +20,7 @@ class RegexRoute extends Route
     public function matchesRequestTarget($requestTarget)
     {
         $this->captures = [];
-        $matched = @preg_match($this->getTarget(), $requestTarget, $captures);
+        $matched = preg_match($this->getTarget(), $requestTarget, $captures);
         if ($matched) {
             $this->captures = $captures;
             return true;

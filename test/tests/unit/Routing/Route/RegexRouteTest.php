@@ -106,7 +106,14 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     public function testThrowsExceptionOnInvalidPattern($pattern)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        \PHPUnit_Framework_Error_Notice::$enabled = false;
+        $level = error_reporting();
+        error_reporting($level & ~E_WARNING);
         $route->matchesRequestTarget("/");
+        error_reporting($level);
+        \PHPUnit_Framework_Error_Warning::$enabled = true;
+        \PHPUnit_Framework_Error_Notice::$enabled = true;
     }
 
     public function invalidRouteProvider()
