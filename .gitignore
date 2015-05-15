@@ -14,10 +14,6 @@ docs/build
 README.html
 preview
 
-# OSX
-.DS_Store
-.AppleDouble
-
 # IDE
 .idea/
 
