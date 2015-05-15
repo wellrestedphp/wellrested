@@ -13,9 +13,6 @@ class Transmitter implements TransmitterInterface
     /** @var int */
     private $chunkSize = 0;
 
-    /** @var DispatcherInterface */
-    private $dispatcher;
-
     public function __construct(DispatcherInterface $dispatcher = null)
     {
         if ($dispatcher === null) {
