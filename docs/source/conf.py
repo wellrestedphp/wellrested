@@ -27,8 +27,8 @@ master_doc = 'index'
 # General information about the project.
 project = u'WellRESTed'
 copyright = u'2015, PJ Dietz'
-version = '2.3.0'
-release = '2.3.0'
+version = '3.0.0'
+release = '3.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -194,3 +194,5 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+html_style = 'css/style.css'

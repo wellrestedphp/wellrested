@@ -1,341 +1,360 @@
 Router
 ======
 
-A router organizes the components of a site by associating URI paths with handlers_. When the router receives a request, it examines the request's URI, determines which "route" matches, and dispatches the associated handler_. The handler_ is then responsible for reacting to the request and providing a response.
+A router is a type of middleware_ that organizes the components of a site by associating URI paths with other middleware_. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated middleware_. The dispatched middleware_ is then responsible for reacting to the request and providing a response.
 
-A typical WellRESTed Web service will have a single point of entry (usually ``/index.php``) that the Web server directs all traffic to. This script instantiates a ``Router``, populates it with routes_, and dispatches the request. Here's an example:
 
-.. code-block:: php
+Basic Usage
+^^^^^^^^^^^
 
-    <?php
-
-    use pjdietz\WellRESTed\Response;
-    use pjdietz\WellRESTed\Router;
-
-    require_once "vendor/autoload.php";
-
-    // Create a new router.
-    $router = new Router();
-
-    // Populate the router with routes.
-    $router->add(
-        ["/", "\\MyApi\\RootHandler"],
-        ["/cats/", "\\MyApi\\CatHandler"],
-        ["/dogs/*", "\\MyApi\\DogHandler"],
-        ["/guinea-pigs/{id}", "\\MyApi\\GuineaPigHandler"],
-        ["~/hamsters/([0-9]+)~", "\\MyApi\\HamsterHandler"]
-    );
-
-    // Output a response based on the request sent to the server.
-    $router->respond();
-
-Adding Routes
-^^^^^^^^^^^^^
-
-Use the ``Router::add`` method to associate a URI path with a handler_.
-
-Here we are specifying that requests for the root path ``/`` should be handled by the class with the name ``MyApi\RootHandler``.
+Typically, you will want to use the ``WellRESTed\Server::createRouter`` method to create a ``Router``.
 
 .. code-block:: php
 
-    $router->add("/", "\\MyApi\\RootHandler");
+    $server = new WellRESTed\Server();
+    $router = $server->createRouter();
 
-You can add routes individually, or you can add multiple routes at once. When adding multiple routes, pass a series of arrays to ``Router::add`` where each array's first item is the path and the second is the handler_.
+Suppose ``$catHandler`` is a middleware that you want to dispatch whenever a client makes a ``GET`` request to the path ``/cats/``. Use the ``register`` method map it to that path and method.
 
 .. code-block:: php
 
-    $router->add(
-        ["/", "\\MyApi\\RootHandler"],
-        ["/cats/", "\\MyApi\\CatHandler"],
-        ["/dogs/*", "\\MyApi\\DogHandler"],
-        ["/guinea-pigs/{id}", "\\MyApi\\GuineaPigHandler"],
-        ["~/hamsters/([0-9]+)~", "\\MyApi\\HamsterHandler"]
-    );
+    $router->register("GET", "/cats/", $catHandler);
+
+The ``register`` method is fluid, so you can add multiple routes in either of these styles:
+
+.. code-block:: php
+
+    $router->register("GET", "/cats/", $catReader);
+    $router->register("POST", "/cats/", $catWriter);
+    $router->register("GET", "/cats/{id}", $catItemReader);
+    $router->register("PUT,DELETE", "/cats/{id}", $catItemWriter);
+
+...Or...
+
+.. code-block:: php
+
+    $router
+        ->register("GET", "/cats/", $catReader)
+        ->register("POST", "/cats/", $catWriter)
+        ->register("GET", "/cats/{id}", $catItemReader)
+        ->register("PUT,DELETE", "/cats/{id}", $catItemWriter);
+
+Paths
+^^^^^
+
+A router can map middleware to an exact path, or to a pattern of paths.
+
+Static Routes
+-------------
+
+The simplest type of route is called a "static route". It maps middleware to an exact path.
+
+.. code-block:: php
+
+    $router->register("GET", "/cats/", $catHandler);
+
+This route will map a request to ``/cats/`` and only ``/cats/``. It will **not** match requests to ``/cats`` or ``/cats/molly``.
+
+Prefix Routes
+-------------
+
+The next simplest type of route is a "prefix route". A prefix route matches requests by the beginning of the path.
+
+To create a "prefix handler", include ``*`` at the end of the path. For example, this route will match any request that begins with ``/cats/``.
+
+.. code-block:: php
+
+    $router->register("GET", "/cats/*", $catHandler);
+
+Template Routes
+---------------
+
+Template routes allow you to provide patterns for paths with one or more variables (sections surrounded by curly braces) that will be extracted.
+
+For example, this template will match requests to ``/cats/12``, ``/cats/molly``, etc.,
+
+.. code-block:: php
+
+    $router->register("GET", "/cats/{cat}", $catHandler);
+
+When the router dispatches a route matched by a template route, it provides the extracted variables as an associative array. To access a variable, call the request object's ``getAttribute`` method method and pass the variable's name.
+
+For a request to ``/cats/molly``:
+
+.. code-block:: php
+
+    $catHandler = function ($request, $response, $next) {
+        $name = $request->getAttribute("cat");
+        // molly
+        ...
+    }
+
+Template routes are very powerful, and this only scratches the surface. See `URI Templates`_ for a full explaination of the syntax supported.
+
+Regex Routes
+------------
+
+You can also use regular expressions to describe route paths.
+
+.. code-block:: php
+
+    $router->register("GET", "~cats/(?<name>[a-z]+)-(?<number>[0-9]+)~", $catHandler);
+
+When using regular expression routes, the attributes will contain the captures from preg_match_.
+
+For a request to ``/cats/molly-90``:
+
+.. code-block:: php
+
+    $catHandler = function ($request, $response, $next) {
+        $vars = $request->getAttributes();
+        /*
+        Array
+        (
+            [0] => cats/molly-12
+            [name] => molly
+            [1] => molly
+            [number] => 12
+            [2] => 12
+            ... Plus any other attributes that were set ...
+        )
+        */
+        ...
+    }
+
+Route Priority
+--------------
+
+A router will often contain many routes, and sometimes more than one route will match for a given request. When the router looks for a matching route, it performs these checks:
+
+#. If there is a static route with exact match to path, dispatch it.
+#. If one prefix route matches the beginning of the path, disptach it.
+#. If multiple prefix routes match, dispatch the longest matching prefix route.
+#. Inspect each pattern route (template and regular expression) in the order added. Dispatch the first route that matches.
+#. If no pattern routes match, return a reponse with a ``404 Not Found`` status.
+
+Static vs. Prefix
+~~~~~~~~~~~~~~~~~
+
+Consider these routes:
+
+.. code-block:: php
+
+    $router
+        ->register("GET", "/cats/", $static);
+        ->register("GET", "/cats/*", $prefix);
+
+The router will dispatch a request for ``/cats/`` to ``$static`` because the static route ``/cats/`` has priority over the prefix route ``/cats/*``.
+
+The router will dispatch a request to ``/cats/maine-coon`` to ``$prefix`` because it is not an exact match for ``/cats/``, but it does begin with ``/cats/``.
+
+Prefix vs. Prefix
+~~~~~~~~~~~~~~~~~
+
+Given these routes:
+
+.. code-block:: php
+
+    $router
+        ->register("GET", "/dogs/*", $short);
+        ->register("GET", "/dogs/sporting/*", $long);
+
+A request to ``/dogs/herding/australian-shepherd`` will be dispatched to ``$short`` because it matches ``/dogs/*``, but does not match ``/dogs/sporting/*``
+
+A request to ``/dogs/sporing/flat-coated-retriever`` will be dispatched to ``$long`` because it matches both routes, but ``/dogs/sporting`` is longer.
+
+Prefix vs. Pattern
+~~~~~~~~~~~~~~~~~~
+
+Given these routes:
+
+.. code-block:: php
+
+    $router
+        ->register("GET", "/dogs/*", $prefix);
+        ->register("GET", "/dogs/{group}/{breed}", $pattern);
+
+``$pattern`` will never be dispatched because any route that matches ``/dogs/{group}/{breed}`` also matches ``/dogs/*``, and prefix routes have priority over pattern routes.
+
+Pattern vs. Pattern
+~~~~~~~~~~~~~~~~~~~
+
+When multiple pattern routes match a path, the first one that was added to the router will be the one disptached. Be careful to add the specific routes before the general routes. For example, say you want to send traffic to two similar looking URIs to different middleware based whether the variables were supplied as numbers or letters—``/dogs/102/132`` should be dispatched to ``$numbers``, while ``/dogs/herding/australian-shepherd`` should be dispatched to ``$letters``.
+
+This will work:
+
+.. code-block:: php
+
+    // Matches only when the variables are digits.
+    $router->register("GET", "~/dogs/([0-9]+)/([0-9]+)", $numbers);
+    // Matches variables with any unreserved characters.
+    $router->register("GET", "/dogs/{group}/{breed}", $letters);
+
+This will **NOT** work:
+
+.. code-block:: php
+
+    // Matches variables with any unreserved characters.
+    $router->register("GET", "/dogs/{group}/{breed}", $letters);
+    // Matches only when the variables are digits.
+    $router->register("GET", "~/dogs/([0-9]+)/([0-9]+)", $numbers);
+
+This is because ``/dogs/{group}/{breed}`` will match both ``/dogs/102/132`` and ``/dogs/herding/australian-shepherd``. If it is added to the router before the route for ``$numbers``, it will be dispatched before the route for ``$numbers`` is ever evaluated.
+
+Methods
+^^^^^^^
+
+When you register a route, you can provide a specific method, a list of methods, or a wildcard to indcate any method.
+
+Registering by Method
+---------------------
+
+Specify a specific middleware for a path and method by including the method as the first parameter.
+
+.. code-block:: php
+
+    // Dispatch $dogCollectionReader for GET requests to /dogs/
+    $router->register("GET", "/dogs/", $dogCollectionReader);
+
+    // Dispatch $dogCollectionWriter for POST requests to /dogs/
+    $router->register("POST", "/dogs/", $dogCollectionWriter);
+
+Registering by Method List
+--------------------------
+
+Specify the same middleware for multiple methods for a given path by proving a comma-separated list of methods as the first parameter.
+
+.. code-block:: php
+
+    // Dispatch $catCollectionHandler for GET and POST requests to /cats/
+    $router->register("GET,POST", "/cats/", $catCollectionHandler);
+
+    // Dispatch $catItemReader for GET requests to /cats/12, /cats/12, etc.
+    $router->register("GET", "/cats/{id}", $catItemReader);
+
+    // Dispatch $catItemWriter for PUT, and DELETE requests to /cats/12, /cats/12, etc.
+    $router->register("PUT,DELETE", "/cats/{id}", $catItemWriter);
+
+Registering by Wildcard
+-----------------------
+
+Specify middleware for all methods for a given path by proving a ``*`` wildcard.
+
+.. code-block:: php
+
+    // Dispatch $guineaPigHandler for all requests to /guinea-pigs/, regardless of method.
+    $router->register("*", "/guinea-pigs/", $guineaPigHandler);
+
+    // Use $hamstersHandler by default for requests to /hamsters/
+    $router->register("*", "/hamsters/", $hamstersHandler);
+
+    // Provide a specific handler for POST /hamsters/
+    $router->register("POST", "/hamsters/", $hamstersPostOnly);
 
 .. note::
 
-    WellRESTed provides several types of routes including routes that match paths by regular expressions and routes that match by URI templates. See Routes_ to learn more about the different types of routes available.
+    The wildcard ``*`` can be useful, but be aware that the associated middleware will need to manage ``HEAD`` and ``OPTIONS`` requests, whereas this is done automatcially for non-wildcard routes.
 
-Specifying Handlers
-^^^^^^^^^^^^^^^^^^^
+HEAD
+----
 
-When the router finds a route that matches the request, it dispatches the associated handler_ (typically a class that implements HandlerInterface_). When adding routes (or `error handlers`_), you can specify the handler_ to dispatch in a number of ways.
+Any route that supports ``GET`` requests will automatically support ``HEAD``. You don't need to provide any specific middleware for ``HEAD``, and you usually shouldn't. (Although you can if you want.)
 
-.. _error handlers: `Error Handling`_
+For most cases, just implement ``GET``, and the webserver will manage suppressing the response body for you.
 
-Fully Qualified Class Name (FQCN)
----------------------------------
+OPTIONS, 405 Responses, and Allow Headers
+-----------------------------------------
 
-Specify a class by FQCN by passing a string as the second parameter.
-
-.. code-block:: php
-
-    $router->add("/cats/{id}", "\\MyApi\\CatHandler");
-
-Handlers_ specified by FQCN are not instantiated (or even autoloaded) immediately. The router waits until it identifies that a request should be dispatched to a handler specified by FQCN. Then, it creates an instance of the specified class. Finally, the router calls the handler instance's ``getResponse`` method (declared in HandlerInterface_) and outputs the returned response.
-
-Because the instantiation and autoloading are delayed, a router with 100 routes_ will still only autoload and instantiate one handler_ class throughout any individual request-response cycle.
-
-
-Callable
---------
-
-You can also use a callable to instantiate and return the handler_.
+When you add routes to a router by method, the router automatically provides responses for ``OPTIONS`` requests. For example, given this route:
 
 .. code-block:: php
 
-    $router->add("/cats/{id}", function () {
-        return new \MyApi\CatItemHandler();
-    });
+    // Dispatch $catItemReader for GET requests to /cats/12, /cats/12, etc.
+    $router->register("GET", "/cats/{id}", $catItemReader);
 
-This still delays instantiation, but gives you some added flexibility. For example, you could define a handler_ class that receives some configuration upon construction.
+    // Dispatch $catItemWriter for PUT, and DELETE requests to /cats/12, /cats/12, etc.
+    $router->register("PUT,DELETE", "/cats/{id}", $catItemWriter);
 
-.. code-block:: php
+An ``OPTIONS`` request to ``/cats/12`` will provide a response like:
 
-    $container = new MySuperCoolDependencyContainer();
+.. code-block:: http
 
-    $router->add("/cats/{id}", function () use ($container) {
-        return new \MyApi\CatItemHandler($container);
-    });
+    HTTP/1.1 200 OK
+    Allow: GET,PUT,DELETE,HEAD,OPTIONS
 
-This is one approach to `dependency injection`_.
+Likewise, a request to an unsupport method will return a ``405 Method Not Allowed`` response with a descriptive ``Allow`` header.
 
-You can also return a response directly from a callable. The callables actually serve as informal handlers_ and receive the same arguments as ``HandlerInterface::getResponse``.
+A ``POST`` request to ``/cats/12`` will provide:
 
-.. code-block:: php
+.. code-block:: http
 
-    $router->add("/hello/{name}", function ($rqst, $args) {
-        $name = $args["name"];
-        $response = new \pjdietz\WellRESTed\Response();
-        $response->setStatusCode(200);
-        $response->setBody("Hello, $name!");
-        return $response;
-    });
+    HTTP/1.1 405 Method Not Allowed
+    Allow: GET,PUT,DELETE,HEAD,OPTIONS
 
-Instance
---------
 
-The simplest way to use a handler_ is to instantiate it yourself and pass the instance.
-
-.. code-block:: php
-
-    $router->add("/cats/{id}", new \MyApi\CatItemHandler());
-
-This is easy, but has a significant disadvantage over the other options because each handler_ used this way will be autoloaded and instantiated, even though only one handler_ will actually be used for a given request-response cycle. You may find this approach useful for testing, but avoid if for production code.
-
-Error Handling
-^^^^^^^^^^^^^^
-
-Use ``Router::setErrorHandler`` to provide responses for a specific status codes. The first argument is the integer status code; the second is a handler_, provided in one of the forms listed in the `Specifying Handlers`_ section.
-
-.. code-block:: php
-
-    $router->setErrorHandler(400, "\\MyApi\\BadRequestHandler");
-    $router->setErrorHandler(401, function () {
-        return new \MyApi\UnauthorizedHandler();
-    });
-    $router->setErrorHandler(403, function () {
-        $response = new \pjdietz\WellRESTed\Response(403);
-        $response->setBody("YOU SHALL NOT PASS!");
-        return $response;
-    });
-    $router->setErrorHandler(404, new \MyApi\NotFoundHandler());
-
-You can also set multiple error handlers_ at once by passing a hash array to ``Router::setErrorHandlers``. The hash array must have integer keys representing status codes and handlers_ as values.
-
-.. code-block:: php
-
-    $router->setErrorHandlers([
-        400 => "\\MyApi\\BadRequestHandler",
-        401 => function () {
-           return new \MyApi\UnauthorizedHandler();
-        },
-        403 => function () {
-            $response = new \pjdietz\WellRESTed\Response(403);
-            $response->setBody("YOU SHALL NOT PASS!");
-            return $response;
-        },
-        404 => new \MyApi\NotFoundHandler()
-    ]);
-
-.. note::
-
-    Only one error handler_ may be registered for a given status code. A subsequent call to set the handler for a given status code will replace the previous handler with the new handler.
-
-Registering a ``404`` handler_ will set the default behavior for when no routes in the router match. A request for ``/birds/`` using the following router will provide a response with a ``404 Not Found`` status and a message body of "I can't find anything at /birds/".
-
-.. code-block:: php
-
-    $router = new \pjdietz\WellRESTed\Router();
-    $router->add(
-        ["/cats/", $catHandler],
-        ["/dogs/", $dogHandler]
-    );
-    $router->setErrorHandler(404, function ($rqst, $args) {
-        $resp = new \pjdietz\WellRESTed\Response(404);
-        $resp->setBody("I can't find anything at " . $rqst->getPath());
-        return $resp;
-    })
-    $router->respond();
-
-HTTP Exceptions
+Error Responses
 ^^^^^^^^^^^^^^^
 
-When things go wrong, you can return responses with error codes from any of you handlers_, or you can throw an ``HttpException``. The router will catch any exceptions of this type and provide a response with the corresponding status code.
+When a router is unable to dispatch a route because either the path or method does not match a defined route, it will provide an appropriate error response code—either ``404 Not Found`` or ``405 Method Not Allowed``.
+
+The router always checks the path first. If route for that path matches, the router responds ``404 Not Found``.
+
+If the router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
+
+Given this router:
 
 .. code-block:: php
 
-    $router->add("/cats/{catId}", function ($rqst, $args) {
+    $router
+        ->register("GET", "/cats/", $catReader)
+        ->register("POST", "/cats/", $catWriter)
+        ->register("GET", "/dogs/", $catItemReader)
 
-        // Find a cat in the cat repository.
-        $catProvider = new CatProvider();
-        $cat = $catProvider->getCatById($args["catId");
+The following requests wil provide these responses:
 
-        // Throw a NotFoundException if $cat is null.
-        if (is_null($cat)) {
-            throw new \pjdietz\WellRESTed\Exceptions\HttpExceptions\NotFoundException();
-        }
+====== ========== ========
+Method Path       Response
+====== ========== ========
+GET    /hamsters/ 404 Not Found
+PUT    /cats/     405 Method Not Allowed
+====== ========== ========
 
-        // Do cat stuff and return a response...
-        // ...
+.. note::
 
-    });
-
-The HttpExceptions are all in the ``\pjdietz\WellRESTed\Exceptions\HttpExceptions`` namespace and all inherit from ``HttpException``. Here's the list of exceptions and their status codes.
-
-=========== =========
-Status Code Exception
-=========== =========
-400         BadRequestException
-401         UnauthorizedException
-403         ForbiddenException
-404         NotFoundException
-405         MethodNotAllowed
-409         ConflictException
-410         GoneException
-500         HttpException
-=========== =========
-
-If you need to trigger an error other than these, throw ``HttpException`` and set the code, and optionally, the message.
-
-.. code-block:: php
-
-    throw new \pjdietz\WellRESTed\Exceptions\HttpExceptions\HttpException("Request Timeout", 408);
+    When the router fails to dispatch a route, or when it responds to an ``OPTIONS`` request, is will stop propagation, and any middleware that comes after the router will not be dispatched.
 
 Nested Routers
 ^^^^^^^^^^^^^^
 
-For large sites, you may want to break your router into multiple subrouters. Since ``Router`` implements HandlerInterface_, you can use ``Router`` instances as handlers_. Here are a couple patterns for using subrouters.
+For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into subrouters.
 
-Using Router Subclasses
------------------------
+This works because a ``Router`` is type of middleware, and can be used wherever middleware can be used.
 
-One way to build subrouters is by subclassing ``Router`` for each subsection of your API. By subclassing, you can define a router that populates itself with routes on instantiation, and is able to be instantiated by a top-level router.
-
-Here's a top-level router that directs traffic starting with  ``/cats/`` to ``MyApi\CatRouter`` and traffic starting with ``/dogs/`` to ``MyApi\DogRouter``.
+Here's an example where all of the traffic beginning with ``/cats/`` is sent to one router, and all the traffic for endpoints beginning with ``/dogs/`` is sent to another.
 
 .. code-block:: php
 
-    $router = new \pjdietz\WellRESTed\Router();
-    $router->add(
-        ["/cats/*", "\\MyApi\\CatRouter"],
-        ["/dogs/*", "\\MyApi\\DogRouter"]
+    $server = new Server();
+
+    $catRouter = $server->createRouter()
+        ->register("GET", "/cats/", $catReader)
+        ->register("POST", "/cats/", $catWriter)
+        // ... many more endpoints starting with /cats/
+        ->register("POST", "/cats/{cat}/photo/{gallery}/{width}x{height}.{extension}", $catImageHandler);
+
+    $dogRouter = $server->createRouter()
+        ->register("GET,POST", "/dogs/", $dogHandler)
+        // ... many more endpoints starting with /dogs/
+        ->register("POST", "/dogs/{dog}/photo/{gallery}/{width}x{height}.{extension}", $dogImageHandler);
+
+    $server->add($server->createRouter()
+        ->register("*", "/cats/*", $catRouter)
+        ->register("*", "/dogs/*", $dogRouter)
     );
 
-Here are router subclasses that contain only routes beginning with the expected prefixes.
+    $server->respond();
 
-.. code-block:: php
-
-    namesapce MyApi;
-
-    class CatRouter extends \pjdietz\WelRESTed\Router
-    {
-        public function __construct()
-        {
-            parent::__construct();
-            $ns = __NAMESPACE__;
-            $this->add([
-                "/cats/", "$ns\\CatRootHandler",
-                "/cats/{id}", "$ns\\CatItemHandler",
-                // ... other handles related to cats...
-            ]);
-        }
-    }
-
-.. code-block:: php
-
-    namesapce MyApi;
-
-    class DogRouter extends \pjdietz\WelRESTed\Router
-    {
-        public function __construct()
-        {
-            parent::__construct();
-            $ns = __NAMESPACE__;
-            $this->add([
-                "/dogs/", "$ns\\DogRootHandler",
-                "/dogs/{group}/", "$ns\\DogGroupHandler",
-                "/dogs/{group}/{breed}", "$ns\\DogBreedHandler",
-                // ... other handles related to dogs...
-            ]);
-        }
-    }
-
-With this setup, the top-level router will autoload and instantiate a ``CatHandler`` or ``DogHandler`` only if the request matches, then dispatch the request to the newly instantiated subrouter.
-
-Using a Dependency Container
-----------------------------
-
-A second approach to subrouters is to use a dependency container such a Pimple_. A container like Pimple allows you to create "providers" that instantiate and return instances of your various routers and handlers_ as needed. As with the subclassing patten, this pattern delays autoloading and instantiating the classes until they are actually used.
-
-.. code-block:: php
-
-    $c = new Pimple\Container();
-
-    // Create a provider for the top-level router.
-    // This will return an instance.
-    $c["router"] = (function ($c) {
-        $router = new \pjdietz\WellRESTed\Router();
-        $router->add(
-            ["/cats/*", $c["catRouter"]],
-            ["/dogs/*", $c["dogRouter"]]
-        );
-        return $router;
-    });
-
-    // Create "protected" providers for the subrouters.
-    // These will return callables that will return the routers when called.
-    $c["catRouter"] = $c->protect(function () use ($c) {
-        $router = new \pjdietz\WellRESTed\Router();
-        $router->add(
-            "/cats/", $c["catRootHandler"],
-            "/cats/{id}", $c["catItemHandler"],
-            // ... other handles related to cats...
-        ]);
-        return $router;
-    });
-
-    $c["dogRouter"] = $c->protect(function () use ($c) {
-        $router = new \pjdietz\WellRESTed\Router();
-        $router->add(
-            "/dogs/", $c["dogRootHandler"],
-            "/dogs/{group}/", $c["dogGroupHandler"],
-            "/dogs/{group}/{breed}", $c["dogBreedHandler"],
-            // ... other handles related to dogs...
-        ]);
-        return $router;
-    });
-
-    // ... Handlers like catRootHandler have protected providers as well.
-
-See `Dependency Injection`_ for more information.
-
-.. _Dependency Injection: dependency-injection.html
-.. _handler: Handlers_
-.. _Handlers: handlers.html
-.. _HandlerInterface: handlers.html#handlerinterface
-.. _Pimple: http://pimple.sensiolabs.org
-.. _Requests: requests.html
-.. _Responses: responses.html
-.. _Routes: routes.html
-.. _Specifying Handlers: #specifying-handlers
+.. _preg_match: http://php.net/manual/en/function.preg-match.php
+.. _URI Template: `URI Templates`_s
+.. _URI Templates: uri-templates.html
+.. _middleware: middleware.html

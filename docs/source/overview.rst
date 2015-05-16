@@ -10,20 +10,14 @@ The recommended method for installing WellRESTed is to use the PHP dependency ma
 
     {
       "require": {
-         "pjdietz/wellrested": "~2.3"
+         "wellrested/wellrested": "~3.0"
       }
    }
 
 Requirements
 ^^^^^^^^^^^^
 
-- PHP 5.3.0
-- `PHP cURL`_ for making requests with the ``Client`` class (Optional)
-
-.. note::
-
-    While WellRESTed will work on PHP 5.3.0, the unit tests require 5.4.0 as
-    some make use of the PHP built-in web server.
+- PHP 5.4.0
 
 License
 ^^^^^^^

@@ -1,7 +1,7 @@
 Web Server Configuration
 ========================
 
-You will typically want to have all traffic on your site directed to a single script that dispatches the router. Here are basic setups for doing this in Nginx_ and Apache_.
+You will typically want to have all traffic on your site directed to a single script that creates a ``WellRESTed\Server`` and calls ``respond``. Here are basic setups for doing this in Nginx_ and Apache_.
 
 Nginx
 ^^^^^
@@ -30,7 +30,6 @@ Nginx
         }
 
     }
-
 
 Apache
 ^^^^^^

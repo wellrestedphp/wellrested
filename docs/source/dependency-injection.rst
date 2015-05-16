@@ -1,49 +1,40 @@
 Dependency Injection
 ====================
 
-Here are a few strategies for how to do dependency injection with WellRESTed.
+Here are a few strategies for how to make a dependency injection container availble to middleware with WellRESTed.
 
-HandlerInterface::getResponse
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Request Attribute
+^^^^^^^^^^^^^^^^^
 
-You can inject dependencies into your handlers_ by passing them into ``Router::respond`` (or ``Router::getResponse``). This array will propagate through the routes_ to your handler_, possibly gaining additional array members (like variables from a TemplateRoute_) along the way.
+``Psr\Http\Message\ServerRequestInterface`` provides "attributes" that allow you attach arbitrary data to a request. You can use this to make your dependcy container available to any dispatched middleware.
 
-Define a handler_ that expects to receive the dependency container as the "container" element of the array passed to ``getResponse``.
-
-.. code-block:: php
-
-    Class CatHandler implements \pjdietz\WellRESTed\Interfaces\HandlerInterface
-    {
-        public function getResponse(RequestInterface $request, array $args = null)
-        {
-            // Extract the container from the second parameter.
-            $container = $args["container"];
-            // Do something with the container, and make a response.
-            // ...
-            return $response;
-        }
-    }
-
-Create the router. Pass the the container to ``Router::respond`` as the "container" array element.
+When you instatiate a ``WellRESTed\Server``, you can provide an array of attributes that the server will add to the request.
 
 .. code-block:: php
 
     $container = new MySuperCoolDependencyContainer();
-    $router = new \pjdietz\WellRESTed\Router();
-    $router->add("/cats", "CatHandler");
 
-    // Pass an array containing the dependencies to Router::respond().
-    $router->respond(["container" => container]);
+    $server = new WellRESTed\Server(["container" => $container]);
+    // ... Add middleware, routes, etc. ...
 
+When the server dispatches middleware, the middleware will be able to read the contain as the "container" attribute.
+
+.. code-block:: php
+
+    function ($request, $response, $next) {
+        $container = $request->getAttribute("container");
+        // It's a super cool dependency container!
+    }
 
 Callables
 ^^^^^^^^^
 
-When using callables to provide handlers_, you have the opportunity to inject dependencies into the handler's constructor.
+Another approach is to use callables that return ``MiddlewareInterface`` instances when you assign middleware. This approach provides an oppurtunity to pass the container into the middleware's constructor.
+
 
 .. code-block:: php
 
-    Class CatHandler implements \pjdietz\WellRESTed\Interfaces\HandlerInterface
+    Class CatHandler implements WellRESTed\MiddlewareInterface
     {
         private $container;
 
@@ -52,7 +43,7 @@ When using callables to provide handlers_, you have the opportunity to inject de
             $this->container = $container;
         }
 
-        public function getResponse(RequestInterface $request, array $args = null)
+        public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next);
         {
             // Do something with the $this->container, and make a response.
             // ...
@@ -60,20 +51,24 @@ When using callables to provide handlers_, you have the opportunity to inject de
         }
     }
 
-
-Create the router. Pass the the container to the handler upon instantiation.
+When you add the middleware to the server or register it with a router, use a callable that passes container into the contructor.
 
 .. code-block:: php
 
     $container = new MySuperCoolDependencyContainer();
 
-    $router = new Router();
-    $router->add("/cats/", function () use ($container) {
+    $catHandler = function () use ($container) {
         return new CatHandler($container);
-    });
-    $router->respond();
+    }
 
-For extra fun (and more readable code), you could store the callable that provides the handler in the container. Here's an example using Pimple_).
+    $server = new Server();
+    $server->add(
+        $server->createRoute()
+            ->register("GET", "/cats/{cat}", $catHandler)
+        );
+    $server->respond();
+
+For extra fun, store the callable that provides the handler in the container. Here's an example using Pimple_).
 
 .. code-block:: php
 
@@ -82,12 +77,33 @@ For extra fun (and more readable code), you could store the callable that provid
         return new CatHandler($c);
     });
 
-    $router = new Router();
-    $router->add("/cats/", $c["catHandler"]);
-    $router->respond();
+    $server = new Server();
+    $server->add(
+        $server->createRoute()
+            ->register("GET", "/cats/{cat}", $c["catHandler"])
+        );
+    $server->respond();
 
-.. _Handler: Handlers_
-.. _Handlers: handlers.html
+Combined
+^^^^^^^^
+
+Of course these two approaches are not mutually exclusive. You can even obtain your server from the container as well, for good measure.
+
+.. code-block:: php
+
+    $c = new Pimple\Container();
+    $c["server"] = function ($c) {
+        return new Server(["container" => $c);
+    };
+    $c["catHandler"] = $c->protect(function () use ($c) {
+        return new CatHandler($c);
+    });
+
+    $server = $c["server"];
+    $server->add(
+        $server->createRoute()
+            ->register("GET", "/cats/{cat}", $c["catHandler"])
+        );
+    $server->respond();
+
 .. _Pimple: http://pimple.sensiolabs.org
-.. _Routes: routes.html
-.. _TemplateRoute: routes.html#template-routes
