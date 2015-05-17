@@ -15,6 +15,9 @@ use WellRESTed\Transmission\TransmitterInterface;
 
 class Server implements DispatchStackInterface
 {
+    /** @var array */
+    private $attributes;
+
     /** @var DispatcherInterface */
     private $dispatcher;
 
@@ -24,15 +27,24 @@ class Server implements DispatchStackInterface
     /**
      * Create a new router.
      *
+     * @param array $attributes key-value pairs to register as attributes
+     *     with the server request.
      * @param DispatcherInterface $dispatcher Dispatches middleware. If no
      *     object is passed, the Server will create a
      *     WellRESTed\Dispatching\Dispatcher
      */
-    public function __construct(DispatcherInterface $dispatcher = null)
+    public function __construct(array $attributes = null, DispatcherInterface $dispatcher = null)
     {
-        if ($dispatcher === null) {
-            $this->dispatcher = $this->getDispatcher();
+        if ($attributes === null) {
+            $attributes = [];
         }
+        $this->attributes = $attributes;
+
+        if ($dispatcher === null) {
+            $dispatcher = $this->getDispatcher();
+        }
+        $this->dispatcher = $dispatcher;
+
         $this->stack = [];
     }
 
@@ -103,6 +115,9 @@ class Server implements DispatchStackInterface
     ) {
         if ($request === null) {
             $request = $this->getRequest();
+        }
+        foreach ($this->attributes as $name => $value) {
+            $request = $request->withAttribute($name, $value);
         }
         if ($response === null) {
             $response = $this->getResponse();

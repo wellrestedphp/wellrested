@@ -21,6 +21,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
         $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
+        $this->request->withAttribute(Argument::cetera())->willReturn($this->request->reveal());
         $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
         $this->transmitter = $this->prophesize('WellRESTed\Transmission\TransmitterInterface');
         $this->transmitter->transmit(Argument::cetera())->willReturn();
@@ -169,4 +170,22 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             $next
         )->shouldHaveBeenCalled();
     }
+
+    // ------------------------------------------------------------------------
+    // Attributes
+
+    /**
+     * @covers ::respond
+     */
+    public function testAddsAttributesToRequest()
+    {
+        $attributes = [
+            "name" => "value"
+        ];
+
+        $this->server->__construct($attributes);
+        $this->server->respond();
+        $this->request->withAttribute("name", "value")->shouldHaveBeenCalled();
+    }
+
 }
