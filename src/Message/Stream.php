@@ -48,7 +48,9 @@ class Stream implements StreamInterface
     {
         $string = "";
         try {
-            rewind($this->resource);
+            if ($this->isSeekable()) {
+                rewind($this->resource);
+            }
             $string = $this->getContents();
         } catch (\Exception $e) {
             // Silence exceptions in order to conform with PHP's string casting operations.
