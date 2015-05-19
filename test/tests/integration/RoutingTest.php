@@ -164,7 +164,7 @@ class StringMiddleware implements MiddlewareInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $body = $response->getBody();
         if ($body->isWritable()) {
@@ -188,7 +188,7 @@ class BenderMiddleware implements MiddlewareInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $message = "Bender Bending Rodriguez";
         $body = $response->getBody();

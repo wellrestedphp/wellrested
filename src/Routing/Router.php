@@ -75,19 +75,19 @@ class Router implements RouterInterface
         return $this;
     }
 
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         // Use only the path for routing.
         $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
 
         $route = $this->getStaticRoute($requestTarget);
         if ($route) {
-            return $route->dispatch($request, $response, $next);
+            return $route($request, $response, $next);
         }
 
         $route = $this->getPrefixRoute($requestTarget);
         if ($route) {
-            return $route->dispatch($request, $response, $next);
+            return $route($request, $response, $next);
         }
 
         // Try each of the routes.
@@ -95,7 +95,7 @@ class Router implements RouterInterface
             if ($route->matchesRequestTarget($requestTarget)) {
                 $pathVariables = $route->getPathVariables();
                 $request = $request->withAttribute($this->pathVariablesAttributeKey, $pathVariables);
-                return $route->dispatch($request, $response, $next);
+                return $route($request, $response, $next);
             }
         }
 

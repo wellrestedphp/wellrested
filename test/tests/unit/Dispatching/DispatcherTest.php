@@ -99,7 +99,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
 
 class DispatcherTest_Middleware implements MiddlewareInterface
 {
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $response = $response->withStatus(200);
         return $next($request, $response);

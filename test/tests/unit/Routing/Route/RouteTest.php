@@ -49,12 +49,12 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testDispatchesMethodMap()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
-        $methodMap->dispatch(Argument::cetera())->willReturn();
+        $methodMap->__invoke(Argument::cetera())->willReturn();
 
         $route = $this->getMockForAbstractClass(
             'WellRESTed\Routing\Route\Route',
@@ -65,8 +65,8 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         $next = function ($request, $response) {
             return $response;
         };
-        $route->dispatch($request, $response, $next);
+        $route->__invoke($request, $response, $next);
 
-        $methodMap->dispatch(Argument::cetera())->shouldHaveBeenCalled();
+        $methodMap->__invoke(Argument::cetera())->shouldHaveBeenCalled();
     }
 }

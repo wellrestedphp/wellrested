@@ -5,9 +5,8 @@ namespace WellRESTed\Routing;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\MiddlewareInterface;
 
-class MethodMap implements MiddlewareInterface, MethodMapInterface
+class MethodMap implements MethodMapInterface
 {
     private $dispatcher;
     private $map;
@@ -63,7 +62,7 @@ class MethodMap implements MiddlewareInterface, MethodMapInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         $method = $request->getMethod();
         // Dispatch middleware registered with the explicitly matching method.

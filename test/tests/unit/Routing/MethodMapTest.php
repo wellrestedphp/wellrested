@@ -29,12 +29,12 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
         $this->middleware = $this->prophesize('WellRESTed\MiddlewareInterface');
-        $this->middleware->dispatch(Argument::cetera())->willReturn();
+        $this->middleware->__invoke(Argument::cetera())->willReturn();
         $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
         $this->dispatcher->dispatch(Argument::cetera())->will(
             function ($args) {
                 list($middleware, $request, $response, $next) = $args;
-                return $middleware->dispatch($request, $response, $next);
+                return $middleware($request, $response, $next);
             }
         );
     }
@@ -49,7 +49,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::dispatchMiddleware
      * @covers ::register
      */
@@ -59,9 +59,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch(
+        $this->middleware->__invoke(
             $this->request->reveal(),
             $this->response->reveal(),
             $this->next
@@ -76,17 +76,17 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->request->getMethod()->willReturn("get");
 
         $middlewareUpper = $this->prophesize('WellRESTed\MiddlewareInterface');
-        $middlewareUpper->dispatch(Argument::cetera())->willReturn();
+        $middlewareUpper->__invoke(Argument::cetera())->willReturn();
 
         $middlewareLower = $this->prophesize('WellRESTed\MiddlewareInterface');
-        $middlewareLower->dispatch(Argument::cetera())->willReturn();
+        $middlewareLower->__invoke(Argument::cetera())->willReturn();
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $middlewareUpper->reveal());
         $map->register("get", $middlewareLower->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $middlewareLower->dispatch(
+        $middlewareLower->__invoke(
             $this->request->reveal(),
             $this->response->reveal(),
             $this->next
@@ -94,7 +94,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::dispatchMiddleware
      * @covers ::register
      */
@@ -104,9 +104,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("*", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch(
+        $this->middleware->__invoke(
             $this->request->reveal(),
             $this->response->reveal(),
             $this->next
@@ -114,7 +114,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testDispatchesGetMiddlewareForHeadByDefault()
     {
@@ -122,9 +122,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch(
+        $this->middleware->__invoke(
             $this->request->reveal(),
             $this->response->reveal(),
             $this->next
@@ -140,12 +140,12 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map->register("GET,POST", $this->middleware->reveal());
 
         $this->request->getMethod()->willReturn("GET");
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->request->getMethod()->willReturn("POST");
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->middleware->dispatch(
+        $this->middleware->__invoke(
             $this->request->reveal(),
             $this->response->reveal(),
             $this->next
@@ -159,13 +159,13 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("POST", $this->middleware->reveal());
         $map->register("POST", null);
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withStatus(405)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::addAllowHeader
      * @covers ::getAllowedMethods
      */
@@ -175,13 +175,13 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withStatus(200)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::addAllowHeader
      * @covers ::getAllowedMethods
      * @dataProvider allowedMethodProvider
@@ -194,7 +194,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $containsAllMethods = function ($headerValue) use ($methodsAllowed) {
             foreach ($methodsAllowed as $method) {
@@ -208,7 +208,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::addAllowHeader
      * @covers ::getAllowedMethods
      * @dataProvider allowedMethodProvider
@@ -219,7 +219,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->response->withStatus(405)->shouldHaveBeenCalled();
     }
@@ -239,12 +239,12 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $map($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($calledNext);
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::addAllowHeader
      * @covers ::getAllowedMethods
      * @dataProvider allowedMethodProvider
@@ -257,7 +257,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
-        $map->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $map($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $containsAllMethods = function ($headerValue) use ($methodsAllowed) {
             foreach ($methodsAllowed as $method) {

@@ -48,5 +48,5 @@ interface DispatchStackInterface extends MiddlewareInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next);
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next);
 }

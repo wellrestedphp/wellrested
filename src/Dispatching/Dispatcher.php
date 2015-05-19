@@ -25,8 +25,8 @@ class Dispatcher implements DispatcherInterface
         } elseif (is_array($middleware)) {
             $middleware = $this->getDispatchStack($middleware);
         }
-        if ($middleware instanceof MiddlewareInterface) {
-            return $middleware->dispatch($request, $response, $next);
+        if (is_callable($middleware)) {
+            return $middleware($request, $response, $next);
         } elseif ($middleware instanceof ResponseInterface) {
             return $middleware;
         } else {

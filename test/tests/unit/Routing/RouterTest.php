@@ -30,7 +30,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->methodMap->register(Argument::cetera());
 
         $this->route = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
-        $this->route->dispatch(Argument::cetera())->willReturn();
+        $this->route->__invoke(Argument::cetera())->willReturn();
         $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
@@ -129,7 +129,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     // Dispatching
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::getStaticRoute
      * @covers ::registerRouteForTarget
      */
@@ -142,13 +142,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
 
         $this->router->register("GET", $target, "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->route->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::getPrefixRoute
      * @covers ::registerRouteForTarget
      */
@@ -160,13 +160,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->getType()->willReturn(RouteInterface::TYPE_PREFIX);
 
         $this->router->register("GET", $target, "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->route->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::registerRouteForTarget
      */
     public function testDispatchesPatternRoute()
@@ -179,9 +179,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->router->register("GET", $target, "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $this->route->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $this->route->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -193,13 +193,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $staticRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $staticRoute->getTarget()->willReturn("/cats/");
         $staticRoute->getType()->willReturn(RouteInterface::TYPE_STATIC);
-        $staticRoute->dispatch(Argument::cetera())->willReturn();
+        $staticRoute->__invoke(Argument::cetera())->willReturn();
 
         $prefixRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
-        $prefixRoute->dispatch(Argument::cetera())->willReturn();
+        $prefixRoute->__invoke(Argument::cetera())->willReturn();
 
         $this->request->getRequestTarget()->willReturn("/cats/");
 
@@ -208,9 +208,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->router->register("GET", "/cats/", "middleware");
         $this->router->register("GET", "/cats/*", "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $staticRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $staticRoute->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -224,13 +224,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $shortRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $shortRoute->getTarget()->willReturn("/animals/*");
         $shortRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
-        $shortRoute->dispatch(Argument::cetera())->willReturn();
+        $shortRoute->__invoke(Argument::cetera())->willReturn();
 
         $longRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $longRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $longRoute->getTarget()->willReturn("/animals/cats/*");
         $longRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
-        $longRoute->dispatch(Argument::cetera())->willReturn();
+        $longRoute->__invoke(Argument::cetera())->willReturn();
 
         $this->request->getRequestTarget()->willReturn("/animals/cats/molly");
 
@@ -239,9 +239,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->router->register("GET", "/animals/*", "middleware");
         $this->router->register("GET", "/animals/cats/*", "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $longRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $longRoute->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -253,13 +253,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
-        $prefixRoute->dispatch(Argument::cetera())->willReturn();
+        $prefixRoute->__invoke(Argument::cetera())->willReturn();
 
         $patternRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $patternRoute->getMethodMap()->willReturn($this->methodMap->reveal());
         $patternRoute->getTarget()->willReturn("/cats/{id}");
         $patternRoute->getType()->willReturn(RouteInterface::TYPE_PATTERN);
-        $patternRoute->dispatch(Argument::cetera())->willReturn();
+        $patternRoute->__invoke(Argument::cetera())->willReturn();
 
         $this->request->getRequestTarget()->willReturn("/cats/");
 
@@ -268,9 +268,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->router->register("GET", "/cats/*", "middleware");
         $this->router->register("GET", "/cats/{id}", "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $prefixRoute->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $prefixRoute->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -284,7 +284,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
-        $patternRoute1->dispatch(Argument::cetera())->willReturn();
+        $patternRoute1->__invoke(Argument::cetera())->willReturn();
 
         $patternRoute2 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
@@ -292,7 +292,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
-        $patternRoute2->dispatch(Argument::cetera())->willReturn();
+        $patternRoute2->__invoke(Argument::cetera())->willReturn();
 
         $this->request->getRequestTarget()->willReturn("/cats/molly");
 
@@ -301,9 +301,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->router->register("GET", "/cats/{id}", "middleware");
         $this->router->register("GET", "/cats/{name}", "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
-        $patternRoute1->dispatch($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
+        $patternRoute1->__invoke($this->request->reveal(), $this->response->reveal(), $this->next)->shouldHaveBeenCalled();
     }
 
     /**
@@ -317,7 +317,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
-        $patternRoute1->dispatch(Argument::cetera())->willReturn();
+        $patternRoute1->__invoke(Argument::cetera())->willReturn();
 
         $patternRoute2 = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
         $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
@@ -325,7 +325,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
-        $patternRoute2->dispatch(Argument::cetera())->willReturn();
+        $patternRoute2->__invoke(Argument::cetera())->willReturn();
 
         $this->request->getRequestTarget()->willReturn("/cats/molly");
 
@@ -334,13 +334,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->router->register("GET", "/cats/{id}", "middleware");
         $this->router->register("GET", "/cats/{name}", "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $patternRoute2->matchesRequestTarget(Argument::any())->shouldNotHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @group current
      */
     public function testSetPathVariablesAttributeBeforeDispatchingPatternRoute()
@@ -358,13 +358,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->getPathVariables()->willReturn($variables);
 
         $this->router->register("GET", $target, "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->request->withAttribute("pathVariables", $variables)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::registerRouteForTarget
      */
     public function testMatchesPathAgainstRouteWithoutQuery()
@@ -377,7 +377,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->router->register("GET", $target, "middleware");
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->route->matchesRequestTarget("/my/path")->shouldHaveBeenCalled();
     }
@@ -386,7 +386,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     // No Matching Routes
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::getStaticRoute
      * @covers ::getPrefixRoute
      */
@@ -394,12 +394,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $this->request->getRequestTarget()->willReturn("/no/match");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->response->withStatus(404)->shouldHaveBeenCalled();
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      * @covers ::getStaticRoute
      * @covers ::getPrefixRoute
      */
@@ -413,7 +413,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $this->request->getRequestTarget()->willReturn("/no/match");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
-        $this->router->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($calledNext);
     }
 

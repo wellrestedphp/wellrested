@@ -6,14 +6,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Dispatching\DispatchStackInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Router;
 use WellRESTed\Transmission\Transmitter;
 use WellRESTed\Transmission\TransmitterInterface;
 
-class Server implements DispatchStackInterface
+class Server
 {
     /** @var array */
     private $attributes;

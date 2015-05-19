@@ -161,7 +161,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $router = $this->server->createRouter();
         $router->register("GET", "/", "middleware");
-        $router->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $router($this->request->reveal(), $this->response->reveal(), $next);
 
         $this->dispatcher->dispatch(
             "middleware",

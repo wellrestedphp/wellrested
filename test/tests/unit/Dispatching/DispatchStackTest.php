@@ -51,7 +51,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testDispachesMiddlewareInOrderAdded()
     {
@@ -71,12 +71,12 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
             $callOrder[] = "third";
             return $next($request, $response);
         });
-        $stack->dispatch($this->request->reveal(), $this->response->reveal(), $this->next);
+        $stack($this->request->reveal(), $this->response->reveal(), $this->next);
         $this->assertEquals(["first", "second", "third"], $callOrder);
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testCallsNextAfterDispatchingEmptyStack()
     {
@@ -87,12 +87,12 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         };
 
         $stack = new DispatchStack($this->dispatcher->reveal());
-        $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $stack($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($nextCalled);
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testCallsNextAfterDispatchingStack()
     {
@@ -111,12 +111,12 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         $stack->add($middleware);
         $stack->add($middleware);
 
-        $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $stack($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertTrue($nextCalled);
     }
 
     /**
-     * @covers ::dispatch
+     * @covers ::__invoke
      */
     public function testDoesNotCallNextWhenStackStopsEarly()
     {
@@ -138,7 +138,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         $stack->add($middlewareStop);
         $stack->add($middlewareStop);
 
-        $stack->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $stack($this->request->reveal(), $this->response->reveal(), $next);
         $this->assertFalse($nextCalled);
     }
 }
