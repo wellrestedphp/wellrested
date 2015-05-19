@@ -20,7 +20,7 @@ interface MethodMapInterface extends MiddlewareInterface
      *     implementing MiddlewareInterface
      * - A callable that returns an instance implementing MiddleInterface
      * - A callable maching the signature of MiddlewareInteraface::dispatch
-     * @see DispatchedInterface::dispatch
+     * @see DispatcherInterface::dispatch
      *
      * $middleware may also be null, in which case any previously set
      * middleware for that method or methods will be unset.

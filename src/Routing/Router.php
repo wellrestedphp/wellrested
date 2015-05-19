@@ -99,8 +99,9 @@ class Router implements RouterInterface
             }
         }
 
-        // If no route exists, set the status code of the response to 404.
-        return $next($request, $response->withStatus(404));
+        // If no route exists, set the status code of the response to 404 and
+        // return the response without propagating.
+        return $response->withStatus(404);
     }
 
     /**

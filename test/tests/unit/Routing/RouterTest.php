@@ -403,7 +403,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @covers ::getStaticRoute
      * @covers ::getPrefixRoute
      */
-    public function testCallsNextWhenNoRouteMatches()
+    public function testStopsPropagatingWhenNoRouteMatches()
     {
         $calledNext = false;
         $next = function ($request, $response) use (&$calledNext) {
@@ -414,7 +414,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->request->getRequestTarget()->willReturn("/no/match");
         $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
         $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $next);
-        $this->assertTrue($calledNext);
+        $this->assertFalse($calledNext);
     }
 
     public function testRegisterIsFluid()

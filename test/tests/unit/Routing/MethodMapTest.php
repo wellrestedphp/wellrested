@@ -180,6 +180,23 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $this->response->withStatus(200)->shouldHaveBeenCalled();
     }
 
+    public function testStopsPropagatingAfterOptions()
+    {
+        $calledNext = false;
+        $next = function ($request, $response) use (&$calledNext) {
+            $calledNext = true;
+            return $response;
+        };
+
+        $this->request->getMethod()->willReturn("OPTIONS");
+
+        $map = new MethodMap($this->dispatcher->reveal());
+        $map->register("GET", $this->middleware->reveal());
+        $map($this->request->reveal(), $this->response->reveal(), $next);
+
+        $this->assertFalse($calledNext);
+    }
+
     /**
      * @covers ::__invoke
      * @covers ::addAllowHeader
@@ -228,7 +245,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
      * @coversNothing
      * @dataProvider allowedMethodProvider
      */
-    public function testCallsNextForBadMethod()
+    public function testStopsPropagatingAfterBadMethod()
     {
         $calledNext = false;
         $next = function ($request, $response) use (&$calledNext) {
@@ -240,7 +257,7 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
         $map($this->request->reveal(), $this->response->reveal(), $next);
-        $this->assertTrue($calledNext);
+        $this->assertFalse($calledNext);
     }
 
     /**
