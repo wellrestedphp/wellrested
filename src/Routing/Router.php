@@ -12,7 +12,7 @@ use WellRESTed\Routing\Route\RouteInterface;
 
 class Router implements RouterInterface
 {
-    /** @var string Key to ServerRequestInterface attribute for matched path variables */
+    /** @var string ServerRequestInterface attribute name for matched path variables */
     private $pathVariablesAttributeName;
     /** @var DispatcherInterface */
     private $dispatcher;
@@ -30,17 +30,18 @@ class Router implements RouterInterface
     /**
      * Create a new Router.
      *
-     * When the router matches a route with path variables, it will add each
-     * variable as an attribute on the ServerRequestInterface by default.
+     * By default, when a route containg path variables matches, the path
+     * variables are stored individually as attributes on the
+     * ServerRequestInterface.
      *
-     * When $pathVariablesAttributeName is set, the router will set one
-     * attribute with the passed name to an array containing all of the path
-     * variables.
+     * When $pathVariablesAttributeName is set, a single attribute will be
+     * stored with the name. The value will be an array containing all of the
+     * path variables.
      *
      * @param DispatcherInterface $dispatcher Instance to use for dispatching
      *     middleware.
-     * @param string $pathVariablesAttributeName Optionally provide all path
-     *     variables as an array stored with this attribute name
+     * @param string|null $pathVariablesAttributeName Attribute name for
+     *     matched path variables. A null value sets attributes directly.
      */
     public function __construct(DispatcherInterface $dispatcher = null, $pathVariablesAttributeName = null)
     {

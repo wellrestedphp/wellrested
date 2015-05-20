@@ -20,30 +20,45 @@ class Server
     /** @var DispatcherInterface */
     private $dispatcher;
 
+    /** @var string ServerRequestInterface attribute name for matched path variables */
+    private $pathVariablesAttributeName;
+
     /** @var mixed[] List array of middleware */
     private $stack;
 
     /**
-     * Create a new router.
+     * Create a new server.
+     *
+     * By default, when a route containg path variables matches, the path
+     * variables are stored individually as attributes on the
+     * ServerRequestInterface.
+     *
+     * When $pathVariablesAttributeName is set, a single attribute will be
+     * stored with the name. The value will be an array containing all of the
+     * path variables.
      *
      * @param array $attributes key-value pairs to register as attributes
      *     with the server request.
      * @param DispatcherInterface $dispatcher Dispatches middleware. If no
      *     object is passed, the Server will create a
      *     WellRESTed\Dispatching\Dispatcher
+     * @param string|null $pathVariablesAttributeName Attribute name for
+     *     matched path variables. A null value sets attributes directly.
      */
-    public function __construct(array $attributes = null, DispatcherInterface $dispatcher = null)
-    {
+    public function __construct(
+        array $attributes = null,
+        DispatcherInterface $dispatcher = null,
+        $pathVariablesAttributeName = null
+    ) {
         if ($attributes === null) {
             $attributes = [];
         }
         $this->attributes = $attributes;
-
         if ($dispatcher === null) {
             $dispatcher = $this->getDispatcher();
         }
         $this->dispatcher = $dispatcher;
-
+        $this->pathVariablesAttributeName = $pathVariablesAttributeName;
         $this->stack = [];
     }
 
@@ -92,7 +107,7 @@ class Server
      */
     public function createRouter()
     {
-        return new Router($this->dispatcher);
+        return new Router($this->dispatcher, $this->pathVariablesAttributeName);
     }
 
     /**
