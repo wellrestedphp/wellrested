@@ -13,7 +13,7 @@ use WellRESTed\Routing\Route\RouteInterface;
 class Router implements RouterInterface
 {
     /** @var string Key to ServerRequestInterface attribute for matched path variables */
-    public $pathVariablesAttributeKey = "pathVariables";
+    private $pathVariablesAttributeName;
     /** @var DispatcherInterface */
     private $dispatcher;
     /** @var RouteFactoryInterface */
@@ -27,17 +27,65 @@ class Router implements RouterInterface
     /** @var RouteInterface[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
 
-    public function __construct(DispatcherInterface $dispatcher = null)
+    /**
+     * Create a new Router.
+     *
+     * When the router matches a route with path variables, it will add each
+     * variable as an attribute on the ServerRequestInterface by default.
+     *
+     * When $pathVariablesAttributeName is set, the router will set one
+     * attribute with the passed name to an array containing all of the path
+     * variables.
+     *
+     * @param DispatcherInterface $dispatcher Instance to use for dispatching
+     *     middleware.
+     * @param string $pathVariablesAttributeName Optionally provide all path
+     *     variables as an array stored with this attribute name
+     */
+    public function __construct(DispatcherInterface $dispatcher = null, $pathVariablesAttributeName = null)
     {
-        if ($dispatcher === null) {
-            $dispatcher = new Dispatcher();
-        }
         $this->dispatcher = $dispatcher;
+        $this->pathVariablesAttributeName = $pathVariablesAttributeName;
         $this->factory = $this->getRouteFactory($this->dispatcher);
         $this->routes = [];
         $this->staticRoutes = [];
         $this->prefixRoutes = [];
         $this->patternRoutes = [];
+    }
+
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    {
+        // Use only the path for routing.
+        $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
+
+        $route = $this->getStaticRoute($requestTarget);
+        if ($route) {
+            return $route($request, $response, $next);
+        }
+
+        $route = $this->getPrefixRoute($requestTarget);
+        if ($route) {
+            return $route($request, $response, $next);
+        }
+
+        // Try each of the routes.
+        foreach ($this->patternRoutes as $route) {
+            if ($route->matchesRequestTarget($requestTarget)) {
+                $pathVariables = $route->getPathVariables();
+                if ($this->pathVariablesAttributeName) {
+                    $request = $request->withAttribute($this->pathVariablesAttributeName, $pathVariables);
+                } else {
+                    foreach ($pathVariables as $name => $value) {
+                        $request = $request->withAttribute($name, $value);
+                    }
+                }
+                return $route($request, $response, $next);
+            }
+        }
+
+        // If no route exists, set the status code of the response to 404 and
+        // return the response without propagating.
+        return $response->withStatus(404);
     }
 
     /**
@@ -73,35 +121,6 @@ class Router implements RouterInterface
         $route = $this->getRouteForTarget($target);
         $route->getMethodMap()->register($method, $middleware);
         return $this;
-    }
-
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
-        // Use only the path for routing.
-        $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
-
-        $route = $this->getStaticRoute($requestTarget);
-        if ($route) {
-            return $route($request, $response, $next);
-        }
-
-        $route = $this->getPrefixRoute($requestTarget);
-        if ($route) {
-            return $route($request, $response, $next);
-        }
-
-        // Try each of the routes.
-        foreach ($this->patternRoutes as $route) {
-            if ($route->matchesRequestTarget($requestTarget)) {
-                $pathVariables = $route->getPathVariables();
-                $request = $request->withAttribute($this->pathVariablesAttributeKey, $pathVariables);
-                return $route($request, $response, $next);
-            }
-        }
-
-        // If no route exists, set the status code of the response to 404 and
-        // return the response without propagating.
-        return $response->withStatus(404);
     }
 
     /**

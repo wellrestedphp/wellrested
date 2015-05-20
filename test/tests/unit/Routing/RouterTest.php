@@ -75,20 +75,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testCreatesInstance()
     {
-        $routeMap = new Router($this->dispatcher->reveal());
-        $this->assertNotNull($routeMap);
-    }
-
-    /**
-     * @covers ::__construct
-     * @covers ::getRouteFactory
-     * @uses WellRESTed\Routing\Route\RouteFactory
-     * @uses WellRESTed\Dispatching\Dispatcher
-     */
-    public function testCreatesInstanceWithDispatcherByDefault()
-    {
-        $routeMap = new Router();
-        $this->assertNotNull($routeMap);
+        $router = new Router($this->dispatcher->reveal());
+        $this->assertNotNull($router);
     }
 
     // ------------------------------------------------------------------------
@@ -341,30 +329,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__invoke
-     * @group current
-     */
-    public function testSetPathVariablesAttributeBeforeDispatchingPatternRoute()
-    {
-        $target = "/";
-        $variables = [
-            "id" => "1024",
-            "name" => "Molly"
-        ];
-
-        $this->request->getRequestTarget()->willReturn($target);
-        $this->route->getTarget()->willReturn($target);
-        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
-        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
-        $this->route->getPathVariables()->willReturn($variables);
-
-        $this->router->register("GET", $target, "middleware");
-        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
-
-        $this->request->withAttribute("pathVariables", $variables)->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @covers ::__invoke
      * @covers ::registerRouteForTarget
      */
     public function testMatchesPathAgainstRouteWithoutQuery()
@@ -380,6 +344,70 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
 
         $this->route->matchesRequestTarget("/my/path")->shouldHaveBeenCalled();
+    }
+
+    // ------------------------------------------------------------------------
+    // Path Variables
+
+    /**
+     * @covers ::__invoke
+     * @dataProvider pathVariableProvider
+     */
+    public function testSetPathVariablesAttributeIndividually($name, $value)
+    {
+        $attributeName = "pathVariables";
+
+        $target = "/";
+        $variables = [
+            "id" => "1024",
+            "name" => "Molly"
+        ];
+
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
+        $this->route->getPathVariables()->willReturn($variables);
+
+        $this->router->__construct($this->dispatcher->reveal());
+        $this->router->register("GET", $target, "middleware");
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $this->request->withAttribute($name, $value)->shouldHaveBeenCalled();
+    }
+
+    public function pathVariableProvider()
+    {
+        return [
+            ["id", "1024"],
+            ["name", "Molly"]
+        ];
+    }
+
+    /**
+     * @covers ::__invoke
+     */
+    public function testSetPathVariablesAttributeAsArray()
+    {
+        $attributeName = "pathVariables";
+
+        $target = "/";
+        $variables = [
+            "id" => "1024",
+            "name" => "Molly"
+        ];
+
+        $this->request->getRequestTarget()->willReturn($target);
+        $this->route->getTarget()->willReturn($target);
+        $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
+        $this->route->getPathVariables()->willReturn($variables);
+
+        $this->router->__construct($this->dispatcher->reveal(), $attributeName);
+        $this->router->register("GET", $target, "middleware");
+        $this->router->__invoke($this->request->reveal(), $this->response->reveal(), $this->next);
+
+        $this->request->withAttribute("pathVariables", $variables)->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
