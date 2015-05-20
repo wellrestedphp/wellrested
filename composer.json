@@ -1,5 +1,5 @@
 {
-    "name": "pjdietz/wellrested",
+    "name": "wellrested/wellrested",
     "description": "Simple PHP Library for RESTful APIs",
     "keywords": ["rest", "restful", "api", "curl", "http"],
     "homepage": "https://github.com/pjdietz/wellrested",
@@ -8,7 +8,7 @@
     "authors": [
         {
             "name": "PJ Dietz",
-            "email": "pj@pjdietz.com"
+            "email": "pjdietz@gmail.com"
         }
     ],
     "require": {
