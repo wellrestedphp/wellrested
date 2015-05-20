@@ -2,10 +2,28 @@
 
 namespace WellRESTed\Routing;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\MiddlewareInterface;
 
+/**
+ * Maps HTTP methods to middleware
+ */
 interface MethodMapInterface extends MiddlewareInterface
 {
+    /**
+     * Evaluate $request's method and dispatches matching middleware.
+     *
+     * Implementations MUST pass $request, $response, and $next to the matching
+     * middleware.
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable $next
+     * @return ResponseInterface
+     */
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next);
+
     /**
      * Register middleware with a method.
      *
@@ -21,9 +39,6 @@ interface MethodMapInterface extends MiddlewareInterface
      * - A callable that returns an instance implementing MiddleInterface
      * - A callable maching the signature of MiddlewareInteraface::dispatch
      * @see DispatcherInterface::dispatch
-     *
-     * $middleware may also be null, in which case any previously set
-     * middleware for that method or methods will be unset.
      *
      * @param string $method
      * @param mixed $middleware

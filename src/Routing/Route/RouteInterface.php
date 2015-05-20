@@ -39,7 +39,7 @@ interface RouteInterface extends MiddlewareInterface
 
     /**
      * Return an array of variables extracted from the path most recently
-     * passed to  matchesRequestTarget.
+     * passed to matchesRequestTarget.
      *
      * If the path does not contain variables, or if matchesRequestTarget
      * has not yet been called, this method MUST return an empty array.

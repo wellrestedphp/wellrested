@@ -7,14 +7,14 @@ use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\MiddlewareInterface;
 
 /**
- * Dispatches an ordered sequence of middleware.
+ * Dispatches an ordered sequence of middleware
  */
 interface DispatchStackInterface extends MiddlewareInterface
 {
     /**
      * Push a new middleware onto the stack.
      *
-     * This method MUST preserve the order in which middleware added.
+     * This method MUST preserve the order in which middleware are added.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return self
@@ -31,9 +31,9 @@ interface DispatchStackInterface extends MiddlewareInterface
      * middleware. The last middleware MUST receive a $next callable that
      * returns the response unchanged.
      *
-     * When any middleware does not call the $next argument it recieved, the
-     * stack instance MUST stop propogating through the stack and MUST return
-     * the response without calling the $next argument passed to dispatch.
+     * When any middleware returns a response without calling the $next
+     * argument it recieved, the stack instance MUST stop propogating and MUST
+     * return a response without calling the $next argument passed to __invoke.
      *
      * This method MUST call the passed $next argument when:
      * - The stack is empty (i.e., there is no middleware to dispatch)

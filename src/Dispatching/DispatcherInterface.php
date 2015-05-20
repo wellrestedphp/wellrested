@@ -5,6 +5,9 @@ namespace WellRESTed\Dispatching;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Dispatches middleware
+ */
 interface DispatcherInterface
 {
     /**
@@ -22,11 +25,11 @@ interface DispatcherInterface
      * - A string containing the fully qualified class name of a class
      *        implementing MiddlewareInterface
      * - A callable that returns an instance implementing MiddlewareInterface
-     * - A callable with a signature matching MiddlewareInterface::dispatch
+     * - A callable with a signature matching MiddlewareInterface::__invoke
      *
      * Implementation MAY dispatch other types of middleware.
      *
-     * When an implementation recieves a $middware that is not of a type it can
+     * When an implementation receives a $middware that is not of a type it can
      * dispatch, it MUST throw a DispatchException.
      *
      * @param mixed $middleware
