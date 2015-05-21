@@ -1,7 +1,7 @@
 WellRESTed
 ==========
 
-[![Build Status](https://travis-ci.org/wellrestedphp/wellrested.svg?branch=psr7)](https://travis-ci.org/wellrestedphp/wellrested)
+[![Build Status](https://travis-ci.org/wellrestedphp/wellrested.svg?branch=master)](https://travis-ci.org/wellrestedphp/wellrested)
 [![Documentation Status](https://readthedocs.org/projects/wellrested/badge/?version=latest)](https://readthedocs.org/projects/wellrested/?badge=latest)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e/mini.png)](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e)
 
