@@ -28,7 +28,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 Documentation
 -------------
 
-See [the documentation](http://wellrested.readthedocs.org/en/stable/) to get started.
+See [the documentation](http://wellrested.readthedocs.org/en/latest/) to get started.
 
 Example
 -------
