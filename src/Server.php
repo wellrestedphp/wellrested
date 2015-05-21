@@ -55,7 +55,7 @@ class Server
         }
         $this->attributes = $attributes;
         if ($dispatcher === null) {
-            $dispatcher = $this->getDispatcher();
+            $dispatcher = $this->getDefaultDispatcher();
         }
         $this->dispatcher = $dispatcher;
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
@@ -107,7 +107,17 @@ class Server
      */
     public function createRouter()
     {
-        return new Router($this->dispatcher, $this->pathVariablesAttributeName);
+        return new Router($this->getDispatcher(), $this->pathVariablesAttributeName);
+    }
+
+    /**
+     * Return the dispatched used by the server.
+     *
+     * @return DispatcherInterface
+     */
+    public function getDispatcher()
+    {
+        return $this->dispatcher;
     }
 
     /**
@@ -156,7 +166,7 @@ class Server
      *
      * @return DispatcherInterface
      */
-    protected function getDispatcher()
+    protected function getDefaultDispatcher()
     {
         return new Dispatcher();
     }

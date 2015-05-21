@@ -34,11 +34,11 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->server = $this->getMockBuilder('WellRESTed\Server')
-            ->setMethods(["getDispatcher", "getRequest", "getResponse", "getTransmitter"])
+            ->setMethods(["getDefaultDispatcher", "getRequest", "getResponse", "getTransmitter"])
             ->disableOriginalConstructor()
             ->getMock();
         $this->server->expects($this->any())
-            ->method("getDispatcher")
+            ->method("getDefaultDispatcher")
             ->will($this->returnValue($this->dispatcher->reveal()));
         $this->server->expects($this->any())
             ->method("getRequest")
@@ -54,7 +54,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
-     * @covers ::getDispatcher
+     * @covers ::getDefaultDispatcher
      * @uses WellRESTed\Dispatching\Dispatcher
      */
     public function testCreatesInstances()
@@ -70,6 +70,14 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     {
         $server = new Server();
         $this->assertSame($server, $server->add("middleware"));
+    }
+
+    /**
+     * @covers ::getDispatcher
+     */
+    public function testReturnsDispatcher()
+    {
+        $this->assertSame($this->dispatcher->reveal(), $this->server->getDispatcher());
     }
 
     /**
@@ -187,5 +195,4 @@ class ServerTest extends \PHPUnit_Framework_TestCase
         $this->server->respond();
         $this->request->withAttribute("name", "value")->shouldHaveBeenCalled();
     }
-
 }
