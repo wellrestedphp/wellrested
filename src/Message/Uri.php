@@ -239,7 +239,7 @@ class Uri implements UriInterface
         if ($this->path === "*") {
             return $this->path;
         }
-        return $this->percentEncode($this->path, '/');
+        return $this->percentEncode($this->path);
     }
 
     /**
@@ -264,7 +264,7 @@ class Uri implements UriInterface
      */
     public function getQuery()
     {
-        return $this->percentEncode($this->query, '&=');
+        return $this->percentEncode($this->query);
     }
 
     /**
@@ -522,17 +522,22 @@ class Uri implements UriInterface
      *
      * This method encode each character that is not:
      * - A precent sign ("%") that is followed by a hex character (0-9, a-f, A-F)
-     * - An "unreserved character" per RFC 3986 (ALPHA / DIGIT / "-" / "." / "_" / "~")
-     * - A slash ("/")
+     * - An "unreserved character" per RFC 3986 (see below)
+     * - A "reserved character" per RFC 3986 (see below)
+     *
+     * unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+     * reserved = gen-delims / sub-delims
+     * gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+     * sub-delims  = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
      *
      * @param string $subject
-     * @param string $whitelist
      * @return string
      */
-    private function percentEncode($subject, $whitelist = "")
+    private function percentEncode($subject)
     {
-        $whitelist = preg_quote($whitelist);
-        $pattern = '~(?:%(?![a-fA-F0-9]{2}))|(?:[^%a-zA-Z0-9\-\.\_\~' . $whitelist . ']{1})~';
+        $reserved = ':/?#[]@!$&\'()*+,;=';
+        $reserved = preg_quote($reserved);
+        $pattern = '~(?:%(?![a-fA-F0-9]{2}))|(?:[^%a-zA-Z0-9\-\.\_\~' . $reserved . ']{1})~';
         $callback = function ($matches) {
             return urlencode($matches[0]);
         };
