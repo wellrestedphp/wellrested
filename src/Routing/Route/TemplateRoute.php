@@ -138,6 +138,7 @@ class TemplateRoute extends Route
                 break;
             case "/":
                 $name = substr($name, 1);
+                $pattern = '[0-9a-zA-Z\-._\~%,\/]*'; // Unreserved + "," and "/"
                 $prefix = "\\/";
                 $delimiter = "\\/";
                 $explodeDelimiter = "/";
@@ -147,7 +148,9 @@ class TemplateRoute extends Route
         // Explosion
         if (substr($name, -1, 1) === "*") {
             $name = substr($name, 0, -1);
-            $pattern = ".*";
+            if ($pattern === self::RE_UNRESERVED) {
+                $pattern = '[0-9a-zA-Z\-._\~%,]*'; // Unreserved + ","
+            }
             $this->explosions[$name] = $explodeDelimiter;
         }
 
