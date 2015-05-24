@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b32e5e4acb8a8609095c237f52e1bcaa",
+    "hash": "b9a9dba73792cc131761c51e3a035f2c",
     "packages": [
         {
             "name": "psr/http-message",
