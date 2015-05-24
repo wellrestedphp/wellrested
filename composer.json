@@ -1,7 +1,7 @@
 {
     "name": "wellrested/wellrested",
     "description": "Simple PHP Library for RESTful APIs",
-    "keywords": ["rest", "restful", "api", "curl", "http"],
+    "keywords": ["rest", "restful", "api", "http"],
     "homepage": "https://github.com/pjdietz/wellrested",
     "license": "MIT",
     "type": "library",

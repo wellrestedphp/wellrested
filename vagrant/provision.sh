@@ -18,7 +18,6 @@ changes="
 set /files/etc/php5/cli/php.ini/Date/date.timezone America/New_York
 set /files/etc/php5/fpm/php.ini/Date/date.timezone America/New_York
 set /files/etc/php5/fpm/php.ini/cgi/cgi.fix_pathinfo 0
-set /files/etc/php5/fpm/php.ini/Session/session.save_handler memcached
 set /files/etc/php5/fpm/php.ini/Session/session.save_path 127.0.0.1:11211
 set /files/etc/php5/mods-available/xdebug.ini/.anon/zend_extension xdebug.so
 set /files/etc/php5/mods-available/xdebug.ini/.anon/xdebug.remote_enable on
