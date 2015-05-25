@@ -78,9 +78,10 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     public function nonMatchingTargetProvider()
     {
         return [
-            ["/foo/{var}", "/bar/12", false, "Mismatch before first template expression"],
-            ["/foo/{foo}/bar/{bar}", "/foo/12/13", false, "Mismatch after first template expression"],
-            ["/hello/{hello}", "/hello/Hello%20World!", false, "Requires + operator to match reserver characters"]
+            ["/foo/{var}", "/bar/12", "Mismatch before first template expression"],
+            ["/foo/{foo}/bar/{bar}", "/foo/12/13", "Mismatch after first template expression"],
+            ["/hello/{hello}", "/hello/Hello%20World!", "Requires + operator to match reserver characters"],
+            ["{/var}", "/bar/12", "Path contains more segements than template"],
         ];
     }
 

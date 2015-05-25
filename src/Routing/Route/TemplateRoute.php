@@ -125,6 +125,9 @@ class TemplateRoute extends Route
         // characters to allow in the match.
         $operator = $name[0];
 
+        // Read the last character as the modifier.
+        $explosion = (substr($name, -1, 1) === "*");
+
         switch ($operator) {
             case "+":
                 $name = substr($name, 1);
@@ -138,15 +141,17 @@ class TemplateRoute extends Route
                 break;
             case "/":
                 $name = substr($name, 1);
-                $pattern = '[0-9a-zA-Z\-._\~%,\/]*'; // Unreserved + "," and "/"
                 $prefix = "\\/";
                 $delimiter = "\\/";
-                $explodeDelimiter = "/";
+                if ($explosion) {
+                    $pattern = '[0-9a-zA-Z\-._\~%,\/]*'; // Unreserved + "," and "/"
+                    $explodeDelimiter = "/";
+                }
                 break;
         }
 
         // Explosion
-        if (substr($name, -1, 1) === "*") {
+        if ($explosion) {
             $name = substr($name, 0, -1);
             if ($pattern === self::RE_UNRESERVED) {
                 $pattern = '[0-9a-zA-Z\-._\~%,]*'; // Unreserved + ","
