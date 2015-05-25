@@ -106,6 +106,7 @@ Contents
    middleware
    router
    uri-templates
+   uri-templates-advanced
    dependency-injection
    web-server-configuration
 
