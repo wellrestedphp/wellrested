@@ -37,7 +37,7 @@ You may also use the explode (``*``) modifier to match a variable number of path
     *   - {/path*}
         - /any/number/of/parts.jpg
         - Yes
-        - :path: ``["any", "number", "of", "parts"]``
+        - :path: ``["any", "number", "of", "parts.jpg"]``
     *   - /image{/image*}.jpg
         - /image/with/any/path.jpg
         - Yes
