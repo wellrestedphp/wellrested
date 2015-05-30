@@ -103,6 +103,7 @@ Contents
 
    overview
    getting-started
+   messages
    middleware
    router
    uri-templates

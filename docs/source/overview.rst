@@ -47,4 +47,3 @@ Licensed using the `MIT license <http://opensource.org/licenses/MIT>`_.
     THE SOFTWARE.
 
 .. _Composer: http://getcomposer.org/
-.. _PHP cURL: http://php.net/manual/en/book.curl.php
