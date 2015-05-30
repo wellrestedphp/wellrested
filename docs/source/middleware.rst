@@ -126,7 +126,7 @@ Use a middleware callable directly.
     $router->add("GET,PUT,DELETE", "/widgets/{id}", function ($request, $response, $next) {
         $response = $response->withStatus(200)
             ->withHeader("Content-type", "text/plain")
-            ->withBody(new \WellRESTed\Message\Stream("It's a bunch of widgets!");
+            ->withBody(new \WellRESTed\Message\Stream("It's a bunch of widgets!"));
         return $next($request, $response);
     });
 
