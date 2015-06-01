@@ -294,10 +294,201 @@ Middleware can also use attributes as a way to provide extra information to subs
 
 Finally, attributes provide a nice way to provide a `dependency injection`_ container for to your middleware.
 
-Requests
---------
+Responses
+---------
 
-Coming soon!
+Initial Response
+^^^^^^^^^^^^^^^^
+
+When you call ``WellRESTed\Server::respond``, the server creates a "blank" response instance to pass to dispatched middleware. This response will have a ``500 Internal Server Error`` status, no headers, and an empty body.
+
+You may wish to start each request-response cycle with a response with a different initial state, for example to include a custom header with all responses or to assume success and only change the status code on a failure (or non-``200`` success). Here are two ways to provide this starting response:
+
+Provide middleware as the first middleware that set the default conditions.
+
+.. code-block:: php
+
+    $initialResponsePrep = function ($rqst, $resp, $next) {
+        // Set intial response and forward to subsequent middleware.
+        $resp = $resp
+            ->withStatus(200)
+            ->withHeader("X-powered-by", "My Super Cool API v1.0.2")
+        return $next($rqst, $resp);
+    };
+
+    $server = new \WellRESTed\Server();
+    $server->add($initialResponsePrep);
+    // ...add other middleware...
+    $server->respond();
+
+Alternatively, instantiate a response and provide it to ``WellRESTed\Server::respond``.
+
+.. code-block:: php
+
+    // Create an initial response. This can be any instance implementing
+    // Psr\Http\Message\ResponseInterface.
+    $response = new \WellRESTed\Message\Response(200, [
+        "X-powered-by" => ["My Super Cool API v1.0.2"]]);
+
+    $server = new \WellRESTed\Server();
+    // ...add middleware middleware...
+    // Pass the response to respond()
+    $server->respond(null, $response);
+
+Modifying
+^^^^^^^^^
+
+PSR-7_ messages are immutable, so you will not be able to alter values of response properties. Instead, ``with*`` methods provide ways to get a copy of the current message with updated properties. For example, ``ResponseInterface::withStatus`` returns a copy of the original response with the status changed.
+
+.. code-block:: php
+
+    // The original response has a 500 status code.
+    $response->getStatusCode();
+    // 500
+
+    // Replace this instance with a new instance with the status updated.
+    $response = $response->withStatus(200);
+    $response->getStatusCode();
+    // 200
+
+.. note::
+
+    PSR-7_ requests are immutable as well, and we used ``withAttribute`` and ``withParsedBody`` in a few of the examples in the Requests section.
+
+Chain multiple ``with`` methods together fluently:
+
+.. code-block:: php
+
+    // Get a new response with updated status, headers, and body.
+    $response = $response
+        ->withStatus(200)
+        ->withHeader("Content-type", "text/plain")
+        ->withBody(new \WellRESTed\Message\Stream("Hello, world!);
+
+Headers
+^^^^^^^
+
+Use the ``withHeader`` method to add a header to a response. ``withHeader`` will add the header if not already set, or replace the value of an existing header with that name.
+
+.. code-block:: php
+
+    // Add a "Content-type" header.
+    $response = $response->withHeader("Content-type", "text/plain");
+    $response->getHeaderLine("Content-type");
+    // text/plain
+
+    // Calling withHeader a second time updates the value.
+    $response = $response->withHeader("Content-type", "text/html");
+    $response->getHeaderLine("Content-type");
+    // text/html
+
+To set multiple values for a given header field name (e.g., for ``Set-cookie`` headers), call ``withAddedHeader``. ``withAddedHeader`` adds the new header without altering existing headers with the same name.
+
+.. code-block:: php
+
+    $response = $response
+        ->withHeader("Set-cookie", "cat=Molly; Path=/cats; Expires=Wed, 13 Jan 2021 22:23:01 GMT;")
+        ->withAddedHeader("Set-cookie", "dog=Bear; Domain=.foo.com; Path=/; Expires=Wed, 13 Jan 2021 22:23:01 GMT;")
+        ->withAddedHeader("Set-cookie", "hamster=Fizzgig; Domain=.foo.com; Path=/; Expires=Wed, 13 Jan 2021 22:23:01 GMT;");
+
+To check if a header exists or to remove a header, use ``hasHeader`` and ``withoutHeader``.
+
+.. code-block:: php
+
+    // Check if a header exists.
+    $reponse->hasHeader("Content-type");
+    // true
+
+    // Clone this response without the "Content-type" header.
+    $response = $response->withoutHeader("Content-type");
+
+    // Check if a header exists.
+    $reponse->hasHeader("Content-type");
+    // false
+
+Body
+^^^^
+
+To set the body for the response, pass an instance implementing ``Psr\Http\Message\Stream`` to the ``withBody`` method.
+
+.. code-block:: php
+
+    $stream = new \WellRESTed\Message\Stream("Hello, world!");
+    $response = $response->withBody($stream);
+
+WellRESTed provides two ``Psr\Http\Message\Stream`` implementations. You can use these, or any other impelentation.
+
+Stream
+~~~~~~
+
+``WellRESTed\Message\Stream`` wraps a file pointer resource and is useful for responding with a string or file.
+
+When you pass a string to the constructor, the Stream instance uses `php://temp`_ as the file pointer resource. The string passed to the constructor is automatically stored to ``php://temp``, and you can write more content to it using the ``StreamInterface::write`` method.
+
+.. note::
+
+    ``php://temp`` stores the contents to memory, but switches to a temporary file once the amount of data stored hits a predefined limit (the default is 2 MB).
+
+.. code-block:: php
+
+    function ($rqst, $resp, $next) {
+
+        // Pass the beginning of the contents to the constructor as a string.
+        $body = new \WellRESTed\Message\Stream("Hello ");
+
+        // Append more contents.
+        $body->write("world!");
+
+        // Set the body and status code.
+        $resp = $resp
+            ->withStatus(200)
+            ->withBody($body);
+
+        // Forward to the next middleware.
+        return $next($rqst, $resp);
+
+    }
+
+To respond with the contents of an existing file, use ``fopen`` to open the file with read access and pass the pointer to the constructor.
+
+.. code-block:: php
+
+    function ($rqst, $resp, $next) {
+
+        // Open the file with read access.
+        $resource = fopen("/home/user/some/file", "rb");
+
+        // Pass the file pointer resource to the constructor.
+        $body = new \WellRESTed\Message\Stream($resource);
+
+        // Set the body and status code.
+        $resp = $resp
+            ->withStatus(200)
+            ->withBody($body);
+
+        // Forward to the next middleware.
+        return $next($rqst, $resp);
+
+    }
+
+NullStream
+~~~~~~~~~~
+
+Each PSR-7_ message MUST have a body, so there's no ``withoutBody`` method. You also cannot pass ``null`` to ``withBody``. Instead, use a ``WellRESTed\Messages\NullStream`` to provide a very simple, zero-length, no-content body.
+
+.. code-block:: php
+
+    function ($rqst, $resp, $next) {
+
+        // Set the body and status code.
+        $resp = $resp
+            ->withStatus(304)
+            ->withBody(new \WellRESTed\Message\NullStream());
+
+        // Forward to the next middleware.
+        return $next($rqst, $resp);
+
+    }
 
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
 .. _Getting Started: getting-started.html
@@ -305,3 +496,4 @@ Coming soon!
 .. _template routes: router.html#template-routes
 .. _regex routes: router.html#regex-routes
 .. _dependency injection: dependency-injection.html
+.. _`php://temp`: http://php.net/manual/ro/wrappers.php.php

@@ -20,7 +20,7 @@ Suppose ``$catHandler`` is a middleware that you want to dispatch whenever a cli
 
     $router->register("GET", "/cats/", $catHandler);
 
-The ``register`` method is fluid, so you can add multiple routes in either of these styles:
+The ``register`` method is fluent, so you can add multiple routes in either of these styles:
 
 .. code-block:: php
 
