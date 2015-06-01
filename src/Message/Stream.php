@@ -24,7 +24,7 @@ class Stream implements StreamInterface
         if (is_resource($resource) && get_resource_type($resource) === "stream") {
             $this->resource = $resource;
         } elseif (is_string($resource)) {
-            $this->resource = fopen("php://temp", "r+");
+            $this->resource = fopen("php://temp", "wb+");
             if ($resource !== "") {
                 $this->write($resource);
             }
