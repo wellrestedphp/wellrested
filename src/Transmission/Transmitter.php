@@ -28,7 +28,7 @@ class Transmitter implements TransmitterInterface
      *
      * This method will also provide a Content-length header if:
      *   - Response does not have a Content-length header
-     *   - Response does not have a Tranfser-encoding: chunked header
+     *   - Response does not have a Transfer-encoding: chunked header
      *   - Response body stream is readable and reports a non-null size
      *
      * @param ServerRequestInterface $request
@@ -69,7 +69,7 @@ class Transmitter implements TransmitterInterface
         // Add a Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header
-        // - Response does not have a Tranfser-encoding: chunked header
+        // - Response does not have a Transfer-encoding: chunked header
         // - Response body stream is readable and reports a non-null size
         //
         if (!$response->hasHeader("Content-length")

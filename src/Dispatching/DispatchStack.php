@@ -44,7 +44,7 @@ class DispatchStack implements DispatchStackInterface
      *
      * When the stack is dispatched empty, or when all middleware in the stack
      * call the $next argument they were passed, this method will call the
-     * $next it receieved.
+     * $next it received.
      *
      * When any middleware in the stack returns a response without calling its
      * $next, the stack will not call the $next it received.

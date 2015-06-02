@@ -29,7 +29,7 @@ interface DispatcherInterface
      *
      * Implementation MAY dispatch other types of middleware.
      *
-     * When an implementation receives a $middware that is not of a type it can
+     * When an implementation receives a $middleware that is not of a type it can
      * dispatch, it MUST throw a DispatchException.
      *
      * @param mixed $middleware

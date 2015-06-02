@@ -32,16 +32,16 @@ interface DispatchStackInterface extends MiddlewareInterface
      * returns the response unchanged.
      *
      * When any middleware returns a response without calling the $next
-     * argument it recieved, the stack instance MUST stop propogating and MUST
+     * argument it received, the stack instance MUST stop propagating and MUST
      * return a response without calling the $next argument passed to __invoke.
      *
      * This method MUST call the passed $next argument when:
      * - The stack is empty (i.e., there is no middleware to dispatch)
-     * - Each middleware called the $next that it receieved.
+     * - Each middleware called the $next that it received.
      *
      * This method MUST NOT call the passed $next argument when the stack is
      * not empty and any middleware returns a response without calling the
-     * $next it receieved.
+     * $next it received.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response

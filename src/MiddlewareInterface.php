@@ -17,17 +17,18 @@ interface MiddlewareInterface
      * $next is a callable that expects a request and response as parameters
      * and returns a response. Calling $next forwards a request and response
      * to the next middleware in the sequence (if any) and continues
-     * propagation; returning a response without calling $next halts propgation
-     * and prevents subsequent middleware from running.
+     * propagation; returning a response without calling $next halts
+     * propagation and prevents subsequent middleware from running.
      *
-     * Implementations MAY call $next to continue propagation. After calling
-     * $next, implementations MUST return the response returned by $next or
-     * use $next's returned response to determine the response it will
-     * ulitimately return. Implementations MUST NOT call $next and disregard
-     * $next's returned response.
+     * Implementations SHOULD call $next to allow subsequent middleware to act
+     * on the request and response. Implementations MAY further alter the
+     * response returned by $next before returning it.
      *
-     * Implementaitons MAY return a response without calling $next to halt
-     * propagation.
+     * Implementations MAY return a response without calling $next to prevent
+     * propagation (e.g., for error conditions).
+     *
+     * Implementations SHOULD NOT call $next and disregard the response by
+     * returning an entirely unrelated response.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
