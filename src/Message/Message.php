@@ -15,7 +15,7 @@ abstract class Message implements MessageInterface
     /** @var StreamInterface */
     protected $body;
     /** @var string */
-    protected $protcolVersion = "1.1";
+    protected $protocolVersion = "1.1";
 
     /**
      * Create a new Message, optionally with headers and a body.
@@ -67,7 +67,7 @@ abstract class Message implements MessageInterface
      */
     public function getProtocolVersion()
     {
-        return $this->protcolVersion;
+        return $this->protocolVersion;
     }
 
     /**
@@ -82,7 +82,7 @@ abstract class Message implements MessageInterface
     public function withProtocolVersion($version)
     {
         $message = clone $this;
-        $message->protcolVersion = $version;
+        $message->protocolVersion = $version;
         return $message;
     }
 

@@ -20,7 +20,7 @@ interface RouteInterface extends MiddlewareInterface
     public function getTarget();
 
     /**
-     * Return the RouteInterface::TYPE_ contants that identifies the type.
+     * Return the RouteInterface::TYPE_ constants that identifies the type.
      *
      * TYPE_STATIC indicates the route MUST match only when the path is an
      * exact match to the route's target. This route type SHOULD NOT
@@ -60,7 +60,7 @@ interface RouteInterface extends MiddlewareInterface
      *
      * @param string $requestTarget
      * @return boolean
-     * @throw  \RuntimeException Error occured testing the target such as an
+     * @throw  \RuntimeException Error occurred testing the target such as an
      *      invalid regular expression
      */
     public function matchesRequestTarget($requestTarget);

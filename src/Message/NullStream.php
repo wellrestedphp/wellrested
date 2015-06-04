@@ -5,7 +5,7 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * NullStream is a minimal, always-empty, non-writeable stream.
+ * NullStream is a minimal, always-empty, non-writable stream.
  *
  * Use this for messages with no body.
  */
@@ -105,7 +105,7 @@ class NullStream implements StreamInterface
      */
     public function rewind()
     {
-        throw new \RuntimeException("Unable to rewind srream.");
+        throw new \RuntimeException("Unable to rewind stream.");
     }
 
     /**

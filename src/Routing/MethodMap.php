@@ -35,7 +35,7 @@ class MethodMap implements MethodMapInterface
      * - A string containing the fully qualified class name of a class
      *     implementing MiddlewareInterface
      * - A callable that returns an instance implementing MiddleInterface
-     * - A callable maching the signature of MiddlewareInteraface::dispatch
+     * - A callable matching the signature of MiddlewareInterface::dispatch
      * @see DispatchedInterface::dispatch
      *
      * $middleware may also be null, in which case any previously set

@@ -29,7 +29,7 @@ class Server
     /**
      * Create a new server.
      *
-     * By default, when a route containg path variables matches, the path
+     * By default, when a route containing path variables matches, the path
      * variables are stored individually as attributes on the
      * ServerRequestInterface.
      *
@@ -128,8 +128,8 @@ class Server
      *
      * @param ServerRequestInterface $request Request provided by the client
      * @param ResponseInterface $response Initial starting place response to
-     *     propogate to middleware.
-     * @param TransmitterInterface $transmitter Instance to outputing the
+     *     propagate to middleware.
+     * @param TransmitterInterface $transmitter Instance to outputting the
      *     final response to the client.
      */
     public function respond(

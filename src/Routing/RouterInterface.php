@@ -44,7 +44,7 @@ interface RouterInterface extends MiddlewareInterface
      * - A string containing the fully qualified class name of a class
      *     implementing MiddlewareInterface
      * - A callable that returns an instance implementing MiddleInterface
-     * - A callable maching the signature of MiddlewareInteraface::dispatch
+     * - A callable matching the signature of MiddlewareInterface::dispatch
      * @see DispatchedInterface::dispatch
      *
      * @param string $target Request target or pattern to match

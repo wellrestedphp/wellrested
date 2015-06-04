@@ -23,7 +23,7 @@ class UploadedFile implements UploadedFileInterface
      * provided by $_FILES. For example, given this structure for $_FILES:
      *
      *     array(
-     *         'avatar' => arrary(
+     *         'avatar' => array(
      *             'name' => 'my-avatar.png',
      *             'type' => 'image/png',
      *             'size' => 90996,

@@ -521,7 +521,7 @@ class Uri implements UriInterface
      * Return a percent-encoded string.
      *
      * This method encode each character that is not:
-     * - A precent sign ("%") that is followed by a hex character (0-9, a-f, A-F)
+     * - A percent sign ("%") that is followed by a hex character (0-9, a-f, A-F)
      * - An "unreserved character" per RFC 3986 (see below)
      * - A "reserved character" per RFC 3986 (see below)
      *

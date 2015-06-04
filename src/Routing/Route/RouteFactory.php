@@ -23,7 +23,7 @@ class RouteFactory implements RouteFactoryInterface
      * - Target with no special characters will create StaticRoutes
      * - Target ending with * will create PrefixRoutes
      * - Target containing URI variables (e.g., {id}) will create TemplateRoutes
-     * - Regular exressions will create RegexRoutes
+     * - Regular expressions will create RegexRoutes
      *
      * @param string $target Route target or target pattern
      * @return RouteInterface
@@ -39,7 +39,7 @@ class RouteFactory implements RouteFactoryInterface
                 return new PrefixRoute($target, new MethodMap($this->dispatcher));
             }
 
-            // TempalateRoutes contain {variable}
+            // TemplateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
                 return new TemplateRoute($target, new MethodMap($this->dispatcher));
             }

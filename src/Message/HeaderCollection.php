@@ -6,13 +6,13 @@ use ArrayAccess;
 use Iterator;
 
 /**
- * HeaderCollection provides case-insenstive access to lists of header values.
+ * HeaderCollection provides case-insensitive access to lists of header values.
  *
  * This class is an internal class used by Message and is not intended for
  * direct use by consumers.
  *
  * HeaderCollection preserves the cases of keys as they are set, but treats key
- * access case insesitively.
+ * access case insensitively.
  *
  * Any values added to HeaderCollection are added to list arrays. Subsequent
  * calls to add a value for a given key will append the new value to the list
@@ -37,7 +37,7 @@ class HeaderCollection implements ArrayAccess, Iterator
     /**
      * @var string[]
      *
-     * List arrary of lowercase header names.
+     * List array of lowercase header names.
      */
     private $keys;
 
@@ -104,7 +104,7 @@ class HeaderCollection implements ArrayAccess, Iterator
         $normalized = strtolower($offset);
         unset($this->fields[$normalized]);
         unset($this->values[$normalized]);
-        // Remove and renormalize the list of keys.
+        // Remove and normalize the list of keys.
         if (($key = array_search($normalized, $this->keys)) !== false) {
             unset($this->keys[$key]);
             $this->keys = array_values($this->keys);

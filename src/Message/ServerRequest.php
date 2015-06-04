@@ -55,7 +55,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * Creates a new, empty representation of a server-side HTTP request.
      *
      * To obtain a ServerRequest representing the request sent to the server
-     * instantiaing the request, use the factory method
+     * instantiating the request, use the factory method
      * ServerRequest::getServerRequest
      *
      * @see ServerRequest::getServerRequest
@@ -349,7 +349,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         if (isset($_SERVER["SERVER_PROTOCOL"]) && $_SERVER["SERVER_PROTOCOL"] === "HTTP/1.0") {
             // The default is 1.1, so only update if 1.0
-            $this->protcolVersion = "1.0";
+            $this->protocolVersion = "1.0";
         }
         if (isset($_SERVER["REQUEST_METHOD"])) {
             $this->method = $_SERVER["REQUEST_METHOD"];
