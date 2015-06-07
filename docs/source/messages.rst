@@ -197,8 +197,8 @@ The JSON example cast the stream to a string, but we can also do things like cop
 
     }
 
-Paramters
-^^^^^^^^^
+Parameters
+^^^^^^^^^^
 
 PSR-7_ eliminates the need to read from many of the superglobals. We already saw how ``getParsedBody`` takes the place of reading directly from ``$_POST`` and ``getQueryParams`` replaces reading from ``$_GET``. Here are some other ``ServerRequestInterface`` methods with **brief** descriptions. Please see PSR-7_ for full details, particularly for ``getUploadedFiles``.
 
@@ -365,6 +365,30 @@ Chain multiple ``with`` methods together fluently:
         ->withHeader("Content-type", "text/plain")
         ->withBody(new \WellRESTed\Message\Stream("Hello, world!);
 
+Status
+^^^^^^
+
+Provide the status code for your response with the ``withStatus`` method. When you pass a standard status code to this method, the WellRESTed response implementation will provide an appropriate reason phrase for you. For a list of reason phrases provided by WellRESTed, see the IANA `HTTP Status Code Registry`_.
+
+.. note::
+
+    The "reason phrase" is the text description of the status that appears in the status line of the response. The "status line" is the very first line in the response that appears before the first header.
+
+
+Although the PSR-7_ ``ResponseInterface::withStatus`` method accepts the reason phrase as an optional second parameter, you generally shouldn't pass anything unless you are using a non-standard status code. (And you probably shouldn't be using a non-standard status code.)
+
+.. code-block:: php
+
+    // Set the status and view the reason phrase provided.
+
+    $response = $response->withStatus(200);
+    $response->getReasonPhrase();
+    // "OK"
+
+    $response = $response->withStatus(404);
+    $response->getReasonPhrase();
+    // "Not Found"
+
 Headers
 ^^^^^^^
 
@@ -490,6 +514,7 @@ Each PSR-7_ message MUST have a body, so there's no ``withoutBody`` method. You 
 
     }
 
+.. _HTTP Status Code Registry: http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
 .. _Getting Started: getting-started.html
 .. _Middleware: middleware.html
