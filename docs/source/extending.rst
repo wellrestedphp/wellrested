@@ -163,6 +163,57 @@ Even if you don't want to use a different implementation, you may still find a r
     // Pass the response to respond()
     $server->respond(null, $response);
 
+Server Customization
+--------------------
+
+As an alternative to passing you preferred request and response instances into ``Server::respond``, you can extend ``Server`` to obtain default values from a different source.
+
+Classes such as ``Server`` that create dependencies as defaults keep the instantiation isolated in easy-to-override methods. For example, ``Server`` has a protected method ``getResponse`` that instantiates and returns a new response. You can easily replace this method with your own that returns the default response of your choice.
+
+For example, imagine you have a dependency container that provides the starting messages for you. You can subclass ``Server`` to obtain and use these messages as defaults like this:
+
+.. code-block:: php
+
+    class CustomerServer extends WellRESTed\Server
+    {
+        /** @var A dependency container */
+        private $container;
+
+        public function __construct(
+            $container,
+            array $attributes = null,
+            DispatcherInterface $dispatcher = null,
+            $pathVariablesAttributeName = null
+        ) {
+            // Call the parent constructor with the expected parameters.
+            parent::__construct($attributes, $dispatcher, $pathVariablesAttributeName);
+            // Store the container.
+            $this->container = $container;
+        }
+
+        /**
+         * Redefine this method, which is called in Server::respond when
+         * the caller does not provide a request.
+         */
+        protected function getRequest()
+        {
+            // Return a request obtained from the container.
+            return $this->container["request"];
+        }
+
+        /**
+         * Redefine this method, which is called in Server::respond when
+         * the caller does not provide a response.
+         */
+        protected function getResponse()
+        {
+            // Return a response obtained from the container.
+            return $this->container["response"];
+        }
+    }
+
+In addition to the messages, you can do similar customization for other ``Server`` dependencies such as the dispatcher (see above), the transmitter (which writes the response out to the client), and the routers that are created with ``Server::createRouter``. These dependencies are instantiated in isolated methods as with the request and response to make this sort of customization easy, and other classes such as ``Router`` use this pattern as well. See the source code, and don't hesitated to subclass.
+
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
 .. _Using Middleware: middleware.html#using-middleware
 .. _Request Attributes: messages.html#attributes
