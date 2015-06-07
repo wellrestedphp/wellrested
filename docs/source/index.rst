@@ -108,6 +108,7 @@ Contents
    router
    uri-templates
    uri-templates-advanced
+   extending
    dependency-injection
    web-server-configuration
 
