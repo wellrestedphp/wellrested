@@ -67,7 +67,7 @@ This example middleware shows that you can use:
     - ``getMethod()`` to read the HTTP verb (e.g., GET, POST, OPTIONS, DELETE)
     - ``getQueryParams()`` to read the query as an associative array
 
-Let's move on to some more intersting features.
+Let's move on to some more interesting features.
 
 Headers
 ^^^^^^^
@@ -84,8 +84,8 @@ Call ``getHeaderLine($name)`` and pass the case-insensitive name of a header. Th
         $cacheControl = $request->getHeaderLine("cache-control");
         // "no-cache"
 
-        // This message does not contain any authoriation headers.
-        $authoriziation = $request->getHeaderLine("authorization");
+        // This message does not contain any authorization headers.
+        $authorization = $request->getHeaderLine("authorization");
         // ""
 
     }
@@ -95,7 +95,7 @@ Call ``getHeaderLine($name)`` and pass the case-insensitive name of a header. Th
     All methods relating to headers treat header field name case insensitively.
 
 
-Because HTTP messages may contain multiple headers with the same field name, ``getHeaderLine($name)`` has one other feature: If multiple headers with the same field name are present in the message, ``getHeaderLine($name)`` returns a string containing all of the values for that field, concatenated by commas. This is more common with responses, paricularaly with the ``Set-cookie`` header, but is still possible for requests.
+Because HTTP messages may contain multiple headers with the same field name, ``getHeaderLine($name)`` has one other feature: If multiple headers with the same field name are present in the message, ``getHeaderLine($name)`` returns a string containing all of the values for that field, concatenated by commas. This is more common with responses, particularly with the ``Set-cookie`` header, but is still possible for requests.
 
 You may also use ``hasHeader($name)`` to test if a header exists, ``getHeader($name)`` to receive an array of values for this field name, and ``getHeaders()`` to receive an associative array of headers where each key is a field name and each value is an array of field values.
 
@@ -309,7 +309,7 @@ Provide middleware as the first middleware that set the default conditions.
 .. code-block:: php
 
     $initialResponsePrep = function ($rqst, $resp, $next) {
-        // Set intial response and forward to subsequent middleware.
+        // Set initial response and forward to subsequent middleware.
         $resp = $resp
             ->withStatus(200)
             ->withHeader("X-powered-by", "My Super Cool API v1.0.2")
@@ -420,14 +420,14 @@ To check if a header exists or to remove a header, use ``hasHeader`` and ``witho
 .. code-block:: php
 
     // Check if a header exists.
-    $reponse->hasHeader("Content-type");
+    $response->hasHeader("Content-type");
     // true
 
     // Clone this response without the "Content-type" header.
     $response = $response->withoutHeader("Content-type");
 
     // Check if a header exists.
-    $reponse->hasHeader("Content-type");
+    $response->hasHeader("Content-type");
     // false
 
 Body
@@ -440,7 +440,7 @@ To set the body for the response, pass an instance implementing ``Psr\Http\Messa
     $stream = new \WellRESTed\Message\Stream("Hello, world!");
     $response = $response->withBody($stream);
 
-WellRESTed provides two ``Psr\Http\Message\Stream`` implementations. You can use these, or any other impelentation.
+WellRESTed provides two ``Psr\Http\Message\Stream`` implementations. You can use these, or any other implementation.
 
 Stream
 ~~~~~~

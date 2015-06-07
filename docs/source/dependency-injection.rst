@@ -1,14 +1,14 @@
 Dependency Injection
 ====================
 
-Here are a few strategies for how to make a dependency injection container availble to middleware with WellRESTed.
+Here are a few strategies for how to make a dependency injection container available to middleware with WellRESTed.
 
 Request Attribute
 ^^^^^^^^^^^^^^^^^
 
-``Psr\Http\Message\ServerRequestInterface`` provides "attributes" that allow you attach arbitrary data to a request. You can use this to make your dependcy container available to any dispatched middleware.
+``Psr\Http\Message\ServerRequestInterface`` provides "attributes" that allow you attach arbitrary data to a request. You can use this to make your dependency container available to any dispatched middleware.
 
-When you instatiate a ``WellRESTed\Server``, you can provide an array of attributes that the server will add to the request.
+When you instantiate a ``WellRESTed\Server``, you can provide an array of attributes that the server will add to the request.
 
 .. code-block:: php
 
@@ -29,7 +29,7 @@ When the server dispatches middleware, the middleware will be able to read the c
 Callables
 ^^^^^^^^^
 
-Another approach is to use callables that return ``MiddlewareInterface`` instances when you assign middleware. This approach provides an oppurtunity to pass the container into the middleware's constructor.
+Another approach is to use callables that return ``MiddlewareInterface`` instances when you assign middleware. This approach provides an opportunity to pass the container into the middleware's constructor.
 
 
 .. code-block:: php
@@ -51,7 +51,7 @@ Another approach is to use callables that return ``MiddlewareInterface`` instanc
         }
     }
 
-When you add the middleware to the server or register it with a router, use a callable that passes container into the contructor.
+When you add the middleware to the server or register it with a router, use a callable that passes container into the constructor.
 
 .. code-block:: php
 

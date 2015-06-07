@@ -89,7 +89,7 @@ For a request to ``/cats/molly``:
         ...
     }
 
-Template routes are very powerful, and this only scratches the surface. See `URI Templates`_ for a full explaination of the syntax supported.
+Template routes are very powerful, and this only scratches the surface. See `URI Templates`_ for a full explanation of the syntax supported.
 
 Regex Routes
 ------------
@@ -128,10 +128,10 @@ Route Priority
 A router will often contain many routes, and sometimes more than one route will match for a given request. When the router looks for a matching route, it performs these checks:
 
 #. If there is a static route with exact match to path, dispatch it.
-#. If one prefix route matches the beginning of the path, disptach it.
+#. If one prefix route matches the beginning of the path, dispatch it.
 #. If multiple prefix routes match, dispatch the longest matching prefix route.
 #. Inspect each pattern route (template and regular expression) in the order added. Dispatch the first route that matches.
-#. If no pattern routes match, return a reponse with a ``404 Not Found`` status.
+#. If no pattern routes match, return a response with a ``404 Not Found`` status.
 
 Static vs. Prefix
 ~~~~~~~~~~~~~~~~~
@@ -179,7 +179,7 @@ Given these routes:
 Pattern vs. Pattern
 ~~~~~~~~~~~~~~~~~~~
 
-When multiple pattern routes match a path, the first one that was added to the router will be the one disptached. Be careful to add the specific routes before the general routes. For example, say you want to send traffic to two similar looking URIs to different middleware based whether the variables were supplied as numbers or letters—``/dogs/102/132`` should be dispatched to ``$numbers``, while ``/dogs/herding/australian-shepherd`` should be dispatched to ``$letters``.
+When multiple pattern routes match a path, the first one that was added to the router will be the one dispatched. Be careful to add the specific routes before the general routes. For example, say you want to send traffic to two similar looking URIs to different middleware based whether the variables were supplied as numbers or letters—``/dogs/102/132`` should be dispatched to ``$numbers``, while ``/dogs/herding/australian-shepherd`` should be dispatched to ``$letters``.
 
 This will work:
 
@@ -204,7 +204,7 @@ This is because ``/dogs/{group}/{breed}`` will match both ``/dogs/102/132`` and 
 Methods
 ^^^^^^^
 
-When you register a route, you can provide a specific method, a list of methods, or a wildcard to indcate any method.
+When you register a route, you can provide a specific method, a list of methods, or a wildcard to indicate any method.
 
 Registering by Method
 ---------------------
@@ -253,7 +253,7 @@ Specify middleware for all methods for a given path by proving a ``*`` wildcard.
 
 .. note::
 
-    The wildcard ``*`` can be useful, but be aware that the associated middleware will need to manage ``HEAD`` and ``OPTIONS`` requests, whereas this is done automatcially for non-wildcard routes.
+    The wildcard ``*`` can be useful, but be aware that the associated middleware will need to manage ``HEAD`` and ``OPTIONS`` requests, whereas this is done automatically for non-wildcard routes.
 
 HEAD
 ----
@@ -282,7 +282,7 @@ An ``OPTIONS`` request to ``/cats/12`` will provide a response like:
     HTTP/1.1 200 OK
     Allow: GET,PUT,DELETE,HEAD,OPTIONS
 
-Likewise, a request to an unsupport method will return a ``405 Method Not Allowed`` response with a descriptive ``Allow`` header.
+Likewise, a request to an unsupported method will return a ``405 Method Not Allowed`` response with a descriptive ``Allow`` header.
 
 A ``POST`` request to ``/cats/12`` will provide:
 
@@ -326,7 +326,7 @@ PUT    /cats/     405 Method Not Allowed
 Nested Routers
 ^^^^^^^^^^^^^^
 
-For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into subrouters.
+For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into sub-routers.
 
 This works because a ``Router`` is type of middleware, and can be used wherever middleware can be used.
 

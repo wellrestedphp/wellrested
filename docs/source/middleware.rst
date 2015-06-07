@@ -1,11 +1,11 @@
 Middleware
 ==========
 
-Okay, so what exactly **is** middleware? It's a nebulous term, and it's a bit reminscent of the Underpants gnomes.
+Okay, so what exactly **is** middleware? It's a nebulous term, and it's a bit reminiscent of the Underpants gnomes.
 
 - Phase 1: Request
 - Phase 2: ???
-- Phase 3: Respose
+- Phase 3: Response
 
 Middleware is indeed Phase 2. It's something (a callable or object) that takes a request and a response as inputs, does something with the response, and sends the altered response back out.
 
@@ -133,7 +133,7 @@ Use a middleware callable directly.
 Instance
 --------
 
-You can also provide pass an instnace directly as middleware.
+You can also provide pass an instance directly as middleware.
 
 .. code-block:: php
 
@@ -150,7 +150,7 @@ Why use one middleware when you can use more?
 
 Provide a sequence of middleware as an array. Each component of the array can be any of the varieties listed in this section.
 
-When disptached, the middleware in the array will run in order, with each calling the one following via the ``$next`` parameter.
+When dispatched, the middleware in the array will run in order, with each calling the one following via the ``$next`` parameter.
 
 .. code-block:: php
 
@@ -172,7 +172,7 @@ Here's an example authorization middleware using pseudocode.
 
 .. code-block:: php
 
-    namespace Webserice;
+    namespace Webservice;
 
     class Authorization implements \WellRESTed\MiddlewareInterface
     {
@@ -201,7 +201,7 @@ We can add authorization for just the ``/widgets/{id}`` endpoint like this:
 .. code-block:: php
 
     $router->register("GET,PUT,DELETE",  "/widgets/{id}", [
-            'Webservice\Auhtorizaiton',
+            'Webservice\Authorization',
             'Webservice\Widgets\WidgetHandler'
         ]);
 
@@ -211,7 +211,7 @@ Or, if you wanted to use the authorization for the entire service, you can add i
 
     $server = new \WellRESTed\Server();
     $server
-        ->add('Webservice\Auhtorizaiton')
+        ->add('Webservice\Authorization')
         ->add($server->createRouter()
             ->register("GET,PUT,DELETE", "/widgets/{id}", 'Webservice\Widgets\WidgetHandler')
         )
@@ -220,15 +220,15 @@ Or, if you wanted to use the authorization for the entire service, you can add i
 Moving Back Down the Chain
 --------------------------
 
-The authorization example returned ``$next($request, $response)`` immidiately, but you can do some interesting things by working with the response that comes back from ``$next``. Think of the request as taking a round trip on the subway with each middleware being a stop along the way. Each of the  stops you go through going up the chain, you also go through on the way back down.
+The authorization example returned ``$next($request, $response)`` immediately, but you can do some interesting things by working with the response that comes back from ``$next``. Think of the request as taking a round trip on the subway with each middleware being a stop along the way. Each of the  stops you go through going up the chain, you also go through on the way back down.
 
-We could add a caching middleware in front of ``GET`` requests for a specific widget. This middleware will check if a cached representation exists for the resource the client requested. If it exists, it will send it out to the client without ever bothering the ``WidgetHandler``. If there's no representation cached, it will call ``$next`` to propgate the request up the chain. On the return trip (when the call to ``$next`` finishes), the caching middleware will inspect the response and store the body to the cache for next time.
+We could add a caching middleware in front of ``GET`` requests for a specific widget. This middleware will check if a cached representation exists for the resource the client requested. If it exists, it will send it out to the client without ever bothering the ``WidgetHandler``. If there's no representation cached, it will call ``$next`` to propagate the request up the chain. On the return trip (when the call to ``$next`` finishes), the caching middleware will inspect the response and store the body to the cache for next time.
 
 Here's a pseudocode example:
 
 .. code-block:: php
 
-    namespace Webserice;
+    namespace Webservice;
 
     class Cache implements \WellRESTed\MiddlewareInterface
     {
@@ -240,7 +240,7 @@ Here's a pseudocode example:
             if ($representation !== null) {
                 // There is already a cached representation. Send it out
                 // without propagating.
-                return $reponse
+                return $response
                     ->withStatus(200)
                     ->withBody($representation);
             }
@@ -263,7 +263,7 @@ Here's a pseudocode example:
         private function storeRepresentationToCache(ResponseInterface $response)
         {
             // Ensure the response contains a success code, a valid body,
-            // headers that allow caching, etc. and store the represetnation.
+            // headers that allow caching, etc. and store the representation.
             // ...
         }
     }
@@ -273,18 +273,18 @@ We can add this caching middleware in the chain between the authorization middle
 .. code-block:: php
 
     $router->register("GET,PUT,DELETE",  "/widgets/{id}", [
-            'Webservice\Auhtorizaiton',
+            'Webservice\Authorization',
             'Webservice\Cache',
             'Webservice\Widgets\WidgetHandler'
         ]);
 
-Or, if you wanted to use the authorization and caching middelware for the entire service, you can add them to the ``Server`` in front of the ``Router``.
+Or, if you wanted to use the authorization and caching middleware for the entire service, you can add them to the ``Server`` in front of the ``Router``.
 
 .. code-block:: php
 
     $server = new \WellRESTed\Server();
     $server
-        ->add('Webservice\Auhtorizaiton')
+        ->add('Webservice\Authorization')
         ->add('Webservice\Cache')
         ->add($server->createRouter()
             ->register("GET,PUT,DELETE", "/widgets/{id}", 'Webservice\Widgets\WidgetHandler')

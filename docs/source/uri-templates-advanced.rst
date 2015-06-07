@@ -6,12 +6,12 @@ In `URI Templates`_, we looked at the most common ways to use URI Templates. In 
 Path Components
 ^^^^^^^^^^^^^^^
 
-To matching a path componenent, include a slash ``/`` at the beginning of the variable expression. This instructs the template to match the variable if it:
+To match a path component, include a slash ``/`` at the beginning of the variable expression. This instructs the template to match the variable if it:
 
 - Begins with ``/``
 - Contains only unreserved and percent-encoded characters
 
-You may also use the explode (``*``) modifier to match a variable number of path components and provide them as an array. When using the exlode (``*``) modifier to match paths components, the ``/`` character serves as the delimiter instead of a comma.
+You may also use the explode (``*``) modifier to match a variable number of path components and provide them as an array. When using the explode (``*``) modifier to match paths components, the ``/`` character serves as the delimiter instead of a comma.
 
 .. list-table:: Matching path components
     :header-rows: 1
@@ -57,7 +57,7 @@ Including a dot ``.`` at the beginning of the variable expression instructs the 
 - Begins with ``.``
 - Contains only unreserved (including ``.``) and percent-encoded characters
 
-You may also use the explode (``*``) modifier to match a variable number of dot-prefixed segements and store them to an array. When using the exlode (``*``) modifier to match paths components, the ``.`` character serves as the delimiter instead of a comma.
+You may also use the explode (``*``) modifier to match a variable number of dot-prefixed segments and store them to an array. When using the explode (``*``) modifier to match paths components, the ``.`` character serves as the delimiter instead of a comma.
 
 .. list-table:: Matching dot prefixes
     :header-rows: 1

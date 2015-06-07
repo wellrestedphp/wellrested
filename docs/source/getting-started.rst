@@ -11,7 +11,7 @@ Hello, World!
 Let's start with a very basic "Hello, world!". Here, we will create a server. A ``WellRESTed\Server`` reads the
 incoming request from the client, dispatches some middleware_, and transmits a response back to the client.
 
-Our middelware is a function that returns a response with the status code set to ``200`` and the body set to "Hello, world!".
+Our middleware is a function that returns a response with the status code set to ``200`` and the body set to "Hello, world!".
 
 .. _`Example 1`:
 .. rubric:: Example 1: Simple "Hello, world!"
@@ -46,7 +46,7 @@ Our middelware is a function that returns a response with the status code set to
 
     The middleware in this example provides a ``Stream`` as the body instead of a string. This is a feature or PSR-7 where HTTP message bodies are always represented by streams. This allows you to work with very large bodies without having to store the entire contents in memory.
 
-    WellRESTed provides ``Stream`` and ``NullStream``, but you can use any implementation of ``Psr\Http\Message\StreamInteface``.
+    WellRESTed provides ``Stream`` and ``NullStream``, but you can use any implementation of ``Psr\Http\Message\StreamInterface``.
 
 Routing by Path
 ^^^^^^^^^^^^^^^

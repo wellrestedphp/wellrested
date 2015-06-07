@@ -18,9 +18,9 @@ Middleware
 
 The middleware_ system allows you to map build sequences of modular code that propagate from one to the next. For example, an authenticator can validate a request and forward it to a cache; the cache can check for a stored representation and forward to another middleware if no cached representation is found, etc. All of this happens without any one middleware needing to know anything about where it is in the chain or which middleware comes before or after.
 
-Most middleware is never autoloaded or instantiated until it is needed, so a Web service with hundreds of middleware still only creates instances required for the current request-respose cycle.
+Most middleware is never autoloaded or instantiated until it is needed, so a Web service with hundreds of middleware still only creates instances required for the current request-response cycle.
 
-You can register middleware directly, register callables that return middleware (e.g., dependency container services), or register strings containing the middleware classnames to autoload and instantiate on demand.
+You can register middleware directly, register callables that return middleware (e.g., dependency container services), or register strings containing the middleware class names to autoload and instantiate on demand.
 
 Router
 ^^^^^^
@@ -32,7 +32,7 @@ WellRESTed's automates responding to ``OPTIONS`` requests for each endpoint base
 Extensible
 ^^^^^^^^^^
 
-All classes are coded to interfaces to allow you to provide your own implementations and use them in place of the built-in classes. For example, if your Web service needs to be able to dispatch middleware that implements a different interface, you can provide your own custom ``DispatcherInterface`` implentation.
+All classes are coded to interfaces to allow you to provide your own implementations and use them in place of the built-in classes. For example, if your Web service needs to be able to dispatch middleware that implements a different interface, you can provide your own custom ``DispatcherInterface`` implementation.
 
 Example
 -------

@@ -1,7 +1,7 @@
 URI Templates
 =============
 
-WellRESTed allows you to register middleware with a router using URI Templates, based on the URI Templates defined in `RFC 6570`_. These templates include variables (enclosed in curly braces) which are extracted and made availble to the disptached middleware.
+WellRESTed allows you to register middleware with a router using URI Templates, based on the URI Templates defined in `RFC 6570`_. These templates include variables (enclosed in curly braces) which are extracted and made available to the dispatched middleware.
 
 Reading Variables
 ^^^^^^^^^^^^^^^^^
@@ -88,11 +88,11 @@ Matching Characters
 Unreserved Characters
 ---------------------
 
-By default, URI Template variables will match only "unreserved" characters. `RFC 3968 Section 2.3`_ defines unreserved characters as alphanumeric characters,  ``-``, ``.``, ``_``, and ``~``. All other characters must be percent encoded to be matched by a default template variale.
+By default, URI Template variables will match only "unreserved" characters. `RFC 3968 Section 2.3`_ defines unreserved characters as alphanumeric characters,  ``-``, ``.``, ``_``, and ``~``. All other characters must be percent encoded to be matched by a default template variable.
 
 .. note::
 
-    Percent-encoded characters matched by template variables are automatically decoded when provided as request attibutes.
+    Percent-encoded characters matched by template variables are automatically decoded when provided as request attributes.
 
 Given the template ``/users/{user}``, the following paths provide these values for ``getAttribute("user")``:
 
@@ -113,7 +113,7 @@ A request for ``GET /uses/zoidberg@planetexpress.com`` will **not** match this t
 Reserved Characters
 -------------------
 
-If you need to match a non-percent-encoded reserved character like ``@`` or ``/``, use the ``+`` operator at the begining of the variable name.
+If you need to match a non-percent-encoded reserved character like ``@`` or ``/``, use the ``+`` operator at the beginning of the variable name.
 
 Using the template ``/users/{+user}``, we can match all of the paths above, plus ``/users/zoidberg@planetexpress.com``.
 
@@ -121,7 +121,7 @@ Reserved matching also allows matching unencoded slashes (``/``). For example, g
 
 .. code-block:: php
 
-    $router->register("GET", "/my-favorte-path{+path}", $pathHandler);
+    $router->register("GET", "/my-favorite-path{+path}", $pathHandler);
 
 The router will dispatch ``$pathHandler`` with for a request to ``GET /my-favorite-path/has/a/few/slashes.jpg``
 
