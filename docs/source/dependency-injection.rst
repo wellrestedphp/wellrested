@@ -1,7 +1,9 @@
 Dependency Injection
 ====================
 
-Here are a few strategies for how to make a dependency injection container available to middleware with WellRESTed.
+WellRESTed strives to play nicely with other code and not force developers into using any specific libraries or frameworks. As such, WellRESTed does not provide a dependency injection container, nor does it require you to use a specific container (or any).
+
+This section describes a handful of ways of making the dependency container of your choice available to middleware with WellRESTed.
 
 Request Attribute
 ^^^^^^^^^^^^^^^^^
@@ -17,7 +19,7 @@ When you instantiate a ``WellRESTed\Server``, you can provide an array of attrib
     $server = new WellRESTed\Server(["container" => $container]);
     // ... Add middleware, routes, etc. ...
 
-When the server dispatches middleware, the middleware will be able to read the contain as the "container" attribute.
+When the server dispatches middleware, the middleware will be able to read the container as the "container" attribute.
 
 .. code-block:: php
 
