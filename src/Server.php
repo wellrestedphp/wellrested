@@ -15,16 +15,16 @@ use WellRESTed\Transmission\TransmitterInterface;
 class Server
 {
     /** @var array */
-    private $attributes;
+    protected $attributes;
+
+    /** @var string ServerRequestInterface attribute name for matched path variables */
+    protected $pathVariablesAttributeName;
+
+    /** @var mixed[] List array of middleware */
+    protected $stack;
 
     /** @var DispatcherInterface */
     private $dispatcher;
-
-    /** @var string ServerRequestInterface attribute name for matched path variables */
-    private $pathVariablesAttributeName;
-
-    /** @var mixed[] List array of middleware */
-    private $stack;
 
     /**
      * Create a new server.
