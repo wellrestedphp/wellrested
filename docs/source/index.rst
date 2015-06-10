@@ -13,21 +13,23 @@ Request and response messages are built to the interfaces standardized by PSR-7_
 
 The message abstractions facilitate working with message headers, status codes, variables extracted from the path, message bodies, and all the other aspects of requests and responses.
 
-Middleware
-^^^^^^^^^^
-
-The middleware_ system allows you to map build sequences of modular code that propagate from one to the next. For example, an authenticator can validate a request and forward it to a cache; the cache can check for a stored representation and forward to another middleware if no cached representation is found, etc. All of this happens without any one middleware needing to know anything about where it is in the chain or which middleware comes before or after.
-
-Most middleware is never autoloaded or instantiated until it is needed, so a Web service with hundreds of middleware still only creates instances required for the current request-response cycle.
-
-You can register middleware directly, register callables that return middleware (e.g., dependency container services), or register strings containing the middleware class names to autoload and instantiate on demand.
-
 Router
 ^^^^^^
 
 The router_ allows you to define your endpoints using `URI Templates`_ like ``/foo/{bar}/{baz}`` that match patterns of paths and provide captured variables. You can also match exact paths for extra speed or regular expressions for extra flexibility.
 
-WellRESTed's automates responding to ``OPTIONS`` requests for each endpoint based on the method you assign. ``405 Method Not Allowed`` come free of charge as well for any methods you have not implemented on a given endpoint.
+WellRESTed's router automates responding to ``OPTIONS`` requests for each endpoint based on the methods you assign. ``405 Method Not Allowed`` responses come free of charge as well for any methods you have not implemented on a given endpoint.
+
+Middleware
+^^^^^^^^^^
+
+The middleware_ system allows you to build your Web service out of discrete, modular pieces. These pieces can be run in sequences where each has a chance to modify the response before handing it off to the next. For example, an authenticator can validate a request and forward it to a cache; the cache can check for a stored representation and forward to another middleware if no cached representation is found, etc. All of this happens without any one middleware needing to know anything about where it is in the chain or which middleware comes before or after.
+
+Most middleware is never autoloaded or instantiated until it is needed, so a Web service with hundreds of middleware still only creates instances required for the current request-response cycle.
+
+You can register middleware directly, register callables that return middleware (e.g., dependency container services), or register strings containing the middleware class names to autoload and instantiate on demand.
+
+
 
 Extensible
 ^^^^^^^^^^
