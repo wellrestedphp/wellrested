@@ -112,6 +112,7 @@ Contents
    uri-templates-advanced
    extending
    dependency-injection
+   additional
    web-server-configuration
 
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
