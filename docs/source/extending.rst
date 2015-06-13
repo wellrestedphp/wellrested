@@ -1,7 +1,7 @@
 Extending and Customizing
 =========================
 
-WellRESTed is designed with customization in mind. This section will describe some common scenarios for customization, starting with using middleware that implements a different interface.
+WellRESTed is designed with customization in mind. This section describes some common scenarios for customization, starting with using middleware that implements a different interface.
 
 Custom Middleware
 -----------------

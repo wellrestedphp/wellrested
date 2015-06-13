@@ -80,7 +80,7 @@ Middleware can be a callable (as in the `Getting Started`_) or an implementation
 Using Middleware
 ^^^^^^^^^^^^^^^^
 
-Methods that accept middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide middleware in a number of ways. For example, when you can provide a callable, a string containing a class name, an instance, or even an array containing a sequence of middleware.
+Methods that accept middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide middleware in a number of ways. For example, you can provide a string containing a class name, a middleware callable, a factory callable, or even an array containing a sequence of middleware.
 
 Fully Qualified Class Name (FQCN)
 ---------------------------------
@@ -93,8 +93,8 @@ Assume your Web service has an autoloadable class named ``Webservice\Widgets\Wid
 
 The class is not loaded, and no instances are created, until the route is matched and dispatched. Even for a router with 100 routes, no middleware registered by string name is loaded, except for the one that matches the request.
 
-Callable Provider
------------------
+Factory Callable
+----------------
 
 You can also use a callable to instantiate and return a ``MiddlewareInterface`` instance or middleware callable.
 
@@ -104,14 +104,14 @@ You can also use a callable to instantiate and return a ``MiddlewareInterface`` 
         return new \Webservice\Widgets\WidgetHandler();
     });
 
-This still delays instantiation, but gives you some added flexibility. For example, you could define middleware that receives some configuration upon construction.
+This still delays instantiation, but gives you some added flexibility. For example, you could define middleware that receives some dependencies upon construction.
 
 .. code-block:: php
 
     $container = new MySuperCoolDependencyContainer();
 
     $router->add("GET,PUT,DELETE", "/widgets/{id}", function ()  use ($container) {
-        return new \Webservice\Widgets\WidgetHandler($container);
+        return new \Webservice\Widgets\WidgetHandler($container["foo"], $container["baz"]);
     });
 
 This is one approach to `dependency injection`_.
@@ -130,10 +130,7 @@ Use a middleware callable directly.
         return $next($request, $response);
     });
 
-Instance
---------
-
-You can also provide pass an instance directly as middleware.
+Because ``WellRESTed\MiddlewareInterface`` has an ``__invoke`` method, implementing instances are also middleware callables. Assuming ``WidgetHandler`` implements ``MiddelewareInterface``,  you can do this:
 
 .. code-block:: php
 
@@ -141,7 +138,7 @@ You can also provide pass an instance directly as middleware.
 
 .. warning::
 
-    This is simple, but has a significant disadvantage over the other options because each middleware used this way will be loaded and instantiated, even though only one middleware will actually be used for a given request-response cycle. You may find this approach useful for testing, but avoid if for production code.
+    This is simple, but has a significant disadvantage over the other options because each middleware used this way will be loaded and instantiated, even if it's not needed for a given request-response cycle. You may find this approach useful for testing, but avoid if for production code.
 
 Array
 -----
@@ -200,14 +197,17 @@ We can add authorization for just the ``/widgets/{id}`` endpoint like this:
 
 .. code-block:: php
 
-    $router->register("GET,PUT,DELETE",  "/widgets/{id}", [
+    $server = new \WellRESTed\Server();
+    $server->add($server->createRouter()
+        ->register("GET,PUT,DELETE",  "/widgets/{id}", [
             'Webservice\Authorization',
             'Webservice\Widgets\WidgetHandler'
-        ]);
+        ])
+        ->respond();
 
 Or, if you wanted to use the authorization for the entire service, you can add it to the ``Server`` in front of the ``Router``.
 
- .. code-block:: php
+.. code-block:: php
 
     $server = new \WellRESTed\Server();
     $server
