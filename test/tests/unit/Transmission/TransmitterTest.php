@@ -135,6 +135,7 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $chunkSize = 3;
         $position = 0;
 
+        $this->body->isSeekable()->willReturn(true);
         $this->body->isReadable()->willReturn(true);
         $this->body->rewind()->willReturn(true);
         $this->body->eof()->willReturn(false);
@@ -154,13 +155,50 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $transmitter->setChunkSize($chunkSize);
 
         ob_start();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal(), $chunkSize);
+        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
         $captured = ob_get_contents();
         ob_end_clean();
 
         $this->assertEquals($content, $captured);
     }
 
+    /**
+     * @covers ::transmit
+     * @covers ::setChunkSize
+     * @covers ::outputBody
+     */
+    public function testOutputsUnseekableStreamInChunks()
+    {
+        $content = "Hello, world!";
+        $chunkSize = 3;
+        $position = 0;
+
+        $this->body->isSeekable()->willReturn(false);
+        $this->body->isReadable()->willReturn(true);
+        $this->body->rewind()->willThrow(new \RuntimeException());
+        $this->body->eof()->willReturn(false);
+        $this->body->read(Argument::any())->will(
+            function ($args) use ($content, &$position) {
+                $chunkSize = $args[0];
+                $chunk = substr($content, $position, $chunkSize);
+                $position += $chunkSize;
+                if ($position >= strlen($content)) {
+                    $this->eof()->willReturn(true);
+                }
+                return $chunk;
+            }
+        );
+
+        $transmitter = new Transmitter();
+        $transmitter->setChunkSize($chunkSize);
+
+        ob_start();
+        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $captured = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($content, $captured);
+    }
     // ------------------------------------------------------------------------
     // Preparation
 

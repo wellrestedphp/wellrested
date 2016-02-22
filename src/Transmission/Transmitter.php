@@ -98,7 +98,9 @@ class Transmitter implements TransmitterInterface
     private function outputBody(StreamInterface $body)
     {
         if ($this->chunkSize > 0) {
-            $body->rewind();
+            if ($body->isSeekable()) {
+                $body->rewind();
+            }
             while (!$body->eof()) {
                 print $body->read($this->chunkSize);
             }

@@ -21,6 +21,7 @@ preview
 workspace.xml
 
 # Vagrant
+.bundle/
 .vagrant/
 
 # Vagrant sandbox site files.
