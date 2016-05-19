@@ -14,14 +14,10 @@ docs/build
 README.html
 preview
 
-# IDE
-.idea/
-
 # PhpStorm
 workspace.xml
 
 # Vagrant
-.bundle/
 .vagrant/
 
 # Vagrant sandbox site files.
