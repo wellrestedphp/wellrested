@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# PHP-5.6 repository
+if ! apt-cache policy | grep ondrej/php5-5.6 ; then
+  apt-add-repository -y ppa:ondrej/php5-5.6
+fi
+
 apt-get update
 apt-get install -q -y git augeas-tools nginx php5 php5-fpm php5-cli php5-curl php5-xdebug python-pip
 
@@ -61,14 +66,6 @@ composer --working-dir=/vagrant install
 # Restart services.
 service php5-fpm restart
 service nginx restart
-
-# Run the unit tests.
-cd /vagrant
-vendor/bin/phpunit
-
-# Build the documentation.
-cd /vagrant/docs
-make clean && make html
 
 # Drop the user into the /vagrant directory on log in and dislay a message.
 if ! grep /home/vagrant/.bashrc -e "cd /vagrant" &> /dev/null ; then
