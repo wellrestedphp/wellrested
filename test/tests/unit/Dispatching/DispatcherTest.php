@@ -6,7 +6,10 @@ use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Message\Response;
+use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
+use WellRESTed\Test\NextSpy;
 
 /**
  * @covers WellRESTed\Dispatching\Dispatcher
@@ -20,17 +23,9 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-        $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $this->response->withStatus(Argument::any())->will(
-            function ($args) {
-                $this->getStatusCode()->willReturn($args[0]);
-                return $this;
-            }
-        );
-        $this->next = function ($request, $response) {
-            return $response;
-        };
+        $this->request = new ServerRequest();
+        $this->response = new Response();
+        $this->next = new NextSpy();
     }
 
     public function testDispatchesCallableThatReturnsResponse()
@@ -40,7 +35,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         };
 
         $dispatcher = new Dispatcher();
-        $response = $dispatcher->dispatch($middleware, $this->request->reveal(), $this->response->reveal(), $this->next);
+        $response = $dispatcher->dispatch($middleware, $this->request, $this->response, $this->next);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -51,7 +46,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         };
 
         $dispatcher = new Dispatcher();
-        $response = $dispatcher->dispatch($middleware, $this->request->reveal(), $this->response->reveal(), $this->next);
+        $response = $dispatcher->dispatch($middleware, $this->request, $this->response, $this->next);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -60,7 +55,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $middleware = __NAMESPACE__ . '\DispatcherTest_Middleware';
 
         $dispatcher = new Dispatcher();
-        $response = $dispatcher->dispatch($middleware, $this->request->reveal(), $this->response->reveal(), $this->next);
+        $response = $dispatcher->dispatch($middleware, $this->request, $this->response, $this->next);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -69,7 +64,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $middleware = new DispatcherTest_Middleware();
 
         $dispatcher = new Dispatcher();
-        $response = $dispatcher->dispatch($middleware, $this->request->reveal(), $this->response->reveal(), $this->next);
+        $response = $dispatcher->dispatch($middleware, $this->request, $this->response, $this->next);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -81,7 +76,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $middleware = new DispatcherTest_Middleware();
 
         $dispatcher = new Dispatcher();
-        $response = $dispatcher->dispatch([$middleware], $this->request->reveal(), $this->response->reveal(), $this->next);
+        $response = $dispatcher->dispatch([$middleware], $this->request, $this->response, $this->next);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -93,7 +88,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $middleware = null;
 
         $dispatcher = new Dispatcher();
-        $dispatcher->dispatch($middleware, $this->request->reveal(), $this->response->reveal(), $this->next);
+        $dispatcher->dispatch($middleware, $this->request, $this->response, $this->next);
     }
 }
 
