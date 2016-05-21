@@ -3,15 +3,16 @@
 namespace WellRESTed\Test\Unit\Server;
 
 use Prophecy\Argument;
+use WellRESTed\Message\Response;
+use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
+use WellRESTed\Test\NextMock;
 
-/**
- * @coversDefaultClass WellRESTed\Server
- * @uses WellRESTed\Server
- */
+/** @covers WellRESTed\Server */
 class ServerTest extends \PHPUnit_Framework_TestCase
 {
     private $dispatcher;
+    private $next;
     private $request;
     private $response;
     private $transmitter;
@@ -20,9 +21,10 @@ class ServerTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->request = $this->prophesize('Psr\Http\Message\ServerRequestInterface');
-        $this->request->withAttribute(Argument::cetera())->willReturn($this->request->reveal());
-        $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
+        $this->request = new ServerRequest();
+        $this->response = new Response();
+        $this->next = new NextMock();
+
         $this->transmitter = $this->prophesize('WellRESTed\Transmission\TransmitterInterface');
         $this->transmitter->transmit(Argument::cetera())->willReturn();
         $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
@@ -42,149 +44,107 @@ class ServerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->dispatcher->reveal()));
         $this->server->expects($this->any())
             ->method("getRequest")
-            ->will($this->returnValue($this->request->reveal()));
+            ->will($this->returnValue($this->request));
         $this->server->expects($this->any())
             ->method("getResponse")
-            ->will($this->returnValue($this->response->reveal()));
+            ->will($this->returnValue($this->response));
         $this->server->expects($this->any())
             ->method("getTransmitter")
             ->will($this->returnValue($this->transmitter->reveal()));
         $this->server->__construct();
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getDefaultDispatcher
-     * @uses WellRESTed\Dispatching\Dispatcher
-     */
     public function testCreatesInstances()
     {
         $server = new Server();
         $this->assertNotNull($server);
     }
 
-    /**
-     * @covers ::add
-     */
     public function testAddIsFluid()
     {
         $server = new Server();
         $this->assertSame($server, $server->add("middleware"));
     }
 
-    /**
-     * @covers ::getDispatcher
-     */
     public function testReturnsDispatcher()
     {
         $this->assertSame($this->dispatcher->reveal(), $this->server->getDispatcher());
     }
 
-    /**
-     * @covers ::add
-     * @covers ::dispatch
-     */
     public function testDispatchesMiddlewareStack()
     {
-        $next = function ($request, $response) {
-            return $response;
-        };
-
         $this->server->add("first");
         $this->server->add("second");
         $this->server->add("third");
 
-        $this->server->dispatch($this->request->reveal(), $this->response->reveal(), $next);
+        $this->server->dispatch($this->request, $this->response, $this->next);
 
         $this->dispatcher->dispatch(
             ["first", "second", "third"],
-            $this->request->reveal(),
-            $this->response->reveal(),
-            $next
+            $this->request,
+            $this->response,
+            $this->next
         )->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
     // Respond
 
-    /**
-     * @covers ::respond
-     */
     public function testRespondDispatchesRequest()
     {
         $this->server->respond();
         $this->dispatcher->dispatch(
             Argument::any(),
-            $this->request->reveal(),
+            $this->request,
             Argument::any(),
             Argument::any()
         )->shouldHaveBeenCalled();
     }
 
-    /**
-     * @covers ::respond
-     */
     public function testRespondDispatchesResponse()
     {
         $this->server->respond();
         $this->dispatcher->dispatch(
             Argument::any(),
             Argument::any(),
-            $this->response->reveal(),
+            $this->response,
             Argument::any()
         )->shouldHaveBeenCalled();
     }
 
-    /**
-     * @covers ::respond
-     */
     public function testRespondSendsResponseToResponder()
     {
         $this->server->respond();
         $this->transmitter->transmit(
-            $this->request->reveal(),
-            $this->response->reveal()
+            $this->request,
+            $this->response
         )->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
     // Router
 
-    /**
-     * @covers ::createRouter
-     * @uses WellRESTed\Routing\Router
-     * @uses WellRESTed\Routing\MethodMap
-     * @uses WellRESTed\Routing\Route\RouteFactory
-     * @uses WellRESTed\Routing\Route\Route
-     * @uses WellRESTed\Routing\Route\StaticRoute
-     */
     public function testCreatesRouterWithDispatcher()
     {
-        $this->request->getMethod()->willReturn("GET");
-        $this->request->getRequestTarget()->willReturn("/");
-
-        $next = function ($request, $response) {
-            return $response;
-        };
+        $this->request = $this->request
+            ->withMethod("GET")
+            ->withRequestTarget("/");
 
         $router = $this->server->createRouter();
         $router->register("GET", "/", "middleware");
-        $router($this->request->reveal(), $this->response->reveal(), $next);
+        $router($this->request, $this->response, $this->next);
 
         $this->dispatcher->dispatch(
             "middleware",
-            $this->request->reveal(),
-            $this->response->reveal(),
-            $next
+            $this->request,
+            $this->response,
+            $this->next
         )->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
     // Attributes
 
-    /**
-     * @covers ::respond
-     */
     public function testAddsAttributesToRequest()
     {
         $attributes = [
@@ -193,6 +153,16 @@ class ServerTest extends \PHPUnit_Framework_TestCase
 
         $this->server->__construct($attributes);
         $this->server->respond();
-        $this->request->withAttribute("name", "value")->shouldHaveBeenCalled();
+
+        $isRequestWithExpectedAttribute = function ($request) {
+            return $request->getAttribute("name") === "value";
+        };
+
+        $this->dispatcher->dispatch(
+            Argument::any(),
+            Argument::that($isRequestWithExpectedAttribute),
+            Argument::any(),
+            Argument::any()
+        )->shouldHaveBeenCalled();
     }
 }
