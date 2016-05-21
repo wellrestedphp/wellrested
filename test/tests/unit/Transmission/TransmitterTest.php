@@ -3,16 +3,16 @@
 namespace WellRESTed\Test\Unit\Transmission;
 
 use Prophecy\Argument;
+use Psr\Http\Message\StreamInterface;
+use WellRESTed\Message\Response;
+use WellRESTed\Message\ServerRequest;
 use WellRESTed\Transmission\HeaderStack;
 use WellRESTed\Transmission\Transmitter;
 
 require_once __DIR__ . "/../../../src/HeaderStack.php";
 
 /**
- * @coversDefaultClass WellRESTed\Transmission\Transmitter
- * @uses WellRESTed\Transmission\Transmitter
- * @uses WellRESTed\Dispatching\Dispatcher
- * @uses WellRESTed\Dispatching\DispatchStack
+ * @covers WellRESTed\Transmission\Transmitter
  * @group transmission
  */
 class TransmitterTest extends \PHPUnit_Framework_TestCase
@@ -24,73 +24,52 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         HeaderStack::reset();
+
+        $this->request = (new ServerRequest())
+            ->withMethod("HEAD");
+
         $this->body = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $this->body->isReadable()->willReturn(false);
         $this->body->getSize()->willReturn(1024);
-        $this->request = $this->prophesize('\Psr\Http\Message\ServerRequestInterface');
-        $this->request->getMethod()->willReturn("HEAD");
-        $this->response = $this->prophesize('\Psr\Http\Message\ResponseInterface');
-        $this->response->getHeaders()->willReturn([]);
-        $this->response->hasHeader("Content-length")->willReturn(true);
-        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
-        $this->response->getProtocolVersion()->willReturn("1.1");
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-        $this->response->getBody()->willReturn($this->body->reveal());
-        $this->response->withHeader(Argument::cetera())->willReturn($this->response->reveal());
-        $this->response->withBody(Argument::any())->willReturn($this->response->reveal());
+        /** @var StreamInterface $stream */
+        $stream = $this->body->reveal();
+
+        $this->response = (new Response())
+            ->withStatus(200)
+            ->withBody($stream);
     }
 
-    /**
-     * @covers ::__construct
-     */
     public function testCreatesInstance()
     {
         $transmitter = new Transmitter();
         $this->assertNotNull($transmitter);
     }
 
-    /**
-     * @covers ::transmit
-     * @covers ::getStatusLine
-     */
     public function testSendStatusCodeWithReasonPhrase()
     {
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->assertContains("HTTP/1.1 200 Ok", HeaderStack::getHeaders());
+        $transmitter->transmit($this->request, $this->response);
+        $this->assertContains("HTTP/1.1 200 OK", HeaderStack::getHeaders());
     }
 
-    /**
-     * @covers ::transmit
-     * @covers ::getStatusLine
-     */
     public function testSendStatusCodeWithoutReasonPhrase()
     {
-        $this->response->getStatusCode()->willReturn("999");
-        $this->response->getReasonPhrase()->willReturn(null);
+        $this->response = $this->response->withStatus(999);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $transmitter->transmit($this->request, $this->response);
         $this->assertContains("HTTP/1.1 999", HeaderStack::getHeaders());
     }
 
-    /**
-     * @covers ::transmit
-     * @dataProvider headerProvider
-     */
+    /** @dataProvider headerProvider */
     public function testSendsHeaders($header)
     {
-        $this->response->getHeaders()->willReturn([
-            "Content-length" => ["2048"],
-            "X-foo" => ["bar", "baz"],
-        ]);
+        $this->response = $this->response
+            ->withHeader("Content-length", ["2048"])
+            ->withHeader("X-foo", ["bar", "baz"]);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $transmitter->transmit($this->request, $this->response);
         $this->assertContains($header, HeaderStack::getHeaders());
     }
 
@@ -103,10 +82,6 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::transmit
-     * @covers ::outputBody
-     */
     public function testOutputsBody()
     {
         $content = "Hello, world!";
@@ -117,18 +92,13 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $transmitter = new Transmitter();
 
         ob_start();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $transmitter->transmit($this->request, $this->response);
         $captured = ob_get_contents();
         ob_end_clean();
 
         $this->assertEquals($content, $captured);
     }
 
-    /**
-     * @covers ::transmit
-     * @covers ::setChunkSize
-     * @covers ::outputBody
-     */
     public function testOutputsBodyInChunks()
     {
         $content = "Hello, world!";
@@ -155,18 +125,13 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $transmitter->setChunkSize($chunkSize);
 
         ob_start();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $transmitter->transmit($this->request, $this->response);
         $captured = ob_get_contents();
         ob_end_clean();
 
         $this->assertEquals($content, $captured);
     }
 
-    /**
-     * @covers ::transmit
-     * @covers ::setChunkSize
-     * @covers ::outputBody
-     */
     public function testOutputsUnseekableStreamInChunks()
     {
         $content = "Hello, world!";
@@ -193,85 +158,83 @@ class TransmitterTest extends \PHPUnit_Framework_TestCase
         $transmitter->setChunkSize($chunkSize);
 
         ob_start();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
+        $transmitter->transmit($this->request, $this->response);
         $captured = ob_get_contents();
         ob_end_clean();
 
         $this->assertEquals($content, $captured);
     }
+
     // ------------------------------------------------------------------------
     // Preparation
 
-    /**
-     * @covers ::prepareResponse
-     */
     public function testAddContentLengthHeader()
     {
         $bodySize = 1024;
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-        $this->response->hasHeader("Content-length")->willReturn(false);
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn("");
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->response->withHeader("Content-length", $bodySize)->shouldHaveBeenCalled();
+        $transmitter->transmit($this->request, $this->response);
+
+        $this->assertContains("Content-length: $bodySize", HeaderStack::getHeaders());
     }
 
-    /**
-     * @covers ::prepareResponse
-     */
     public function testDoesNotReplaceContentLengthHeaderWhenContentLenghtIsAlreadySet()
     {
-        $bodySize = 1024;
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-        $this->response->hasHeader("Content-length")->willReturn(true);
+        $streamSize = 1024;
+        $headerSize = 2048;
+
+        $this->response = $this->response->withHeader("Content-length", $headerSize);
+
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn("");
-        $this->body->getSize()->willReturn($bodySize);
+        $this->body->getSize()->willReturn($streamSize);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->response->withHeader("Content-length", $bodySize)->shouldNotHaveBeenCalled();
+        $transmitter->transmit($this->request, $this->response);
+
+        $this->assertContains("Content-length: $headerSize", HeaderStack::getHeaders());
     }
 
-    /**
-     * @covers ::prepareResponse
-     */
     public function testDoesNotAddContentLengthHeaderWhenTransferEncodingIsChunked()
     {
         $bodySize = 1024;
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-        $this->response->hasHeader("Content-length")->willReturn(false);
-        $this->response->getHeaderLine("Transfer-encoding")->willReturn("CHUNKED");
+
+        $this->response = $this->response->withHeader("Transfer-encoding", "CHUNKED");
+
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn("");
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->response->withHeader("Content-length", $bodySize)->shouldNotHaveBeenCalled();
+        $transmitter->transmit($this->request, $this->response);
+
+        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
     }
 
-    /**
-     * @covers ::prepareResponse
-     */
     public function testDoesNotAddContentLengthHeaderWhenBodySizeIsNull()
     {
-        $this->response->getStatusCode()->willReturn("200");
-        $this->response->getReasonPhrase()->willReturn("Ok");
-        $this->response->hasHeader("Content-length")->willReturn(false);
-        $this->response->getHeaderLine("Transfer-encoding")->willReturn("");
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn("");
         $this->body->getSize()->willReturn(null);
 
         $transmitter = new Transmitter();
-        $transmitter->transmit($this->request->reveal(), $this->response->reveal());
-        $this->response->withHeader("Content-length", Argument::any())->shouldNotHaveBeenCalled();
+        $transmitter->transmit($this->request, $this->response);
+
+        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
+    }
+
+    private function assertArrayDoesNotContainValueWithPrefix($arr, $prefix)
+    {
+        $normalPrefix = strtolower($prefix);
+        foreach ($arr as $item) {
+            $normalItem = strtolower($item);
+            if (substr($normalItem, 0, strlen($normalPrefix)) === $normalPrefix) {
+                $this->assertTrue(false, "Array should not contain value beginning with '$prefix' but contained '$item'");
+            }
+        }
+        $this->assertTrue(true);
     }
 }
