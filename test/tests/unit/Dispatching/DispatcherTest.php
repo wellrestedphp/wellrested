@@ -9,7 +9,7 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
-use WellRESTed\Test\NextSpy;
+use WellRESTed\Test\NextMock;
 
 /**
  * @covers WellRESTed\Dispatching\Dispatcher
@@ -25,7 +25,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
     {
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextSpy();
+        $this->next = new NextMock();
     }
 
     public function testDispatchesCallableThatReturnsResponse()

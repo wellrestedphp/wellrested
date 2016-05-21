@@ -6,7 +6,7 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatchStack;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Test\NextSpy;
+use WellRESTed\Test\NextMock;
 
 /**
  * @covers WellRESTed\Dispatching\DispatchStack
@@ -23,7 +23,7 @@ class DispatchStackTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextSpy();
+        $this->next = new NextMock();
     }
 
     public function testDispatchesMiddlewareInOrderAdded()

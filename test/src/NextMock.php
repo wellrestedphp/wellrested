@@ -5,7 +5,7 @@ namespace WellRESTed\Test;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class NextSpy
+class NextMock
 {
     public $called = false;
     public $request = null;
@@ -13,11 +13,11 @@ class NextSpy
 
     public function __invoke(
         ServerRequestInterface $request,
-        ResponseInterface $respone
+        ResponseInterface $response
     ) {
         $this->called = true;
         $this->request = $request;
-        $this->response = $respone;
-        return $respone;
+        $this->response = $response;
+        return $response;
     }
 }
