@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Test\Message;
+namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\Stream;
 

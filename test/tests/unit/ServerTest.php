@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Server;
+namespace WellRESTed\Test\Unit;
 
 use Prophecy\Argument;
 use WellRESTed\Message\Response;
