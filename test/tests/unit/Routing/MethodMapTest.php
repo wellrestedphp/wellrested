@@ -7,8 +7,8 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\MethodMap;
-use WellRESTed\Test\MiddlewareMock;
-use WellRESTed\Test\NextMock;
+use WellRESTed\Test\Doubles\MiddlewareMock;
+use WellRESTed\Test\Doubles\NextMock;
 
 /**
  * @covers WellRESTed\Routing\MethodMap

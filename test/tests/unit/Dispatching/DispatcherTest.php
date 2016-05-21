@@ -9,7 +9,7 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
-use WellRESTed\Test\NextMock;
+use WellRESTed\Test\Doubles\NextMock;
 
 /**
  * @covers WellRESTed\Dispatching\Dispatcher

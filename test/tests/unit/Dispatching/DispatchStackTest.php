@@ -6,7 +6,7 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatchStack;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Test\NextMock;
+use WellRESTed\Test\Doubles\NextMock;
 
 /**
  * @covers WellRESTed\Dispatching\DispatchStack

@@ -8,7 +8,7 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
-use WellRESTed\Test\NextMock;
+use WellRESTed\Test\Doubles\NextMock;
 
 /**
  * @covers WellRESTed\Routing\Router

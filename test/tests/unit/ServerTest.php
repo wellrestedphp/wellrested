@@ -6,7 +6,7 @@ use Prophecy\Argument;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
-use WellRESTed\Test\NextMock;
+use WellRESTed\Test\Doubles\NextMock;
 
 /** @covers WellRESTed\Server */
 class ServerTest extends \PHPUnit_Framework_TestCase
