@@ -2,19 +2,13 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use WellRESTed\Message\NullStream;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\Uri;
 
 /**
- * @coversDefaultClass WellRESTed\Message\ServerRequest
- * @uses WellRESTed\Message\ServerRequest
- * @uses WellRESTed\Message\Request
- * @uses WellRESTed\Message\Message
- * @uses WellRESTed\Message\HeaderCollection
- * @uses WellRESTed\Message\Stream
- * @uses WellRESTed\Message\UploadedFile
- * @uses WellRESTed\Message\Uri
+ * @covers WellRESTed\Message\ServerRequest
  * @group message
  */
 class ServerRequestTest extends \PHPUnit_Framework_TestCase
@@ -22,22 +16,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Construction and Marshalling
 
-    /**
-     * @covers ::__construct
-     */
-    public function testCreatesInstance()
-    {
-        $request = new ServerRequest();
-        $this->assertNotNull($request);
-    }
-
-    /**
-     * @covers ::getServerRequest
-     * @covers ::getServerRequestHeaders
-     * @covers ::readFromServerRequest
-     * @covers ::getStreamForBody
-     * @preserveGlobalState disabled
-     */
+    /** @preserveGlobalState disabled */
     public function testGetServerRequestReadsFromRequest()
     {
         $_SERVER = [
@@ -63,7 +42,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // Marshalling Request Information
 
     /**
-     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider protocolVersionProvider
      */
@@ -89,7 +67,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider methodProvider
      */
@@ -116,7 +93,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::readFromServerRequest
      * @preserveGlobalState disabled
      * @dataProvider requestTargetProvider
      */
@@ -140,29 +116,22 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::getHeader
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testGetServerRequestReadsHeaders($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals(["application/json"], $request->getHeader("Accept"));
     }
 
-    /**
-     * @covers ::getBody
-     */
     public function testGetServerRequestReadsBody()
     {
-        $body = $this->prophesize('Psr\Http\Message\StreamInterface');
-
+        $body = new NullStream();
         $request = $this->getMockBuilder('WellRESTed\Message\ServerRequest')
             ->setMethods(["getStreamForBody"])
             ->getMock();
         $request->expects($this->any())
             ->method("getStreamForBody")
-            ->will($this->returnValue($body->reveal()));
+            ->will($this->returnValue($body));
 
         $called = false;
         $callReadFromServerRequest = function () use (&$called) {
@@ -172,14 +141,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $callReadFromServerRequest = $callReadFromServerRequest->bindTo($request, $request);
         $callReadFromServerRequest();
 
-        $this->assertSame($body->reveal(), $request->getBody());
+        $this->assertSame($body, $request->getBody());
     }
 
     /**
-     * @covers ::getServerRequest
-     * @covers ::getServerRequestHeaders
-     * @covers ::readFromServerRequest
-     * @covers ::readUri
      * @preserveGlobalState disabled
      * @dataProvider uriProvider
      */
@@ -226,30 +191,21 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Marshalling ServerRequest Information
 
-    /**
-     * @covers ::getServerParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testGetServerRequestReadsServerParams($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals("localhost", $request->getServerParams()["HTTP_HOST"]);
     }
 
-    /**
-     * @covers ::getCookieParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testGetServerRequestReadsCookieParams($request)
     {
         /** @var ServerRequest $request */
         $this->assertEquals("Molly", $request->getCookieParams()["cat"]);
     }
 
-    /**
-     * @covers ::getQueryParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testGetServerRequestReadsQueryParams($request)
     {
         /** @var ServerRequest $request */
@@ -257,10 +213,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getServerRequest
-     * @covers ::readUploadedFiles
-     * @covers ::getUploadedFiles
-     * @covers ::addUploadedFilesToBranch
      * @preserveGlobalState disabled
      * @dataProvider uploadedFileProvider
      */
@@ -364,8 +316,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getServerRequest
-     * @covers ::getParsedBody
      * @preserveGlobalState disabled
      * @dataProvider formContentTypeProvider
      */
@@ -392,10 +342,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::getAttribute
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testGetServerRequestProvidesAttributesIfPassed($request)
     {
         /** @var ServerRequest $request */
@@ -405,9 +352,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Server Params
 
-    /**
-     * @covers ::getServerParams
-     */
     public function testGetServerParamsReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
@@ -417,19 +361,13 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Cookies
 
-    /**
-     * @covers ::getCookieParams
-     */
     public function testGetCookieParamsReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getCookieParams());
     }
 
-    /**
-     * @covers ::withCookieParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testWithCookieParamsCreatesNewInstance($request1)
     {
         /** @var ServerRequest $request1 */
@@ -442,19 +380,13 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Query
 
-    /**
-     * @covers ::getQueryParams
-     */
     public function testGetQueryParamsReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getQueryParams());
     }
 
-    /**
-     * @covers ::withQueryParams
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testWithQueryParamsCreatesNewInstance($request1)
     {
         /** @var ServerRequest $request1 */
@@ -467,19 +399,13 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Uploaded Files
 
-    /**
-     * @covers ::getUploadedFiles
-     */
     public function testGetUploadedFilesReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getUploadedFiles());
     }
 
-    /**
-     * @covers ::getUploadedFiles
-     * @preserveGlobalState disabled
-     */
+    /** @preserveGlobalState disabled */
     public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
     {
         $_SERVER = [
@@ -492,11 +418,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([], $request->getUploadedFiles());
     }
 
-    /**
-     * @covers ::withUploadedFiles
-     * @covers ::isValidUploadedFilesBranch
-     * @covers ::isValidUploadedFilesTree
-     */
     public function testWithUploadedFilesCreatesNewInstance()
     {
         $uploadedFiles = [
@@ -508,12 +429,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertNotSame($request2, $request1);
     }
 
-    /**
-     * @covers ::withUploadedFiles
-     * @covers ::isValidUploadedFilesTree
-     * @covers ::isValidUploadedFilesBranch
-     * @dataProvider validUploadedFilesProvider
-     */
+    /** @dataProvider validUploadedFilesProvider */
     public function testWithUploadedFilesStoresPassedUploadedFiles($uploadedFiles)
     {
         $request = new ServerRequest();
@@ -545,9 +461,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::withUploadedFiles
-     * @covers ::isValidUploadedFilesTree
-     * @covers ::isValidUploadedFilesBranch
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidUploadedFilesProvider
      */
@@ -621,19 +534,13 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Parsed Body
 
-    /**
-     * @covers ::getParsedBody
-     */
     public function testGetParsedBodyReturnsNullByDefault()
     {
         $request = new ServerRequest();
         $this->assertNull($request->getParsedBody());
     }
 
-    /**
-     * @covers ::withParsedBody
-     * @depends testGetServerRequestReadsFromRequest
-     */
+    /** @depends testGetServerRequestReadsFromRequest */
     public function testWithParsedBodyCreatesNewInstance($request1)
     {
         /** @var ServerRequest $request1 */
@@ -648,7 +555,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::withParsedBody
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidParsedBodyProvider
      */
@@ -666,9 +572,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::__clone
-     */
     public function testCloneMakesDeepCopiesOfParsedBody()
     {
         $body = (object) [
@@ -688,18 +591,12 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Attributes
 
-    /**
-     * @covers ::getAttributes
-     */
     public function testGetAttributesReturnsEmptyArrayByDefault()
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getAttributes());
     }
 
-    /**
-     * @covers ::getAttributes
-     */
     public function testGetAttributesReturnsAllAttributes()
     {
         $request = new ServerRequest();
@@ -712,19 +609,12 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $request->getAttributes());
     }
 
-    /**
-     * @covers ::getAttribute
-     */
     public function testGetAttributeReturnsDefaultIfNotSet()
     {
         $request = new ServerRequest();
         $this->assertEquals("Oscar", $request->getAttribute("cat", "Oscar"));
     }
 
-    /**
-     * @covers ::withAttribute
-     * @covers ::getAttribute
-     */
     public function testWithAttributeCreatesNewInstance()
     {
         $request = new ServerRequest();
@@ -732,9 +622,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Molly", $request->getAttribute("cat"));
     }
 
-    /**
-     * @covers ::withAttribute
-     */
     public function testWithAttributePreserversOtherAttributes()
     {
         $request = new ServerRequest();
@@ -747,9 +634,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $request->getAttributes());
     }
 
-    /**
-     * @covers ::withoutAttribute
-     */
     public function testWithoutAttributeCreatesNewInstance()
     {
         $request = new ServerRequest();
@@ -757,9 +641,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEquals($request, $request->withoutAttribute("cat"));
     }
 
-    /**
-     * @covers ::withoutAttribute
-     */
     public function testWithoutAttributeRemovesAttribute()
     {
         $request = new ServerRequest();
@@ -768,9 +649,6 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Oscar", $request->getAttribute("cat", "Oscar"));
     }
 
-    /**
-     * @covers ::withoutAttribute
-     */
     public function testWithoutAttributePreservesOtherAttributes()
     {
         $request = new ServerRequest();

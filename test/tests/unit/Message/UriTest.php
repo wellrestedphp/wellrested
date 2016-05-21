@@ -5,8 +5,7 @@ namespace WellRESTed\Test\Message;
 use WellRESTed\Message\Uri;
 
 /**
- * @coversDefaultClass WellRESTed\Message\Uri
- * @uses WellRESTed\Message\Uri
+ * @covers WellRESTed\Message\Uri
  * @group message
  */
 class UriTest extends \PHPUnit_Framework_TestCase
@@ -14,21 +13,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Scheme
 
-    /**
-     * @covers ::getScheme
-     */
     public function testDefaultSchemeIsEmpty()
     {
         $uri = new Uri();
         $this->assertSame("", $uri->getScheme());
     }
 
-    /**
-     * @covers ::withScheme
-     * @dataProvider schemeProvider
-     * @param string $expected The expected result of getScheme
-     * @param string $scheme The scheme to pass to withScheme
-     */
+    /** @dataProvider schemeProvider */
     public function testSetsSchemeCaseInsensitively($expected, $scheme)
     {
         $uri = new Uri();
@@ -48,10 +39,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::withScheme
-     * @expectedException \InvalidArgumentException
-     */
+    /** @expectedException \InvalidArgumentException */
     public function testInvalidSchemeThrowsException()
     {
         $uri = new Uri();
@@ -61,9 +49,6 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Authority
 
-    /**
-     * @covers ::getAuthority
-     */
     public function testDefaultAuthorityIsEmpty()
     {
         $uri = new Uri();
@@ -75,12 +60,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
 
-    /**
-     * @covers ::getAuthority
-     * @dataProvider authorityProvider
-     * @param string $expected
-     * @param array $components
-     */
+    /** @dataProvider authorityProvider */
     public function testConcatenatesAuthorityFromHostAndUserInfo($expected, $components)
     {
         $uri = new Uri();
@@ -188,9 +168,6 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // User Info
 
-    /**
-     * @covers ::getUserInfo
-     */
     public function testDefaultUserInfoIsEmpty()
     {
         $uri = new Uri();
@@ -198,8 +175,6 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getUserInfo
-     * @covers ::withUserInfo
      * @dataProvider userInfoProvider
      *
      * @param string $expected The combined user:password value
@@ -227,22 +202,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Host
 
-    /**
-     * @covers ::getHost
-     */
     public function testDefaultHostIsEmpty()
     {
         $uri = new Uri();
         $this->assertSame("", $uri->getHost());
     }
 
-    /**
-     * @covers ::getHost
-     * @covers ::withHost
-     * @dataProvider hostProvider
-     * @param $expected
-     * @param $host
-     */
+    /** @dataProvider hostProvider */
     public function testSetsHost($expected, $host)
     {
         $uri = new Uri();
@@ -261,10 +227,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::withHost
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidHostProvider
-     * @param $host
      */
     public function testInvalidHostThrowsException($host)
     {
@@ -284,42 +248,25 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Port
 
-    /**
-     * @covers ::getPort
-     */
     public function testDefaultPortWithNoSchemeIsNull()
     {
         $uri = new Uri();
         $this->assertNull($uri->getPort());
     }
 
-    /**
-     * @covers ::getPort
-     */
     public function testDefaultPortForHttpSchemeIs80()
     {
         $uri = new Uri();
         $this->assertSame(80, $uri->withScheme("http")->getPort());
     }
 
-    /**
-     * @covers ::getPort
-     */
     public function testDefaultPortForHttpsSchemeIs443()
     {
         $uri = new Uri();
         $this->assertSame(443, $uri->withScheme("https")->getPort());
     }
 
-    /**
-     * @covers ::getPort
-     * @covers ::withPort
-     * @dataProvider portAndSchemeProvider
-     *
-     * @param int|null $expectedPort
-     * @param string $scheme
-     * @param int|null $port
-     */
+    /** @dataProvider portAndSchemeProvider */
     public function testReturnsPortWithSchemeDefaults($expectedPort, $scheme, $port)
     {
         $uri = new Uri();
@@ -340,10 +287,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::withPort
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPortProvider
-     * @param int $port
      */
     public function testInvalidPortThrowsException($port)
     {
@@ -364,23 +309,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Path
 
-    /**
-     * @covers ::getPath
-     */
     public function testDefaultPathIsEmpty()
     {
         $uri = new Uri();
         $this->assertSame("", $uri->getPath());
     }
 
-    /**
-     * @covers ::getPath
-     * @covers ::withPath
-     * @covers ::percentEncode
-     * @dataProvider pathProvider
-     * @param $expected
-     * @param $path
-     */
+    /** @dataProvider pathProvider */
     public function testSetsEncodedPath($expected, $path)
     {
         $uri = new Uri();
@@ -388,14 +323,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $uri->getPath());
     }
 
-    /**
-     * @covers ::getPath
-     * @covers ::withPath
-     * @covers ::percentEncode
-     * @dataProvider pathProvider
-     * @param $expected
-     * @param $path
-     */
+    /** @dataProvider pathProvider */
     public function testDoesNotDoubleEncodePath($expected, $path)
     {
         $uri = new Uri();
@@ -420,23 +348,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Query
 
-    /**
-     * @covers ::getQuery
-     */
     public function testDefaultQueryIsEmpty()
     {
         $uri = new Uri();
         $this->assertSame("", $uri->getQuery());
     }
 
-    /**
-     * @covers ::getQuery
-     * @covers ::withQuery
-     * @covers ::percentEncode
-     * @dataProvider queryProvider
-     * @param $expected
-     * @param $query
-     */
+    /** @dataProvider queryProvider */
     public function testSetsEncodedQuery($expected, $query)
     {
         $uri = new Uri();
@@ -444,14 +362,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $uri->getQuery());
     }
 
-    /**
-     * @covers ::getQuery
-     * @covers ::withQuery
-     * @covers ::percentEncode
-     * @dataProvider queryProvider
-     * @param $expected
-     * @param $query
-     */
+    /** @dataProvider queryProvider */
     public function testDoesNotDoubleEncodeQuery($expected, $query)
     {
         $uri = new Uri();
@@ -470,10 +381,8 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::withPath
      * @expectedException \InvalidArgumentException
      * @dataProvider invalidPathProvider
-     * @param $path
      */
     public function testInvalidPathThrowsException($path)
     {
@@ -493,23 +402,13 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Fragment
 
-    /**
-     * @covers ::getFragment
-     */
     public function testDefaultFragmentIsEmpty()
     {
         $uri = new Uri();
         $this->assertSame("", $uri->getFragment());
     }
 
-    /**
-     * @covers ::getFragment
-     * @covers ::withFragment
-     * @covers ::percentEncode
-     * @dataProvider fragmentProvider
-     * @param $expected
-     * @param $fragment
-     */
+    /** @dataProvider fragmentProvider */
     public function testSetsEncodedFragment($expected, $fragment)
     {
         $uri = new Uri();
@@ -517,14 +416,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $uri->getFragment());
     }
 
-    /**
-     * @covers ::getFragment
-     * @covers ::withFragment
-     * @covers ::percentEncode
-     * @dataProvider fragmentProvider
-     * @param $expected
-     * @param $fragment
-     */
+    /** @dataProvider fragmentProvider */
     public function testDoesNotDoubleEncodeFragment($expected, $fragment)
     {
         $uri = new Uri();
@@ -545,12 +437,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Concatenation
 
-    /**
-     * @covers ::__toString
-     * @dataProvider componentProvider
-     * @param string $expected
-     * @param array $components
-     */
+    /** @dataProvider componentProvider */
     public function testConcatenatesComponents($expected, $components)
     {
         $uri = new Uri();
@@ -653,11 +540,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::__construct()
-     * @covers ::__toString()
-     * @dataProvider stringUriProvider
-     */
+    /** @dataProvider stringUriProvider */
     public function testUriCreatedFromStringNormalizesString($expected, $input)
     {
         $uri = new Uri($input);

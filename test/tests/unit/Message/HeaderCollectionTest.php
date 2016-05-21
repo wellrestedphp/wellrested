@@ -5,25 +5,11 @@ namespace WellRESTed\Test\Message;
 use WellRESTed\Message\HeaderCollection;
 
 /**
- * @coversDefaultClass WellRESTed\Message\HeaderCollection
- * @uses WellRESTed\Message\HeaderCollection
+ * @covers WellRESTed\Message\HeaderCollection
  * @group message
  */
 class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @covers ::__construct
-     */
-    public function testCreatesInstance()
-    {
-        $collection = new HeaderCollection();
-        $this->assertNotNull($collection);
-    }
-
-    /**
-     * @covers ::offsetSet
-     * @covers ::offsetExists
-     */
     public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
     {
         $collection = new HeaderCollection();
@@ -31,10 +17,6 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(isset($collection["content-type"]));
     }
 
-    /**
-     * @covers ::offsetSet
-     * @covers ::offsetExists
-     */
     public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset()
     {
         $collection = new HeaderCollection();
@@ -43,9 +25,6 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(isset($collection["set-cookie"]));
     }
 
-    /**
-     * @covers ::offsetGet
-     */
     public function testReturnsHeadersWithCaseInsensitiveHeaderName()
     {
         $collection = new HeaderCollection();
@@ -56,9 +35,6 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, count(array_intersect($headers, ["cat=Molly", "dog=Bear"])));
     }
 
-    /**
-     * @covers ::offsetUnset
-     */
     public function testRemovesHeadersWithCaseInsensitiveHeaderName()
     {
         $collection = new HeaderCollection();
@@ -68,9 +44,7 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($collection["set-cookie"]));
     }
 
-    /**
-     * @coversNothing
-     */
+    /** @coversNothing */
     public function testCloneMakesDeepCopyOfHeaders()
     {
         $collection = new HeaderCollection();
@@ -82,13 +56,6 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(isset($collection["set-cookie"]) && !isset($clone["set-cookie"]));
     }
 
-    /**
-     * @covers ::current
-     * @covers ::next
-     * @covers ::key
-     * @covers ::valid
-     * @covers ::rewind
-     */
     public function testIteratesWithOriginalKeys()
     {
         $collection = new HeaderCollection();
@@ -110,13 +77,6 @@ class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $countUnmatched);
     }
 
-    /**
-     * @covers ::current
-     * @covers ::next
-     * @covers ::key
-     * @covers ::valid
-     * @covers ::rewind
-     */
     public function testIteratesWithOriginalKeysAndValues()
     {
         $collection = new HeaderCollection();

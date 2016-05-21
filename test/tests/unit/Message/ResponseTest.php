@@ -2,13 +2,11 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use WellRESTed\Message\NullStream;
 use WellRESTed\Message\Response;
 
 /**
- * @coversDefaultClass WellRESTed\Message\Response
- * @uses WellRESTed\Message\Response
- * @uses WellRESTed\Message\Message
- * @uses WellRESTed\Message\HeaderCollection
+ * @covers WellRESTed\Message\Response
  * @group message
  */
 class ResponseTest extends \PHPUnit_Framework_TestCase
@@ -16,18 +14,12 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Construction
 
-    /**
-     * @covers ::__construct
-     */
     public function testSetsStatusCodeOnConstruction()
     {
         $response = new Response(200);
         $this->assertSame(200, $response->getStatusCode());
     }
 
-    /**
-     * @covers ::__construct
-     */
     public function testSetsHeadersOnConstruction()
     {
         $response = new Response(200, [
@@ -36,24 +28,16 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["bar","baz"], $response->getHeader("X-foo"));
     }
 
-    /**
-     * @covers ::__construct
-     */
     public function testSetsBodyOnConstruction()
     {
-        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $response = new Response(200, [], $body->reveal());
-        $this->assertSame($body->reveal(), $response->getBody());
+        $body = new NullStream();
+        $response = new Response(200, [], $body);
+        $this->assertSame($body, $response->getBody());
     }
 
     // ------------------------------------------------------------------------
     // Status and Reason Phrase
 
-    /**
-     * @covers ::withStatus
-     * @covers ::getStatusCode
-     * @covers ::getDefaultReasonPhraseForStatusCode
-     */
     public function testCreatesNewInstanceWithStatusCode()
     {
         $response = new Response();
@@ -61,12 +45,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $copy->getStatusCode());
     }
 
-    /**
-     * @covers ::withStatus
-     * @covers ::getReasonPhrase
-     * @covers ::getDefaultReasonPhraseForStatusCode
-     * @dataProvider statusProvider
-     */
+    /** @dataProvider statusProvider */
     public function testCreatesNewInstanceWithReasonPhrase($code, $reasonPhrase, $expected)
     {
         $response = new Response();
@@ -119,10 +98,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::withStatus
-     * @covers ::getStatusCode
-     */
     public function testWithStatusCodePreservesOriginalResponse()
     {
         $response1 = new Response();

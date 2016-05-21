@@ -9,10 +9,7 @@ use WellRESTed\Message\UploadedFileState;
 require_once __DIR__ . "/../../../src/UploadedFileState.php";
 
 /**
- * @coversDefaultClass WellRESTed\Message\UploadedFile
- * @uses WellRESTed\Message\UploadedFile
- * @uses WellRESTed\Message\Stream
- * @uses WellRESTed\Message\NullStream
+ * @covers WellRESTed\Message\UploadedFile
  * @group message
  */
 class UploadedFileTest extends \PHPUnit_Framework_TestCase
@@ -42,20 +39,12 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // getStream
 
-    /**
-     * @covers ::__construct
-     * @covers ::getStream
-     */
     public function testGetStreamReturnsStreamInterface()
     {
         $file = new UploadedFile("", "", 0, "", 0);
         $this->assertInstanceOf('\Psr\Http\Message\StreamInterface', $file->getStream());
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getStream
-     */
     public function testGetStreamReturnsStreamWrappingUploadedFile()
     {
         $content = "Hello, World!";
@@ -65,21 +54,13 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($content, (string) $stream);
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getStream
-     */
     public function testGetStreamReturnsEmptyStreamForNoFile()
     {
         $file = new UploadedFile("", "", 0, "", 0);
         $this->assertTrue($file->getStream()->eof());
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getStream
-     * @expectedException \RuntimeException
-     */
+    /** @expectedException \RuntimeException */
     public function testGetStreamThrowsExceptionAfterMoveTo()
     {
         $content = "Hello, World!";
@@ -89,11 +70,7 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
         $file->getStream();
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getStream
-     * @expectedException \RuntimeException
-     */
+    /** @expectedException \RuntimeException */
     public function testGetStreamThrowsExceptionForNonUploadedFile()
     {
         UploadedFileState::$php_sapi_name = "apache";
@@ -105,9 +82,6 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // moveTo
 
-    /**
-     * @covers ::moveTo
-     */
     public function testMoveToSapiRelocatesUploadedFileToDestiationIfExists()
     {
         UploadedFileState::$php_sapi_name = "fpm-fcgi";
@@ -122,9 +96,6 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($originalMd5, md5_file($this->movePath));
     }
 
-    /**
-     * @covers ::moveTo
-     */
     public function testMoveToNonSapiRelocatesUploadedFileToDestiationIfExists()
     {
         $content = "Hello, World!";
@@ -137,11 +108,8 @@ class UploadedFileTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($originalMd5, md5_file($this->movePath));
     }
 
-    /**
-     * @covers ::moveTo
-     * @expectedException \RuntimeException
-     */
-    public function testMoveToThrowsExcpetionOnSubsequentCall()
+    /** @expectedException \RuntimeException */
+    public function testMoveToThrowsExceptionOnSubsequentCall()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
