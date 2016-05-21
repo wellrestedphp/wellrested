@@ -3,8 +3,10 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
+use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\MethodMap;
+use WellRESTed\Test\NextSpy;
 
 /**
  * @covers WellRESTed\Routing\MethodMap
@@ -21,12 +23,8 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->request = new ServerRequest();
-        $this->response = $this->prophesize('Psr\Http\Message\ResponseInterface');
-        $this->response->withStatus(Argument::any())->willReturn($this->response->reveal());
-        $this->response->withHeader(Argument::cetera())->willReturn($this->response->reveal());
-        $this->next = function ($request, $response) {
-            return $response;
-        };
+        $this->response = new Response();
+        $this->next = new NextSpy();
         $this->middleware = $this->prophesize('WellRESTed\MiddlewareInterface');
         $this->middleware->__invoke(Argument::cetera())->willReturn();
         $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
@@ -50,11 +48,11 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $this->middleware->__invoke(
             $this->request,
-            $this->response->reveal(),
+            $this->response,
             $this->next
         )->shouldHaveBeenCalled();
     }
@@ -72,11 +70,11 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $middlewareUpper->reveal());
         $map->register("get", $middlewareLower->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $middlewareLower->__invoke(
             $this->request,
-            $this->response->reveal(),
+            $this->response,
             $this->next
         )->shouldHaveBeenCalled();
     }
@@ -87,11 +85,11 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("*", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $this->middleware->__invoke(
             $this->request,
-            $this->response->reveal(),
+            $this->response,
             $this->next
         )->shouldHaveBeenCalled();
     }
@@ -102,11 +100,11 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $this->middleware->__invoke(
             $this->request,
-            $this->response->reveal(),
+            $this->response,
             $this->next
         )->shouldHaveBeenCalled();
     }
@@ -117,10 +115,10 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map->register("GET,POST", $this->middleware->reveal());
 
         $this->request = $this->request->withMethod("GET");
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $this->request = $this->request->withMethod("POST");
-        $map($this->request, $this->response->reveal(), $this->next);
+        $map($this->request, $this->response, $this->next);
 
         $this->middleware->__invoke(Argument::cetera())->shouldHaveBeenCalledTimes(2);
     }
@@ -132,9 +130,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("POST", $this->middleware->reveal());
         $map->register("POST", null);
-        $map($this->request, $this->response->reveal(), $this->next);
+        $response = $map($this->request, $this->response, $this->next);
 
-        $this->response->withStatus(405)->shouldHaveBeenCalled();
+        $this->assertEquals(405, $response->getStatusCode());
     }
 
     public function testSetsStatusTo200ForOptions()
@@ -143,26 +141,20 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $response = $map($this->request, $this->response, $this->next);
 
-        $this->response->withStatus(200)->shouldHaveBeenCalled();
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
     public function testStopsPropagatingAfterOptions()
     {
-        $calledNext = false;
-        $next = function ($request, $response) use (&$calledNext) {
-            $calledNext = true;
-            return $response;
-        };
-
         $this->request = $this->request->withMethod("OPTIONS");
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $next);
+        $map($this->request, $this->response, $this->next);
 
-        $this->assertFalse($calledNext);
+        $this->assertFalse($this->next->called);
     }
 
     /** @dataProvider allowedMethodProvider */
@@ -174,17 +166,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
-        $map($this->request, $this->response->reveal(), $this->next);
+        $response = $map($this->request, $this->response, $this->next);
 
-        $containsAllMethods = function ($headerValue) use ($methodsAllowed) {
-            foreach ($methodsAllowed as $method) {
-                if (strpos($headerValue, $method) === false) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        $this->response->withHeader("Allow", Argument::that($containsAllMethods))->shouldHaveBeenCalled();
+        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine("Allow"));
     }
 
     /** @dataProvider allowedMethodProvider */
@@ -194,9 +178,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $this->next);
+        $response = $map($this->request, $this->response, $this->next);
 
-        $this->response->withStatus(405)->shouldHaveBeenCalled();
+        $this->assertEquals(405, $response->getStatusCode());
     }
 
     /**
@@ -205,17 +189,12 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
      */
     public function testStopsPropagatingAfterBadMethod()
     {
-        $calledNext = false;
-        $next = function ($request, $response) use (&$calledNext) {
-            $calledNext = true;
-            return $response;
-        };
         $this->request = $this->request->withMethod("POST");
 
         $map = new MethodMap($this->dispatcher->reveal());
         $map->register("GET", $this->middleware->reveal());
-        $map($this->request, $this->response->reveal(), $next);
-        $this->assertFalse($calledNext);
+        $map($this->request, $this->response, $this->next);
+        $this->assertFalse($this->next->called);
     }
 
     /** @dataProvider allowedMethodProvider */
@@ -227,17 +206,9 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
         foreach ($methodsDeclared as $method) {
             $map->register($method, $this->middleware->reveal());
         }
-        $map($this->request, $this->response->reveal(), $this->next);
+        $response = $map($this->request, $this->response, $this->next);
 
-        $containsAllMethods = function ($headerValue) use ($methodsAllowed) {
-            foreach ($methodsAllowed as $method) {
-                if (strpos($headerValue, $method) === false) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        $this->response->withHeader("Allow", Argument::that($containsAllMethods))->shouldHaveBeenCalled();
+        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine("Allow"));
     }
 
     public function allowedMethodProvider()
@@ -249,5 +220,14 @@ class MethodMapTest extends \PHPUnit_Framework_TestCase
             [["POST"], ["POST", "OPTIONS"]],
             [["GET", "PUT,DELETE"], ["GET", "PUT", "DELETE", "HEAD", "OPTIONS"]],
         ];
+    }
+
+    private function assertContainsEach($expectedList, $actual) {
+        foreach ($expectedList as $expected) {
+            if (strpos($actual, $expected) === false) {
+                $this->assertTrue(false, "'$actual' does not contain expected '$expected'");
+            }
+        }
+        $this->assertTrue(true);
     }
 }
