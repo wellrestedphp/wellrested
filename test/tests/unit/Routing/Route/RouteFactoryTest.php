@@ -8,12 +8,6 @@ use WellRESTed\Routing\Route\RouteInterface;
 
 /**
  * @covers WellRESTed\Routing\Route\RouteFactory
- * @uses WellRESTed\Routing\Route\TemplateRoute
- * @uses WellRESTed\Routing\Route\RegexRoute
- * @uses WellRESTed\Routing\Route\PrefixRoute
- * @uses WellRESTed\Routing\Route\StaticRoute
- * @uses WellRESTed\Routing\Route\Route
- * @uses WellRESTed\Routing\MethodMap
  * @group route
  * @group routing
  */

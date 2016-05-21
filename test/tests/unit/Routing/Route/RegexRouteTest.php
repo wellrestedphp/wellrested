@@ -7,9 +7,7 @@ use WellRESTed\Routing\Route\RegexRoute;
 use WellRESTed\Routing\Route\RouteInterface;
 
 /**
- * @coversDefaultClass WellRESTed\Routing\Route\RegexRoute
- * @uses WellRESTed\Routing\Route\RegexRoute
- * @uses WellRESTed\Routing\Route\Route
+ * @covers WellRESTed\Routing\Route\RegexRoute
  * @group route
  * @group routing
  */
@@ -22,39 +20,27 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
     }
 
-    /**
-     * @covers ::getType
-     */
     public function testReturnsPatternType()
     {
         $route = new RegexRoute("/", $this->methodMap->reveal());
         $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @dataProvider matchingRouteProvider
-     */
+    /** @dataProvider matchingRouteProvider */
     public function testMatchesTarget($pattern, $path)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($path));
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @dataProvider matchingRouteProvider
-     */
+    /** @dataProvider matchingRouteProvider */
     public function testMatchesTargetByRegex($pattern, $target)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @dataProvider matchingRouteProvider
-     */
+    /** @dataProvider matchingRouteProvider */
     public function testExtractsPathVariablesByRegex($pattern, $target, $expectedCaptures)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
@@ -79,10 +65,7 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @dataProvider mismatchingRouteProvider
-     */
+    /** @dataProvider mismatchingRouteProvider */
     public function testDoesNotMatchNonmatchingTarget($pattern, $path)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
@@ -99,9 +82,8 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::matchesRequestTarget
      * @dataProvider invalidRouteProvider
-     * @expectedException  \RuntimeException
+     * @expectedException \RuntimeException
      */
     public function testThrowsExceptionOnInvalidPattern($pattern)
     {

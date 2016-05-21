@@ -7,10 +7,7 @@ use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
 
 /**
- * @coversDefaultClass WellRESTed\Routing\Route\TemplateRoute
- * @uses WellRESTed\Routing\Route\TemplateRoute
- * @uses WellRESTed\Routing\Route\RegexRoute
- * @uses WellRESTed\Routing\Route\Route
+ * @covers WellRESTed\Routing\Route\TemplateRoute
  * @group route
  * @group routing
  */
@@ -49,9 +46,6 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
 
     // ------------------------------------------------------------------------
 
-    /**
-     * @covers ::getType
-     */
     public function testReturnsPatternType()
     {
         $route = new TemplateRoute("/", $this->methodMap->reveal());
@@ -61,14 +55,7 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Matching
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::matchesStartOfRequestTarget
-     * @covers ::getMatchingPattern
-     * @dataProvider nonMatchingTargetProvider
-     * @param string $template
-     * @param string $target
-     */
+    /** @dataProvider nonMatchingTargetProvider */
     public function testFailsToMatchNonMatchingTarget($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
@@ -88,29 +75,14 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Matching :: Simple Strings
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::getMatchingPattern
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider simpleStringProvider
-     * @param string $template
-     * @param string $target
-     */
+    /** @dataProvider simpleStringProvider */
     public function testMatchesSimpleStrings($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @covers ::processMatches
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider simpleStringProvider
-     * @param string $template
-     * @param string $target
-     * @param string[] List of variables that should be extracted
-     */
+    /** @dataProvider simpleStringProvider */
     public function testCapturesFromSimpleStrings($template, $target, $variables)
     {
         $route = new TemplateRoute($template, $this->methodMap);
@@ -130,31 +102,16 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     }
 
     // ------------------------------------------------------------------------
-    // Matching :: Reservered
+    // Matching :: Reserved
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::getMatchingPattern
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider reservedStringProvider
-     * @param string $template
-     * @param string $target
-     */
-    public function testMatchesReserveredStrings($template, $target)
+    /** @dataProvider reservedStringProvider */
+    public function testMatchesReservedStrings($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @covers ::processMatches
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider reservedStringProvider
-     * @param string $template
-     * @param string $target
-     * @param string[] List of variables that should be extracted
-     */
+    /** @dataProvider reservedStringProvider */
     public function testCapturesFromReservedStrings($template, $target, $variables)
     {
         $route = new TemplateRoute($template, $this->methodMap);
@@ -174,29 +131,14 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Matching :: Label Expansion
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::getMatchingPattern
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider labelWithDotPrefixProvider
-     * @param string $template
-     * @param string $target
-     */
+    /** @dataProvider labelWithDotPrefixProvider */
     public function testMatchesLabelWithDotPrefix($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @covers ::processMatches
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider labelWithDotPrefixProvider
-     * @param string $template
-     * @param string $target
-     * @param string[] List of variables that should be extracted
-     */
+    /** @dataProvider labelWithDotPrefixProvider */
     public function testCapturesFromLabelWithDotPrefix($template, $target, $variables)
     {
         $route = new TemplateRoute($template, $this->methodMap);
@@ -216,29 +158,14 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Matching :: Path Segments
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::getMatchingPattern
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider pathSegmentProvider
-     * @param string $template
-     * @param string $target
-     */
+    /** @dataProvider pathSegmentProvider */
     public function testMatchesPathSegments($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @covers ::processMatches
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider pathSegmentProvider
-     * @param string $template
-     * @param string $target
-     * @param string[] List of variables that should be extracted
-     */
+    /** @dataProvider pathSegmentProvider */
     public function testCapturesFromPathSegments($template, $target, $variables)
     {
         $route = new TemplateRoute($template, $this->methodMap);
@@ -258,29 +185,14 @@ class TemplateRouteTest extends \PHPUnit_Framework_TestCase
     // ------------------------------------------------------------------------
     // Matching :: Explosion
 
-    /**
-     * @covers ::matchesRequestTarget
-     * @covers ::getMatchingPattern
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider pathExplosionProvider
-     * @param string $template
-     * @param string $target
-     */
+    /** @dataProvider pathExplosionProvider */
     public function testMatchesExplosion($template, $target)
     {
         $route = new TemplateRoute($template, $this->methodMap);
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /**
-     * @covers ::getPathVariables
-     * @covers ::processMatches
-     * @covers ::uriVariableReplacementCallback
-     * @dataProvider pathExplosionProvider
-     * @param string $template
-     * @param string $target
-     * @param string[] List of variables that should be extracted
-     */
+    /** @dataProvider pathExplosionProvider */
     public function testCapturesFromExplosion($template, $target, $variables)
     {
         $route = new TemplateRoute($template, $this->methodMap);

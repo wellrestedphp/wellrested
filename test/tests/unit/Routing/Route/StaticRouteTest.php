@@ -7,17 +7,12 @@ use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRoute;
 
 /**
- * @coversDefaultClass WellRESTed\Routing\Route\StaticRoute
- * @uses WellRESTed\Routing\Route\StaticRoute
- * @uses WellRESTed\Routing\Route\Route
+ * @covers WellRESTed\Routing\Route\StaticRoute
  * @group route
  * @group routing
  */
 class StaticRouteTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @covers ::getType
-     */
     public function testReturnsStaticType()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -25,9 +20,6 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(RouteInterface::TYPE_STATIC, $route->getType());
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     */
     public function testMatchesExactRequestTarget()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -35,9 +27,6 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($route->matchesRequestTarget("/"));
     }
 
-    /**
-     * @covers ::getPathVariables
-     */
     public function testReturnsEmptyArrayForPathVariables()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -45,9 +34,6 @@ class StaticRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([], $route->getPathVariables());
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     */
     public function testDoesNotMatchNonmatchingRequestTarget()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');

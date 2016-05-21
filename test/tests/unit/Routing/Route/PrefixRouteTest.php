@@ -7,17 +7,12 @@ use WellRESTed\Routing\Route\PrefixRoute;
 use WellRESTed\Routing\Route\RouteInterface;
 
 /**
- * @coversDefaultClass WellRESTed\Routing\Route\PrefixRoute
- * @uses WellRESTed\Routing\Route\PrefixRoute
- * @uses WellRESTed\Routing\Route\Route
+ * @covers WellRESTed\Routing\Route\PrefixRoute
  * @group route
  * @group routing
  */
 class PrefixRouteTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @covers ::__construct
-     */
     public function testTrimsAsteriskFromEndOfTarget()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -25,9 +20,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("/cats/", $route->getTarget());
     }
 
-    /**
-     * @covers ::getType
-     */
     public function testReturnsPrefixType()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -35,9 +27,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(RouteInterface::TYPE_PREFIX, $route->getType());
     }
 
-    /**
-     * @covers ::getPathVariables
-     */
     public function testReturnsEmptyArrayForPathVariables()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -45,9 +34,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([], $route->getPathVariables());
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     */
     public function testMatchesExactRequestTarget()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -55,9 +41,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($route->matchesRequestTarget("/"));
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     */
     public function testMatchesRequestTargetWithSamePrefix()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
@@ -65,9 +48,6 @@ class PrefixRouteTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($route->matchesRequestTarget("/cats/"));
     }
 
-    /**
-     * @covers ::matchesRequestTarget
-     */
     public function testDoesNotMatchNonmatchingRequestTarget()
     {
         $methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
