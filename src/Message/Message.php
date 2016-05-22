@@ -46,7 +46,7 @@ abstract class Message implements MessageInterface
         if ($body !== null) {
             $this->body = $body;
         } else {
-            $this->body = new NullStream();
+            $this->body = new Stream('');
         }
     }
 
