@@ -19,7 +19,7 @@ class Stream implements StreamInterface
      * @param resource|string $resource A file system pointer resource or
      *     string
      */
-    public function __construct($resource)
+    public function __construct($resource = "")
     {
         if (is_resource($resource) && get_resource_type($resource) === "stream") {
             $this->resource = $resource;
