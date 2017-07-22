@@ -7,9 +7,9 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\TestCase;
 
-/** @covers WellRESTed\Server */
-class ServerTest extends \PHPUnit_Framework_TestCase
+class ServerTest extends TestCase
 {
     private $dispatcher;
     private $next;

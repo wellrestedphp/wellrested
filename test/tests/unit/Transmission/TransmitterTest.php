@@ -6,16 +6,13 @@ use Prophecy\Argument;
 use Psr\Http\Message\StreamInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\HeaderStack;
 use WellRESTed\Transmission\Transmitter;
 
 require_once __DIR__ . "/../../../src/HeaderStack.php";
 
-/**
- * @covers WellRESTed\Transmission\Transmitter
- * @group transmission
- */
-class TransmitterTest extends \PHPUnit_Framework_TestCase
+class TransmitterTest extends TestCase
 {
     private $request;
     private $response;

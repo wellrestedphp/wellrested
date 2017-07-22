@@ -2,7 +2,6 @@
 
 namespace WellRESTed\Test\Integration;
 
-use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\Response;
@@ -10,12 +9,13 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\Stream;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Server;
+use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
 /**
  * @coversNothing
  */
-class ServerTest extends \PHPUnit_Framework_TestCase
+class ServerTest extends TestCase
 {
     public function testDispatchesMiddleware()
     {

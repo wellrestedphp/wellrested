@@ -6,12 +6,9 @@ use WellRESTed\Message\NullStream;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\Uri;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\ServerRequest
- * @group message
- */
-class ServerRequestTest extends \PHPUnit_Framework_TestCase
+class ServerRequestTest extends TestCase
 {
     // ------------------------------------------------------------------------
     // Construction and Marshalling

@@ -3,12 +3,9 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\Stream;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\Stream
- * @group message
- */
-class StreamTest extends \PHPUnit_Framework_TestCase
+class StreamTest extends TestCase
 {
     private $resource;
     private $content = "Hello, world!";

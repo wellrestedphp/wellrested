@@ -2,16 +2,12 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use Prophecy\Argument;
+use PHPUnit\Framework\Error\Error;
 use WellRESTed\Routing\Route\RegexRoute;
 use WellRESTed\Routing\Route\RouteInterface;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\RegexRoute
- * @group route
- * @group routing
- */
-class RegexRouteTest extends \PHPUnit_Framework_TestCase
+class RegexRouteTest extends TestCase
 {
     private $methodMap;
 
@@ -88,14 +84,14 @@ class RegexRouteTest extends \PHPUnit_Framework_TestCase
     public function testThrowsExceptionOnInvalidPattern($pattern)
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
-        \PHPUnit_Framework_Error_Notice::$enabled = false;
+        \PHPUnit\Framework\Error\Warning::$enabled = false;
+        \PHPUnit\Framework\Error\Notice::$enabled = false;
         $level = error_reporting();
         error_reporting($level & ~E_WARNING);
         $route->matchesRequestTarget("/");
         error_reporting($level);
-        \PHPUnit_Framework_Error_Warning::$enabled = true;
-        \PHPUnit_Framework_Error_Notice::$enabled = true;
+        \PHPUnit\Framework\Error\Warning::$enabled = true;
+        \PHPUnit\Framework\Error\Notice::$enabled = true;
     }
 
     public function invalidRouteProvider()

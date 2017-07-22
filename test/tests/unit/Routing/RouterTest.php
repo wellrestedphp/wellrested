@@ -9,14 +9,10 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Router
- * @group routing
- */
-class RouterTest extends \PHPUnit_Framework_TestCase
+class RouterTest extends TestCase
 {
-    private $dispatcher;
     private $methodMap;
     private $factory;
     private $request;

@@ -3,12 +3,9 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\Uri;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\Uri
- * @group message
- */
-class UriTest extends \PHPUnit_Framework_TestCase
+class UriTest extends TestCase
 {
     // ------------------------------------------------------------------------
     // Scheme

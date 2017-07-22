@@ -4,15 +4,12 @@ namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\UploadedFileState;
+use WellRESTed\Test\TestCase;
 
 // Hides several php core functions for testing.
 require_once __DIR__ . "/../../../src/UploadedFileState.php";
 
-/**
- * @covers WellRESTed\Message\UploadedFile
- * @group message
- */
-class UploadedFileTest extends \PHPUnit_Framework_TestCase
+class UploadedFileTest extends TestCase
 {
     private $tmpName;
     private $movePath;

@@ -2,11 +2,9 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
-/**
- * @covers WellRESTed\Message\Message
- * @group message
- */
-class MessageTest extends \PHPUnit_Framework_TestCase
+use WellRESTed\Test\TestCase;
+
+class MessageTest extends TestCase
 {
     public function testSetsHeadersOnConstruction()
     {

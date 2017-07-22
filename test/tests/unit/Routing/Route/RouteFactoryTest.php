@@ -2,16 +2,11 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteInterface;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\RouteFactory
- * @group route
- * @group routing
- */
-class RouteFactoryTest extends \PHPUnit_Framework_TestCase
+class RouteFactoryTest extends TestCase
 {
     private $dispatcher;
 

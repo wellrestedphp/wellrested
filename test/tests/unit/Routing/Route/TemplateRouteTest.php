@@ -2,16 +2,11 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\TemplateRoute
- * @group route
- * @group routing
- */
-class TemplateRouteTest extends \PHPUnit_Framework_TestCase
+class TemplateRouteTest extends TestCase
 {
     private $methodMap;
 

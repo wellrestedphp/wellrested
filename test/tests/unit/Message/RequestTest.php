@@ -5,12 +5,9 @@ namespace WellRESTed\Test\Unit\Message;
 use WellRESTed\Message\NullStream;
 use WellRESTed\Message\Request;
 use WellRESTed\Message\Uri;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\Request
- * @group message
- */
-class RequestTest extends \PHPUnit_Framework_TestCase
+class RequestTest extends TestCase
 {
     // ------------------------------------------------------------------------
     // Construction

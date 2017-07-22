@@ -2,16 +2,11 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use Prophecy\Argument;
 use WellRESTed\Routing\Route\PrefixRoute;
 use WellRESTed\Routing\Route\RouteInterface;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\PrefixRoute
- * @group route
- * @group routing
- */
-class PrefixRouteTest extends \PHPUnit_Framework_TestCase
+class PrefixRouteTest extends TestCase
 {
     public function testTrimsAsteriskFromEndOfTarget()
     {

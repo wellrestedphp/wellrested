@@ -3,12 +3,9 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\NullStream;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\NullStream
- * @group message
- */
-class NullStreamTest extends \PHPUnit_Framework_TestCase
+class NullStreamTest extends TestCase
 {
     public function testCastsToString()
     {

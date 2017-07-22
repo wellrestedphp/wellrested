@@ -7,12 +7,9 @@ use WellRESTed\Dispatching\DispatchStack;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Dispatching\DispatchStack
- * @group dispatching
- */
-class DispatchStackTest extends \PHPUnit_Framework_TestCase
+class DispatchStackTest extends TestCase
 {
     private $request;
     private $response;

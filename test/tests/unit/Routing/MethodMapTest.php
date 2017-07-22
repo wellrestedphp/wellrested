@@ -2,19 +2,15 @@
 
 namespace WellRESTed\Test\Unit\Routing;
 
-use Prophecy\Argument;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\MethodMap;
 use WellRESTed\Test\Doubles\MiddlewareMock;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\MethodMap
- * @group routing
- */
-class MethodMapTest extends \PHPUnit_Framework_TestCase
+class MethodMapTest extends TestCase
 {
     private $dispatcher;
     private $request;

@@ -2,7 +2,6 @@
 
 namespace WellRESTed\Test\Unit\Dispatching;
 
-use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
@@ -10,12 +9,9 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Dispatching\Dispatcher
- * @group dispatching
- */
-class DispatcherTest extends \PHPUnit_Framework_TestCase
+class DispatcherTest extends TestCase
 {
     private $request;
     private $response;

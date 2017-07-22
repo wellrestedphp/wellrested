@@ -3,12 +3,9 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use WellRESTed\Message\HeaderCollection;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Message\HeaderCollection
- * @group message
- */
-class HeaderCollectionTest extends \PHPUnit_Framework_TestCase
+class HeaderCollectionTest extends TestCase
 {
     public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
     {

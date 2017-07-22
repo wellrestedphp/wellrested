@@ -2,16 +2,11 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use Prophecy\Argument;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRoute;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\StaticRoute
- * @group route
- * @group routing
- */
-class StaticRouteTest extends \PHPUnit_Framework_TestCase
+class StaticRouteTest extends TestCase
 {
     public function testReturnsStaticType()
     {

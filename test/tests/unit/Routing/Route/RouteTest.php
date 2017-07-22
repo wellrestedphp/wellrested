@@ -3,13 +3,9 @@
 namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
+use WellRESTed\Test\TestCase;
 
-/**
- * @covers WellRESTed\Routing\Route\Route
- * @group route
- * @group routing
- */
-class RouteTest extends \PHPUnit_Framework_TestCase
+class RouteTest extends TestCase
 {
     public function testCreatesInstance()
     {
