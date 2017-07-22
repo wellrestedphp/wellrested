@@ -1,0 +1,9 @@
+version: '2'
+services:
+
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - .:/usr/local/src/wellrested
