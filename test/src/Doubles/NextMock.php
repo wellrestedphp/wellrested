@@ -10,6 +10,7 @@ class NextMock
     public $called = false;
     public $request = null;
     public $response = null;
+    public $upstreamResponse = null;
 
     public function __invoke(
         ServerRequestInterface $request,
@@ -18,6 +19,10 @@ class NextMock
         $this->called = true;
         $this->request = $request;
         $this->response = $response;
-        return $response;
+        if ($this->upstreamResponse) {
+            return $this->upstreamResponse;
+        } else {
+            return $response;
+        }
     }
 }
