@@ -178,7 +178,7 @@ class TransmitterTest extends TestCase
         $this->assertContains("Content-length: $bodySize", HeaderStack::getHeaders());
     }
 
-    public function testDoesNotReplaceContentLengthHeaderWhenContentLenghtIsAlreadySet()
+    public function testDoesNotReplaceContentLengthHeaderWhenContentLengthIsAlreadySet()
     {
         $streamSize = 1024;
         $headerSize = 2048;

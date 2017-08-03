@@ -95,7 +95,7 @@ class MethodMapTest extends TestCase
         $this->assertEquals(2, $this->middleware->callCount);
     }
 
-    public function testSettingNullUnregistersMiddleware()
+    public function testSettingNullDeregistersMiddleware()
     {
         $this->request = $this->request->withMethod("POST");
 

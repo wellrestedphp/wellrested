@@ -79,7 +79,7 @@ class UploadedFileTest extends TestCase
     // ------------------------------------------------------------------------
     // moveTo
 
-    public function testMoveToSapiRelocatesUploadedFileToDestiationIfExists()
+    public function testMoveToSapiRelocatesUploadedFileToDestinationIfExists()
     {
         UploadedFileState::$php_sapi_name = "fpm-fcgi";
 
@@ -93,7 +93,7 @@ class UploadedFileTest extends TestCase
         $this->assertEquals($originalMd5, md5_file($this->movePath));
     }
 
-    public function testMoveToNonSapiRelocatesUploadedFileToDestiationIfExists()
+    public function testMoveToNonSapiRelocatesUploadedFileToDestinationIfExists()
     {
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);

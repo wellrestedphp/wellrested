@@ -62,8 +62,8 @@ class TemplateRouteTest extends TestCase
         return [
             ["/foo/{var}", "/bar/12", "Mismatch before first template expression"],
             ["/foo/{foo}/bar/{bar}", "/foo/12/13", "Mismatch after first template expression"],
-            ["/hello/{hello}", "/hello/Hello%20World!", "Requires + operator to match reserver characters"],
-            ["{/var}", "/bar/12", "Path contains more segements than template"],
+            ["/hello/{hello}", "/hello/Hello%20World!", "Requires + operator to match reserved characters"],
+            ["{/var}", "/bar/12", "Path contains more segments than template"],
         ];
     }
 

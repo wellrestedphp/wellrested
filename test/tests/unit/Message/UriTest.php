@@ -364,7 +364,7 @@ class UriTest extends TestCase
     {
         $uri = new Uri();
         $uri = $uri->withQuery($query);
-        $uri = $uri->withQuery($uri->getQuery($query));
+        $uri = $uri->withQuery($uri->getQuery());
         $this->assertSame($expected, $uri->getQuery());
     }
 
@@ -418,7 +418,7 @@ class UriTest extends TestCase
     {
         $uri = new Uri();
         $uri = $uri->withFragment($fragment);
-        $uri = $uri->withFragment($uri->getFragment($fragment));
+        $uri = $uri->withFragment($uri->getFragment());
         $this->assertSame($expected, $uri->getFragment());
     }
 

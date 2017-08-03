@@ -64,9 +64,6 @@ class DispatcherTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    /**
-     * @uses WellRESTed\Dispatching\DispatchStack
-     */
     public function testDispatchesArrayAsDispatchStack()
     {
         $middleware = new DispatcherTest_Middleware();

@@ -67,14 +67,14 @@ class ServerRequestTest extends TestCase
      * @preserveGlobalState disabled
      * @dataProvider methodProvider
      */
-    public function testGetServerRequestReadsMethod($exectedMethod, $serverMethod)
+    public function testGetServerRequestReadsMethod($expectedMethod, $serverMethod)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
             "REQUEST_METHOD" => $serverMethod
         ];
         $request = ServerRequest::getServerRequest();
-        $this->assertEquals($exectedMethod, $request->getMethod());
+        $this->assertEquals($expectedMethod, $request->getMethod());
     }
 
     public function methodProvider()
@@ -93,14 +93,14 @@ class ServerRequestTest extends TestCase
      * @preserveGlobalState disabled
      * @dataProvider requestTargetProvider
      */
-    public function testGetServerRequestReadsRequestTargetFromRequest($exectedRequestTarget, $serverRequestUri)
+    public function testGetServerRequestReadsRequestTargetFromRequest($expectedRequestTarget, $serverRequestUri)
     {
         $_SERVER = [
             "HTTP_HOST" => "localhost",
             "REQUEST_URI" => $serverRequestUri
         ];
         $request = ServerRequest::getServerRequest();
-        $this->assertEquals($exectedRequestTarget, $request->getRequestTarget());
+        $this->assertEquals($expectedRequestTarget, $request->getRequestTarget());
     }
 
     public function requestTargetProvider()

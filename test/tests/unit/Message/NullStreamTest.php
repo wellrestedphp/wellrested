@@ -15,38 +15,38 @@ class NullStreamTest extends TestCase
 
     public function testCloseDoesNothing()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $stream->close();
-        $this->assertTrue(true); // Asserting no exception occured.
+        $this->assertTrue(true); // Asserting no exception occurred.
     }
 
     public function testDetachReturnsNull()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertNull($stream->detach());
     }
 
     public function testSizeReturnsZero()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertEquals(0, $stream->getSize());
     }
 
     public function testTellReturnsZero()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertEquals(0, $stream->tell());
     }
 
     public function testEofReturnsTrue()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertTrue($stream->eof());
     }
 
     public function testIsSeekableReturnsFalse()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertFalse($stream->isSeekable());
     }
 
@@ -60,7 +60,7 @@ class NullStreamTest extends TestCase
     /** @expectedException \RuntimeException */
     public function testRewindThrowsException()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $stream->rewind();
     }
 
@@ -73,19 +73,19 @@ class NullStreamTest extends TestCase
     /** @expectedException \RuntimeException */
     public function testWriteThrowsException()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $stream->write("");
     }
 
     public function testIsReadableReturnsTrue()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertTrue($stream->isReadable());
     }
 
     public function testReadReturnsEmptyString()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertEquals("", $stream->read(100));
     }
 
@@ -97,13 +97,13 @@ class NullStreamTest extends TestCase
 
     public function testGetMetadataReturnsNull()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertNull($stream->getMetadata());
     }
 
     public function testGetMetadataReturnsNullWithKey()
     {
-        $stream = new \WellRESTed\Message\NullStream();
+        $stream = new NullStream();
         $this->assertNull($stream->getMetadata("size"));
     }
 }

@@ -2,6 +2,6 @@
 
 namespace WellRESTed\Test;
 
-class TestCase extends \PHPUnit\Framework\TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
 }
