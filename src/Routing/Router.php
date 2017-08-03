@@ -11,7 +11,7 @@ use WellRESTed\Routing\Route\RouteInterface;
 
 class Router implements RouterInterface
 {
-    /** @var string ServerRequestInterface attribute name for matched path variables */
+    /** @var string attribute name for matched path variables */
     private $pathVariablesAttributeName;
     /** @var DispatcherInterface */
     private $dispatcher;
@@ -183,21 +183,30 @@ class Router implements RouterInterface
         $matches = array_filter(
             $prefixes,
             function ($prefix) use ($requestTarget) {
-                return (strrpos($requestTarget, $prefix, -strlen($requestTarget)) !== false);
+                return $this->startsWith($requestTarget, $prefix);
             }
         );
 
         if ($matches) {
             if (count($matches) > 0) {
-                // If there are multiple matches, sort them to find the one with the longest string length.
+                // If there are multiple matches, sort them to find the one with
+                // the longest string length.
                 $compareByLength = function ($a, $b) {
                     return strlen($b) - strlen($a);
                 };
                 usort($matches, $compareByLength);
             }
-            $route = $this->prefixRoutes[$matches[0]];
+            /** @var string $bestMatch */
+            $bestMatch = $matches[0];
+            $route = $this->prefixRoutes[$bestMatch];
             return $route;
         }
         return null;
+    }
+
+    function startsWith($haystack, $needle)
+    {
+        $length = strlen($needle);
+        return (substr($haystack, 0, $length) === $needle);
     }
 }

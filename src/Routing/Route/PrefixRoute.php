@@ -6,8 +6,7 @@ class PrefixRoute extends Route
 {
     public function __construct($target, $methodMap)
     {
-        $this->target = rtrim($target, "*");
-        $this->methodMap = $methodMap;
+        parent::__construct(rtrim($target, "*"), $methodMap);
     }
 
     public function getType()

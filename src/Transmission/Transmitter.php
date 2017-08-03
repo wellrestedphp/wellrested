@@ -12,6 +12,8 @@ class Transmitter implements TransmitterInterface
 {
     /** @var int */
     private $chunkSize = 0;
+    /** @var DispatcherInterface  */
+    private $dispatcher;
 
     public function __construct(DispatcherInterface $dispatcher = null)
     {
@@ -34,8 +36,10 @@ class Transmitter implements TransmitterInterface
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response Response to output
      */
-    public function transmit(ServerRequestInterface $request, ResponseInterface $response)
-    {
+    public function transmit(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ) {
         // Prepare the response for output.
         $response = $this->prepareResponse($request, $response);
 
@@ -64,8 +68,10 @@ class Transmitter implements TransmitterInterface
         $this->chunkSize = $chunkSize;
     }
 
-    protected function prepareResponse(ServerRequestInterface $request, ResponseInterface $response)
-    {
+    protected function prepareResponse(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ) {
         // Add a Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header
