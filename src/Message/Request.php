@@ -32,7 +32,7 @@ class Request extends Message implements RequestInterface
     /**
      * Create a new Request.
      *
-     * @see WellRESTed\Message\Message
+     * @see \WellRESTed\Message\Message
      * @param UriInterface $uri
      * @param string $method
      * @param array $headers
@@ -109,7 +109,7 @@ class Request extends Message implements RequestInterface
      * @link http://tools.ietf.org/html/rfc7230#section-2.7 (for the various
      *     request-target forms allowed in request messages)
      * @param mixed $requestTarget
-     * @return self
+     * @return static
      */
     public function withRequestTarget($requestTarget)
     {
@@ -136,7 +136,7 @@ class Request extends Message implements RequestInterface
      * modify the given string.
      *
      * @param string $method Case-insensitive method.
-     * @return self
+     * @return static
      * @throws \InvalidArgumentException for invalid HTTP methods.
      */
     public function withMethod($method)
@@ -182,7 +182,7 @@ class Request extends Message implements RequestInterface
      * @link http://tools.ietf.org/html/rfc3986#section-4.3
      * @param UriInterface $uri New request URI to use.
      * @param bool $preserveHost Preserve the original state of the Host header.
-     * @return self
+     * @return static
      */
     public function withUri(UriInterface $uri, $preserveHost = false)
     {
@@ -212,7 +212,7 @@ class Request extends Message implements RequestInterface
 
     /**
      * @param string $method
-     * @return string
+     * @return static
      * @throws \InvalidArgumentException
      */
     private function getValidatedMethod($method)

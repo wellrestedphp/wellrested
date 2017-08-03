@@ -37,6 +37,7 @@ class NullStream implements StreamInterface
      */
     public function detach()
     {
+        return null;
     }
 
     /**

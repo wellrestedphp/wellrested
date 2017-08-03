@@ -33,7 +33,7 @@ class Response extends Message implements ResponseInterface
      * If no StreamInterface is provided for $body, the instance will create
      * a NullStream instance for the message body.
      *
-     * @see WellRESTed\Message\Message
+     * @see \WellRESTed\Message\Message
      * @param int $statusCode
      * @param array $headers
      * @param StreamInterface $body
@@ -69,11 +69,11 @@ class Response extends Message implements ResponseInterface
      * reason phrase, if possible.
      *
      * @link http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-     * @param integer $code The 3-digit integer result code to set.
+     * @param int $code The 3-digit integer result code to set.
      * @param string $reasonPhrase The reason phrase to use with the
      *     provided status code; if none is provided, implementations MAY
      *     use the defaults as suggested in the HTTP specification.
-     * @return self
+     * @return static
      * @throws \InvalidArgumentException For invalid status code arguments.
      */
     public function withStatus($code, $reasonPhrase = "")

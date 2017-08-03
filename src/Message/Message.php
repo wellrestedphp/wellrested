@@ -77,7 +77,7 @@ abstract class Message implements MessageInterface
      * "1.1", "1.0").
      *
      * @param string $version HTTP protocol version
-     * @return self
+     * @return static
      */
     public function withProtocolVersion($version)
     {
@@ -192,7 +192,7 @@ abstract class Message implements MessageInterface
      *
      * @param string $name Case-insensitive header field name.
      * @param string|string[] $value Header value(s).
-     * @return self
+     * @return static
      * @throws \InvalidArgumentException for invalid header names or values.
      */
     public function withHeader($name, $value)
@@ -216,7 +216,7 @@ abstract class Message implements MessageInterface
      *
      * @param string $name Case-insensitive header field name to add.
      * @param string|string[] $value Header value(s).
-     * @return self
+     * @return static
      * @throws \InvalidArgumentException for invalid header names or values.
      */
     public function withAddedHeader($name, $value)
@@ -234,7 +234,7 @@ abstract class Message implements MessageInterface
      * Creates a new instance, without the specified header.
      *
      * @param string $name Case-insensitive header field name to remove.
-     * @return self
+     * @return static
      */
     public function withoutHeader($name)
     {
@@ -259,7 +259,7 @@ abstract class Message implements MessageInterface
      * The body MUST be a StreamInterface object.
      *
      * @param StreamInterface $body Body.
-     * @return self
+     * @return static
      * @throws \InvalidArgumentException When the body is not valid.
      */
     public function withBody(StreamInterface $body)
