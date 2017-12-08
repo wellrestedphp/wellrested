@@ -4,7 +4,8 @@ namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\ServerMiddleware\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class Dispatcher implements DispatcherInterface
 {
@@ -32,6 +33,8 @@ class Dispatcher implements DispatcherInterface
 
         if (is_callable($dispatchable)) {
             return $dispatchable($request, $response, $next);
+        } elseif ($dispatchable instanceof RequestHandlerInterface) {
+            return $dispatchable->handle($request);
         } elseif ($dispatchable instanceof MiddlewareInterface) {
             $delegate = new DispatcherDelegate($response, $next);
             return $dispatchable->process($request, $delegate);

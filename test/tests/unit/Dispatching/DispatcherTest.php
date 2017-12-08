@@ -4,15 +4,13 @@ namespace WellRESTed\Test\Unit\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\ServerMiddleware\DelegateInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
-
-use Psr\Http\ServerMiddleware\HandleInterface;
 
 class DispatcherTest extends TestCase
 {
@@ -185,7 +183,7 @@ class DoublePassMiddlewareDouble implements MiddlewareInterface
 /**
  * PSR-15 Handler that returns a ResponseInterface stub
  */
-class HandlerDouble implements HandleInterface
+class HandlerDouble implements RequestHandlerInterface
 {
     /** @var ResponseInterface */
     private $response;
@@ -194,7 +192,7 @@ class HandlerDouble implements HandleInterface
         $this->response = $response;
     }
 
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return $this->response;
     }
@@ -206,12 +204,12 @@ class HandlerDouble implements HandleInterface
  * PSR-15 Middleware that passes the request to the delegate and returns the
  * delegate's response
  */
-class MiddlewareDouble implements \Psr\Http\ServerMiddleware\MiddlewareInterface
+class MiddlewareDouble implements \Psr\Http\Server\MiddlewareInterface
 {
     public function process(
         ServerRequestInterface $request,
-        DelegateInterface $delegate
+        RequestHandlerInterface $handler
     ): ResponseInterface {
-        return $delegate($request);
+        return $handler->handle($request);
     }
 }

@@ -4,12 +4,12 @@ namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\ServerMiddleware\DelegateInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Adapter to allow use of PSR-15 Middleware with double pass implementations.
  */
-class DispatcherDelegate implements DelegateInterface
+class DispatcherDelegate implements RequestHandlerInterface
 {
     /** @var ResponseInterface */
     private $response;
@@ -22,7 +22,7 @@ class DispatcherDelegate implements DelegateInterface
         $this->next = $next;
     }
 
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return call_user_func($this->next, $request, $this->response);
     }

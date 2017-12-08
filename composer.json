@@ -21,7 +21,7 @@
     "autoload": {
         "psr-4": {
             "WellRESTed\\": "src/",
-            "Psr\\Http\\ServerMiddleware\\": "src-fig/"
+            "Psr\\Http\\Server\\": "src-fig/"
         }
     }
 }
