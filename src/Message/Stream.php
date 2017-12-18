@@ -52,7 +52,9 @@ class Stream implements StreamInterface
                 rewind($this->resource);
             }
             $string = $this->getContents();
+            // @codeCoverageIgnoreStart
         } catch (\Exception $e) {
+            // @codeCoverageIgnoreEnd
             // Silence exceptions in order to conform with PHP's string casting operations.
         }
         return $string;

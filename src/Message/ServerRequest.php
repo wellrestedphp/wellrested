@@ -465,7 +465,11 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getStreamForBody()
     {
-        return new Stream(fopen("php://input", "r"));
+        $input = fopen("php://input", "rb");
+        $temp = fopen("php://temp", "wb+");
+        stream_copy_to_stream($input, $temp);
+        rewind($temp);
+        return new Stream($temp);
     }
 
     /**
