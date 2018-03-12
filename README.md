@@ -5,12 +5,12 @@ WellRESTed
 [![Documentation Status](https://readthedocs.org/projects/wellrested/badge/?version=latest)](http://wellrested.readthedocs.org/en/latest/)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e/mini.png)](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e)
 
-WellRESTed is a library for creating RESTful Web services in PHP.
+WellRESTed is a library for creating RESTful Web services and websites in PHP.
 
 Requirements
 ------------
 
-- PHP 5.4
+- PHP 7.0
 
 Install
 -------
@@ -20,7 +20,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 ```json
 {
     "require": {
-        "wellrested/wellrested": "~3.0"
+        "wellrested/wellrested": "~3.1"
     }
 }
 ```
@@ -28,7 +28,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 Documentation
 -------------
 
-See [the documentation](http://wellrested.readthedocs.org/en/latest/) to get started.
+See [the documentation](https://wellrested.readthedocs.org/en/latest/) to get started.
 
 Example
 -------
@@ -36,60 +36,42 @@ Example
 ```php
 <?php
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use WellRESTed\Message\Response;
 use WellRESTed\Message\Stream;
 use WellRESTed\Server;
 
-require_once "vendor/autoload.php";
+// Create a handler using the PSR-15 RequestHandlerInterface
+class HomePageHandler implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        // Create and return new Response object to return with status code,
+        // headers, and body.
+        $response = (new Response(200))
+            ->withHeader('Content-type', 'text/html')
+            ->withBody(new Stream('<h1>Hello, world!</h1>'));
+        return $response;
+    }
+}
 
-// Build some middleware. We'll register these with a server below.
-// We're using callables to fit this all in one example, but these
-// could also be classes implementing WellRESTed\MiddlewareInterface.
+// -----------------------------------------------------------------------------
 
-// Set the status code and provide the greeting as the response body.
-$hello = function ($request, $response, $next) {
-
-    // Check for a "name" attribute which may have been provided as a
-    // path variable. Use "world" as a default.
-    $name = $request->getAttribute("name", "world");
-
-    // Set the response body to the greeting and the status code to 200 OK.
-    $response = $response->withStatus(200)
-        ->withHeader("Content-type", "text/plain")
-        ->withBody(new Stream("Hello, $name!"));
-
-    // Propagate to the next middleware, if any, and return the response.
-    return $next($request, $response);
-
-};
-
-// Add a header to the response.
-$headerAdder = function ($request, $response, $next) {
-    // Add the header.
-    $response = $response->withHeader("X-example", "hello world");
-    // Propagate to the next middleware, if any, and return the response.
-    return $next($request, $response);
-};
-
-// Create a server
+// Create a new server.
 $server = new Server();
 
-// Start each request-response cycle by dispatching the header adder.
-$server->add($headerAdder);
+// Add a router to the server to map methods and endpoints to handlers.
+$router = $server->createRouter();
+$router->register('GET', '/', new HomePageHandler());
+$server->add($router);
 
-// The header adder will propagate to this router, which will dispatch the
-// $hello middleware, possibly with a {name} variable.
-$server->add($server->createRouter()
-    ->register("GET", "/hello", $hello)
-    ->register("GET", "/hello/{name}", $hello)
-);
-
-// Read the request from the client, dispatch middleware, and output.
+// Read the request from the client, dispatch a handler, and output.
 $server->respond();
-
 ```
-
 
 Copyright and License
 ---------------------
-Copyright © 2015 by PJ Dietz
+Copyright © 2018 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
