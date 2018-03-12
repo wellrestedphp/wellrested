@@ -117,7 +117,6 @@ The site will also provide an ``X-example: hello world`` using dedicated middlew
     // Register a route that reads a "name" from the path.
     // This will make the "name" request attribute available to the handler.
     $router->register('GET', '/hello/{name}', $handler);
-
     $server->add($router);
 
     // Read the request from the client, dispatch, and output.

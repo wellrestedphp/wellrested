@@ -10,14 +10,14 @@ The recommended method for installing WellRESTed is to use the PHP dependency ma
 
     {
       "require": {
-         "wellrested/wellrested": "~3.0"
+         "wellrested/wellrested": "~3.1"
       }
    }
 
 Requirements
 ^^^^^^^^^^^^
 
-- PHP 5.4.0
+- PHP 7.0
 
 License
 ^^^^^^^
@@ -26,7 +26,7 @@ Licensed using the `MIT license <http://opensource.org/licenses/MIT>`_.
 
     The MIT License (MIT)
 
-    Copyright (c) 2015 PJ Dietz
+    Copyright (c) 2018 PJ Dietz
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

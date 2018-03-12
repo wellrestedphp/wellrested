@@ -3,33 +3,10 @@ Messages and PSR-7
 
 WellRESTed uses PSR-7_ as the interfaces for HTTP messages. This section provides an introduction to working with these interfaces and the implementations provided with WellRESTed. For more information, please read PSR-7_.
 
-Obtaining Instances
--------------------
-
-When working with middleware_, you generally will not need to create requests and responses yourself, as these are passed into the middleware when it is dispatched.
-
-In `Getting Started`_, we saw that middleware looks like this:
-
-.. code-block:: php
-
-    /**
-     * @param Psr\Http\Message\ServerRequestInterface $request
-     * @param Psr\Http\Message\ResponseInterface $response
-     * @param callable $next
-     * @return Psr\Http\Message\ResponseInterface
-     */
-    function ($request, $response, $next) { }
-
-When middleware is called, it receives a ``Psr\Http\Message\ServerRequestInterface`` instance representing the client's request and a ``Psr\Http\Message\ResponseInterface`` instance that serves as a starting place for the response to output to the client. These instances are created by the ``WellRESTed\Server`` when you call ``WellRESTed\Server::respond``.
-
-.. note::
-
-    If you want to provide your own custom request and response (either to adjust the initial settings or to use a different implementation), you can do so by passing request and response instances as the first and second parameters to ``WellRESTed\Server::respond``.
-
 Requests
 --------
 
-The ``$request`` variable passed to middleware represents the request message sent by the client. Middleware can inspect this variable to read information such as the request path, method, query, headers, and body.
+The ``$request`` variable passed to handlers and middleware represents the request message sent by the client. You can inspect this variable to read information such as the request path, method, query, headers, and body.
 
 Let's start with a very simple GET request to the path ``/cats/?color=orange``.
 
@@ -39,29 +16,31 @@ Let's start with a very simple GET request to the path ``/cats/?color=orange``.
     Host: example.com
     Cache-control: no-cache
 
-You can read information from the request in your middleware like this:
+You can read information from the request in your handler like this:
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
+    class MyHandler implements RequestHandlerInterface
+    {
+        public function handle(ServerRequestInterface $request): ResponseInterface
+        {
+            $path = $request->getRequestTarget();
+            // "/cats/?color=orange"
 
-        $path = $request->getRequestTarget();
-        // "/cats/?color=orange"
+            $method = $request->getMethod();
+            // "GET"
 
-        $method = $request->getMethod();
-        // "GET"
-
-        $query = $request->getQueryParams();
-        /*
-            Array
-            (
-                [color] => orange
-            )
-        */
-
+            $query = $request->getQueryParams();
+            /*
+                Array
+                (
+                    [color] => orange
+                )
+            */
+        }
     }
 
-This example middleware shows that you can use:
+This example shows that you can use:
 
     - ``getRequestTarget()`` to read the path and query string for the request
     - ``getMethod()`` to read the HTTP verb (e.g., GET, POST, OPTIONS, DELETE)
@@ -74,20 +53,22 @@ Headers
 
 The request above also included a ``Cache-control: no-cache`` header. You can read this header a number of ways. The simplest way is with the ``getHeaderLine($name)`` method.
 
-Call ``getHeaderLine($name)`` and pass the case-insensitive name of a header. The method will return the value for the header, or an empty string.
+Call ``getHeaderLine($name)`` and pass the case-insensitive name of a header. The method will return the value for the header, or an empty string if the header is not present.
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
+    class MyHandler implements RequestHandlerInterface
+    {
+        public function handle(ServerRequestInterface $request): ResponseInterface
+        {
+            // This message contains a "Cache-control: no-cache" header.
+            $cacheControl = $request->getHeaderLine("cache-control");
+            // "no-cache"
 
-        // This message contains a "Cache-control: no-cache" header.
-        $cacheControl = $request->getHeaderLine("cache-control");
-        // "no-cache"
-
-        // This message does not contain any authorization headers.
-        $authorization = $request->getHeaderLine("authorization");
-        // ""
-
+            // This message does not contain any authorization headers.
+            $authorization = $request->getHeaderLine("authorization");
+            // ""
+        }
     }
 
 .. note::
@@ -125,17 +106,19 @@ We can read the parsed body like this:
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
-
-        $cat = $request->getParsedBody();
-        /*
-            Array
-            (
-                [name] => Molly
-                [color] => calico
-            )
-        */
-
+    class MyHandler implements RequestHandlerInterface
+    {
+        public function handle(ServerRequestInterface $request): ResponseInterface
+        {
+            $cat = $request->getParsedBody();
+            /*
+                Array
+                (
+                    [name] => Molly
+                    [color] => calico
+                )
+            */
+        }
     }
 
 Body Stream
@@ -157,45 +140,49 @@ Using a JSON representation of our cat, we can make a request like this:
         "color": "Calico"
     }
 
-We can read and parse the JSON body, and even provide it **as** the parsedBody for later middleware like this:
+We can read and parse the JSON body, and even provide it **as** the parsedBody for later middleware or handler like this:
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
-
-        $cat = json_decode((string) $request->getBody());
-        /*
-            stdClass Object
-            (
-                [name] => Molly
-                [color] => calico
-            )
-        */
-
-        $request = $request->withParsedBody($cat);
-
+    class JsonParser implements MiddlewareInterface
+    {
+        public function process(
+            ServerRequestInterface $request, 
+            RequestHandlerInterface $handler
+        ): ResponseInterface 
+        {
+            // Parse the body.
+            $cat = json_decode((string) $request->getBody());
+            /*
+                stdClass Object
+                (
+                    [name] => Molly
+                    [color] => calico
+                )
+            */
+            // Add the parsed JSON to the request.
+            $request = $request->withParsedBody($cat);
+            // Send the request to the next handler.
+            return $handler->handle($request);
+        }
     }
 
 
 Because the entity body of a request or response can be very large, PSR-7_ represents bodies as streams using the  ``Psr\Htt\Message\StreamInterface`` (see PSR-7_ Section 1.3).
 
-The JSON example cast the stream to a string, but we can also do things like copy the stream to a local file:
+The JSON example casts the stream to a string, but we can also do things like copy the stream to a local file:
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
-
-        // Store the body to a temp file.
-        $chunkSize = 2048; // Number of bytes to read at once.
-        $localPath = tempnam(sys_get_temp_dir(), "body");
-        $h = fopen($localPath, "wb");
-        $body = $rqst->getBody();
-        while (!$body->eof()) {
-            fwrite($h, $body->read($chunkSize));
-        }
-        fclose($h);
-
+    // Store the body to a temp file.
+    $chunkSize = 2048; // Number of bytes to read at once.
+    $localPath = tempnam(sys_get_temp_dir(), "body");
+    $h = fopen($localPath, "wb");
+    $body = $request->getBody();
+    while (!$body->eof()) {
+        fwrite($h, $body->read($chunkSize));
     }
+    fclose($h);
 
 Parameters
 ^^^^^^^^^^
@@ -237,106 +224,63 @@ For a request to ``/cats/Rufus``:
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
-
-        $name = $request->getAttribute("name");
-        // "Rufus"
-
-    }
+    $name = $request->getAttribute("name");
+    // "Rufus"
 
 When calling ``getAttribute``, you can optionally provide a default value as the second argument. The value of this argument will be returned if the request has no attribute with that name.
 
 .. code-block:: php
 
-    function ($request, $response, $next) {
+    // Request has no attribute "dog"
+    $name = $request->getAttribute("dog", "Bear");
+    // "Bear"
 
-        // Request has no attribute "dog"
-        $name = $request->getAttribute("dog", "Bear");
-        // "Bear"
-
-    }
-
-Middleware can also use attributes as a way to provide extra information to subsequent middleware. For example, an authorization middleware could obtain an object representing a user and store is as the "user" attribute which later middleware could read.
+Middleware can also use attributes as a way to provide extra information to subsequent handlers. For example, an authorization middleware could obtain an object representing a user and store is as the "user" attribute which later middleware could read.
 
 .. code-block:: php
 
-    $auth = function ($request, $response, $next) {
+    class AuthorizationMiddleware implements MiddlewareInterface
+    {
+        public function process(
+            ServerRequestInterface $request, 
+            RequestHandlerInterface $handler
+        ): ResponseInterface 
 
-        try {
-            $user = readUserFromCredentials($request);
-        } catch (NoCredentialsSupplied $e) {
-            return $response->withStatus(401);
-        } catch (UserNotAllowedHere $e) {
-            return $response->withStatus(403);
+            try {
+                $user = readUserFromCredentials($request);
+            } catch (NoCredentialsSupplied $e) {
+                return $response->withStatus(401);
+            } catch (UserNotAllowedHere $e) {
+                return $response->withStatus(403);
+            }
+
+            // Store this as an attribute.
+            $request = $request->withAttribute("user", $user);
+
+            // Call the next handler, passing the request with the added attribute.
+            // Send the request to the next handler.
+            return $handler->handle($request);
         }
-
-        // Store this as an attribute.
-        $request = $request->withAttribute("user", $user);
-
-        // Call $next, passing the request with the added attribute.
-        return $next($request, $response);
-
     };
 
-    $subsequent = function ($request, $response, $next) {
+    class SecureHandler implements RequestHandlerInterface
+    {
+        public function handle(ServerRequestInterface $request): ResponseInterface
+        {
+            // Read the "user" attribute added by a previous middleware.
+            $user = $request->getAttribute("user");
 
-        // Read the "user" attribute added by a previous middleware.
-        $user = $request->getAttribute("user");
-
-        // Do something with $user
-
+            // Do something with $user ...
+        }
     }
 
     $server = new \WellRESTed\Server();
-    $server->add($auth);
-    $server->add($subsequent); // Must be added AFTER $auth to get "user"
+    $server->add(new AuthorizationMiddleware());
+    $server->add(new SecureHandler()); // Must be added AFTER authorization to get "user"
     $server->respond();
-
-Finally, attributes provide a nice way to provide a `dependency injection`_ container for to your middleware.
 
 Responses
 ---------
-
-Initial Response
-^^^^^^^^^^^^^^^^
-
-When you call ``WellRESTed\Server::respond``, the server creates a "blank" response instance to pass to dispatched middleware. This response will have a ``500 Internal Server Error`` status, no headers, and an empty body.
-
-You may wish to start each request-response cycle with a response with a different initial state, for example to include a custom header with all responses or to assume success and only change the status code on a failure (or non-``200`` success). Here are two ways to provide this starting response:
-
-Provide middleware as the first middleware that set the default conditions.
-
-.. code-block:: php
-
-    $initialResponsePrep = function ($rqst, $resp, $next) {
-        // Set initial response and forward to subsequent middleware.
-        $resp = $resp
-            ->withStatus(200)
-            ->withHeader("X-powered-by", "My Super Cool API v1.0.2")
-        return $next($rqst, $resp);
-    };
-
-    $server = new \WellRESTed\Server();
-    $server->add($initialResponsePrep);
-    // ...add other middleware...
-    $server->respond();
-
-Alternatively, instantiate a response and provide it to ``WellRESTed\Server::respond``.
-
-.. code-block:: php
-
-    // Create an initial response. This can be any instance implementing
-    // Psr\Http\Message\ResponseInterface.
-    $response = new \WellRESTed\Message\Response(200, [
-        "X-powered-by" => ["My Super Cool API v1.0.2"]]);
-
-    $server = new \WellRESTed\Server();
-    // ...add middleware middleware...
-    // Pass the response to respond()
-    $server->respond(null, $response);
-
-Modifying
-^^^^^^^^^
 
 PSR-7_ messages are immutable, so you will not be able to alter values of response properties. Instead, ``with*`` methods provide ways to get a copy of the current message with updated properties. For example, ``ResponseInterface::withStatus`` returns a copy of the original response with the status changed.
 
@@ -360,7 +304,7 @@ Chain multiple ``with`` methods together fluently:
 .. code-block:: php
 
     // Get a new response with updated status, headers, and body.
-    $response = $response
+    $response = (new Response())
         ->withStatus(200)
         ->withHeader("Content-type", "text/plain")
         ->withBody(new \WellRESTed\Message\Stream("Hello, world!);
@@ -455,45 +399,31 @@ When you pass a string to the constructor, the Stream instance uses `php://temp`
 
 .. code-block:: php
 
-    function ($rqst, $resp, $next) {
+    // Pass the beginning of the contents to the constructor as a string.
+    $body = new \WellRESTed\Message\Stream("Hello ");
 
-        // Pass the beginning of the contents to the constructor as a string.
-        $body = new \WellRESTed\Message\Stream("Hello ");
+    // Append more contents.
+    $body->write("world!");
 
-        // Append more contents.
-        $body->write("world!");
-
-        // Set the body and status code.
-        $resp = $resp
-            ->withStatus(200)
-            ->withBody($body);
-
-        // Forward to the next middleware.
-        return $next($rqst, $resp);
-
-    }
+    // Set the body and status code.
+    $response = (new Response())
+        ->withStatus(200)
+        ->withBody($body);
 
 To respond with the contents of an existing file, use ``fopen`` to open the file with read access and pass the pointer to the constructor.
 
 .. code-block:: php
 
-    function ($rqst, $resp, $next) {
+    // Open the file with read access.
+    $resource = fopen("/home/user/some/file", "rb");
 
-        // Open the file with read access.
-        $resource = fopen("/home/user/some/file", "rb");
+    // Pass the file pointer resource to the constructor.
+    $body = new \WellRESTed\Message\Stream($resource);
 
-        // Pass the file pointer resource to the constructor.
-        $body = new \WellRESTed\Message\Stream($resource);
-
-        // Set the body and status code.
-        $resp = $resp
-            ->withStatus(200)
-            ->withBody($body);
-
-        // Forward to the next middleware.
-        return $next($rqst, $resp);
-
-    }
+    // Set the body and status code.
+    $response = (new Response())
+        ->withStatus(200)
+        ->withBody($body);
 
 NullStream
 ~~~~~~~~~~
@@ -502,17 +432,9 @@ Each PSR-7_ message MUST have a body, so there's no ``withoutBody`` method. You 
 
 .. code-block:: php
 
-    function ($rqst, $resp, $next) {
-
-        // Set the body and status code.
-        $resp = $resp
-            ->withStatus(304)
-            ->withBody(new \WellRESTed\Message\NullStream());
-
-        // Forward to the next middleware.
-        return $next($rqst, $resp);
-
-    }
+    $response = (new Response())
+        ->withStatus(200)
+        ->withBody(new \WellRESTed\Message\NullStream());
 
 .. _HTTP Status Code Registry: http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
