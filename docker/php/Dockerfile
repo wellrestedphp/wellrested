@@ -15,7 +15,7 @@ RUN yes | pecl install xdebug \
   && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini
 
 # Download and install Composer
-COPY ./docker/install-composer.sh /tmp/install-composer.sh
+COPY ./docker/php/install-composer.sh /tmp/install-composer.sh
 RUN chmod +x /tmp/install-composer.sh; sync && \
   /tmp/install-composer.sh && \
   rm /tmp/install-composer.sh

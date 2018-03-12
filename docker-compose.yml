@@ -4,6 +4,13 @@ services:
   php:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./docker/php/Dockerfile
+    volumes:
+      - .:/usr/local/src/wellrested
+
+  docs:
+    build:
+      context: .
+      dockerfile: ./docker/docs/Dockerfile
     volumes:
       - .:/usr/local/src/wellrested
