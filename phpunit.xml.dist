@@ -24,6 +24,6 @@
         </whitelist>
     </filter>
     <logging>
-        <log type="coverage-html" target="./report" charset="UTF-8" hightlight="true" />
+        <log type="coverage-html" target="./public/coverage" charset="UTF-8" hightlight="true" />
     </logging>
 </phpunit>

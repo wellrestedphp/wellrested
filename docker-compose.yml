@@ -1,6 +1,7 @@
 version: '2'
 services:
 
+  # PHPUnit and Composer
   php:
     build:
       context: .
@@ -8,9 +9,24 @@ services:
     volumes:
       - .:/usr/local/src/wellrested
 
+  # Documentation generator
   docs:
     build:
       context: .
       dockerfile: ./docker/docs/Dockerfile
+    volumes:
+      - .:/usr/local/src/wellrested
+
+  # Local development site
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 8080:80
+    volumes:
+      - .:/usr/local/src/wellrested
+      - ./docker/nginx/site.conf:/etc/nginx/conf.d/default.conf
+      
+  php-fpm:
+    image: php:7.1-fpm
     volumes:
       - .:/usr/local/src/wellrested

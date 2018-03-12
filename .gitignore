@@ -5,6 +5,7 @@ vendor/
 phpdoc/
 
 # Code coverage report
+coverage/
 report/
 
 # Sphinx Documentation
