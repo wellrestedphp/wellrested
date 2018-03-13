@@ -71,6 +71,41 @@ $server->add($router);
 $server->respond();
 ```
 
+Development
+-----------
+
+Use Docker to run unit tests, manage Composer dependencies, and render a preview of the documentation site.
+
+To get started, run:
+
+```bash
+docker-compose build
+docker-compose run --rm php composer install
+```
+
+To run PHPUnit tests, use the `php` service:
+
+```bash
+docker-compose run --rm php phpunit
+```
+
+To generate documentation, use the `docs` service:
+
+```bash
+# Generate
+docker-compose run --rm docs
+# Clean
+docker-compose run --rm docs make clean -C docs
+```
+
+To run a local playground site, use:
+
+```bash
+docker-compose up -d
+```
+
+The runs a site you can access at [http://localhost:8080](http://localhost:8080). You can use this site to browser the [documentation](http://localhost:8080/docs/) or [code coverage report](http://localhost:8080/coverage/).
+
 Copyright and License
 ---------------------
 Copyright © 2018 by PJ Dietz
