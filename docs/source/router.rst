@@ -1,8 +1,7 @@
 Router
 ======
 
-A router is a type of middleware_ that organizes the components of a site by associating URI paths with other middleware_. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated middleware_. The dispatched middleware_ is then responsible for reacting to the request and providing a response.
-
+A router is a type of handler that organizes the components of a site by associating HTTP methods and paths with other handler and middleware. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated handler. The dispatched handler is then responsible for reacting to the request and providing a response.
 
 Basic Usage
 ^^^^^^^^^^^
@@ -42,12 +41,12 @@ The ``register`` method is fluent, so you can add multiple routes in either of t
 Paths
 ^^^^^
 
-A router can map middleware to an exact path, or to a pattern of paths.
+A router can map a handler to an exact path, or to a pattern of paths.
 
 Static Routes
 -------------
 
-The simplest type of route is called a "static route". It maps middleware to an exact path.
+The simplest type of route is called a "static route". It maps a handler to an exact path.
 
 .. code-block:: php
 
@@ -77,17 +76,14 @@ For example, this template will match requests to ``/cats/12``, ``/cats/molly``,
 
     $router->register("GET", "/cats/{cat}", $catHandler);
 
-When the router dispatches a route matched by a template route, it provides the extracted variables as an associative array. To access a variable, call the request object's ``getAttribute`` method method and pass the variable's name.
+When the router dispatches a route matched by a template route, it provides the extracted variables as request attributes. To access a variable, call the request object's ``getAttribute`` method and pass the variable's name.
 
 For a request to ``/cats/molly``:
 
 .. code-block:: php
 
-    $catHandler = function ($request, $response, $next) {
-        $name = $request->getAttribute("cat");
-        // molly
-        ...
-    }
+    $name = $request->getAttribute("cat");
+    // molly
 
 Template routes are very powerful, and this only scratches the surface. See `URI Templates`_ for a full explanation of the syntax supported.
 
@@ -106,31 +102,28 @@ For a request to ``/cats/molly-90``:
 
 .. code-block:: php
 
-    $catHandler = function ($request, $response, $next) {
-        $vars = $request->getAttributes();
-        /*
-        Array
-        (
-            [0] => cats/molly-12
-            [name] => molly
-            [1] => molly
-            [number] => 12
-            [2] => 12
-            ... Plus any other attributes that were set ...
-        )
-        */
-        ...
-    }
+    $vars = $request->getAttributes();
+    /*
+    Array
+    (
+        [0] => cats/molly-12
+        [name] => molly
+        [1] => molly
+        [number] => 12
+        [2] => 12
+        ... Plus any other attributes that were set ...
+    )
+    */
 
 Route Priority
 --------------
 
-A router will often contain many routes, and sometimes more than one route will match for a given request. When the router looks for a matching route, it performs these checks:
+A router will often contain many routes, and sometimes more than one route will match for a given request. When the router looks for a matching route, it performs these checks in order.
 
 #. If there is a static route with exact match to path, dispatch it.
 #. If one prefix route matches the beginning of the path, dispatch it.
 #. If multiple prefix routes match, dispatch the longest matching prefix route.
-#. Inspect each pattern route (template and regular expression) in the order added. Dispatch the first route that matches.
+#. Inspect each pattern route (template and regular expression) in the order in which they were added to the router. Dispatch the first route that matches.
 #. If no pattern routes match, return a response with a ``404 Not Found`` status.
 
 Static vs. Prefix
@@ -179,7 +172,7 @@ Given these routes:
 Pattern vs. Pattern
 ~~~~~~~~~~~~~~~~~~~
 
-When multiple pattern routes match a path, the first one that was added to the router will be the one dispatched. Be careful to add the specific routes before the general routes. For example, say you want to send traffic to two similar looking URIs to different middleware based whether the variables were supplied as numbers or letters—``/dogs/102/132`` should be dispatched to ``$numbers``, while ``/dogs/herding/australian-shepherd`` should be dispatched to ``$letters``.
+When multiple pattern routes match a path, the first one that was added to the router will be the one dispatched. **Be careful to add the specific routes before the general routes.** For example, say you want to send traffic to two similar looking URIs to different handlers based whether the variables were supplied as numbers or letters—``/dogs/102/132`` should be dispatched to ``$numbers``, while ``/dogs/herding/australian-shepherd`` should be dispatched to ``$letters``.
 
 This will work:
 
@@ -209,7 +202,7 @@ When you register a route, you can provide a specific method, a list of methods,
 Registering by Method
 ---------------------
 
-Specify a specific middleware for a path and method by including the method as the first parameter.
+Specify a specific handler for a path and method by including the method as the first parameter.
 
 .. code-block:: php
 
@@ -222,7 +215,7 @@ Specify a specific middleware for a path and method by including the method as t
 Registering by Method List
 --------------------------
 
-Specify the same middleware for multiple methods for a given path by proving a comma-separated list of methods as the first parameter.
+Specify the same handler for multiple methods for a given path by proving a comma-separated list of methods as the first parameter.
 
 .. code-block:: php
 
@@ -238,7 +231,7 @@ Specify the same middleware for multiple methods for a given path by proving a c
 Registering by Wildcard
 -----------------------
 
-Specify middleware for all methods for a given path by proving a ``*`` wildcard.
+Specify a handler for all methods for a given path by proving a ``*`` wildcard.
 
 .. code-block:: php
 
@@ -319,16 +312,10 @@ GET    /hamsters/ 404 Not Found
 PUT    /cats/     405 Method Not Allowed
 ====== ========== ========
 
-.. note::
-
-    When the router fails to dispatch a route, or when it responds to an ``OPTIONS`` request, is will stop propagation, and any middleware that comes after the router will not be dispatched.
-
 Nested Routers
 ^^^^^^^^^^^^^^
 
 For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into sub-routers.
-
-This works because a ``Router`` is type of middleware, and can be used wherever middleware can be used.
 
 Here's an example where all of the traffic beginning with ``/cats/`` is sent to one router, and all the traffic for endpoints beginning with ``/dogs/`` is sent to another.
 
@@ -357,4 +344,3 @@ Here's an example where all of the traffic beginning with ``/cats/`` is sent to 
 .. _preg_match: http://php.net/manual/en/function.preg-match.php
 .. _URI Template: `URI Templates`_s
 .. _URI Templates: uri-templates.html
-.. _middleware: middleware.html

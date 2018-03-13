@@ -1,7 +1,7 @@
 URI Templates
 =============
 
-WellRESTed allows you to register middleware with a router using URI Templates, based on the URI Templates defined in `RFC 6570`_. These templates include variables (enclosed in curly braces) which are extracted and made available to the dispatched middleware.
+WellRESTed allows you to register handlers with a router using URI Templates, based on the URI Templates defined in `RFC 6570`_. These templates include variables (enclosed in curly braces) which are extracted and made available to the dispatched middleware.
 
 Reading Variables
 ^^^^^^^^^^^^^^^^^
@@ -9,7 +9,7 @@ Reading Variables
 Basic Usage
 -----------
 
-Register middleware with a URI Template by providing a path that include at least one section enclosed in curly braces. The curly braces define variables for the template.
+Register a handler with a URI Template by providing a path that include at least one section enclosed in curly braces. The curly braces define variables for the template.
 
 .. code-block:: php
 
@@ -17,16 +17,17 @@ Register middleware with a URI Template by providing a path that include at leas
 
 The router will match requests for paths like ``/widgets/12`` and ``/widgets/mega-widget`` and dispatch ``$widgetHandler`` with the extracted variables made available as request attributes.
 
-To read a path variable, the ``$widgetHandler`` middleware inspects the request attribute named ``"id"``, since ``id`` is what appears inside curly braces in the URI template.
+To read a path variable, router inspects the request attribute named ``"id"``, since ``id`` is what appears inside curly braces in the URI template.
 
 .. code-block:: php
 
-    $widgetHandler = function ($request, $response, $next) {
-        // Read the variable extracted form the path.
-        $id = $request->getAttribute("id");
-    };
+    // For a request to /widgets/12
+    $id = $request->getAttribute("id");
+    // 12
 
-When the request path is ``/widgets/12``, the value returned by ``$request->getAttribute("id")`` is ``"12"``. For ``/widgets/mega-widget``, the value is ``"mega-widget"``.
+    // For a request to /widgets/mega-widget
+    $id = $request->getAttribute("id");
+    // mega-widget
 
 .. note::
 
@@ -47,15 +48,13 @@ A request for ``GET /avatars/zoidberg-100x150.jpg`` will provide these request a
 
 .. code-block:: php
 
-    $avatarHandlers = function ($request, $response, $next) {
-        // Read the variables extracted form the path.
-        $username = $request->getAttribute("username");
-        // "zoidberg"
-        $width = $request->getAttribute("width");
-        // "100"
-        $height = $request->getAttribute("height");
-        // "150"
-    };
+    // Read the variables extracted form the path.
+    $username = $request->getAttribute("username");
+    // "zoidberg"
+    $width = $request->getAttribute("width");
+    // "100"
+    $height = $request->getAttribute("height");
+    // "150"
 
 Arrays
 ------
@@ -108,7 +107,7 @@ Given the template ``/users/{user}``, the following paths provide these values f
     *   - /users/zoidberg%40planetexpress.com
         - "zoidberg@planetexpress.com"
 
-A request for ``GET /uses/zoidberg@planetexpress.com`` will **not** match this template, because ``@`` is not an unreserved character and is not percent encoded.
+A request for ``GET /uses/zoidberg@planetexpress.com`` will **not** match this template, because ``@`` is a reserved character and is not percent encoded.
 
 Reserved Characters
 -------------------
@@ -127,11 +126,8 @@ The router will dispatch ``$pathHandler`` with for a request to ``GET /my-favori
 
 .. code-block:: php
 
-    $pathHandler = function ($request, $response, $next) {
-        // Read the variable extracted form the path.
-        $path = $request->getAttribute("path");
-        // "/has/a/few/slashes.jpg"
-    };
+    $path = $request->getAttribute("path");
+    // "/has/a/few/slashes.jpg"
 
 .. note::
 

@@ -3,49 +3,13 @@ Dependency Injection
 
 WellRESTed strives to play nicely with other code and not force developers into using any specific libraries or frameworks. As such, WellRESTed does not provide a dependency injection container, nor does it require you to use a specific container (or any).
 
-This section describes a handful of ways of making dependencies available to middleware.
+This section describes the recommended way of using WellRESTed with Pimple_, a common dependency injection container for PHP.
 
-Request Attribute
-^^^^^^^^^^^^^^^^^
-
-``Psr\Http\Message\ServerRequestInterface`` provides "attributes" that allow you attach arbitrary data to a request. You can use this to make your dependency container available to any dispatched middleware.
-
-When you instantiate a ``WellRESTed\Server``, you can provide an array of attributes that the server will add to the request.
+Imaging we have a ``FooHandler`` that depends on a ``BarInterface``, and ``BazInterface``. Our handler looks something like this:
 
 .. code-block:: php
 
-    $container = new MySuperCoolDependencyContainer();
-
-    $server = new WellRESTed\Server(["container" => $container]);
-    // ... Add middleware, routes, etc. ...
-
-When the server dispatches middleware, the middleware will be able to read the container as the "container" attribute.
-
-.. code-block:: php
-
-    function ($request, $response, $next) {
-        $container = $request->getAttribute("container");
-        // It's a super cool dependency container!
-    }
-
-.. note::
-
-    This approach is technically more of a `service locator`_ pattern. It's easy to implement, and it allows you the most flexibility in how you assign middleware.
-
-    It has some drawbacks as well, though. For example, your middleware is now dependent on your container, and describing which items needs to be **in** the container provides its own challenge.
-
-    If your interested in a truer dependency injection approach, read on to the next section where we look at registering middleware factories.
-
-Middleware Factories
-^^^^^^^^^^^^^^^^^^^^
-
-Another approach is to use a factory function that returns middleware, usually in the form of a ``MiddlewareInterface`` instance. This approach provides the opportunity to pass dependencies to your middleware's constructor, while still delaying instantiation until the middleware is used.
-
-Imagine a middleware ``FooHandler`` that depends on a ``BarInterface``, and ``BazInterface``.
-
-.. code-block:: php
-
-    Class FooHandler implements WellRESTed\MiddlewareInterface
+    class FooHandler implements RequestHandlerInterface
     {
         private $bar;
         private $baz;
@@ -56,47 +20,38 @@ Imagine a middleware ``FooHandler`` that depends on a ``BarInterface``, and ``Ba
             $this->baz = $baz;
         }
 
-        public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next);
+        public function handle(ServerRequestInterface $request): ResponseInterface
         {
-            // Do something with the bar and baz and update the response.
+            // Do something with the bar and baz and return a response...
             // ...
-            return $response;
         }
     }
 
-When you add the middleware to the server or register it with a router, you can use a callable that passes appropriate instances into the constructor.
+We can register the handler and these dependencies in a Pimple_ service provider.
 
 .. code-block:: php
 
-    // Assume $bar and $baz exist in this scope.
-    $fooHandlerFactory = function () use ($bar, $bar) {
-        return new FooHandler($bar, $baz);
+    class MyServiceProvider implements ServiceProviderInterface
+    {
+        public function register(Container $c) 
+        {
+            // Register the Bar and Baz as services.
+            $c['bar'] = function ($c) {
+                return new Bar();
+            };
+            $c['baz'] = function ($c) {
+                return new Baz();
+            };
+
+            // Register the Handler as a protected function. When you use
+            // protect, Pimple returns the function itself instead of the return
+            // value of the function.
+            $c['fooHandler'] = $c->protect(function () use ($c) {
+                return new FooHandler($c['bar'], $c['baz']);
+            });
+        }
     }
 
-    $server = new Server();
-    $server->add(
-        $server->createRoute()
-            ->register("GET", "/foo/{id}", $fooHandlerFactory)
-        );
-    $server->respond();
+By "protected" the ``fooHandler`` service, we are delaying the instantiation of the ``FooHandler``, the ``Bar``, and the ``Baz`` until the handler needs to be dispatched. This works because we're not passing instance of ``FooHandler`` when we register this with a router, we're passing a function to it that does the instantiation on demand.
 
-You can combine this approach with a dependency container. Here's an example using Pimple_).
-
-.. code-block:: php
-
-    $c = new Pimple\Container();
-    $c["bar"] = /* Return a BarInterface */
-    $c["baz"] = /* Return a BazInterface */
-    $c["fooHandler"] = $c->protect(function () use ($c) {
-        return new FooHandler($c["bar"], $c["baz"]);
-    });
-
-    $server = new Server();
-    $server->add(
-        $server->createRoute()
-            ->register("GET", "/foo/{id}", $c["fooHandler"])
-        );
-    $server->respond();
-
-.. _Pimple: http://pimple.sensiolabs.org
-.. _service locator: https://en.wikipedia.org/wiki/Service_locator_pattern
+.. _Pimple: https://pimple.symfony.com/

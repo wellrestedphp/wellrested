@@ -1,7 +1,7 @@
 URI Templates (Advanced)
 ========================
 
-In `URI Templates`_, we looked at the most common ways to use URI Templates. In this chapter, we'll look at some of the extended syntaxes that URI Templates provide.
+In `URI Templates`_, we looked at the most common ways to use URI Templates. Here, we'll look at some of the extended syntaxes that URI Templates provide.
 
 Path Components
 ^^^^^^^^^^^^^^^

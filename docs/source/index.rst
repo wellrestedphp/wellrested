@@ -131,7 +131,7 @@ Contents
    overview
    getting-started
    messages
-   middleware
+   handlers-and-middleware
    router
    uri-templates
    uri-templates-advanced
@@ -142,6 +142,5 @@ Contents
 
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
 .. _PSR-15: http://www.php-fig.org/psr/psr-15/
-.. _middleware: middleware.html
 .. _router: router.html
 .. _URI Templates: uri-templates.html
