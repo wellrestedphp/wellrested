@@ -1,7 +1,7 @@
 WellRESTed
 ==========
 
-WellRESTed is a library for creating RESTful APIs and websites in PHP that provides abstraction for HTTP messages, a powerful middleware system, and a flexible router.
+WellRESTed is a library for creating RESTful APIs and websites in PHP that provides abstraction for HTTP messages, a powerful handler and middleware system, and a flexible router.
 
 Features
 --------
@@ -12,6 +12,11 @@ PSR-7 HTTP Messages
 Request and response messages are built to the interfaces standardized by PSR-7_ making it easy to share code and use components from other libraries and frameworks.
 
 The message abstractions facilitate working with message headers, status codes, variables extracted from the path, message bodies, and all the other aspects of requests and responses.
+
+PSR-15 Handler interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Handlers and middleware may implement the interfaces define by the PSR-15_ standard.
 
 Router
 ^^^^^^
@@ -47,54 +52,75 @@ The site will also provide an ``X-example: hello world`` using dedicated middlew
 
     <?php
 
+    use Psr\Http\Message\ResponseInterface;
+    use Psr\Http\Message\ServerRequestInterface;
+    use Psr\Http\Server\MiddlewareInterface;
+    use Psr\Http\Server\RequestHandlerInterface;
+    use WellRESTed\Message\Response;
     use WellRESTed\Message\Stream;
     use WellRESTed\Server;
 
-    require_once "vendor/autoload.php";
+    require_once 'vendor/autoload.php';
 
-    // Build some middleware. We'll register these with a server below.
-    // We're using callables to fit this all in one example, but these
-    // could also be classes implementing WellRESTed\MiddlewareInterface.
+    // Create a handler that will construct and return a response. We'll 
+    // register this handler with a server and router below.
+    class HelloHandler implements RequestHandlerInterface
+    {
+        public function handle(ServerRequestInterface $request): ResponseInterface
+        {
+            // Check for a "name" attribute which may have been provided as a
+            // path variable. Use "world" as a default.
+            $name = $request->getAttribute("name", "world");
 
-    // Set the status code and provide the greeting as the response body.
-    $hello = function ($request, $response, $next) {
+            // Set the response body to the greeting and the status code to 200 OK.
+            $response = (new Response(200))
+                ->withHeader("Content-type", "text/plain")
+                ->withBody(new Stream("Hello, $name!"));
 
-        // Check for a "name" attribute which may have been provided as a
-        // path variable. Use "world" as a default.
-        $name = $request->getAttribute("name", "world");
+            // Return the response.
+            return $response;
+        }
+    }
 
-        // Set the response body to the greeting and the status code to 200 OK.
-        $response = $response->withStatus(200)
-            ->withHeader("Content-type", "text/plain")
-            ->withBody(new Stream("Hello, $name!"));
+    // Create middleware that will add a custom header to every response.
+    class CustomerHeaderMiddleware implements MiddlewareInterface
+    {
+        public function process(
+            ServerRequestInterface $request,
+            RequestHandlerInterface $handler
+        ): ResponseInterface {
 
-        // Propagate to the next middleware, if any, and return the response.
-        return $next($request, $response);
+            // Delegate to the next handler in the chain to obtain a response.
+            $response = $handler->handle($request);
 
-    };
+            // Add the header.
+            $response = $response->withHeader("X-example", "hello world");
 
-    // Add a header to the response.
-    $headerAdder = function ($request, $response, $next) {
-        // Add the header.
-        $response = $response->withHeader("X-example", "hello world");
-        // Propagate to the next middleware, if any, and return the response.
-        return $next($request, $response);
-    };
+            // Return the altered response.
+            return $response;
+        }
+    }
 
     // Create a server
     $server = new Server();
 
-    // Start each request-response cycle by dispatching the header adder.
-    $server->add($headerAdder);
+    // Add the header adding middleware to the server first so that it will
+    // forward requests on to the router.
+    $server->add(new CustomerHeaderMiddleware());
 
-    // The header adder will propagate to this router, which will dispatch the
-    // $hello middleware, possibly with a {name} variable.
-    $server->add($server->createRouter()
-        ->register("GET", "/hello", $hello)
-        ->register("GET", "/hello/{name}", $hello)
-    );
+    // Create a router to map methods and endpoints to handlers.
+    $router = $server->createRouter();
 
-    // Read the request from the client, dispatch middleware, and output.
+    $handler = new HelloHandler();
+    // Register a route to the handler without a variable in the path.
+    $router->register('GET', '/hello', $handler);
+    // Register a route that reads a "name" from the path.
+    // This will make the "name" request attribute available to the handler.
+    $router->register('GET', '/hello/{name}', $handler);
+
+    $server->add($router);
+
+    // Read the request from the client, dispatch, and output.
     $server->respond();
 
 Contents
@@ -116,6 +142,7 @@ Contents
    web-server-configuration
 
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
+.. _PSR-15: http://www.php-fig.org/psr/psr-15/
 .. _middleware: middleware.html
 .. _router: router.html
 .. _URI Templates: uri-templates.html
