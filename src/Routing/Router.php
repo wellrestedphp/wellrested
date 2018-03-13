@@ -204,7 +204,7 @@ class Router implements RouterInterface
         return null;
     }
 
-    function startsWith($haystack, $needle)
+    private function startsWith($haystack, $needle)
     {
         $length = strlen($needle);
         return (substr($haystack, 0, $length) === $needle);

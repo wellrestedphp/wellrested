@@ -5,23 +5,11 @@ namespace WellRESTed\Transmission;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
-use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Dispatching\DispatcherInterface;
 
 class Transmitter implements TransmitterInterface
 {
     /** @var int */
     private $chunkSize = 0;
-    /** @var DispatcherInterface  */
-    private $dispatcher;
-
-    public function __construct(DispatcherInterface $dispatcher = null)
-    {
-        if ($dispatcher === null) {
-            $dispatcher = new Dispatcher();
-        }
-        $this->dispatcher = $dispatcher;
-    }
 
     /**
      * Outputs a response to the client.
