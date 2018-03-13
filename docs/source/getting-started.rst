@@ -65,8 +65,6 @@ For this, we need a router_. A router_ examines the request and sends the reques
 
 .. code-block:: php
 
-    <?php
-
     // Create a new server.
     $server = new Server();
 
@@ -87,17 +85,6 @@ Routes can be static (like the one above that matches only ``/hello``), or they 
 .. rubric:: Example 3: Personalized "Hello, world!"
 
 .. code-block:: php
-
-    <?php
-
-    use Psr\Http\Message\ResponseInterface;
-    use Psr\Http\Message\ServerRequestInterface;
-    use Psr\Http\Server\MiddlewareInterface;
-    use WellRESTed\Message\Response;
-    use WellRESTed\Message\Stream;
-    use WellRESTed\Server;
-
-    require_once "vendor/autoload.php";
 
     class HelloHandler implements RequestHandlerInterface
     {
@@ -136,40 +123,8 @@ In addition to handlers, WellRESTed also supports middlware. Middleware allows y
 
 .. code-block:: php
 
-    <?php
-
-    use Psr\Http\Message\ResponseInterface;
-    use Psr\Http\Message\ServerRequestInterface;
-    use Psr\Http\Server\MiddlewareInterface;
-    use Psr\Http\Server\RequestHandlerInterface;
-    use WellRESTed\Message\Response;
-    use WellRESTed\Message\Stream;
-    use WellRESTed\Server;
-
-    require_once 'vendor/autoload.php';
-
-    // Create a handler that will construct and return a response. We'll 
-    // register this handler with a server and router below.
-    class HelloHandler implements RequestHandlerInterface
-    {
-        public function handle(ServerRequestInterface $request): ResponseInterface
-        {
-            // Check for a "name" attribute which may have been provided as a
-            // path variable. Use "world" as a default.
-            $name = $request->getAttribute("name", "world");
-
-            // Set the response body to the greeting and the status code to 200 OK.
-            $response = (new Response(200))
-                ->withHeader("Content-type", "text/plain")
-                ->withBody(new Stream("Hello, $name!"));
-
-            // Return the response.
-            return $response;
-        }
-    }
-
-    // Create middleware that will add a custom header to every response.
-    class CustomerHeaderMiddleware implements MiddlewareInterface
+    // This middleware will add a custom header to every response.
+    class CustomHeaderMiddleware implements MiddlewareInterface
     {
         public function process(
             ServerRequestInterface $request,
@@ -179,7 +134,7 @@ In addition to handlers, WellRESTed also supports middlware. Middleware allows y
             // Delegate to the next handler in the chain to obtain a response.
             $response = $handler->handle($request);
 
-            // Add the header.
+            // Add the header to the response we got back from upstream.
             $response = $response->withHeader("X-example", "hello world");
 
             // Return the altered response.
@@ -192,7 +147,7 @@ In addition to handlers, WellRESTed also supports middlware. Middleware allows y
 
     // Add the header adding middleware to the server first so that it will
     // forward requests on to the router.
-    $server->add(new CustomerHeaderMiddleware());
+    $server->add(new CustomHeaderMiddleware());
 
     // Create a router to map methods and endpoints to handlers.
     $router = $server->createRouter();

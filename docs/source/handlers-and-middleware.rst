@@ -156,10 +156,10 @@ Using Handlers and Middleware
 
 Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that provides an instance, or an ``array`` of handlers to use in sequence. The following examples will demonstrate all of the ways you can register handlers and middleware.
 
-Factory Callable
-----------------
+Factory Functions
+-----------------
 
-The best method is to use a ``callable`` that returns an instance of your handler. The main benefit of this approach is that no handlers are instantiated until they are needed.
+The best method is to use a function that returns an instance of your handler. The main benefit of this approach is that no handlers are instantiated until they are needed.
 
 .. code-block:: php
 
@@ -202,7 +202,7 @@ For handlers that do not require any arguments passed to the constructor, you ma
 
 .. code-block:: php
 
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", \App\WidgetHandler::class);
+    $router->register("GET,PUT,DELETE", "/widgets/{id}", App\WidgetHandler::class);
     // ... or ...
     $router->register("GET,PUT,DELETE", "/widgets/{id}", 'App\\WidgetHandler');
     

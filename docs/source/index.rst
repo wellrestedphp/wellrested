@@ -13,10 +13,10 @@ Request and response messages are built to the interfaces standardized by PSR-7_
 
 The message abstractions facilitate working with message headers, status codes, variables extracted from the path, message bodies, and all the other aspects of requests and responses.
 
-PSR-15 Handler interfaces
+PSR-15 Handler Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Handlers and middleware may implement the interfaces define by the PSR-15_ standard.
+WellRESTed can use handlers and middleware using the interfaces defined by the PSR-15_ standard.
 
 Router
 ^^^^^^
@@ -28,13 +28,12 @@ WellRESTed's router automates responding to ``OPTIONS`` requests for each endpoi
 Middleware
 ^^^^^^^^^^
 
-The middleware_ system allows you to build your Web service out of discrete, modular pieces. These pieces can be run in sequences where each has a chance to modify the response before handing it off to the next. For example, an authenticator can validate a request and forward it to a cache; the cache can check for a stored representation and forward to another middleware if no cached representation is found, etc. All of this happens without any one middleware needing to know anything about where it is in the chain or which middleware comes before or after.
+The middleware_ system allows you to build your Web service out of discrete, modular pieces. These pieces can be run in sequences where each has an opportunity to work with the request before handing it off to the next. For example, an authenticator can validate a request and forward it to a cache; the cache can check for a stored representation and forward to another middleware if no cached representation is found, etc. All of this happens without any one middleware needing to know anything about where it is in the chain or which middleware comes before or after.
 
-Most middleware is never autoloaded or instantiated until it is needed, so a Web service with hundreds of middleware still only creates instances required for the current request-response cycle.
+Lazy Loading
+^^^^^^^^^^^^
 
-You can register middleware directly, register callables that return middleware (e.g., dependency container services), or register strings containing the middleware class names to autoload and instantiate on demand.
-
-
+Handlers and middleware can be registered using `factory functions`_ so that they are only instantiated if needed. This way, a Web service with hundreds of handlers and middleware still only creates instances required for the current request-response cycle.
 
 Extensible
 ^^^^^^^^^^
@@ -104,7 +103,7 @@ The site will also provide an ``X-example: hello world`` using dedicated middlew
     // Create a server
     $server = new Server();
 
-    // Add the header adding middleware to the server first so that it will
+    // Add the header-adding middleware to the server first so that it will
     // forward requests on to the router.
     $server->add(new CustomerHeaderMiddleware());
 
@@ -140,7 +139,9 @@ Contents
    additional
    web-server-configuration
 
-.. _PSR-7: http://www.php-fig.org/psr/psr-7/
-.. _PSR-15: http://www.php-fig.org/psr/psr-15/
+.. _PSR-7: https://www.php-fig.org/psr/psr-7/
+.. _PSR-15: https://www.php-fig.org/psr/psr-15/
+.. _factory functions: handlers-and-middleware.html#factory-functions
+.. _middleware: handles-and-middleware.html
 .. _router: router.html
 .. _URI Templates: uri-templates.html

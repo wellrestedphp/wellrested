@@ -4,7 +4,7 @@ Overview
 Installation
 ^^^^^^^^^^^^
 
-The recommended method for installing WellRESTed is to use the PHP dependency manager Composer_. Add an entry for WellRESTed in your project's ``composer.json`` file.
+The recommended method for installing WellRESTed is to use Composer_. Add an entry for WellRESTed in your project's ``composer.json`` file.
 
 .. code-block:: js
 
@@ -46,4 +46,4 @@ Licensed using the `MIT license <http://opensource.org/licenses/MIT>`_.
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 
-.. _Composer: http://getcomposer.org/
+.. _Composer: https://getcomposer.org/

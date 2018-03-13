@@ -52,6 +52,6 @@ We can register the handler and these dependencies in a Pimple_ service provider
         }
     }
 
-By "protected" the ``fooHandler`` service, we are delaying the instantiation of the ``FooHandler``, the ``Bar``, and the ``Baz`` until the handler needs to be dispatched. This works because we're not passing instance of ``FooHandler`` when we register this with a router, we're passing a function to it that does the instantiation on demand.
+By "protecting" the ``fooHandler`` service, we are delaying the instantiation of the ``FooHandler``, the ``Bar``, and the ``Baz`` until the handler needs to be dispatched. This works because we're not passing instance of ``FooHandler`` when we register this with a router, we're passing a function to it that does the instantiation on demand.
 
 .. _Pimple: https://pimple.symfony.com/

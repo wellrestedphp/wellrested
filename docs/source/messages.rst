@@ -1,7 +1,7 @@
 Messages and PSR-7
 ==================
 
-WellRESTed uses PSR-7_ as the interfaces for HTTP messages. This section provides an introduction to working with these interfaces and the implementations provided with WellRESTed. For more information, please read PSR-7_.
+WellRESTed uses PSR-7_ as the interfaces for HTTP messages. This section provides an introduction to working with these interfaces and the implementations provided with WellRESTed. For more information, please read about PSR-7_.
 
 Requests
 --------
@@ -140,7 +140,7 @@ Using a JSON representation of our cat, we can make a request like this:
         "color": "Calico"
     }
 
-We can read and parse the JSON body, and even provide it **as** the parsedBody for later middleware or handler like this:
+We can read and parse the JSON body, and even provide it as the parsedBody for later middleware or handlers like this:
 
 .. code-block:: php
 
@@ -436,11 +436,11 @@ Each PSR-7_ message MUST have a body, so there's no ``withoutBody`` method. You 
         ->withStatus(200)
         ->withBody(new \WellRESTed\Message\NullStream());
 
-.. _HTTP Status Code Registry: http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+.. _HTTP Status Code Registry: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
 .. _Getting Started: getting-started.html
 .. _Middleware: middleware.html
 .. _template routes: router.html#template-routes
 .. _regex routes: router.html#regex-routes
 .. _dependency injection: dependency-injection.html
-.. _`php://temp`: http://php.net/manual/ro/wrappers.php.php
+.. _`php://temp`: https://php.net/manual/ro/wrappers.php.php

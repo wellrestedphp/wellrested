@@ -134,6 +134,6 @@ The router will dispatch ``$pathHandler`` with for a request to ``GET /my-favori
     Combine the ``+`` operator and ``*`` modifier to match reserved characters as an array. For example, the template ``/{+vars*}`` will match the path ``/c@t,d*g``, providing the  array ``["c@t", "d*g"]``.
 
 .. _RFC 3968 Section 2.3: https://tools.ietf.org/html/rfc3986#section-2.3
-.. _PSR-7: http://www.php-fig.org/psr/psr-7/
+.. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _RFC 6570: https://tools.ietf.org/html/rfc6570
 .. _RFC 6570 Section 3.2.7: https://tools.ietf.org/html/rfc6570#section-3.2.7

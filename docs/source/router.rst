@@ -83,7 +83,7 @@ For a request to ``/cats/molly``:
 .. code-block:: php
 
     $name = $request->getAttribute("cat");
-    // molly
+    // "molly"
 
 Template routes are very powerful, and this only scratches the surface. See `URI Templates`_ for a full explanation of the syntax supported.
 
@@ -341,6 +341,6 @@ Here's an example where all of the traffic beginning with ``/cats/`` is sent to 
 
     $server->respond();
 
-.. _preg_match: http://php.net/manual/en/function.preg-match.php
+.. _preg_match: https://php.net/manual/en/function.preg-match.php
 .. _URI Template: `URI Templates`_s
 .. _URI Templates: uri-templates.html

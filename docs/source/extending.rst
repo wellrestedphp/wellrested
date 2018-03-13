@@ -140,6 +140,6 @@ Classes such as ``Server`` that create dependencies as defaults keep the instant
 
 In addition to the messages, you can do similar customization for other ``Server`` dependencies such as the dispatcher (see above), the transmitter (which writes the response out to the client), and the routers that are created with ``Server::createRouter``. These dependencies are instantiated in isolated methods as with the request and response to make this sort of customization easy, and other classes such as ``Router`` use this pattern as well.
 
-.. _PSR-7: http://www.php-fig.org/psr/psr-7/
+.. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _Handlers and Middleware: handlers-and-middleware.html
 .. _Request Attributes: messages.html#attributes
