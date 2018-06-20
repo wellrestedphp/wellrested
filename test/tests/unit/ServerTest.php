@@ -3,121 +3,108 @@
 namespace WellRESTed\Test\Unit;
 
 use Prophecy\Argument;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
-use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
+use WellRESTed\Transmission\TransmitterInterface;
 
 class ServerTest extends TestCase
 {
-    private $dispatcher;
-    private $next;
-    private $request;
-    private $response;
     private $transmitter;
     private $server;
 
     public function setUp()
     {
         parent::setUp();
-        $this->request = new ServerRequest();
-        $this->response = new Response();
-        $this->next = new NextMock();
 
-        $this->transmitter = $this->prophesize('WellRESTed\Transmission\TransmitterInterface');
+        $this->transmitter = $this->prophesize(TransmitterInterface::class);
         $this->transmitter->transmit(Argument::cetera())->willReturn();
-        $this->dispatcher = $this->prophesize('WellRESTed\Dispatching\DispatcherInterface');
-        $this->dispatcher->dispatch(Argument::cetera())->will(
-            function ($args) {
-                list($middleware, $request, $response, $next) = $args;
-                return $next($request, $response);
-            }
+
+        $this->server = new Server();
+    }
+
+    private function respond()
+    {
+        $this->server->respond(
+            new ServerRequest(),
+            new Response(),
+            $this->transmitter->reveal()
         );
-
-        $this->server = $this->getMockBuilder('WellRESTed\Server')
-            ->setMethods(["getDefaultDispatcher", "getRequest", "getResponse", "getTransmitter"])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->server->expects($this->any())
-            ->method("getDefaultDispatcher")
-            ->will($this->returnValue($this->dispatcher->reveal()));
-        $this->server->expects($this->any())
-            ->method("getRequest")
-            ->will($this->returnValue($this->request));
-        $this->server->expects($this->any())
-            ->method("getResponse")
-            ->will($this->returnValue($this->response));
-        $this->server->expects($this->any())
-            ->method("getTransmitter")
-            ->will($this->returnValue($this->transmitter->reveal()));
-        $this->server->__construct();
     }
 
-    public function testCreatesInstances()
-    {
-        $server = new Server();
-        $this->assertNotNull($server);
-    }
-
-    public function testAddIsFluid()
-    {
-        $server = new Server();
-        $this->assertSame($server, $server->add("middleware"));
-    }
+    // ------------------------------------------------------------------------
 
     public function testReturnsDispatcher()
     {
-        $this->assertSame($this->dispatcher->reveal(), $this->server->getDispatcher());
+        $this->assertNotNull($this->server->getDispatcher());
     }
 
     public function testDispatchesMiddlewareStack()
     {
-        $this->server->add("first");
-        $this->server->add("second");
-        $this->server->add("third");
+        // This test will add a string to this array from each middleware.
 
-        $this->server->dispatch($this->request, $this->response, $this->next);
+        $steps = [];
 
-        $this->dispatcher->dispatch(
-            ["first", "second", "third"],
-            $this->request,
-            $this->response,
-            $this->next
-        )->shouldHaveBeenCalled();
+        $this->server->add(
+            function ($rqst, $resp, $next) use (&$steps) {
+                $steps[] = 'first';
+                return $next($rqst, $resp);
+            }
+        );
+
+        $this->server->add(
+            function ($rqst, $resp, $next) use (&$steps) {
+                $steps[] = 'second';
+                return $next($rqst, $resp);
+            }
+        );
+
+        $this->server->add(
+            function ($rqst, $resp, $next) use (&$steps) {
+                $steps[] = 'third';
+                return $next($rqst, $resp);
+            }
+        );
+
+        $this->respond();
+
+        $this->assertEquals(['first', 'second', 'third'], $steps);
     }
 
     // ------------------------------------------------------------------------
     // Respond
 
-    public function testRespondDispatchesRequest()
+    public function testRespondSendsResponseToTransmitter()
     {
-        $this->server->respond();
-        $this->dispatcher->dispatch(
-            Argument::any(),
-            $this->request,
-            Argument::any(),
-            Argument::any()
-        )->shouldHaveBeenCalled();
-    }
+        $expectedResponse = new Response(200);
 
-    public function testRespondDispatchesResponse()
-    {
-        $this->server->respond();
-        $this->dispatcher->dispatch(
-            Argument::any(),
-            Argument::any(),
-            $this->response,
-            Argument::any()
-        )->shouldHaveBeenCalled();
-    }
+        $this->server->add(
+            function ($rqst, $resp, $next) {
+                return $next($rqst, $resp);
+            }
+        );
 
-    public function testRespondSendsResponseToResponder()
-    {
-        $this->server->respond();
+        $this->server->add(
+            function ($rqst, $resp, $next) {
+                return $next($rqst, $resp);
+            }
+        );
+
+        $this->server->add(
+            function () use ($expectedResponse) {
+                return $expectedResponse;
+            }
+        );
+
+        $this->respond();
+
         $this->transmitter->transmit(
-            $this->request,
-            $this->response
+            Argument::any(),
+            $expectedResponse
         )->shouldHaveBeenCalled();
     }
 
@@ -126,20 +113,30 @@ class ServerTest extends TestCase
 
     public function testCreatesRouterWithDispatcher()
     {
-        $this->request = $this->request
+        $dispatcher = $this->prophesize(DispatcherInterface::class);
+        $dispatcher->dispatch(Argument::cetera())->will(
+            function ($args) {
+                list($middleware, $request, $response, $next) = $args;
+                return $next($request, $response);
+            }
+        );
+
+        $server = new Server(null, $dispatcher->reveal());
+
+        $request = (new ServerRequest())
             ->withMethod("GET")
             ->withRequestTarget("/");
+        $response = new Response();
+        $next = function ($rqst, $resp) {
+            return $resp;
+        };
 
-        $router = $this->server->createRouter();
+        $router = $server->createRouter();
         $router->register("GET", "/", "middleware");
-        $router($this->request, $this->response, $this->next);
+        $router($request, $response, $next);
 
-        $this->dispatcher->dispatch(
-            "middleware",
-            $this->request,
-            $this->response,
-            $this->next
-        )->shouldHaveBeenCalled();
+        $dispatcher->dispatch(Argument::cetera())
+            ->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -148,21 +145,107 @@ class ServerTest extends TestCase
     public function testAddsAttributesToRequest()
     {
         $attributes = [
-            "name" => "value"
+            'name' => 'value'
         ];
 
-        $this->server->__construct($attributes);
-        $this->server->respond();
+        $server = new Server($attributes);
 
-        $isRequestWithExpectedAttribute = function ($request) {
-            return $request->getAttribute("name") === "value";
+        $spyMiddleware = function ($rqst, $resp) use (&$capturedRequest) {
+            $capturedRequest = $rqst;
+            return $resp;
         };
 
-        $this->dispatcher->dispatch(
+        $server->add($spyMiddleware);
+
+        $server->respond(
+            new ServerRequest(),
+            new Response(),
+            $this->transmitter->reveal()
+        );
+
+        $this->assertEquals('value', $capturedRequest->getAttribute('name'));
+    }
+
+    // ------------------------------------------------------------------------
+    // End of Stack
+
+    public function testRespondsWithDefaultHandlerWhenReachingEndOfStack()
+    {
+        $this->respond();
+
+        $has404StatusCode = function ($response) {
+            return $response->getStatusCode() === 404;
+        };
+
+        $this->transmitter->transmit(
             Argument::any(),
-            Argument::that($isRequestWithExpectedAttribute),
-            Argument::any(),
-            Argument::any()
+            Argument::that($has404StatusCode)
         )->shouldHaveBeenCalled();
+    }
+
+    // ------------------------------------------------------------------------
+    // Defaults
+
+    public function testUsesDefaultRequestResponseAndTransmitter()
+    {
+        $request = new ServerRequest();
+        $response = new Response();
+
+        $server = new TestServer(
+            $request,
+            $response,
+            $this->transmitter->reveal()
+        );
+        $server->add(function ($rqst, $resp) {
+            return $resp;
+        });
+        $server->respond();
+
+        $this->transmitter->transmit($request, $response)
+            ->shouldHaveBeenCalled();
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+class TestServer extends Server
+{
+    /** @var ServerRequestInterface */
+    private $request;
+    /** @var ResponseInterface */
+    private $response;
+    /** @var TransmitterInterface */
+    private $transmitter;
+
+    /**
+     * TestServer constructor.
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param TransmitterInterface $transmitter
+     */
+    public function __construct(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        TransmitterInterface $transmitter
+    ) {
+        parent::__construct();
+        $this->request = $request;
+        $this->response = $response;
+        $this->transmitter = $transmitter;
+    }
+
+    protected function getRequest()
+    {
+        return $this->request;
+    }
+
+    protected function getResponse()
+    {
+        return $this->response;
+    }
+
+    protected function getTransmitter()
+    {
+        return $this->transmitter;
     }
 }

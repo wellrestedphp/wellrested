@@ -37,13 +37,14 @@ class Server
      * stored with the name. The value will be an array containing all of the
      * path variables.
      *
-     * @param array $attributes key-value pairs to register as attributes
-     *     with the server request.
-     * @param DispatcherInterface $dispatcher Dispatches middleware. If no
-     *     object is passed, the Server will create a
-     *     WellRESTed\Dispatching\Dispatcher
-     * @param string|null $pathVariablesAttributeName Attribute name for
-     *     matched path variables. A null value sets attributes directly.
+     * @param array $attributes
+     *     Key-value pairs to register as attributes with the server request.
+     * @param DispatcherInterface $dispatcher
+     *     Dispatches handlers and middleware. If no object is passed, the
+     *     Server will create a WellRESTed\Dispatching\Dispatcher.
+     * @param string|null $pathVariablesAttributeName
+     *     Attribute name for matched path variables. A null value sets
+     *     attributes directly.
      */
     public function __construct(
         array $attributes = null,
@@ -66,7 +67,7 @@ class Server
      * Push a new middleware onto the stack.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return self
+     * @return static
      */
     public function add($middleware)
     {
@@ -150,8 +151,8 @@ class Server
             $transmitter = $this->getTransmitter();
         }
 
-        $next = function ($request, $response) {
-            return $response;
+        $next = function () {
+            return $this->getUnhandledResponse();
         };
         $response = $this->dispatch($request, $response, $next);
         $transmitter->transmit($request, $response);
@@ -196,14 +197,24 @@ class Server
     /**
      * Return a "blank" response instance to populate.
      *
-     * The response will be dispatched through the middleware and eventually
-     * output to the client.
+     * The response will be dispatched through the middleware.
      *
      * @return ResponseInterface
      */
     protected function getResponse()
     {
         return new Response();
+    }
+
+    /**
+     * Return a Response to indicate the server was unable to find any handlers
+     * that handled the request.  By default, this is a 404 error.
+     *
+     * @return ResponseInterface
+     */
+    protected function getUnhandledResponse(): ResponseInterface
+    {
+        return new Response(404);
     }
 
     // @codeCoverageIgnoreEnd
