@@ -4,10 +4,11 @@ namespace WellRESTed\Test\Integration;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\Stream;
-use WellRESTed\MiddlewareInterface;
 use WellRESTed\Server;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
@@ -15,188 +16,209 @@ use WellRESTed\Transmission\TransmitterInterface;
 /**
  * @coversNothing
  */
-class ServerTest extends TestCase
+class RoutingTest extends TestCase
 {
+    /** @var Server */
+    private $server;
+    /** @var TransmitterMock */
+    private $transmitter;
+    /** @var ServerRequestInterface */
+    private $request;
+    /** @var ResponseInterface */
+    private $response;
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->server = new Server();
+        $this->transmitter = new TransmitterMock();
+        $this->request = new ServerRequest();
+        $this->response = new Response();
+    }
+
+    private function respond(): ResponseInterface
+    {
+        $this->server->respond($this->request, $this->response, $this->transmitter);
+        return $this->transmitter->response;
+    }
+
+    // -------------------------------------------------------------------------
+
     public function testDispatchesMiddleware()
     {
-        $server = new Server();
-        $server->add(function ($rqst, $resp, $next) {
-            $resp = $resp->withStatus(200)
-                ->withBody(new Stream("Hello, world!"));
-            return $next($rqst, $resp);
+        $expectedResponse = (new Response())
+            ->withStatus(200)
+            ->withBody(new Stream('Hello, world!'));
+
+        $this->server->add(function () use ($expectedResponse) {
+            return $expectedResponse;
         });
 
-        $request = new ServerRequest();
-        $response = new Response();
-        $transmitter = new CallableTransmitter(function ($request, $response) {
-            $this->assertEquals("Hello, world!", (string) $response->getBody());
-        });
-        $server->respond($request, $response, $transmitter);
+        $actualResponse = $this->respond();
+
+        $this->assertSame($expectedResponse, $actualResponse);
     }
 
     public function testDispatchesMiddlewareChain()
     {
-        $server = new Server();
-        $server->add(function ($rqst, $resp, $next) {
-           return $next($rqst, $resp);
-        });
-        $server->add(function ($rqst, $resp, $next) {
-            $resp = $resp->withStatus(200)
-                ->withBody(new Stream("Hello, world!"));
+        $expectedResponse = (new Response())
+            ->withStatus(200)
+            ->withBody(new Stream('Hello, world!'));
+
+        $this->server->add(function ($rqst, $resp, $next) {
             return $next($rqst, $resp);
         });
-
-        $request = new ServerRequest();
-        $response = new Response();
-        $transmitter = new CallableTransmitter(function ($request, $response) {
-            $this->assertEquals("Hello, world!", (string) $response->getBody());
-        });
-        $server->respond($request, $response, $transmitter);
-    }
-
-    /**
-     * @dataProvider routeProvider
-     */
-    public function testDispatchesAssortedMiddlewareTypesByPath($requestTarget, $expectedBody)
-    {
-        $stringMiddlewareWrapper = function ($string) {
-            return new StringMiddleware($string);
-        };
-
-        $server = new Server();
-        $server->add(function ($rqst, $resp, $next) {
+        $this->server->add(function ($rqst, $resp, $next) {
             return $next($rqst, $resp);
         });
-        $server->add($server->createRouter()
-            ->register("GET", "/fry", [
-                    new StringMiddleware("Philip "),
-                    new StringMiddleware("J. "),
-                    new StringMiddleware("Fry")
-                ])
-            ->register("GET", "/leela", new StringMiddleware("Turanga Leela"))
-            ->register("GET", "/bender", __NAMESPACE__ . '\BenderMiddleware')
-            ->register("GET", "/professor", $stringMiddlewareWrapper("Professor Hubert J. Farnsworth"))
-            ->register("GET", "/amy", function ($request, $response, $next) {
-                $message = "Amy Wong";
-                $body = $response->getBody();
-                if ($body->isWritable()) {
-                    $body->write($message);
-                } else {
-                    $response = $response->withBody(new Stream($message));
-                }
-                return $next($request, $response);
-            })
-            ->register("GET", "/hermes", [
-                    new StringMiddleware("Hermes "),
-                    new StringMiddleware("Conrad", false),
-                    new StringMiddleware(", CPA")
-                ])
-            ->register("GET", "/zoidberg", [
-                function ($request, $response, $next) {
-                    // Prepend "Doctor " to the dispatched response on the return trip.
-                    $response = $next($request, $response);
-                    $message = "Doctor " . (string) $response->getBody();
-                    return $response->withBody(new Stream($message));
-                },
-                new StringMiddleware("John "),
-                new StringMiddleware("Zoidberg")
-            ])
-        );
-        $server->add(function ($rqst, $resp, $next) {
-            $resp = $resp->withStatus(200);
-            return $next($rqst, $resp);
+        $this->server->add(function () use ($expectedResponse) {
+            return $expectedResponse;
         });
 
-        $request = (new ServerRequest())->withRequestTarget($requestTarget);
-        $response = new Response();
+        $actualResponse = $this->respond();
 
-        $transmitter = new CallableTransmitter(function ($request, $response) use ($expectedBody) {
-            $this->assertEquals($expectedBody, (string) $response->getBody());
-        });
-        $server->respond($request, $response, $transmitter);
+        $this->assertSame($expectedResponse, $actualResponse);
     }
 
-    public function routeProvider()
+    public function testDispatchesByRoute()
     {
-        return [
-            ["/fry", "Philip J. Fry"],
-            ["/leela", "Turanga Leela"],
-            ["/bender", "Bender Bending Rodriguez"],
-            ["/professor", "Professor Hubert J. Farnsworth"],
-            ["/amy", "Amy Wong"],
-            ["/hermes", "Hermes Conrad"],
-            ["/zoidberg", "Doctor John Zoidberg"]
-        ];
+        $router = $this->server->createRouter()
+            ->register('GET', '/molly', new StringHandler('Molly'))
+            ->register('GET', '/oscar', new StringHandler('Oscar'));
+        $this->server->add($router);
+
+        $this->request = $this->request
+            ->withMethod('GET')
+            ->withRequestTarget('/molly');
+
+        $response = $this->respond();
+
+        $this->assertEquals('Molly', (string) $response->getBody());
     }
 
-}
-
-class CallableTransmitter implements TransmitterInterface
-{
-    private $callable;
-
-    public function __construct($callable)
+    public function testDispatchesMiddlewareBeforeByRouteHandler()
     {
-        $this->callable = $callable;
+        $router = $this->server->createRouter()
+            ->register('GET', '/molly', new StringHandler('Molly'))
+            ->register('GET', '/oscar', new StringHandler('Oscar'));
+
+        $this->server->add(new HeaderAdderMiddleware(
+            'Content-type', 'application/cat'));
+        $this->server->add($router);
+
+        $this->request = $this->request
+            ->withMethod('GET')
+            ->withRequestTarget('/molly');
+
+        $response = $this->respond();
+
+        $this->assertEquals('Molly', (string) $response->getBody());
+        $this->assertEquals('application/cat',
+            $response->getHeaderLine('Content-type'));
     }
 
-    public function transmit(ServerRequestInterface $request, ResponseInterface $response)
+    public function testDispatchesMiddlewareSpecificToRouter()
     {
-        $callable = $this->callable;
-        $callable($request, $response);
+        $catRouter =  $this->server->createRouter()
+            ->addMiddleware(new HeaderAdderMiddleware(
+                'Content-type', 'application/cat'))
+            ->register('GET', '/molly', new StringHandler('Molly'))
+            ->register('GET', '/oscar', new StringHandler('Oscar'));
+        $this->server->add($catRouter);
+
+        $dogRouter =  $this->server->createRouter()
+            ->addMiddleware(new HeaderAdderMiddleware(
+                'Content-type', 'application/dog'))
+            ->register('GET', '/bear', new StringHandler('Bear'));
+        $this->server->add($dogRouter);
+
+        $this->request = $this->request
+            ->withMethod('GET')
+            ->withRequestTarget('/bear');
+
+        $response = $this->respond();
+
+        $this->assertEquals('Bear', (string) $response->getBody());
+        $this->assertEquals('application/dog',
+            $response->getHeaderLine('Content-type'));
+    }
+
+    public function testResponds404WhenNoRouteMatched()
+    {
+        $catRouter =  $this->server->createRouter()
+            ->addMiddleware(new HeaderAdderMiddleware(
+                'Content-type', 'application/cat'))
+            ->register('GET', '/molly', new StringHandler('Molly'))
+            ->register('GET', '/oscar', new StringHandler('Oscar'));
+        $this->server->add($catRouter);
+
+        $dogRouter =  $this->server->createRouter()
+            ->addMiddleware(new HeaderAdderMiddleware(
+                'Content-type', 'application/dog'))
+            ->register('GET', '/bear', new StringHandler('Bear'));
+        $this->server->add($dogRouter);
+
+        $this->request = $this->request
+            ->withMethod('GET')
+            ->withRequestTarget('/arfus');
+
+        $response = $this->respond();
+
+        $this->assertEquals(404, $response->getStatusCode());
     }
 }
 
-class StringMiddleware implements MiddlewareInterface
+// -----------------------------------------------------------------------------
+
+class TransmitterMock implements TransmitterInterface
 {
-    private $string;
-    private $propagate;
+    /** @var ResponseInterface */
+    public $response;
 
-    public function __construct($string, $propagate = true)
-    {
-        $this->string = $string;
-        $this->propagate = $propagate;
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
-     * @return ResponseInterface
-     */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
-        $body = $response->getBody();
-        if ($body->isWritable()) {
-            $body->write($this->string);
-        } else {
-            $response = $response->withBody(new Stream($this->string));
-        }
-        if ($this->propagate) {
-            return $next($request, $response);
-        } else {
-            return $response;
-        }
+    public function transmit(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ) {
+        $this->response = $response;
     }
 }
 
-class BenderMiddleware implements MiddlewareInterface
+class StringHandler implements RequestHandlerInterface
 {
-    /**
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
-     * @return ResponseInterface
-     */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    /** @var string */
+    private $body;
+
+    public function __construct(string $body)
     {
-        $message = "Bender Bending Rodriguez";
-        $body = $response->getBody();
-        if ($body->isWritable()) {
-            $body->write($message);
-        } else {
-            $response = $response->withBody(new Stream($message));
-        }
-        return $next($request, $response);
+        $this->body = $body;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return (new Response(200))
+            ->withBody(new Stream($this->body));
+    }
+}
+
+class HeaderAdderMiddleware implements MiddlewareInterface
+{
+    /** @var string */
+    private $name;
+    /** @var string */
+    private $value;
+
+    public function __construct(string $name, string $value)
+    {
+        $this->name = $name;
+        $this->value = $value;
+    }
+
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ): ResponseInterface {
+        $response = $handler->handle($request);
+        $response = $response->withHeader($this->name, $this->value);
+        return $response;
     }
 }
