@@ -129,7 +129,6 @@ class RouterTest extends TestCase
         $this->route->__invoke($this->request, $this->response, $this->next)->shouldHaveBeenCalled();
     }
 
-    /** @coversNothing */
     public function testDispatchesStaticRouteBeforePrefixRoute()
     {
         $staticRoute = $this->prophesize('WellRESTed\Routing\Route\RouteInterface');
@@ -357,28 +356,10 @@ class RouterTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
-    // No Matching Routes
-
-    public function testResponds404WhenNoRouteMatches()
-    {
-        $this->request = $this->request->withRequestTarget("/no/match");
-        $response = $this->router->__invoke($this->request, $this->response, $this->next);
-        $this->assertEquals(404, $response->getStatusCode());
-    }
-
-    public function testStopsPropagatingWhenNoRouteMatches()
+    public function testPropagatesToNextMiddlewareWhenNoRouteMatches()
     {
         $this->request = $this->request->withRequestTarget("/no/match");
         $this->router->__invoke($this->request, $this->response, $this->next);
-        $this->assertFalse($this->next->called);
-    }
-
-    public function testRegisterIsFluid()
-    {
-        $router = $this->router
-            ->register("GET", "/", "middleware")
-            ->register("POST", "/", "middleware");
-        $this->assertSame($this->router, $router);
+        $this->assertTrue($this->next->called);
     }
 }
