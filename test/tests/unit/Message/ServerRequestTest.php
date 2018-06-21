@@ -13,7 +13,7 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Construction and Marshalling
 
-    /** @preserveGlobalState disabled */
+    /** @backupGlobals enabled */
     public function testGetServerRequestReadsFromRequest()
     {
         $_SERVER = [
@@ -39,7 +39,7 @@ class ServerRequestTest extends TestCase
     // Marshalling Request Information
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider protocolVersionProvider
      */
     public function testGetServerRequestReadsProtocolVersion($expectedProtocol, $serverProtocol)
@@ -64,7 +64,7 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider methodProvider
      */
     public function testGetServerRequestReadsMethod($expectedMethod, $serverMethod)
@@ -90,7 +90,7 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider requestTargetProvider
      */
     public function testGetServerRequestReadsRequestTargetFromRequest($expectedRequestTarget, $serverRequestUri)
@@ -142,7 +142,7 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider uriProvider
      */
     public function testGetServerRequestReadsUri($expected, $server)
@@ -210,7 +210,7 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider uploadedFileProvider
      */
     public function testGetServerRequestReadsUploadedFiles($file, $path)
@@ -313,7 +313,7 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @preserveGlobalState disabled
+     * @backupGlobals enabled
      * @dataProvider formContentTypeProvider
      */
     public function testGetServerRequestParsesFormBody($contentType)
@@ -402,7 +402,7 @@ class ServerRequestTest extends TestCase
         $this->assertEquals([], $request->getUploadedFiles());
     }
 
-    /** @preserveGlobalState disabled */
+    /** @backupGlobals enabled */
     public function testGetUploadedFilesReturnsEmptyArrayWhenNoFilesAreUploaded()
     {
         $_SERVER = [
