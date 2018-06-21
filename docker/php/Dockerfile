@@ -1,4 +1,4 @@
-FROM php:7.1-cli
+FROM php:7.2-cli
 
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update && \
@@ -14,11 +14,13 @@ RUN DEBIAN_FRONTEND=noninteractive \
 RUN yes | pecl install xdebug \
   && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini
 
-# Download and install Composer
-COPY ./docker/php/install-composer.sh /tmp/install-composer.sh
-RUN chmod +x /tmp/install-composer.sh; sync && \
-  /tmp/install-composer.sh && \
-  rm /tmp/install-composer.sh
+ # Install Composer.
+RUN curl -sS https://getcomposer.org/installer | php -- \
+  --filename=composer --install-dir=/usr/local/bin
+
+# Install dumb-init.
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64
+RUN chmod +x /usr/local/bin/dumb-init
 
 # Create a directory for project sources and user's home directory
 RUN mkdir /usr/local/src/wellrested && \
@@ -38,5 +40,6 @@ WORKDIR /usr/local/src/wellrested
 
 USER www-data
 
-# Install Composer dependencies
+ENTRYPOINT ["dumb-init", "--"]
+
 RUN composer install
