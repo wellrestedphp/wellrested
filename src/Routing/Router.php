@@ -4,6 +4,7 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
@@ -25,6 +26,8 @@ class Router implements RouterInterface
     private $prefixRoutes;
     /** @var RouteInterface[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
+    /** @var mixed[] List array of middleware */
+    protected $stack;
 
     /**
      * Create a new Router.
@@ -37,35 +40,40 @@ class Router implements RouterInterface
      * stored with the name. The value will be an array containing all of the
      * path variables.
      *
-     * @param DispatcherInterface $dispatcher Instance to use for dispatching
-     *     middleware.
-     * @param string|null $pathVariablesAttributeName Attribute name for
-     *     matched path variables. A null value sets attributes directly.
+     * @param DispatcherInterface $dispatcher
+     *     Instance to use for dispatching middleware and handlers.
+     * @param string|null $pathVariablesAttributeName
+     *     Attribute name for matched path variables. A null value sets
+     *     attributes directly.
      */
-    public function __construct(DispatcherInterface $dispatcher = null, $pathVariablesAttributeName = null)
+    public function __construct($dispatcher = null, $pathVariablesAttributeName = null)
     {
-        $this->dispatcher = $dispatcher;
+        $this->dispatcher = $dispatcher ?? $this->getDefaultDispatcher();
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
         $this->factory = $this->getRouteFactory($this->dispatcher);
         $this->routes = [];
         $this->staticRoutes = [];
         $this->prefixRoutes = [];
         $this->patternRoutes = [];
+        $this->stack = [];
     }
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    ) {
         // Use only the path for routing.
         $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
 
         $route = $this->getStaticRoute($requestTarget);
         if ($route) {
-            return $route($request, $response, $next);
+            return $this->dispatch($route, $request, $response, $next);
         }
 
         $route = $this->getPrefixRoute($requestTarget);
         if ($route) {
-            return $route($request, $response, $next);
+            return $this->dispatch($route, $request, $response, $next);
         }
 
         // Try each of the routes.
@@ -79,12 +87,27 @@ class Router implements RouterInterface
                         $request = $request->withAttribute($name, $value);
                     }
                 }
-                return $route($request, $response, $next);
+                return $this->dispatch($route, $request, $response, $next);
             }
         }
 
         // If no route exists, delegate to the next middleware.
         return $next($request, $response);
+    }
+
+    private function dispatch(
+        $route,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    ) {
+        if (!$this->stack) {
+            return $route($request, $response, $next);
+        }
+        $stack = array_merge($this->stack, [$route]);
+        return $this->dispatcher->dispatch(
+            $stack, $request, $response, $next
+        );
     }
 
     /**
@@ -120,6 +143,37 @@ class Router implements RouterInterface
         $route = $this->getRouteForTarget($target);
         $route->getMethodMap()->register($method, $middleware);
         return $this;
+    }
+
+    /**
+     * Push a new middleware onto the stack. Middleware for a router runs only
+     * when the router has a route matching the request.
+     *
+     * $middleware may be:
+     * - An instance implementing MiddlewareInterface
+     * - A string containing the fully qualified class name of a class
+     *     implementing MiddlewareInterface
+     * - A callable that returns an instance implementing MiddleInterface
+     * - A callable matching the signature of MiddlewareInterface::dispatch
+     * @see DispatchedInterface::dispatch
+     *
+     * @param mixed $middleware Middleware to dispatch in sequence
+     * @return static
+     */
+    public function addMiddleware($middleware)
+    {
+        $this->stack[] = $middleware;
+        return $this;
+    }
+
+    /**
+     * Return an instance to dispatch middleware.
+     *
+     * @return DispatcherInterface
+     */
+    protected function getDefaultDispatcher()
+    {
+        return new Dispatcher();
     }
 
     /**

@@ -50,7 +50,24 @@ interface RouterInterface extends MiddlewareInterface
      * @param string $target Request target or pattern to match
      * @param string $method HTTP method(s) to match
      * @param mixed $middleware Middleware to dispatch
-     * @return self
+     * @return static
      */
     public function register($method, $target, $middleware);
+
+    /**
+     * Push a new middleware onto the stack. Middleware for a router runs only
+     * when the router has a route matching the request.
+     *
+     * $middleware may be:
+     * - An instance implementing MiddlewareInterface
+     * - A string containing the fully qualified class name of a class
+     *     implementing MiddlewareInterface
+     * - A callable that returns an instance implementing MiddleInterface
+     * - A callable matching the signature of MiddlewareInterface::dispatch
+     * @see DispatchedInterface::dispatch
+     *
+     * @param mixed $middleware Middleware to dispatch in sequence
+     * @return static
+     */
+    public function addMiddleware($middleware);
 }
