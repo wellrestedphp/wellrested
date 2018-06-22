@@ -141,7 +141,7 @@ class Router implements RouterInterface
     public function register($method, $target, $middleware)
     {
         $route = $this->getRouteForTarget($target);
-        $route->getMethodMap()->register($method, $middleware);
+        $route->register($method, $middleware);
         return $this;
     }
 

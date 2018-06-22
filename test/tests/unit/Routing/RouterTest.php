@@ -6,7 +6,6 @@ use Prophecy\Argument;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Routing\MethodMapInterface;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
@@ -15,7 +14,6 @@ use WellRESTed\Test\TestCase;
 
 class RouterTest extends TestCase
 {
-    private $methodMap;
     private $factory;
     private $request;
     private $response;
@@ -27,12 +25,9 @@ class RouterTest extends TestCase
     {
         parent::setUp();
 
-        $this->methodMap = $this->prophesize(MethodMapInterface::class);
-        $this->methodMap->register(Argument::cetera());
-
         $this->route = $this->prophesize(RouteInterface::class);
         $this->route->__invoke(Argument::cetera())->willReturn(new Response());
-        $this->route->getMethodMap()->willReturn($this->methodMap->reveal());
+        $this->route->register(Argument::cetera())->willReturn();
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
         $this->route->getPathVariables()->willReturn([]);
@@ -77,11 +72,11 @@ class RouterTest extends TestCase
         $this->factory->create("/")->shouldHaveBeenCalledTimes(1);
     }
 
-    public function testPassesMethodAndMiddlewareToMethodMap()
+    public function testPassesMethodAndMiddlewareToRoute()
     {
         $this->router->register("GET", "/", "middleware");
 
-        $this->methodMap->register("GET", "middleware")->shouldHaveBeenCalled();
+        $this->route->register("GET", "middleware")->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -136,13 +131,13 @@ class RouterTest extends TestCase
     public function testDispatchesStaticRouteBeforePrefixRoute()
     {
         $staticRoute = $this->prophesize(RouteInterface::class);
-        $staticRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $staticRoute->register(Argument::cetera())->willReturn();
         $staticRoute->getTarget()->willReturn("/cats/");
         $staticRoute->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $staticRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $prefixRoute = $this->prophesize(RouteInterface::class);
-        $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $prefixRoute->register(Argument::cetera())->willReturn();
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -165,13 +160,13 @@ class RouterTest extends TestCase
         // Note: The longest route is also good for 2 points in Settlers of Catan.
 
         $shortRoute = $this->prophesize(RouteInterface::class);
-        $shortRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $shortRoute->register(Argument::cetera())->willReturn();
         $shortRoute->getTarget()->willReturn("/animals/*");
         $shortRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $shortRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $longRoute = $this->prophesize(RouteInterface::class);
-        $longRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $longRoute->register(Argument::cetera())->willReturn();
         $longRoute->getTarget()->willReturn("/animals/cats/*");
         $longRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $longRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -193,13 +188,13 @@ class RouterTest extends TestCase
     public function testDispatchesPrefixRouteBeforePatternRoute()
     {
         $prefixRoute = $this->prophesize(RouteInterface::class);
-        $prefixRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $prefixRoute->register(Argument::cetera())->willReturn();
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute = $this->prophesize(RouteInterface::class);
-        $patternRoute->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute->register(Argument::cetera())->willReturn();
         $patternRoute->getTarget()->willReturn("/cats/{id}");
         $patternRoute->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -220,7 +215,7 @@ class RouterTest extends TestCase
     public function testDispatchesFirstMatchingPatternRoute()
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
-        $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute1->register(Argument::cetera())->willReturn();
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
@@ -228,7 +223,7 @@ class RouterTest extends TestCase
         $patternRoute1->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
-        $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute2->register(Argument::cetera())->willReturn();
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
@@ -251,7 +246,7 @@ class RouterTest extends TestCase
     public function testStopsTestingPatternsAfterFirstSuccessfulMatch()
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
-        $patternRoute1->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute1->register(Argument::cetera())->willReturn();
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
@@ -259,7 +254,7 @@ class RouterTest extends TestCase
         $patternRoute1->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
-        $patternRoute2->getMethodMap()->willReturn($this->methodMap->reveal());
+        $patternRoute2->register(Argument::cetera())->willReturn();
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
