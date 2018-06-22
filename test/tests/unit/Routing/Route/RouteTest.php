@@ -6,7 +6,7 @@ use Prophecy\Argument;
 use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Routing\MethodMap;
+use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\StaticRoute;
 use WellRESTed\Test\TestCase;
 

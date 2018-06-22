@@ -4,7 +4,7 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\Error\Warning;
-use WellRESTed\Routing\MethodMap;
+use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\RegexRoute;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Test\TestCase;

@@ -4,7 +4,6 @@ namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Routing\MethodMap;
 
 abstract class Route implements RouteInterface
 {

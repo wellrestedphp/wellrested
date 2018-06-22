@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Routing;
+namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

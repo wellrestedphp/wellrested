@@ -1,11 +1,11 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing;
+namespace WellRESTed\Test\Unit\Routing\Route;
 
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Routing\MethodMap;
+use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Test\Doubles\MiddlewareMock;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;

@@ -3,7 +3,6 @@
 namespace WellRESTed\Routing\Route;
 
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Routing\MethodMap;
 
 /**
  * Class for creating routes

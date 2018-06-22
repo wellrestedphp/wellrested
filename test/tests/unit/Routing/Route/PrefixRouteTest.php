@@ -2,7 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use WellRESTed\Routing\MethodMap;
+use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\PrefixRoute;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Test\TestCase;
