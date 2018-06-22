@@ -2,32 +2,45 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use WellRESTed\Message\Message;
+use WellRESTed\Message\Response;
+use WellRESTed\Message\Stream;
 use WellRESTed\Test\TestCase;
 
 class MessageTest extends TestCase
 {
+    /** @var Message */
+    private $message;
+
+    public function setUp()
+    {
+        $this->message = new Response();
+    }
+
     public function testSetsHeadersOnConstruction()
     {
-        $headers = ["X-foo" => ["bar", "baz"]];
-        $body = null;
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message', [$headers, $body]);
-        $this->assertEquals(["bar", "baz"], $message->getHeader("X-foo"));
+        $headers = ['X-foo' => ['bar', 'baz']];
+        $message = new Response(200, $headers);
+        $this->assertEquals(['bar', 'baz'], $message->getHeader('X-foo'));
     }
 
     public function testSetsBodyOnConstruction()
     {
-        $headers = null;
-        $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message', [$headers, $body->reveal()]);
-        $this->assertSame($body->reveal(), $message->getBody());
+        $body = new Stream('Hello, world');
+        $message = new Response(200, [], $body);
+        $this->assertSame($body, $message->getBody());
     }
 
-   public function testCloneMakesDeepCopyOfHeaders()
+    public function testCloneMakesDeepCopyOfHeaders()
     {
-        $message1 = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message1 = $message1->withHeader("Content-type", "text/plain");
-        $message2 = $message1->withHeader("Content-type", "application/json");
-        $this->assertNotEquals($message1->getHeader("Content-type"), $message2->getHeader("Content-type"));
+        $message1 = (new Response())
+            ->withHeader('Content-type', 'text/plain');
+        $message2 = $message1
+            ->withHeader('Content-type', 'application/json');
+
+        $this->assertNotEquals(
+            $message1->getHeader('Content-type'),
+            $message2->getHeader('Content-type'));
     }
 
     // ------------------------------------------------------------------------
@@ -35,22 +48,22 @@ class MessageTest extends TestCase
 
     public function testGetProtocolVersionReturnsProtocolVersion1Point1ByDefault()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertEquals("1.1", $message->getProtocolVersion());
+        $message = new Response();
+        $this->assertEquals('1.1', $message->getProtocolVersion());
     }
 
     public function testGetProtocolVersionReturnsProtocolVersion()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withProtocolVersion("1.0");
-        $this->assertEquals("1.0", $message->getProtocolVersion());
+        $message = (new Response())
+            ->withProtocolVersion('1.0');
+        $this->assertEquals('1.0', $message->getProtocolVersion());
     }
 
     public function testGetProtocolVersionReplacesProtocolVersion()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withProtocolVersion("1.0");
-        $this->assertEquals("1.0", $message->getProtocolVersion());
+        $message = (new Response())
+            ->withProtocolVersion('1.0');
+        $this->assertEquals('1.0', $message->getProtocolVersion());
     }
 
     // ------------------------------------------------------------------------
@@ -59,17 +72,17 @@ class MessageTest extends TestCase
     /** @dataProvider validHeaderValueProvider */
     public function testWithHeaderReplacesHeader($expected, $value)
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withHeader("X-foo", "Original value");
-        $message = $message->withHeader("X-foo", $value);
-        $this->assertEquals($expected, $message->getHeader("X-foo"));
+        $message = (new Response())
+            ->withHeader('X-foo', 'Original value')
+            ->withHeader('X-foo', $value);
+        $this->assertEquals($expected, $message->getHeader('X-foo'));
     }
 
     public function validHeaderValueProvider()
     {
         return [
-            [["0"], 0],
-            [["molly","bear"],["molly","bear"]]
+            [['0'], 0],
+            [['molly','bear'],['molly','bear']]
         ];
     }
 
@@ -79,114 +92,118 @@ class MessageTest extends TestCase
      */
     public function testWithHeaderThrowsExceptionWithInvalidArgument($name, $value)
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message->withHeader($name, $value);
+        $message = (new Response())
+            ->withHeader($name, $value);
     }
 
     public function invalidHeaderProvider()
     {
         return [
             [0, 1024],
-            ["Content-length", false],
-            ["Content-length", [false]]
+            ['Content-length', false],
+            ['Content-length', [false]]
         ];
     }
 
     public function testWithAddedHeaderSetsHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("Content-type", "application/json");
-        $this->assertEquals(["application/json"], $message->getHeader("Content-type"));
+        $message = (new Response())
+            ->withAddedHeader('Content-type', 'application/json');
+        $this->assertEquals(['application/json'], $message->getHeader('Content-type'));
     }
 
     public function testWithAddedHeaderAppendsValue()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("Set-Cookie", ["cat=Molly"]);
-        $message = $message->withAddedHeader("Set-Cookie", ["dog=Bear"]);
-        $cookies = $message->getHeader("Set-Cookie");
-        $this->assertTrue(in_array("cat=Molly", $cookies) && in_array("dog=Bear", $cookies));
+        $message = (new Response())
+            ->withAddedHeader('Set-Cookie', ['cat=Molly'])
+            ->withAddedHeader('Set-Cookie', ['dog=Bear']);
+        $cookies = $message->getHeader('Set-Cookie');
+        $this->assertTrue(
+            in_array('cat=Molly', $cookies) &&
+            in_array('dog=Bear', $cookies));
     }
 
     public function testWithoutHeaderRemovesHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withHeader("Content-type", "application/json");
-        $message = $message->withoutHeader("Content-type");
-        $this->assertFalse($message->hasHeader("Content-type"));
+        $message = (new Response())
+            ->withHeader('Content-type', 'application/json')
+            ->withoutHeader('Content-type');
+        $this->assertFalse($message->hasHeader('Content-type'));
     }
 
     public function testGetHeaderReturnsEmptyArrayForUnsetHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertEquals([], $message->getHeader("X-name"));
+        $message = new Response();
+        $this->assertEquals([], $message->getHeader('X-name'));
     }
 
     public function testGetHeaderReturnsSingleHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("Content-type", "application/json");
-        $this->assertEquals(["application/json"], $message->getHeader("Content-type"));
+        $message = (new Response())
+            ->withAddedHeader('Content-type', 'application/json');
+        $this->assertEquals(['application/json'], $message->getHeader('Content-type'));
     }
 
     public function testGetHeaderReturnsMultipleValuesForHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("X-name", "cat=Molly");
-        $message = $message->withAddedHeader("X-name", "dog=Bear");
-        $this->assertEquals(["cat=Molly", "dog=Bear"], $message->getHeader("X-name"));
+        $message = (new Response())
+            ->withAddedHeader('X-name', 'cat=Molly')
+            ->withAddedHeader('X-name', 'dog=Bear');
+        $this->assertEquals(['cat=Molly', 'dog=Bear'], $message->getHeader('X-name'));
     }
 
     public function testGetHeaderLineReturnsEmptyStringForUnsetHeader()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertSame("", $message->getHeaderLine("X-not-set"));
+        $message = new Response();
+        $this->assertSame('', $message->getHeaderLine('X-not-set'));
     }
 
     public function testGetHeaderLineReturnsMultipleHeadersJoinedByCommas()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withAddedHeader("X-name", "cat=Molly");
-        $message = $message->withAddedHeader("X-name", "dog=Bear");
-        $this->assertEquals("cat=Molly, dog=Bear", $message->getHeaderLine("X-name"));
+        $message = (new Response())
+            ->withAddedHeader('X-name', 'cat=Molly')
+            ->withAddedHeader('X-name', 'dog=Bear');
+        $this->assertEquals('cat=Molly, dog=Bear', $message->getHeaderLine('X-name'));
     }
 
     public function testHasHeaderReturnsTrueWhenHeaderIsSet()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withHeader("Content-type", "application/json");
-        $this->assertTrue($message->hasHeader("Content-type"));
+        $message = (new Response())
+            ->withHeader('Content-type', 'application/json');
+        $this->assertTrue($message->hasHeader('Content-type'));
     }
 
     public function testHasHeaderReturnsFalseWhenHeaderIsNotSet()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertFalse($message->hasHeader("Content-type"));
+        $message = new Response();
+        $this->assertFalse($message->hasHeader('Content-type'));
     }
 
     public function testGetHeadersReturnOriginalHeaderNamesAsKeys()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withHeader("Set-Cookie", "cat=Molly");
-        $message = $message->withAddedHeader("Set-Cookie", "dog=Bear");
-        $message = $message->withHeader("Content-type", "application/json");
+        $message = (new Response())
+            ->withHeader('Set-Cookie', 'cat=Molly')
+            ->withAddedHeader('Set-Cookie', 'dog=Bear')
+            ->withHeader('Content-type', 'application/json');
 
         $headers = [];
         foreach ($message->getHeaders() as $key => $values) {
             $headers[] = $key;
         }
 
-        $expected = ["Content-type", "Set-Cookie"];
-        $countUnmatched = count(array_diff($expected, $headers)) + count(array_diff($headers, $expected));
+        $expected = ['Content-type', 'Set-Cookie'];
+        $countUnmatched
+            = count(array_diff($expected, $headers))
+            + count(array_diff($headers, $expected));
         $this->assertEquals(0, $countUnmatched);
     }
 
     public function testGetHeadersReturnOriginalHeaderNamesAndValues()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withHeader("Set-Cookie", "cat=Molly");
-        $message = $message->withAddedHeader("Set-Cookie", "dog=Bear");
-        $message = $message->withHeader("Content-type", "application/json");
+        $message = (new Response())
+            ->withHeader('Set-Cookie', 'cat=Molly')
+            ->withAddedHeader('Set-Cookie', 'dog=Bear')
+            ->withHeader('Content-type', 'application/json');
 
         $headers = [];
 
@@ -201,8 +218,8 @@ class MessageTest extends TestCase
         }
 
         $expected = [
-            "Set-Cookie" => ["cat=Molly", "dog=Bear"],
-            "Content-type" => ["application/json"]
+            'Set-Cookie' => ['cat=Molly', 'dog=Bear'],
+            'Content-type' => ['application/json']
         ];
 
         $this->assertEquals($expected, $headers);
@@ -213,17 +230,16 @@ class MessageTest extends TestCase
 
     public function testGetBodyReturnsEmptyStreamByDefault()
     {
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $this->assertEquals("", (string) $message->getBody());
+        $message = new Response();
+        $this->assertEquals('', (string) $message->getBody());
     }
 
     public function testGetBodyReturnsAttachedStream()
     {
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream = $stream->reveal();
+        $stream = new Stream('Hello, world!');
 
-        $message = $this->getMockForAbstractClass('\WellRESTed\Message\Message');
-        $message = $message->withBody($stream);
+        $message = (new Response())
+            ->withBody($stream);
         $this->assertSame($stream, $message->getBody());
     }
 }

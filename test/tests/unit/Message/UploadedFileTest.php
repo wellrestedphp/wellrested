@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use Psr\Http\Message\StreamInterface;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\UploadedFileState;
 use WellRESTed\Test\TestCase;
@@ -39,7 +40,7 @@ class UploadedFileTest extends TestCase
     public function testGetStreamReturnsStreamInterface()
     {
         $file = new UploadedFile("", "", 0, "", 0);
-        $this->assertInstanceOf('\Psr\Http\Message\StreamInterface', $file->getStream());
+        $this->assertInstanceOf(StreamInterface::class, $file->getStream());
     }
 
     public function testGetStreamReturnsStreamWrappingUploadedFile()

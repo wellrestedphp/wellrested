@@ -15,20 +15,19 @@ abstract class Message implements MessageInterface
     /** @var StreamInterface */
     protected $body;
     /** @var string */
-    protected $protocolVersion = "1.1";
+    protected $protocolVersion = '1.1';
 
     /**
      * Create a new Message, optionally with headers and a body.
      *
-     * If provided, $headers MUST by an associative array with header field
-     * names as (string) keys and lists of header field values (string[])
-     * as values.
+     * $headers is an optional associative array with header field names as
+     * (string) keys and lists of header field values (string[]) as values.
      *
      * If no StreamInterface is provided for $body, the instance will create
      * a NullStream instance for the message body.
      *
-     * @param array $headers Associative array of headers fields with header
-     *     field names as keys and list arrays of field values as values
+     * @param array $headers Associative array with header field names as
+     *     (string) keys and lists of header field values (string[]) as values.
      * @param StreamInterface $body A stream representation of the message
      *     entity body
      */
@@ -61,8 +60,6 @@ abstract class Message implements MessageInterface
     /**
      * Retrieves the HTTP protocol version as a string.
      *
-     * The string MUST contain only the HTTP version number (e.g., "1.1", "1.0").
-     *
      * @return string HTTP protocol version.
      */
     public function getProtocolVersion()
@@ -72,9 +69,6 @@ abstract class Message implements MessageInterface
 
     /**
      * Create a new instance with the specified HTTP protocol version.
-     *
-     * The version string MUST contain only the HTTP version number (e.g.,
-     * "1.1", "1.0").
      *
      * @param string $version HTTP protocol version
      * @return static
@@ -94,7 +88,7 @@ abstract class Message implements MessageInterface
      *
      *     // Represent the headers as a string
      *     foreach ($message->getHeaders() as $name => $values) {
-     *         echo $name . ": " . implode(", ", $values);
+     *         echo $name . ': ' . implode(', ', $values);
      *     }
      *
      *     // Emit headers iteratively:
@@ -177,9 +171,9 @@ abstract class Message implements MessageInterface
     public function getHeaderLine($name)
     {
         if (isset($this->headers[$name])) {
-            return join(", ", $this->headers[$name]);
+            return join(', ', $this->headers[$name]);
         } else {
-            return "";
+            return '';
         }
     }
 
@@ -278,7 +272,7 @@ abstract class Message implements MessageInterface
         };
 
         if (!is_string($name)) {
-            throw new \InvalidArgumentException("Header name must be a string");
+            throw new \InvalidArgumentException('Header name must be a string');
         }
 
         if ($is_allowed($value)) {
@@ -286,7 +280,7 @@ abstract class Message implements MessageInterface
         } elseif (is_array($value) && count($value) === count(array_filter($value, $is_allowed))) {
             return $value;
         } else {
-            throw new \InvalidArgumentException("Header values must be a string or string[]");
+            throw new \InvalidArgumentException('Header values must be a string or string[]');
         }
     }
 }
