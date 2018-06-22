@@ -17,7 +17,7 @@ interface DispatchStackInterface extends MiddlewareInterface
      * This method MUST preserve the order in which middleware are added.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return self
+     * @return static
      */
     public function add($middleware);
 
@@ -48,5 +48,9 @@ interface DispatchStackInterface extends MiddlewareInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next);
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    );
 }

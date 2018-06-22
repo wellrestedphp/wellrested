@@ -25,7 +25,7 @@ class TransmitterTest extends TestCase
         $this->request = (new ServerRequest())
             ->withMethod("HEAD");
 
-        $this->body = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $this->body = $this->prophesize(StreamInterface::class);
         $this->body->isReadable()->willReturn(false);
         $this->body->getSize()->willReturn(1024);
         /** @var StreamInterface $stream */
@@ -34,12 +34,6 @@ class TransmitterTest extends TestCase
         $this->response = (new Response())
             ->withStatus(200)
             ->withBody($stream);
-    }
-
-    public function testCreatesInstance()
-    {
-        $transmitter = new Transmitter();
-        $this->assertNotNull($transmitter);
     }
 
     public function testSendStatusCodeWithReasonPhrase()

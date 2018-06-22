@@ -7,9 +7,31 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Dispatches handlers and middleware
+ */
 class Dispatcher implements DispatcherInterface
 {
     /**
+     * Dispatch a handler or middleware and return the response.
+     *
+     * Dispatcher can dispatch any of the following:
+     *   - An instance implementing one of these interfaces:
+     *     - Psr\Http\Server\RequestHandlerInterface
+     *     - Psr\Http\Server\MiddlewareInterface
+     *     - WellRESTed\MiddlewareInterface
+     *     - Psr\Http\Message\ResponseInterface
+     *   - A string containing the fully qualified class name of a class
+     *        implementing one of the interfaces listed above.
+     *   - A callable that returns an instance implementing one of the
+     *       interfaces listed above.
+     *   - A callable with a signature matching the signature of
+     *       WellRESTed\MiddlewareInterface::__invoke
+     *   - An array containing any of the items in this list.
+     *
+     * When Dispatcher receives a $dispatchable that is not of a type it
+     * can dispatch, it throws a DispatchException.
+     *
      * @param mixed $dispatchable
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
@@ -41,7 +63,7 @@ class Dispatcher implements DispatcherInterface
         } elseif ($dispatchable instanceof ResponseInterface) {
             return $dispatchable;
         } else {
-            throw new DispatchException("Unable to dispatch middleware.");
+            throw new DispatchException('Unable to dispatch middleware.');
         }
     }
 

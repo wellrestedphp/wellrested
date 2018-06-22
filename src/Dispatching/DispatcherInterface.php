@@ -6,38 +6,47 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Dispatches middleware
+ * Dispatches handlers and middleware
  */
 interface DispatcherInterface
 {
     /**
-     * Dispatch middleware and return the response.
+     * Dispatch a handler or middleware and return the response.
      *
-     * This method MUST pass $request, $response, and $next to the middleware
-     * to be dispatched.
-     *
-     * $middleware comes in a number of varieties (e.g., instance, string,
-     * callable). DispatcherInterface interface exist to unpack the middleware
-     * and dispatch it.
+     * Dispatchables (middleware and handlers) comes in a number of varieties
+     * (e.g., instance, string, callable). DispatcherInterface interface unpacks
+     * the dispatchable and dispatches it.
      *
      * Implementations MUST be able to dispatch the following:
-     * - An instance implementing MiddlewareInterface
-     * - A string containing the fully qualified class name of a class
-     *        implementing MiddlewareInterface
-     * - A callable that returns an instance implementing MiddlewareInterface
-     * - A callable with a signature matching MiddlewareInterface::__invoke
+     *   - An instance implementing one of these interfaces:
+     *     - Psr\Http\Server\RequestHandlerInterface
+     *     - Psr\Http\Server\MiddlewareInterface
+     *     - WellRESTed\MiddlewareInterface
+     *     - Psr\Http\Message\ResponseInterface
+     *   - A string containing the fully qualified class name of a class
+     *        implementing one of the interfaces listed above.
+     *   - A callable that returns an instance implementing one of the
+     *       interfaces listed above.
+     *   - A callable with a signature matching the signature of
+     *       WellRESTed\MiddlewareInterface::__invoke
+     *   - An array containing any of the items in this list.
      *
      * Implementation MAY dispatch other types of middleware.
      *
-     * When an implementation receives a $middleware that is not of a type it can
-     * dispatch, it MUST throw a DispatchException.
+     * When an implementation receives a $dispatchable that is not of a type it
+     * can dispatch, it MUST throw a DispatchException.
      *
-     * @param mixed $middleware
+     * @param mixed $dispatchable
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @param callable $next
      * @return ResponseInterface
      * @throws DispatchException Unable to dispatch $middleware
      */
-    public function dispatch($middleware, ServerRequestInterface $request, ResponseInterface $response, $next);
+    public function dispatch(
+        $dispatchable,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    );
 }

@@ -54,8 +54,11 @@ class DispatchStack implements DispatchStackInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    ) {
         $dispatcher = $this->dispatcher;
 
         // This flag will be set to true when the last middleware calls $next.
@@ -70,9 +73,9 @@ class DispatchStack implements DispatchStackInterface
 
         // Create a chain of callables.
         //
-        // Each callable wil take $request and $response parameters, and will
-        // contain a dispatcher, the associated middleware, and a $next
-        // that is the links to the next middleware in the chain.
+        // Each callable will take $request and $response parameters, and will
+        // contain a dispatcher, the associated middleware, and a $next function
+        // that serves as the link to the next middleware in the chain.
         foreach (array_reverse($this->stack) as $middleware) {
             $chain = function ($request, $response) use ($dispatcher, $middleware, $chain) {
                 return $dispatcher->dispatch($middleware, $request, $response, $chain);
