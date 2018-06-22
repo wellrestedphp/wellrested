@@ -4,6 +4,7 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\Error\Warning;
+use WellRESTed\Routing\MethodMap;
 use WellRESTed\Routing\Route\RegexRoute;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Test\TestCase;
@@ -14,12 +15,12 @@ class RegexRouteTest extends TestCase
 
     public function setUp()
     {
-        $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $this->methodMap = $this->prophesize(MethodMap::class);
     }
 
     public function testReturnsPatternType()
     {
-        $route = new RegexRoute("/", $this->methodMap->reveal());
+        $route = new RegexRoute('/', $this->methodMap->reveal());
         $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
@@ -48,16 +49,16 @@ class RegexRouteTest extends TestCase
     public function matchingRouteProvider()
     {
         return [
-            ["~/cat/[0-9]+~", "/cat/2", [0 => "/cat/2"]],
-            ["#/dog/.*#", "/dog/his-name-is-bear", [0 => "/dog/his-name-is-bear"]],
-            ["~/cat/([0-9]+)~", "/cat/2", [
-                0 => "/cat/2",
-                1 => "2"
+            ['~/cat/[0-9]+~', '/cat/2', [0 => '/cat/2']],
+            ['#/dog/.*#', '/dog/his-name-is-bear', [0 => '/dog/his-name-is-bear']],
+            ['~/cat/([0-9]+)~', '/cat/2', [
+                0 => '/cat/2',
+                1 => '2'
             ]],
-            ["~/dog/(?<id>[0-9+])~", "/dog/2", [
-                0 => "/dog/2",
-                1 => "2",
-                "id" => "2"
+            ['~/dog/(?<id>[0-9+])~', '/dog/2', [
+                0 => '/dog/2',
+                1 => '2',
+                'id' => '2'
             ]]
         ];
     }
@@ -72,9 +73,9 @@ class RegexRouteTest extends TestCase
     public function mismatchingRouteProvider()
     {
         return [
-            ["~/cat/[0-9]+~", "/cat/molly"],
-            ["~/cat/[0-9]+~", "/dog/bear"],
-            ["#/dog/.*#", "/dog"]
+            ['~/cat/[0-9]+~', '/cat/molly'],
+            ['~/cat/[0-9]+~', '/dog/bear'],
+            ['#/dog/.*#', '/dog']
         ];
     }
 
@@ -89,7 +90,7 @@ class RegexRouteTest extends TestCase
         Notice::$enabled = false;
         $level = error_reporting();
         error_reporting($level & ~E_WARNING);
-        $route->matchesRequestTarget("/");
+        $route->matchesRequestTarget('/');
         error_reporting($level);
         Warning::$enabled = true;
         Notice::$enabled = true;
@@ -98,8 +99,8 @@ class RegexRouteTest extends TestCase
     public function invalidRouteProvider()
     {
         return [
-            ["~/unterminated"],
-            ["/nope"]
+            ['~/unterminated'],
+            ['/nope']
         ];
     }
 }

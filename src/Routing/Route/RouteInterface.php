@@ -3,7 +3,6 @@
 namespace WellRESTed\Routing\Route;
 
 use WellRESTed\MiddlewareInterface;
-use WellRESTed\Routing\MethodMapInterface;
 
 interface RouteInterface extends MiddlewareInterface
 {
@@ -47,13 +46,6 @@ interface RouteInterface extends MiddlewareInterface
      * @return array
      */
     public function getPathVariables();
-
-    /**
-     * Return the instance mapping methods to middleware for this route.
-     *
-     * @return MethodMapInterface
-     */
-    public function getMethodMap();
 
     /**
      * Examines a request target to see if it is a match for the route.

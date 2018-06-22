@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
 
-class MethodMap implements MethodMapInterface
+class MethodMap
 {
     private $dispatcher;
     private $map;

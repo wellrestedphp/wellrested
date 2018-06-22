@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
+use WellRESTed\Routing\MethodMap;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
 use WellRESTed\Test\TestCase;
@@ -12,22 +13,22 @@ class TemplateRouteTest extends TestCase
 
     public function setUp()
     {
-        $this->methodMap = $this->prophesize('WellRESTed\Routing\MethodMapInterface');
+        $this->methodMap = $this->prophesize(MethodMap::class);
     }
 
     private function getExpectedValues($keys)
     {
         $expectedValues = [
-            "var" => "value",
-            "hello" => "Hello World!",
-            "x" => "1024",
-            "y" => "768",
-            "path" => "/foo/bar",
-            "who" => "fred",
-            "half" => "50%",
-            "empty" => "",
-            "count" => ["one", "two", "three"],
-            "list" => ["red", "green", "blue"]
+            'var' => 'value',
+            'hello' => 'Hello World!',
+            'x' => '1024',
+            'y' => '768',
+            'path' => '/foo/bar',
+            'who' => 'fred',
+            'half' => '50%',
+            'empty' => '',
+            'count' => ['one', 'two', 'three'],
+            'list' => ['red', 'green', 'blue']
         ];
         return array_intersect_key($expectedValues, array_flip($keys));
     }
@@ -43,7 +44,7 @@ class TemplateRouteTest extends TestCase
 
     public function testReturnsPatternType()
     {
-        $route = new TemplateRoute("/", $this->methodMap->reveal());
+        $route = new TemplateRoute('/', $this->methodMap->reveal());
         $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
@@ -60,10 +61,10 @@ class TemplateRouteTest extends TestCase
     public function nonMatchingTargetProvider()
     {
         return [
-            ["/foo/{var}", "/bar/12", "Mismatch before first template expression"],
-            ["/foo/{foo}/bar/{bar}", "/foo/12/13", "Mismatch after first template expression"],
-            ["/hello/{hello}", "/hello/Hello%20World!", "Requires + operator to match reserved characters"],
-            ["{/var}", "/bar/12", "Path contains more segments than template"],
+            ['/foo/{var}', '/bar/12', 'Mismatch before first template expression'],
+            ['/foo/{foo}/bar/{bar}', '/foo/12/13', 'Mismatch after first template expression'],
+            ['/hello/{hello}', '/hello/Hello%20World!', 'Requires + operator to match reserved characters'],
+            ['{/var}', '/bar/12', 'Path contains more segments than template'],
         ];
     }
 
@@ -88,11 +89,11 @@ class TemplateRouteTest extends TestCase
     public function simpleStringProvider()
     {
         return [
-            ["/foo", "/foo", []],
-            ["/{var}", "/value", ["var"]],
-            ["/{hello}", "/Hello%20World%21", ["hello"]],
-            ["/{x,hello,y}", "/1024,Hello%20World%21,768", ["x", "hello", "y"]],
-            ["/{x,hello,y}", "/1024,Hello%20World%21,768", ["x", "hello", "y"]],
+            ['/foo', '/foo', []],
+            ['/{var}', '/value', ['var']],
+            ['/{hello}', '/Hello%20World%21', ['hello']],
+            ['/{x,hello,y}', '/1024,Hello%20World%21,768', ['x', 'hello', 'y']],
+            ['/{x,hello,y}', '/1024,Hello%20World%21,768', ['x', 'hello', 'y']],
         ];
     }
 
@@ -117,9 +118,9 @@ class TemplateRouteTest extends TestCase
     public function reservedStringProvider()
     {
         return [
-            ["/{+var}", "/value", ["var"]],
-            ["/{+hello}", "/Hello%20World!", ["hello"]],
-            ["{+path}/here", "/foo/bar/here", ["path"]],
+            ['/{+var}', '/value', ['var']],
+            ['/{+hello}', '/Hello%20World!', ['hello']],
+            ['{+path}/here', '/foo/bar/here', ['path']],
         ];
     }
 
@@ -144,9 +145,9 @@ class TemplateRouteTest extends TestCase
     public function labelWithDotPrefixProvider()
     {
         return [
-            ["/{.who}", "/.fred", ["who"]],
-            ["/{.half,who}", "/.50%25.fred", ["half", "who"]],
-            ["/X{.empty}", "/X.", ["empty"]]
+            ['/{.who}', '/.fred', ['who']],
+            ['/{.half,who}', '/.50%25.fred', ['half', 'who']],
+            ['/X{.empty}', '/X.', ['empty']]
         ];
     }
 
@@ -171,9 +172,9 @@ class TemplateRouteTest extends TestCase
     public function pathSegmentProvider()
     {
         return [
-            ["{/who}", "/fred", ["who"]],
-            ["{/half,who}", "/50%25/fred", ["half", "who"]],
-            ["{/var,empty}", "/value/", ["var", "empty"]]
+            ['{/who}', '/fred', ['who']],
+            ['{/half,who}', '/50%25/fred', ['half', 'who']],
+            ['{/var,empty}', '/value/', ['var', 'empty']]
         ];
     }
 
@@ -198,9 +199,9 @@ class TemplateRouteTest extends TestCase
     public function pathExplosionProvider()
     {
         return [
-            ["/{count*}", "/one,two,three", ["count"]],
-            ["{/count*}", "/one/two/three", ["count"]],
-            ["X{.list*}", "X.red.green.blue", ["list"]]
+            ['/{count*}', '/one,two,three', ['count']],
+            ['{/count*}', '/one/two/three', ['count']],
+            ['X{.list*}', 'X.red.green.blue', ['list']]
         ];
     }
 }

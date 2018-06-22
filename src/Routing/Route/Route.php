@@ -4,29 +4,19 @@ namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Routing\MethodMapInterface;
+use WellRESTed\Routing\MethodMap;
 
 abstract class Route implements RouteInterface
 {
     /** @var string */
     protected $target;
-    /** @var MethodMapInterface  */
+    /** @var MethodMap  */
     protected $methodMap;
 
     public function __construct($target, $methodMap)
     {
         $this->target = $target;
         $this->methodMap = $methodMap;
-    }
-
-    /**
-     * Return the instance mapping methods to middleware for this route.
-     *
-     * @return MethodMapInterface
-     */
-    public function getMethodMap()
-    {
-        return $this->methodMap;
     }
 
     /**
