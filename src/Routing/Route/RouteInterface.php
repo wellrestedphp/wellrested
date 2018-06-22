@@ -64,4 +64,20 @@ interface RouteInterface extends MiddlewareInterface
      *      invalid regular expression
      */
     public function matchesRequestTarget($requestTarget);
+
+    /**
+     * Register a dispatchable (handler or middleware) with a method.
+     *
+     * $method may be:
+     * - A single verb ("GET"),
+     * - A comma-separated list of verbs ("GET,PUT,DELETE")
+     * - "*" to indicate any method.
+     *
+     * $dispatchable may be anything a Dispatcher can dispatch.
+     * @see DispatcherInterface::dispatch
+     *
+     * @param string $method
+     * @param mixed $dispatchable
+     */
+    public function register($method, $dispatchable);
 }

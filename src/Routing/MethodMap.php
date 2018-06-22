@@ -23,33 +23,28 @@ class MethodMap implements MethodMapInterface
     // MethodMapInterface
 
     /**
-     * Register middleware with a method.
+     * Register a dispatchable (handler or middleware) with a method.
      *
      * $method may be:
      * - A single verb ("GET"),
      * - A comma-separated list of verbs ("GET,PUT,DELETE")
      * - "*" to indicate any method.
      *
-     * $middleware may be:
-     * - An instance implementing MiddlewareInterface
-     * - A string containing the fully qualified class name of a class
-     *     implementing MiddlewareInterface
-     * - A callable that returns an instance implementing MiddleInterface
-     * - A callable matching the signature of MiddlewareInterface::dispatch
-     * @see DispatchedInterface::dispatch
+     * $dispatchable may be anything a Dispatcher can dispatch.
+     * @see DispatcherInterface::dispatch
      *
-     * $middleware may also be null, in which case any previously set
-     * middleware for that method or methods will be unset.
+     * $dispatchable may also be null, in which case any previously set
+     * handlers and middle for that method or methods will be unset.
      *
      * @param string $method
-     * @param mixed $middleware
+     * @param mixed $dispatchable
      */
-    public function register($method, $middleware)
+    public function register($method, $dispatchable)
     {
         $methods = explode(",", $method);
         $methods = array_map("trim", $methods);
         foreach ($methods as $method) {
-            $this->map[$method] = $middleware;
+            $this->map[$method] = $dispatchable;
         }
     }
 
@@ -62,8 +57,11 @@ class MethodMap implements MethodMapInterface
      * @param callable $next
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $next
+    ) {
         $method = $request->getMethod();
         // Dispatch middleware registered with the explicitly matching method.
         if (isset($this->map[$method])) {
@@ -119,8 +117,12 @@ class MethodMap implements MethodMapInterface
      * @param $next
      * @return ResponseInterface
      */
-    private function dispatchMiddleware($middleware, ServerRequestInterface $request, ResponseInterface &$response, $next)
-    {
+    private function dispatchMiddleware(
+        $middleware,
+        ServerRequestInterface $request,
+        ResponseInterface &$response,
+        $next
+    ) {
         return $this->dispatcher->dispatch($middleware, $request, $response, $next);
     }
 }
