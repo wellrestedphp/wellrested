@@ -9,7 +9,7 @@ use Psr\Http\Message\StreamInterface;
 class Transmitter implements TransmitterInterface
 {
     /** @var int */
-    private $chunkSize = 0;
+    private $chunkSize = 8192;
 
     /**
      * Outputs a response to the client.

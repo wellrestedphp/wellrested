@@ -81,6 +81,7 @@ class TransmitterTest extends TestCase
         $this->body->__toString()->willReturn($content);
 
         $transmitter = new Transmitter();
+        $transmitter->setChunkSize(0);
 
         ob_start();
         $transmitter->transmit($this->request, $this->response);
@@ -167,6 +168,7 @@ class TransmitterTest extends TestCase
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
+        $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
         $this->assertContains("Content-length: $bodySize", HeaderStack::getHeaders());
@@ -184,6 +186,7 @@ class TransmitterTest extends TestCase
         $this->body->getSize()->willReturn($streamSize);
 
         $transmitter = new Transmitter();
+        $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
         $this->assertContains("Content-length: $headerSize", HeaderStack::getHeaders());
@@ -200,6 +203,7 @@ class TransmitterTest extends TestCase
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
+        $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
         $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
@@ -212,6 +216,7 @@ class TransmitterTest extends TestCase
         $this->body->getSize()->willReturn(null);
 
         $transmitter = new Transmitter();
+        $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
         $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
