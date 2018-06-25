@@ -3,18 +3,20 @@
 namespace WellRESTed\Test\Unit;
 
 use Prophecy\Argument;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Message\Stream;
 use WellRESTed\Server;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
+require_once __DIR__ . '/../../src/HeaderStack.php';
+
 class ServerTest extends TestCase
 {
     private $transmitter;
+    /** @var Server */
     private $server;
 
     public function setUp()
@@ -25,23 +27,10 @@ class ServerTest extends TestCase
         $this->transmitter->transmit(Argument::cetera())->willReturn();
 
         $this->server = new Server();
+        $this->server->setTransmitter($this->transmitter->reveal());
     }
 
-    private function respond()
-    {
-        $this->server->respond(
-            new ServerRequest(),
-            new Response(),
-            $this->transmitter->reveal()
-        );
-    }
-
-    // ------------------------------------------------------------------------
-
-    public function testReturnsDispatcher()
-    {
-        $this->assertNotNull($this->server->getDispatcher());
-    }
+    // -------------------------------------------------------------------------
 
     public function testDispatchesMiddlewareStack()
     {
@@ -70,12 +59,42 @@ class ServerTest extends TestCase
             }
         );
 
-        $this->respond();
+        $this->server->respond();
 
         $this->assertEquals(['first', 'second', 'third'], $steps);
     }
 
-    // ------------------------------------------------------------------------
+    public function testDispatchedRequest()
+    {
+        $request = new ServerRequest();
+        $capturedRequest = null;
+
+        $this->server->setRequest($request);
+        $this->server->add(function ($rqst, $resp) use (&$capturedRequest) {
+            $capturedRequest = $rqst;
+            return $resp;
+        });
+        $this->server->respond();
+
+        $this->assertSame($request, $capturedRequest);
+    }
+
+    public function testDispatchedResponse()
+    {
+        $response = new Response();
+        $capturedResponse = null;
+
+        $this->server->setResponse($response);
+        $this->server->add(function ($rqst, $resp) use (&$capturedResponse) {
+            $capturedResponse = $resp;
+            return $resp;
+        });
+        $this->server->respond();
+
+        $this->assertSame($response, $capturedResponse);
+    }
+
+    // -------------------------------------------------------------------------
     // Respond
 
     public function testRespondSendsResponseToTransmitter()
@@ -100,7 +119,7 @@ class ServerTest extends TestCase
             }
         );
 
-        $this->respond();
+        $this->server->respond();
 
         $this->transmitter->transmit(
             Argument::any(),
@@ -108,7 +127,7 @@ class ServerTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Router
 
     public function testCreatesRouterWithDispatcher()
@@ -121,7 +140,8 @@ class ServerTest extends TestCase
             }
         );
 
-        $server = new Server(null, $dispatcher->reveal());
+        $this->server->setDispatcher($dispatcher->reveal());
+        $this->server->setPathVariablesAttributeName('pathVariables');
 
         $request = (new ServerRequest())
             ->withMethod("GET")
@@ -131,7 +151,7 @@ class ServerTest extends TestCase
             return $resp;
         };
 
-        $router = $server->createRouter();
+        $router = $this->server->createRouter();
         $router->register("GET", "/", "middleware");
         $router($request, $response, $next);
 
@@ -139,39 +159,32 @@ class ServerTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Attributes
 
     public function testAddsAttributesToRequest()
     {
-        $attributes = [
+        $this->server->setAttributes([
             'name' => 'value'
-        ];
+        ]);
 
-        $server = new Server($attributes);
-
-        $spyMiddleware = function ($rqst, $resp) use (&$capturedRequest) {
+        $capturedRequest = null;
+        $this->server->add(function ($rqst, $resp) use (&$capturedRequest) {
             $capturedRequest = $rqst;
             return $resp;
-        };
+        });
 
-        $server->add($spyMiddleware);
-
-        $server->respond(
-            new ServerRequest(),
-            new Response(),
-            $this->transmitter->reveal()
-        );
+        $this->server->respond();
 
         $this->assertEquals('value', $capturedRequest->getAttribute('name'));
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // End of Stack
 
-    public function testRespondsWithDefaultHandlerWhenReachingEndOfStack()
+    public function testResponds404ByDefaultWhenReachingEndOfStack()
     {
-        $this->respond();
+        $this->server->respond();
 
         $has404StatusCode = function ($response) {
             return $response->getStatusCode() === 404;
@@ -183,69 +196,44 @@ class ServerTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
-    // Defaults
-
-    public function testUsesDefaultRequestResponseAndTransmitter()
+    public function testRespondsWithUnhandledResponseWhenReachingEndOfStack()
     {
-        $request = new ServerRequest();
-        $response = new Response();
+        $unhandledResponse = (new Response(404))
+            ->withBody(new Stream("I can't find it!"));
 
-        $server = new TestServer(
-            $request,
-            $response,
-            $this->transmitter->reveal()
-        );
-        $server->add(function ($rqst, $resp) {
-            return $resp;
+        $this->server->setUnhandledResponse($unhandledResponse);
+
+        $this->server->respond();
+
+        $isExpectedResponse = function ($response) use ($unhandledResponse) {
+            return $response === $unhandledResponse;
+        };
+
+        $this->transmitter->transmit(
+            Argument::any(),
+            Argument::that($isExpectedResponse)
+        )->shouldHaveBeenCalled();
+    }
+
+    // -------------------------------------------------------------------------
+
+    public function testCreatesStockTransmitterByDefault()
+    {
+        $content = "Hello, world!";
+
+        $response = (new Response())
+            ->withBody(new Stream($content));
+
+        $server = new Server();
+        $server->add(function () use ($response) {
+            return $response;
         });
+
+        ob_start();
         $server->respond();
+        $captured = ob_get_contents();
+        ob_end_clean();
 
-        $this->transmitter->transmit($request, $response)
-            ->shouldHaveBeenCalled();
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-class TestServer extends Server
-{
-    /** @var ServerRequestInterface */
-    private $request;
-    /** @var ResponseInterface */
-    private $response;
-    /** @var TransmitterInterface */
-    private $transmitter;
-
-    /**
-     * TestServer constructor.
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param TransmitterInterface $transmitter
-     */
-    public function __construct(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        TransmitterInterface $transmitter
-    ) {
-        parent::__construct();
-        $this->request = $request;
-        $this->response = $response;
-        $this->transmitter = $transmitter;
-    }
-
-    protected function getRequest()
-    {
-        return $this->request;
-    }
-
-    protected function getResponse()
-    {
-        return $this->response;
-    }
-
-    protected function getTransmitter()
-    {
-        return $this->transmitter;
+        $this->assertEquals($content, $captured);
     }
 }

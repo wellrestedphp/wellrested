@@ -16,50 +16,22 @@ class Server
 {
     /** @var array */
     protected $attributes;
-
-    /** @var string ServerRequestInterface attribute name for matched path variables */
-    protected $pathVariablesAttributeName;
-
-    /** @var mixed[] List array of middleware */
-    protected $stack;
-
     /** @var DispatcherInterface */
     private $dispatcher;
+    /** @var string ServerRequestInterface attribute name for matched path variables */
+    private $pathVariablesAttributeName;
+    /** @var ServerRequestInterface */
+    private $request;
+    /** @var ResponseInterface */
+    private $response;
+    /** @var TransmitterInterface */
+    private $transmitter;
+    /** @var mixed[] List array of middleware */
+    private $stack;
+    /** @var ResponseInterface */
+    private $unhandledResponse;
 
-    /**
-     * Create a new server.
-     *
-     * By default, when a route containing path variables matches, the path
-     * variables are stored individually as attributes on the
-     * ServerRequestInterface.
-     *
-     * When $pathVariablesAttributeName is set, a single attribute will be
-     * stored with the name. The value will be an array containing all of the
-     * path variables.
-     *
-     * @param array $attributes
-     *     Key-value pairs to register as attributes with the server request.
-     * @param DispatcherInterface $dispatcher
-     *     Dispatches handlers and middleware. If no object is passed, the
-     *     Server will create a WellRESTed\Dispatching\Dispatcher.
-     * @param string|null $pathVariablesAttributeName
-     *     Attribute name for matched path variables. A null value sets
-     *     attributes directly.
-     */
-    public function __construct(
-        array $attributes = null,
-        DispatcherInterface $dispatcher = null,
-        $pathVariablesAttributeName = null
-    ) {
-        if ($attributes === null) {
-            $attributes = [];
-        }
-        $this->attributes = $attributes;
-        if ($dispatcher === null) {
-            $dispatcher = $this->getDefaultDispatcher();
-        }
-        $this->dispatcher = $dispatcher;
-        $this->pathVariablesAttributeName = $pathVariablesAttributeName;
+    public function __construct() {
         $this->stack = [];
     }
 
@@ -67,7 +39,7 @@ class Server
      * Push a new middleware onto the stack.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return static
+     * @return Server
      */
     public function add($middleware)
     {
@@ -76,146 +48,164 @@ class Server
     }
 
     /**
-     * Dispatch the contained middleware in the order in which they were added.
-     *
-     * The first middleware added to the stack is the first to be dispatched.
-     *
-     * Each middleware, when dispatched, will receive a $next callable that
-     * dispatches the middleware that follows it. The only exception to this is
-     * the last middleware in the stack which much receive a $next callable the
-     * returns the response unchanged.
-     *
-     * If the instance is dispatched with no middleware added, the instance
-     * MUST call $next passing $request and $response and return the returned
-     * response.
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param callable $next
-     * @return ResponseInterface
-     */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response, $next)
-    {
-        return $this->dispatcher->dispatch($this->stack, $request, $response, $next);
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
      * Return a new Router that uses the server's dispatcher.
      *
      * @return Router
      */
     public function createRouter()
     {
-        return new Router($this->getDispatcher(), $this->pathVariablesAttributeName);
-    }
-
-    /**
-     * Return the dispatched used by the server.
-     *
-     * @return DispatcherInterface
-     */
-    public function getDispatcher()
-    {
-        return $this->dispatcher;
+        return new Router(
+            $this->getDispatcher(),
+            $this->pathVariablesAttributeName
+        );
     }
 
     /**
      * Perform the request-response cycle.
      *
      * This method reads a server request, dispatches the request through the
-     * server's stack of middleware, and outputs the response.
-     *
-     * @param ServerRequestInterface $request Request provided by the client
-     * @param ResponseInterface $response Initial starting place response to
-     *     propagate to middleware.
-     * @param TransmitterInterface $transmitter Instance to outputting the
-     *     final response to the client.
+     * server's stack of middleware, and outputs the response via a Transmitter.
      */
-    public function respond(
-        ServerRequestInterface $request = null,
-        ResponseInterface $response = null,
-        TransmitterInterface $transmitter = null
-    ) {
-        if ($request === null) {
-            $request = $this->getRequest();
-        }
-        foreach ($this->attributes as $name => $value) {
+    public function respond()
+    {
+        $request = $this->getRequest();
+        foreach ($this->getAttributes() as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
-        if ($response === null) {
-            $response = $this->getResponse();
-        }
-        if ($transmitter === null) {
-            $transmitter = $this->getTransmitter();
-        }
+
+        $response = $this->getResponse();
 
         $next = function () {
             return $this->getUnhandledResponse();
         };
-        $response = $this->dispatch($request, $response, $next);
+
+        $dispatcher = $this->getDispatcher();
+        $response = $dispatcher->dispatch(
+            $this->stack, $request, $response, $next);
+
+        $transmitter = $this->getTransmitter();
         $transmitter->transmit($request, $response);
     }
 
-    // ------------------------------------------------------------------------
-    // The following method provide instances using default classes. To use
-    // custom classes, subclass Server and override methods as needed.
+    // -------------------------------------------------------------------------
+    /* Configuration */
 
     /**
-     * Return an instance to dispatch middleware.
-     *
-     * @return DispatcherInterface
+     * @param array $attributes
+     * @return Server
      */
-    protected function getDefaultDispatcher()
+    public function setAttributes(array $attributes): Server
     {
-        return new Dispatcher();
-    }
-
-    // @codeCoverageIgnoreStart
-
-    /**
-     * Return an instance representing the request submitted to the server.
-     *
-     * @return ServerRequestInterface
-     */
-    protected function getRequest()
-    {
-        return ServerRequest::getServerRequest();
+        $this->attributes = $attributes;
+        return $this;
     }
 
     /**
-     * Return an instance that will output the response to the client.
-     *
-     * @return TransmitterInterface
+     * @param DispatcherInterface $dispatcher
+     * @return Server
      */
-    protected function getTransmitter()
+    public function setDispatcher(DispatcherInterface $dispatcher): Server
     {
-        return new Transmitter();
+        $this->dispatcher = $dispatcher;
+        return $this;
     }
 
     /**
-     * Return a "blank" response instance to populate.
-     *
-     * The response will be dispatched through the middleware.
-     *
-     * @return ResponseInterface
+     * @param string $name
+     * @return Server
      */
-    protected function getResponse()
-    {
-        return new Response();
+    public function setPathVariablesAttributeName(string $name): Server {
+        $this->pathVariablesAttributeName = $name;
+        return $this;
     }
 
     /**
-     * Return a Response to indicate the server was unable to find any handlers
-     * that handled the request.  By default, this is a 404 error.
-     *
-     * @return ResponseInterface
+     * @param ServerRequestInterface $request
+     * @return Server
      */
-    protected function getUnhandledResponse(): ResponseInterface
+    public function setRequest(ServerRequestInterface $request): Server
     {
-        return new Response(404);
+        $this->request = $request;
+        return $this;
     }
 
-    // @codeCoverageIgnoreEnd
+    /**
+     * @param ResponseInterface $response
+     * @return Server
+     */
+    public function setResponse(ResponseInterface $response): Server
+    {
+        $this->response = $response;
+        return $this;
+    }
+
+    /**
+     * @param TransmitterInterface $transmitter
+     * @return Server
+     */
+    public function setTransmitter(TransmitterInterface $transmitter): Server
+    {
+        $this->transmitter = $transmitter;
+        return $this;
+    }
+
+    /**
+     * @param ResponseInterface $response
+     * @return Server
+     */
+    public function setUnhandledResponse(ResponseInterface $response): Server {
+        $this->unhandledResponse = $response;
+        return $this;
+    }
+
+    // -------------------------------------------------------------------------
+    /* Defaults */
+
+    private function getAttributes()
+    {
+        if (!$this->attributes) {
+            $this->attributes = [];
+        }
+        return $this->attributes;
+    }
+
+    private function getDispatcher()
+    {
+        if (!$this->dispatcher) {
+            $this->dispatcher = new Dispatcher();
+        }
+        return $this->dispatcher;
+    }
+
+    private function getRequest()
+    {
+        if (!$this->request) {
+            $this->request = ServerRequest::getServerRequest();
+        }
+        return $this->request;
+    }
+
+    private function getResponse()
+    {
+        if (!$this->response) {
+            $this->response = new Response();
+        }
+        return $this->response;
+    }
+
+    private function getTransmitter()
+    {
+        if (!$this->transmitter) {
+            $this->transmitter = new Transmitter();
+        }
+        return $this->transmitter;
+    }
+
+    private function getUnhandledResponse()
+    {
+        if (!$this->unhandledResponse) {
+            $this->unhandledResponse = new Response(404);
+        }
+        return $this->unhandledResponse;
+    }
 }

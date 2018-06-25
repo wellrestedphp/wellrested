@@ -13,9 +13,7 @@ use WellRESTed\Server;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
-/**
- * @coversNothing
- */
+/** @coversNothing */
 class RoutingTest extends TestCase
 {
     /** @var Server */
@@ -30,15 +28,22 @@ class RoutingTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->server = new Server();
+
         $this->transmitter = new TransmitterMock();
         $this->request = new ServerRequest();
         $this->response = new Response();
+
+        $this->server = new Server();
+
+        $this->server->setTransmitter($this->transmitter);
     }
 
     private function respond(): ResponseInterface
     {
-        $this->server->respond($this->request, $this->response, $this->transmitter);
+        $this->server->setRequest($this->request);
+        $this->server->setResponse($this->response);
+        $this->server->respond();
+
         return $this->transmitter->response;
     }
 

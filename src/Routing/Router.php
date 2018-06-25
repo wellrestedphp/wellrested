@@ -48,7 +48,7 @@ class Router implements RouterInterface
      */
     public function __construct($dispatcher = null, $pathVariablesAttributeName = null)
     {
-        $this->dispatcher = $dispatcher ?? $this->getDefaultDispatcher();
+        $this->dispatcher = $dispatcher ?: $this->getDefaultDispatcher();
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
         $this->factory = $this->getRouteFactory($this->dispatcher);
         $this->routes = [];
