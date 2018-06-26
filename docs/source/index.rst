@@ -33,12 +33,12 @@ The middleware_ system allows you to build your Web service out of discrete, mod
 Lazy Loading
 ^^^^^^^^^^^^
 
-Handlers and middleware can be registered using `factory functions`_ so that they are only instantiated if needed. This way, a Web service with hundreds of handlers and middleware still only creates instances required for the current request-response cycle.
+Handlers and middleware can be registered using `factory functions`_ so that they are only instantiated if needed. This way, a Web service with hundreds of handlers and middleware only creates instances required for the current request-response cycle.
 
 Extensible
 ^^^^^^^^^^
 
-All classes are coded to interfaces to allow you to provide your own implementations and use them in place of the built-in classes. For example, if your Web service needs to be able to dispatch middleware that implements a different interface, you can provide your own custom ``DispatcherInterface`` implementation.
+Most classes are coded to interfaces to allow you to provide your own implementations and use them in place of the built-in classes. For example, if your Web service needs to be able to dispatch middleware that implements a third-party interface, you can provide your own custom ``DispatcherInterface`` implementation.
 
 Example
 -------
@@ -138,6 +138,7 @@ Contents
    dependency-injection
    additional
    web-server-configuration
+   changes-from-version-3
 
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/

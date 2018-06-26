@@ -52,6 +52,12 @@ We can register the handler and these dependencies in a Pimple_ service provider
         }
     }
 
+To register this handler with a router, we can pass the service:
+
+.. code-block:: php
+
+    $router->register('GET', '/foo', $c['fooHandler']);
+
 By "protecting" the ``fooHandler`` service, we are delaying the instantiation of the ``FooHandler``, the ``Bar``, and the ``Baz`` until the handler needs to be dispatched. This works because we're not passing instance of ``FooHandler`` when we register this with a router, we're passing a function to it that does the instantiation on demand.
 
 .. _Pimple: https://pimple.symfony.com/

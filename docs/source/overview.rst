@@ -10,7 +10,7 @@ The recommended method for installing WellRESTed is to use Composer_. Add an ent
 
     {
       "require": {
-         "wellrested/wellrested": "~3.1"
+         "wellrested/wellrested": "^4"
       }
    }
 

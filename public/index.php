@@ -54,5 +54,29 @@ $router = $server->createRouter();
 $router->register("GET", "/", new HomePageHandler());
 $server->add($router);
 
+
+$server->add($server->createRouter()
+    ->register('GET, POST', '/cat', function ($rqst, $resp, $next) {
+
+        $resp = $resp
+            ->withStatus(200)
+            ->withHeader('Content-type', 'text/html')
+            ->withBody(new Stream('Molly'));
+        return $next($rqst, $resp);
+    })
+);
+
+$server->add($server->createRouter()
+    ->register('GET', '/cat', function ($rqst, $resp) {
+
+        $body = (string) $resp->getBody();
+
+
+        return (new Response(200))
+            ->withHeader('Content-type', 'text/html')
+            ->withBody(new Stream($body . ' Oscar'));
+    })
+);
+
 // Read the request from the client, dispatch a handler, and output.
 $server->respond();

@@ -23,11 +23,11 @@ To read a path variable, router inspects the request attribute named ``"id"``, s
 
     // For a request to /widgets/12
     $id = $request->getAttribute("id");
-    // 12
+    // "12"
 
     // For a request to /widgets/mega-widget
     $id = $request->getAttribute("id");
-    // mega-widget
+    // "mega-widget"
 
 .. note::
 
@@ -36,7 +36,7 @@ To read a path variable, router inspects the request attribute named ``"id"``, s
 Multiple Variables
 ------------------
 
-The example above included one variable, but URI Templates may include multiple variables. Each variable will be provided as a request attribute, so be sure to give your variables unique names.
+The example above included one variable, but URI Templates may include multiple. Each variable will be provided as a request attribute, so be sure to give your variables unique names.
 
 Here's an example with a handful of variables. Suppose we have a template describing the path for a user's avatar image. The image is identified by a username and the image dimensions.
 

@@ -11,8 +11,12 @@ That being said, there are a number or situations that come up that warrant solu
 `Error Handling`_
     Classes to facilitate error handling including
 
+`Test Components`_
+    Test cases and doubles for use with WellRESTed
+
 Or, see WellRESTed_ on GitHub.
 
 .. _HTTP Exceptions: https://github.com/wellrestedphp/http-exceptions
 .. _Error Handling: https://github.com/wellrestedphp/error-handling
+.. _Test Components: https://github.com/wellrestedphp/test
 .. _WellRESTed: https://github.com/wellrestedphp

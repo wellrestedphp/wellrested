@@ -154,7 +154,7 @@ You may also use a ``callable`` similar to the legacy ``WellRESTed\MiddlewareInt
 Using Handlers and Middleware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that provides an instance, or an ``array`` of handlers to use in sequence. The following examples will demonstrate all of the ways you can register handlers and middleware.
+Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that returns an instance, or an ``array`` of middleware to use in sequence. The following examples will demonstrate all of the ways you can register handlers and middleware.
 
 Factory Functions
 -----------------
@@ -183,7 +183,7 @@ If you're using ``Pimple``, a popular `dependency injection`_ container for PHP,
 Instance
 --------
 
-WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although it is generally better to use the factory callable approach. 
+WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although the factory function approach is better in most cases.
 
 .. code-block:: php
 

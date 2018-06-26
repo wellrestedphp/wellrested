@@ -1,7 +1,7 @@
 Router
 ======
 
-A router is a type of handler that organizes the components of a site by associating HTTP methods and paths with other handler and middleware. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated handler. The dispatched handler is then responsible for reacting to the request and providing a response.
+A router is a type of middleware that organizes the components of a site by associating HTTP methods and paths with handlers and middleware. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated handler. The dispatched handler is then responsible for reacting to the request and providing a response.
 
 Basic Usage
 ^^^^^^^^^^^
@@ -13,7 +13,7 @@ Typically, you will want to use the ``WellRESTed\Server::createRouter`` method t
     $server = new WellRESTed\Server();
     $router = $server->createRouter();
 
-Suppose ``$catHandler`` is a middleware that you want to dispatch whenever a client makes a ``GET`` request to the path ``/cats/``. Use the ``register`` method map it to that path and method.
+Suppose ``$catHandler`` is a handler that you want to dispatch whenever a client makes a ``GET`` request to the path ``/cats/``. Use the ``register`` method map it to that path and method.
 
 .. code-block:: php
 
@@ -111,7 +111,6 @@ For a request to ``/cats/molly-90``:
         [1] => molly
         [number] => 12
         [2] => 12
-        ... Plus any other attributes that were set ...
     )
     */
 
@@ -124,7 +123,6 @@ A router will often contain many routes, and sometimes more than one route will 
 #. If one prefix route matches the beginning of the path, dispatch it.
 #. If multiple prefix routes match, dispatch the longest matching prefix route.
 #. Inspect each pattern route (template and regular expression) in the order in which they were added to the router. Dispatch the first route that matches.
-#. If no pattern routes match, return a response with a ``404 Not Found`` status.
 
 Static vs. Prefix
 ~~~~~~~~~~~~~~~~~
@@ -167,7 +165,7 @@ Given these routes:
         ->register("GET", "/dogs/*", $prefix);
         ->register("GET", "/dogs/{group}/{breed}", $pattern);
 
-``$pattern`` will never be dispatched because any route that matches ``/dogs/{group}/{breed}`` also matches ``/dogs/*``, and prefix routes have priority over pattern routes.
+``$pattern`` will **never** be dispatched because any route that matches ``/dogs/{group}/{breed}`` also matches ``/dogs/*``, and prefix routes have priority over pattern routes.
 
 Pattern vs. Pattern
 ~~~~~~~~~~~~~~~~~~~
@@ -192,7 +190,7 @@ This will **NOT** work:
     // Matches only when the variables are digits.
     $router->register("GET", "~/dogs/([0-9]+)/([0-9]+)", $numbers);
 
-This is because ``/dogs/{group}/{breed}`` will match both ``/dogs/102/132`` and ``/dogs/herding/australian-shepherd``. If it is added to the router before the route for ``$numbers``, it will be dispatched before the route for ``$numbers`` is ever evaluated.
+This is because ``/dogs/{group}/{breed}`` will match both ``/dogs/102/132`` **and** ``/dogs/herding/australian-shepherd``. If it is added to the router before the route for ``$numbers``, it will be dispatched before the route for ``$numbers`` is ever evaluated.
 
 Methods
 ^^^^^^^
@@ -284,38 +282,49 @@ A ``POST`` request to ``/cats/12`` will provide:
     HTTP/1.1 405 Method Not Allowed
     Allow: GET,PUT,DELETE,HEAD,OPTIONS
 
-
 Error Responses
 ^^^^^^^^^^^^^^^
 
-When a router is unable to dispatch a route because either the path or method does not match a defined route, it will provide an appropriate error response code—either ``404 Not Found`` or ``405 Method Not Allowed``.
+Then a router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
 
-The router always checks the path first. If route for that path matches, the router responds ``404 Not Found``.
+When a router is unable to match the route, it will delegate to the next middleware. 
 
-If the router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
+.. note::
 
-Given this router:
+    When no route matches, the Router will delegate to the next middleware in the server. This is a change from previous versions of WellRESTed where there Router would return a 404 Not Found reponse. This new behaviour allows a servers to have multiple routers.
+
+Router-specific Middleware
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+WellRESTed version 4 allows a Router to have a set of middleware to dispatch whenever it finds a route that matches. This middleware runs before the handler for the matched route, and only if a route matches.
+
+This feature allows you to build a site where some sections use certain middleware and other do not. For example, suppose your site has a public section that does not require authentication and a section that does require authentication. We can use a different router for each section, and provide authentication middleware on only the router for the private area.
 
 .. code-block:: php
 
-    $router
-        ->register("GET", "/cats/", $catReader)
-        ->register("POST", "/cats/", $catWriter)
-        ->register("GET", "/dogs/", $catItemReader)
+    $server = new Server();
 
-The following requests wil provide these responses:
+    // Add the "public" section.
+    $public = $server->createRouter();
+    $public->register('GET', '/', $homeHandler);
+    $public->register('GET', '/about', $homeHandler);
+    $server->add($public);
 
-====== ========== ========
-Method Path       Response
-====== ========== ========
-GET    /hamsters/ 404 Not Found
-PUT    /cats/     405 Method Not Allowed
-====== ========== ========
+    // Add the "private" section.
+    $private = $server->createRouter();
+    // Authorizaiton middleware checks for an Authorization header and
+    // responds 401 when the header is missing or invalid.
+    $private->addMiddleware($authorizaitonMiddleware);
+    $private->register('GET', '/secret', $secretHandler);
+    $private->register('GET', '/members-only', $otherHandler);
+    $server->add($private);
+
+    $server->respond();
 
 Nested Routers
 ^^^^^^^^^^^^^^
 
-For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into sub-routers.
+For large Web services with large numbers of endpoints, a single, monolithic router may not to optimal. To avoid having each request test every pattern-based route, you can break up a router into a hierarchy of routers.
 
 Here's an example where all of the traffic beginning with ``/cats/`` is sent to one router, and all the traffic for endpoints beginning with ``/dogs/`` is sent to another.
 

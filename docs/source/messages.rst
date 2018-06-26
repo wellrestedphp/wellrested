@@ -1,7 +1,7 @@
 Messages and PSR-7
 ==================
 
-WellRESTed uses PSR-7_ as the interfaces for HTTP messages. This section provides an introduction to working with these interfaces and the implementations provided with WellRESTed. For more information, please read about PSR-7_.
+WellRESTed uses the PSR-7_ interfaces for HTTP messages. This section provides an introduction to working with these interfaces and the implementations provided with WellRESTed. For more information, please read about PSR-7_.
 
 Requests
 --------
@@ -12,7 +12,7 @@ Let's start with a very simple GET request to the path ``/cats/?color=orange``.
 
 .. code-block:: http
 
-    GET /cats/ HTTP/1.1
+    GET /cats/?color=orange HTTP/1.1
     Host: example.com
     Cache-control: no-cache
 
@@ -46,8 +46,6 @@ This example shows that you can use:
     - ``getMethod()`` to read the HTTP verb (e.g., GET, POST, OPTIONS, DELETE)
     - ``getQueryParams()`` to read the query as an associative array
 
-Let's move on to some more interesting features.
-
 Headers
 ^^^^^^^
 
@@ -73,7 +71,7 @@ Call ``getHeaderLine($name)`` and pass the case-insensitive name of a header. Th
 
 .. note::
 
-    All methods relating to headers treat header field name case insensitively.
+    All methods relating to headers treat header field names case insensitively.
 
 
 Because HTTP messages may contain multiple headers with the same field name, ``getHeaderLine($name)`` has one other feature: If multiple headers with the same field name are present in the message, ``getHeaderLine($name)`` returns a string containing all of the values for that field, concatenated by commas. This is more common with responses, particularly with the ``Set-cookie`` header, but is still possible for requests.
@@ -89,7 +87,7 @@ PSR-7_ provides access to the body of the request as a stream and—when possibl
 Parsed Body
 ~~~~~~~~~~~
 
-When the request contains form fields (i.e., the ``Content-type`` header is either ``application/x-www-form-urlencoded`` or ``multipart/form-data``), the request makes the form fields available via the ``getParsedBody`` method. This provides access to the fields without needing to rely on the ``$_POST`` superglobal.
+For POST requests for forms (i.e., the ``Content-type`` header is either ``application/x-www-form-urlencoded`` or ``multipart/form-data``), the request makes the form fields available via the ``getParsedBody`` method. This provides access to the fields without needing to rely on the ``$_POST`` superglobal.
 
 Given this request:
 
@@ -168,7 +166,7 @@ We can read and parse the JSON body, and even provide it as the parsedBody for l
     }
 
 
-Because the entity body of a request or response can be very large, PSR-7_ represents bodies as streams using the  ``Psr\Htt\Message\StreamInterface`` (see PSR-7_ Section 1.3).
+Because the entity body of a request or response can be very large, PSR-7_ represents bodies as streams using the  ``Psr\Http\Message\StreamInterface`` (see `PSR-7 Section 1.3`_).
 
 The JSON example casts the stream to a string, but we can also do things like copy the stream to a local file:
 
@@ -187,7 +185,7 @@ The JSON example casts the stream to a string, but we can also do things like co
 Parameters
 ^^^^^^^^^^
 
-PSR-7_ eliminates the need to read from many of the superglobals. We already saw how ``getParsedBody`` takes the place of reading directly from ``$_POST`` and ``getQueryParams`` replaces reading from ``$_GET``. Here are some other ``ServerRequestInterface`` methods with **brief** descriptions. Please see PSR-7_ for full details, particularly for ``getUploadedFiles``.
+PSR-7_ eliminates the need to read from many of the superglobals. We already saw how ``getParsedBody`` takes the place of reading directly from ``$_POST`` and ``getQueryParams`` replaces reading from ``$_GET``. Here are some other ``ServerRequestInterface`` methods with brief descriptions. Please see PSR-7_ for full details, particularly for ``getUploadedFiles``.
 
 .. list-table::
     :header-rows: 1
@@ -247,7 +245,7 @@ Middleware can also use attributes as a way to provide extra information to subs
         ): ResponseInterface 
 
             try {
-                $user = readUserFromCredentials($request);
+                $user = $this->readUserFromCredentials($request);
             } catch (NoCredentialsSupplied $e) {
                 return $response->withStatus(401);
             } catch (UserNotAllowedHere $e) {
@@ -257,8 +255,7 @@ Middleware can also use attributes as a way to provide extra information to subs
             // Store this as an attribute.
             $request = $request->withAttribute("user", $user);
 
-            // Call the next handler, passing the request with the added attribute.
-            // Send the request to the next handler.
+            // Delegate to the handler, passing the request with the "user" attribute.
             return $handler->handle($request);
         }
     };
@@ -318,8 +315,7 @@ Provide the status code for your response with the ``withStatus`` method. When y
 
     The "reason phrase" is the text description of the status that appears in the status line of the response. The "status line" is the very first line in the response that appears before the first header.
 
-
-Although the PSR-7_ ``ResponseInterface::withStatus`` method accepts the reason phrase as an optional second parameter, you generally shouldn't pass anything unless you are using a non-standard status code. (And you probably shouldn't be using a non-standard status code.)
+    Although the PSR-7_ ``ResponseInterface::withStatus`` method accepts the reason phrase as an optional second parameter, you generally shouldn't pass anything unless you are using a non-standard status code. (And you probably shouldn't be using a non-standard status code.)
 
 .. code-block:: php
 
@@ -336,19 +332,19 @@ Although the PSR-7_ ``ResponseInterface::withStatus`` method accepts the reason 
 Headers
 ^^^^^^^
 
-Use the ``withHeader`` method to add a header to a response. ``withHeader`` will add the header if not already set, or replace the value of an existing header with that name.
+Use the ``withHeader`` method to add a header to a response. ``withHeader`` will add the header if not already set, or replace the value of an existing header with the same name.
 
 .. code-block:: php
 
     // Add a "Content-type" header.
     $response = $response->withHeader("Content-type", "text/plain");
     $response->getHeaderLine("Content-type");
-    // text/plain
+    // "text/plain"
 
     // Calling withHeader a second time updates the value.
     $response = $response->withHeader("Content-type", "text/html");
     $response->getHeaderLine("Content-type");
-    // text/html
+    // "text/html"
 
 To set multiple values for a given header field name (e.g., for ``Set-cookie`` headers), call ``withAddedHeader``. ``withAddedHeader`` adds the new header without altering existing headers with the same name.
 
@@ -438,6 +434,7 @@ Each PSR-7_ message MUST have a body, so there's no ``withoutBody`` method. You 
 
 .. _HTTP Status Code Registry: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 .. _PSR-7: http://www.php-fig.org/psr/psr-7/
+.. _PSR-7 Section 1.3: https://www.php-fig.org/psr/psr-7/#13-streams
 .. _Getting Started: getting-started.html
 .. _Middleware: middleware.html
 .. _template routes: router.html#template-routes

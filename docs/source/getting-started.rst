@@ -119,7 +119,9 @@ Routes can be static (like the one above that matches only ``/hello``), or they 
 Middleware
 ^^^^^^^^^^
 
-In addition to handlers, WellRESTed also supports middlware. Middleware allows you to compose your application in multiple pieces. In the example, we'll use middleware to add a header to every responce, regardless of which handler is called.
+In addition to handlers, which provide responses directly, WellRESTed also supports middlware to act on the requests and then pass them on for other middleware or handlers to work with.
+
+Middleware allows you to compose your application in multiple pieces. In the example, we'll use middleware to add a header to every responce, regardless of which handler is called.
 
 .. code-block:: php
 
@@ -145,7 +147,7 @@ In addition to handlers, WellRESTed also supports middlware. Middleware allows y
     // Create a server
     $server = new Server();
 
-    // Add the header adding middleware to the server first so that it will
+    // Add the header-adding middleware to the server first so that it will
     // forward requests on to the router.
     $server->add(new CustomHeaderMiddleware());
 

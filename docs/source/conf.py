@@ -26,8 +26,8 @@ master_doc = 'index'
 # General information about the project.
 project = u'WellRESTed'
 copyright = u'2018, PJ Dietz'
-version = '3.1.0'
-release = '3.1.0'
+version = '4.0.0'
+release = '4.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
