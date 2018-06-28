@@ -381,7 +381,7 @@ class RouterTest extends TestCase
     public function testWhenNoRouteMatchesAndContinueModePropagatesToNextMiddleware()
     {
         $this->request = $this->request->withRequestTarget("/no/match");
-        $this->router->continue();
+        $this->router->continueOnNotFound();
         $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertTrue($this->next->called);
     }

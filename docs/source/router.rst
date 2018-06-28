@@ -123,6 +123,7 @@ A router will often contain many routes, and sometimes more than one route will 
 #. If one prefix route matches the beginning of the path, dispatch it.
 #. If multiple prefix routes match, dispatch the longest matching prefix route.
 #. Inspect each pattern route (template and regular expression) in the order in which they were added to the router. Dispatch the first route that matches.
+#. If no pattern routes match, return a response with a ``404 Not Found`` status. (**Note:** This is the default behavior. To configure a router to delegate to the next middleware when no route matches, call the router's ``continueOnNotFound()`` method.)
 
 Static vs. Prefix
 ~~~~~~~~~~~~~~~~~
@@ -304,13 +305,15 @@ This feature allows you to build a site where some sections use certain middlewa
 
     $server = new Server();
 
-    // Add the "public" section.
+    // Add the "public" router.
     $public = $server->createRouter();
     $public->register('GET', '/', $homeHandler);
     $public->register('GET', '/about', $homeHandler);
+    // Set the router call the next middleware when no route matches.
+    $public->continueOnNotFound();
     $server->add($public);
 
-    // Add the "private" section.
+    // Add the "private" router.
     $private = $server->createRouter();
     // Authorizaiton middleware checks for an Authorization header and
     // responds 401 when the header is missing or invalid.

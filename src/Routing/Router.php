@@ -6,12 +6,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Message\Response;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 
-class Router implements RouterInterface
+class Router
 {
     /** @var string attribute name for matched path variables */
     private $pathVariablesAttributeName;
@@ -30,7 +29,7 @@ class Router implements RouterInterface
     /** @var mixed[] List array of middleware */
     private $stack;
     /** @var bool Call the next middleware when no route matches */
-    private $continue = false;
+    private $continueOnNotFound = false;
 
     /**
      * Create a new Router.
@@ -94,7 +93,7 @@ class Router implements RouterInterface
             }
         }
 
-        if (!$this->continue) {
+        if (!$this->continueOnNotFound) {
             return $response->withStatus(404);
         }
 
@@ -179,9 +178,15 @@ class Router implements RouterInterface
         return $this;
     }
 
-    public function continue()
+    /**
+     * Configure the instance to delegate to the next middleware when no route
+     * matches.
+     *
+     * @return static
+     */
+    public function continueOnNotFound()
     {
-        $this->continue = true;
+        $this->continueOnNotFound = true;
         return $this;
     }
 

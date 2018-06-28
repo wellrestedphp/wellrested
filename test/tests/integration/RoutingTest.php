@@ -129,7 +129,7 @@ class RoutingTest extends TestCase
                 'Content-type', 'application/cat'))
             ->register('GET', '/molly', new StringHandler('Molly'))
             ->register('GET', '/oscar', new StringHandler('Oscar'))
-            ->continue();
+            ->continueOnNotFound();
         $this->server->add($catRouter);
 
         $dogRouter =  $this->server->createRouter()
@@ -156,7 +156,7 @@ class RoutingTest extends TestCase
                 'Content-type', 'application/cat'))
             ->register('GET', '/molly', new StringHandler('Molly'))
             ->register('GET', '/oscar', new StringHandler('Oscar'))
-            ->continue();
+            ->continueOnNotFound();
         $this->server->add($catRouter);
 
         $dogRouter =  $this->server->createRouter()
