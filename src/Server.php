@@ -28,8 +28,6 @@ class Server
     private $transmitter;
     /** @var mixed[] List array of middleware */
     private $stack;
-    /** @var ResponseInterface */
-    private $unhandledResponse;
 
     public function __construct() {
         $this->stack = [];
@@ -75,8 +73,8 @@ class Server
 
         $response = $this->getResponse();
 
-        $next = function () {
-            return $this->getUnhandledResponse();
+        $next = function ($rqst, $resp) {
+            return $resp;
         };
 
         $dispatcher = $this->getDispatcher();
@@ -149,15 +147,6 @@ class Server
         return $this;
     }
 
-    /**
-     * @param ResponseInterface $response
-     * @return Server
-     */
-    public function setUnhandledResponse(ResponseInterface $response): Server {
-        $this->unhandledResponse = $response;
-        return $this;
-    }
-
     // -------------------------------------------------------------------------
     /* Defaults */
 
@@ -199,13 +188,5 @@ class Server
             $this->transmitter = new Transmitter();
         }
         return $this->transmitter;
-    }
-
-    private function getUnhandledResponse()
-    {
-        if (!$this->unhandledResponse) {
-            $this->unhandledResponse = new Response(404);
-        }
-        return $this->unhandledResponse;
     }
 }

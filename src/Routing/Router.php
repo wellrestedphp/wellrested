@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Message\Response;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Routing\Route\RouteInterface;
@@ -27,7 +28,9 @@ class Router implements RouterInterface
     /** @var RouteInterface[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
     /** @var mixed[] List array of middleware */
-    protected $stack;
+    private $stack;
+    /** @var bool Call the next middleware when no route matches */
+    private $continue = false;
 
     /**
      * Create a new Router.
@@ -91,7 +94,10 @@ class Router implements RouterInterface
             }
         }
 
-        // If no route exists, delegate to the next middleware.
+        if (!$this->continue) {
+            return $response->withStatus(404);
+        }
+
         return $next($request, $response);
     }
 
@@ -170,6 +176,12 @@ class Router implements RouterInterface
     public function addMiddleware($middleware)
     {
         $this->stack[] = $middleware;
+        return $this;
+    }
+
+    public function continue()
+    {
+        $this->continue = true;
         return $this;
     }
 

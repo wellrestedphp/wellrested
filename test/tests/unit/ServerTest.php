@@ -182,36 +182,23 @@ class ServerTest extends TestCase
     // -------------------------------------------------------------------------
     // End of Stack
 
-    public function testResponds404ByDefaultWhenReachingEndOfStack()
+    public function testReturnsLastDoublePassResponseAtEndOfStack()
     {
-        $this->server->respond();
+        $defaultResponse = new Response(404);
 
-        $has404StatusCode = function ($response) {
-            return $response->getStatusCode() === 404;
-        };
+        $this->server->setResponse($defaultResponse);
 
-        $this->transmitter->transmit(
-            Argument::any(),
-            Argument::that($has404StatusCode)
-        )->shouldHaveBeenCalled();
-    }
-
-    public function testRespondsWithUnhandledResponseWhenReachingEndOfStack()
-    {
-        $unhandledResponse = (new Response(404))
-            ->withBody(new Stream("I can't find it!"));
-
-        $this->server->setUnhandledResponse($unhandledResponse);
+        $this->server->add(
+            function ($rqst, $resp, $next) {
+                return $next($rqst, $resp);
+            }
+        );
 
         $this->server->respond();
 
-        $isExpectedResponse = function ($response) use ($unhandledResponse) {
-            return $response === $unhandledResponse;
-        };
-
         $this->transmitter->transmit(
             Argument::any(),
-            Argument::that($isExpectedResponse)
+            $defaultResponse
         )->shouldHaveBeenCalled();
     }
 

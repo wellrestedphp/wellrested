@@ -361,9 +361,27 @@ class RouterTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    public function testPropagatesToNextMiddlewareWhenNoRouteMatches()
+    // ------------------------------------------------------------------------
+    // No Match
+
+    public function testWhenNoRouteMatchesByDefaultResponds404()
     {
         $this->request = $this->request->withRequestTarget("/no/match");
+        $response = $this->router->__invoke($this->request, $this->response, $this->next);
+        $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware()
+    {
+        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->router->__invoke($this->request, $this->response, $this->next);
+        $this->assertFalse($this->next->called);
+    }
+
+    public function testWhenNoRouteMatchesAndContinueModePropagatesToNextMiddleware()
+    {
+        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->router->continue();
         $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertTrue($this->next->called);
     }
