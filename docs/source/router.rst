@@ -297,9 +297,9 @@ When a router is unable to match the route, it will delegate to the next middlew
 Router-specific Middleware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-WellRESTed version 4 allows a Router to have a set of middleware to dispatch whenever it finds a route that matches. This middleware runs before the handler for the matched route, and only if a route matches.
+WellRESTed allows a Router to have a set of middleware to dispatch whenever it finds a route that matches. This middleware runs before the handler for the matched route, and only when a route matches.
 
-This feature allows you to build a site where some sections use certain middleware and other do not. For example, suppose your site has a public section that does not require authentication and a section that does require authentication. We can use a different router for each section, and provide authentication middleware on only the router for the private area.
+This feature allows you to build a site where some sections use certain middleware and other do not. For example, suppose your site has a public section that does not require authentication and a private section that does. We can use a different router for each section, and provide authentication middleware on only the router for the private area.
 
 .. code-block:: php
 
@@ -317,7 +317,7 @@ This feature allows you to build a site where some sections use certain middlewa
     $private = $server->createRouter();
     // Authorizaiton middleware checks for an Authorization header and
     // responds 401 when the header is missing or invalid.
-    $private->addMiddleware($authorizaitonMiddleware);
+    $private->add($authorizaitonMiddleware);
     $private->register('GET', '/secret', $secretHandler);
     $private->register('GET', '/members-only', $otherHandler);
     $server->add($private);

@@ -401,7 +401,7 @@ class RouterTest extends TestCase
             return $next($middlewareRequest, $middlewareResponse);
         };
 
-        $this->router->addMiddleware($middleware);
+        $this->router->add($middleware);
         $this->router->register("GET", "/", "Handler");
 
         $this->router->__invoke($this->request, $this->response, $this->next);
@@ -429,7 +429,7 @@ class RouterTest extends TestCase
 
         $this->request = $this->request->withRequestTarget("/no/match");
 
-        $this->router->addMiddleware($middleware);
+        $this->router->add($middleware);
         $this->router->register("GET", "/", "Handler");
 
         $this->router->__invoke($this->request, $this->response, $this->next);

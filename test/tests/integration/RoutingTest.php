@@ -125,7 +125,7 @@ class RoutingTest extends TestCase
     public function testDispatchesMiddlewareSpecificToRouter()
     {
         $catRouter =  $this->server->createRouter()
-            ->addMiddleware(new HeaderAdderMiddleware(
+            ->add(new HeaderAdderMiddleware(
                 'Content-type', 'application/cat'))
             ->register('GET', '/molly', new StringHandler('Molly'))
             ->register('GET', '/oscar', new StringHandler('Oscar'))
@@ -133,7 +133,7 @@ class RoutingTest extends TestCase
         $this->server->add($catRouter);
 
         $dogRouter =  $this->server->createRouter()
-            ->addMiddleware(new HeaderAdderMiddleware(
+            ->add(new HeaderAdderMiddleware(
                 'Content-type', 'application/dog'))
             ->register('GET', '/bear', new StringHandler('Bear'));
         $this->server->add($dogRouter);
@@ -152,7 +152,7 @@ class RoutingTest extends TestCase
     public function testResponds404WhenNoRouteMatched()
     {
         $catRouter =  $this->server->createRouter()
-            ->addMiddleware(new HeaderAdderMiddleware(
+            ->add(new HeaderAdderMiddleware(
                 'Content-type', 'application/cat'))
             ->register('GET', '/molly', new StringHandler('Molly'))
             ->register('GET', '/oscar', new StringHandler('Oscar'))
@@ -160,7 +160,7 @@ class RoutingTest extends TestCase
         $this->server->add($catRouter);
 
         $dogRouter =  $this->server->createRouter()
-            ->addMiddleware(new HeaderAdderMiddleware(
+            ->add(new HeaderAdderMiddleware(
                 'Content-type', 'application/dog'))
             ->register('GET', '/bear', new StringHandler('Bear'));
         $this->server->add($dogRouter);

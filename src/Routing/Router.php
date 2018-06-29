@@ -158,8 +158,10 @@ class Router
     }
 
     /**
-     * Push a new middleware onto the stack. Middleware for a router runs only
-     * when the router has a route matching the request.
+     * Push a new middleware onto the stack.
+     *
+     * Middleware for a router runs before the middleware and handler for the
+     * matched route and runs only when a route matched.
      *
      * $middleware may be:
      * - An instance implementing MiddlewareInterface
@@ -172,7 +174,7 @@ class Router
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return static
      */
-    public function addMiddleware($middleware)
+    public function add($middleware)
     {
         $this->stack[] = $middleware;
         return $this;
