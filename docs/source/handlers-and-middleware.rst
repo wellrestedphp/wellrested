@@ -9,7 +9,7 @@ Defining Handlers and Middleware
 PSR-15 Interfaces
 -----------------
 
-The prefered method is to use the interfaces standardized by PSR-15_. This standard includes two interfaces, ``Psr\Http\Server\RequestHandlerInterface`` and ``Psr\Http\Server\MiddlewareInterface``.
+The preferred method is to use the interfaces standardized by PSR-15_. This standard includes two interfaces, ``Psr\Http\Server\RequestHandlerInterface`` and ``Psr\Http\Server\MiddlewareInterface``.
 
 Use ``RequestHandlerInterface`` for individual components that generate and return responses.
 
@@ -42,7 +42,7 @@ Use ``MiddlewareInterface`` for classes that interact with other middleware and 
         public function process(
             ServerRequestInterface $request,
             RequestHandlerInterface $handler
-        ): ResponseInterface 
+        ): ResponseInterface
         {
 
             // Inspect the request to see if there is a representation on hand.
@@ -87,7 +87,7 @@ This interface serves for both handlers and middleware. It differs from the ``Ps
 
 .. code-block:: php
 
-    function next($request, $resposnse): ResponseInterface
+    function next($request, $response): ResponseInterface
 
 Call ``$next`` and pass ``$request`` and ``$response`` to forward the request to the next handler. ``$next`` will return the response from the handler. Here's the cache example above as a ``WellRESTed\MiddlewareInterface``.
 
@@ -96,11 +96,11 @@ Call ``$next`` and pass ``$request`` and ``$response`` to forward the request to
     class CacheMiddleware implements WellRESTed\MiddlewareInterface
     {
         public function __invoke(
-            ServerRequestInterface $request, 
-            ResponseInterface $response, 
+            ServerRequestInterface $request,
+            ResponseInterface $response,
             $next
         ) {
-        
+
             // Inspect the request to see if there is a representation on hand.
             $representation = $this->getCachedRepresentation($request);
             if ($representation !== null) {
@@ -163,7 +163,7 @@ The best method is to use a function that returns an instance of your handler. T
 
 .. code-block:: php
 
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", 
+    $router->register("GET,PUT,DELETE", "/widgets/{id}",
         function () { return new App\WidgetHandler() }
     );
 
@@ -202,11 +202,11 @@ For handlers that do not require any arguments passed to the constructor, you ma
 
 .. code-block:: php
 
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", App\WidgetHandler::class);
+    $router->register('GET,PUT,DELETE', '/widgets/{id}', App\WidgetHandler::class);
     // ... or ...
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", 'App\\WidgetHandler');
-    
-The class is not loaded, and no instances are created, until the route is matched and dispatched. However, the drawback to this approach is the there is no way to pass any arguments to the contructor.
+    $router->register('GET,PUT,DELETE', '/widgets/{id}', 'App\\WidgetHandler');
+
+The class is not loaded, and no instances are created, until the route is matched and dispatched. However, the drawback to this approach is the there is no way to pass any arguments to the constructor.
 
 Array
 -----
@@ -218,7 +218,7 @@ For example, imagine if we had a Pimple_ container with these services:
 .. code-block:: php
 
     $c['authMiddleware'] // Ensures the user is logged in
-    $c['cacheMiddlware'] // Provides a cached response if able
+    $c['cacheMiddleware'] // Provides a cached response if able
     $c['widgetHandler']  // Provides a widget representation
 
 We could provide these as a sequence by using an ``array``.
@@ -227,7 +227,7 @@ We could provide these as a sequence by using an ``array``.
 
     $router->register('GET', '/widgets/{id}', [
         $c['authMiddleware'],
-        $c['cacheMiddlware'],
+        $c['cacheMiddleware'],
         $c['widgetHandler']
     ]);
 

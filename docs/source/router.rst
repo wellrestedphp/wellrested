@@ -288,11 +288,11 @@ Error Responses
 
 Then a router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
 
-When a router is unable to match the route, it will delegate to the next middleware. 
+When a router is unable to match the route, it will delegate to the next middleware.
 
 .. note::
 
-    When no route matches, the Router will delegate to the next middleware in the server. This is a change from previous versions of WellRESTed where there Router would return a 404 Not Found reponse. This new behaviour allows a servers to have multiple routers.
+    When no route matches, the Router will delegate to the next middleware in the server. This is a change from previous versions of WellRESTed where there Router would return a 404 Not Found response. This new behaviour allows a servers to have multiple routers.
 
 Router-specific Middleware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -315,9 +315,9 @@ This feature allows you to build a site where some sections use certain middlewa
 
     // Add the "private" router.
     $private = $server->createRouter();
-    // Authorizaiton middleware checks for an Authorization header and
+    // Authorization middleware checks for an Authorization header and
     // responds 401 when the header is missing or invalid.
-    $private->add($authorizaitonMiddleware);
+    $private->add($authorizationMiddleware);
     $private->register('GET', '/secret', $secretHandler);
     $private->register('GET', '/members-only', $otherHandler);
     $server->add($private);

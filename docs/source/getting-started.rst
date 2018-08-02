@@ -3,12 +3,12 @@ Getting Started
 
 This page provides a brief introduction to WellRESTed. We'll take a tour of some of the features of WellRESTed without getting into too much depth.
 
-To start, we'll make a "`Hello, world!`_" to demonstrate the concepts of handlers and routing and show how to read variables from the request path.
+To start, we'll make a "Hello, world!" to demonstrate the concepts of handlers and routing and show how to read variables from the request path.
 
 Hello, World!
 ^^^^^^^^^^^^^
 
-Let's start with a very basic "Hello, world!". Here, we will create a server. A ``WellRESTed\Server`` reads the incoming request from the client, dispatches a handler, and transmits a response back to the client.
+Let's start with a very basic "Hello, world!" Here, we will create a server. A ``WellRESTed\Server`` reads the incoming request from the client, dispatches a handler, and transmits a response back to the client.
 
 Our handler will create and return a response with the status code set to ``200`` and the body set to "Hello, world!".
 
@@ -58,7 +58,7 @@ Routing by Path
 
 This is a good start, but it provides the same response to every request. Let's provide this response only when a client sends a request to ``/hello``.
 
-For this, we need a router_. A router_ examines the request and sends the request through to the handler that mataches the request's HTTP method and path.
+For this, we need a router_. A router_ examines the request and sends the request through to the handler that matches the request's HTTP method and path.
 
 .. _`Example 2`:
 .. rubric:: Example 2: Routed "Hello, world!"
@@ -119,9 +119,9 @@ Routes can be static (like the one above that matches only ``/hello``), or they 
 Middleware
 ^^^^^^^^^^
 
-In addition to handlers, which provide responses directly, WellRESTed also supports middlware to act on the requests and then pass them on for other middleware or handlers to work with.
+In addition to handlers, which provide responses directly, WellRESTed also supports middleware to act on the requests and then pass them on for other middleware or handlers to work with.
 
-Middleware allows you to compose your application in multiple pieces. In the example, we'll use middleware to add a header to every responce, regardless of which handler is called.
+Middleware allows you to compose your application in multiple pieces. In the example, we'll use middleware to add a header to every response, regardless of which handler is called.
 
 .. code-block:: php
 
