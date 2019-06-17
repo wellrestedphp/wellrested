@@ -20,7 +20,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 ```json
 {
     "require": {
-        "wellrested/wellrested": "~3.1"
+        "wellrested/wellrested": "^4"
     }
 }
 ```

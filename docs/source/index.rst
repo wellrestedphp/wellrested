@@ -61,7 +61,7 @@ The site will also provide an ``X-example: hello world`` using dedicated middlew
 
     require_once 'vendor/autoload.php';
 
-    // Create a handler that will construct and return a response. We'll 
+    // Create a handler that will construct and return a response. We'll
     // register this handler with a server and router below.
     class HelloHandler implements RequestHandlerInterface
     {
@@ -143,6 +143,6 @@ Contents
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/
 .. _factory functions: handlers-and-middleware.html#factory-functions
-.. _middleware: handles-and-middleware.html
+.. _middleware: handlers-and-middleware.html
 .. _router: router.html
 .. _URI Templates: uri-templates.html

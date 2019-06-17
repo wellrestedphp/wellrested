@@ -25,7 +25,6 @@ RUN chmod +x /usr/local/bin/dumb-init
 # Create a directory for project sources and user's home directory
 RUN mkdir /usr/local/src/wellrested && \
   chown -R www-data:www-data /usr/local/src/wellrested && \
-  mkdir /var/www && \
   chown -R www-data:www-data /var/www
 
 COPY ./src /usr/local/src/wellrested/src
