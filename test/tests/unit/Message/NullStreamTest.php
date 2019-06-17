@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use RuntimeException;
 use WellRESTed\Message\NullStream;
 use WellRESTed\Test\TestCase;
 
@@ -50,16 +51,16 @@ class NullStreamTest extends TestCase
         $this->assertFalse($stream->isSeekable());
     }
 
-    /** @expectedException \RuntimeException */
     public function testSeekReturnsFalse()
     {
+        $this->expectException(RuntimeException::class);
         $stream = new NullStream();
         $stream->seek(10);
     }
 
-    /** @expectedException \RuntimeException */
     public function testRewindThrowsException()
     {
+        $this->expectException(RuntimeException::class);
         $stream = new NullStream();
         $stream->rewind();
     }
@@ -70,9 +71,9 @@ class NullStreamTest extends TestCase
         $this->assertFalse($stream->isWritable());
     }
 
-    /** @expectedException \RuntimeException */
     public function testWriteThrowsException()
     {
+        $this->expectException(RuntimeException::class);
         $stream = new NullStream();
         $stream->write("");
     }

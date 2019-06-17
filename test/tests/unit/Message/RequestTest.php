@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use InvalidArgumentException;
 use WellRESTed\Message\NullStream;
 use WellRESTed\Message\Request;
 use WellRESTed\Message\Uri;
@@ -96,10 +97,10 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider invalidMethodProvider
-     * @expectedException \InvalidArgumentException
      */
     public function testWithMethodThrowsExceptionOnInvalidMethod($method)
     {
+        $this->expectException(InvalidArgumentException::class);
         $request = new Request();
         $request->withMethod($method);
     }

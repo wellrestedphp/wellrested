@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use InvalidArgumentException;
 use WellRESTed\Message\Message;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\Stream;
@@ -12,7 +13,7 @@ class MessageTest extends TestCase
     /** @var Message */
     private $message;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->message = new Response();
     }
@@ -87,11 +88,11 @@ class MessageTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidHeaderProvider
      */
     public function testWithHeaderThrowsExceptionWithInvalidArgument($name, $value)
     {
+        $this->expectException(InvalidArgumentException::class);
         $message = (new Response())
             ->withHeader($name, $value);
     }

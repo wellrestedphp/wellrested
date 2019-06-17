@@ -4,6 +4,7 @@ namespace WellRESTed\Test\Unit\Routing\Route;
 
 use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\Error\Warning;
+use RuntimeException;
 use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\RegexRoute;
 use WellRESTed\Routing\Route\RouteInterface;
@@ -13,7 +14,7 @@ class RegexRouteTest extends TestCase
 {
     private $methodMap;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->methodMap = $this->prophesize(MethodMap::class);
     }
@@ -81,10 +82,10 @@ class RegexRouteTest extends TestCase
 
     /**
      * @dataProvider invalidRouteProvider
-     * @expectedException \RuntimeException
      */
     public function testThrowsExceptionOnInvalidPattern($pattern)
     {
+        $this->expectException(RuntimeException::class);
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         Warning::$enabled = false;
         Notice::$enabled = false;

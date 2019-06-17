@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use InvalidArgumentException;
 use WellRESTed\Message\Uri;
 use WellRESTed\Test\TestCase;
 
@@ -36,9 +37,9 @@ class UriTest extends TestCase
         ];
     }
 
-    /** @expectedException \InvalidArgumentException */
     public function testInvalidSchemeThrowsException()
     {
+        $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withScheme("gopher");
     }
@@ -224,11 +225,11 @@ class UriTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidHostProvider
      */
     public function testInvalidHostThrowsException($host)
     {
+        $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withHost($host);
     }
@@ -284,11 +285,11 @@ class UriTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidPortProvider
      */
     public function testInvalidPortThrowsException($port)
     {
+        $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withPort($port);
     }
@@ -378,11 +379,11 @@ class UriTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidPathProvider
      */
     public function testInvalidPathThrowsException($path)
     {
+        $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withPath($path);
     }

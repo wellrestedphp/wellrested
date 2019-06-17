@@ -2,6 +2,8 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use InvalidArgumentException;
+use RuntimeException;
 use WellRESTed\Message\Stream;
 use WellRESTed\Test\TestCase;
 
@@ -10,13 +12,13 @@ class StreamTest extends TestCase
     private $resource;
     private $content = "Hello, world!";
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->resource = fopen("php://memory", "w+");
         fwrite($this->resource, $this->content);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if (is_resource($this->resource)) {
             fclose($this->resource);
@@ -36,11 +38,11 @@ class StreamTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidResourceProvider
      */
     public function testThrowsExceptionWithInvalidResource($resource)
     {
+        $this->expectException(InvalidArgumentException::class);
         new Stream($resource);
     }
 
@@ -132,18 +134,18 @@ class StreamTest extends TestCase
         $this->assertEquals($this->content . $message, (string) $stream);
     }
 
-    /** @expectedException \RuntimeException */
     public function testThrowsExceptionOnErrorWriting()
     {
+        $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), "php");
         $handle = fopen($filename, "r");
         $stream = new Stream($handle);
         $stream->write("Hello, world!");
     }
 
-    /** @expectedException \RuntimeException */
     public function testThrowsExceptionOnErrorReading()
     {
+        $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), "php");
         $handle = fopen($filename, "w");
         $stream = new Stream($handle);
@@ -158,9 +160,9 @@ class StreamTest extends TestCase
         $this->assertEquals("world", $string);
     }
 
-    /** @expectedException \RuntimeException */
     public function testThrowsExceptionOnErrorReadingToEnd()
     {
+        $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), "php");
         $handle = fopen($filename, "w");
         $stream = new Stream($handle);

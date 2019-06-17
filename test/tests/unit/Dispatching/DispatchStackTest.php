@@ -15,7 +15,7 @@ class DispatchStackTest extends TestCase
     private $response;
     private $next;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->request = new ServerRequest();

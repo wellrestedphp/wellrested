@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Message;
 
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 use WellRESTed\Message\UploadedFile;
 use WellRESTed\Message\UploadedFileState;
 use WellRESTed\Test\TestCase;
@@ -15,7 +16,7 @@ class UploadedFileTest extends TestCase
     private $tmpName;
     private $movePath;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         UploadedFileState::$php_sapi_name = "cli";
@@ -23,7 +24,7 @@ class UploadedFileTest extends TestCase
         $this->movePath = tempnam(sys_get_temp_dir(), "tst");
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         if (file_exists($this->tmpName)) {
@@ -58,9 +59,9 @@ class UploadedFileTest extends TestCase
         $this->assertTrue($file->getStream()->eof());
     }
 
-    /** @expectedException \RuntimeException */
     public function testGetStreamThrowsExceptionAfterMoveTo()
     {
+        $this->expectException(RuntimeException::class);
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
         $file = new UploadedFile("", "", 0, $this->tmpName, "");
@@ -68,9 +69,9 @@ class UploadedFileTest extends TestCase
         $file->getStream();
     }
 
-    /** @expectedException \RuntimeException */
     public function testGetStreamThrowsExceptionForNonUploadedFile()
     {
+        $this->expectException(RuntimeException::class);
         UploadedFileState::$php_sapi_name = "apache";
         UploadedFileState::$is_uploaded_file = false;
         $file = new UploadedFile("", "", 0, "", 0);
@@ -106,9 +107,10 @@ class UploadedFileTest extends TestCase
         $this->assertEquals($originalMd5, md5_file($this->movePath));
     }
 
-    /** @expectedException \RuntimeException */
     public function testMoveToThrowsExceptionOnSubsequentCall()
     {
+        $this->expectException(RuntimeException::class);
+
         $content = "Hello, World!";
         file_put_contents($this->tmpName, $content);
 

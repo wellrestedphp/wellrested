@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Dispatching\DispatchException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
@@ -23,7 +24,7 @@ class DispatcherTest extends TestCase
     /** @var ResponseInterface */
     private $stubResponse;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new ServerRequest();
         $this->response = new Response();
@@ -150,9 +151,9 @@ class DispatcherTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    /** @expectedException \WellRESTed\Dispatching\DispatchException */
     public function testThrowsExceptionWhenUnableToDispatch()
     {
+        $this->expectException(DispatchException::class);
         $this->dispatch(null);
     }
 }

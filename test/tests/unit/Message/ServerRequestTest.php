@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Message;
 
+use InvalidArgumentException;
 use WellRESTed\Message\NullStream;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Message\UploadedFile;
@@ -458,11 +459,11 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidUploadedFilesProvider
      */
     public function testWithUploadedFilesThrowsExceptionWithInvalidTree($uploadedFiles)
     {
+        $this->expectException(InvalidArgumentException::class);
         $request = new ServerRequest();
         $request->withUploadedFiles($uploadedFiles);
     }
@@ -552,11 +553,11 @@ class ServerRequestTest extends TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidParsedBodyProvider
      */
     public function testWithParsedBodyThrowsExceptionWithInvalidType($body)
     {
+        $this->expectException(InvalidArgumentException::class);
         $request = new ServerRequest();
         $request->withParsedBody($body);
     }

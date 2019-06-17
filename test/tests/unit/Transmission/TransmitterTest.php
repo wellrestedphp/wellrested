@@ -18,7 +18,7 @@ class TransmitterTest extends TestCase
     private $response;
     private $body;
 
-    public function setUp()
+    public function setUp(): void
     {
         HeaderStack::reset();
 

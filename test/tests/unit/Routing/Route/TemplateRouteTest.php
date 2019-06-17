@@ -11,7 +11,7 @@ class TemplateRouteTest extends TestCase
 {
     private $methodMap;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->methodMap = $this->prophesize(MethodMap::class);
     }
