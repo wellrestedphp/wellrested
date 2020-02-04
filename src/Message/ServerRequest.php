@@ -490,7 +490,13 @@ class ServerRequest extends Request implements ServerRequestInterface
             return $headers;
         }
         else {
-            return apache_request_headers();
+            $headers = apache_request_headers();
+            if (is_array($headers)) {
+                return $headers;
+            }
+            else {
+                return array();
+            }
         }
     }
 
