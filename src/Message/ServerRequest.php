@@ -479,14 +479,19 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getServerRequestHeaders()
     {
-        // http://www.php.net/manual/en/function.getallheaders.php#84262
-        $headers = array();
-        foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === "HTTP_") {
-                $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
+        if (!function_exists('apache_get_version'))  {
+            // http://www.php.net/manual/en/function.getallheaders.php#84262
+            $headers = array();
+            foreach ($_SERVER as $name => $value) {
+                if (substr($name, 0, 5) === "HTTP_") {
+                    $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
+                }
             }
+            return $headers;
         }
-        return $headers;
+        else {
+            return apache_request_headers();
+        }
     }
 
     /**
