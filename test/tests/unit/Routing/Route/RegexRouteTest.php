@@ -87,14 +87,10 @@ class RegexRouteTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
-        Warning::$enabled = false;
-        Notice::$enabled = false;
         $level = error_reporting();
         error_reporting($level & ~E_WARNING);
         $route->matchesRequestTarget('/');
         error_reporting($level);
-        Warning::$enabled = true;
-        Notice::$enabled = true;
     }
 
     public function invalidRouteProvider()

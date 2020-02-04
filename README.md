@@ -1,16 +1,12 @@
 WellRESTed
 ==========
 
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.0-8892BF.svg?style=flat-square)](https://php.net/)
 [![Build Status](https://travis-ci.org/wellrestedphp/wellrested.svg?branch=master)](https://travis-ci.org/wellrestedphp/wellrested)
 [![Documentation Status](https://readthedocs.org/projects/wellrested/badge/?version=latest)](http://wellrested.readthedocs.org/en/latest/)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e/mini.png)](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e)
 
 WellRESTed is a library for creating RESTful Web services and websites in PHP.
-
-Requirements
-------------
-
-- PHP 7.0
 
 Install
 -------
