@@ -121,6 +121,20 @@ class ServerRequestTest extends TestCase
         $this->assertEquals(["application/json"], $request->getHeader("Accept"));
     }
 
+    /**
+     * @backupGlobals enabled
+     */
+    public function testGetServerRequestReaderContentHeaders()
+    {
+        $_SERVER = [
+            "CONTENT_LENGTH" => "1024",
+            "CONTENT_TYPE" => "application/json"
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertEquals("1024", $request->getHeaderLine("Content-length"));
+        $this->assertEquals("application/json", $request->getHeaderLine("Content-type"));
+    }
+
     public function testGetServerRequestReadsBody()
     {
         $body = new NullStream();
