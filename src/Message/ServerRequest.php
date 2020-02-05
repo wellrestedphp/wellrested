@@ -479,25 +479,28 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getServerRequestHeaders()
     {
-        if (!function_exists('apache_get_version'))  {
-            // http://www.php.net/manual/en/function.getallheaders.php#84262
-            $headers = array();
-            foreach ($_SERVER as $name => $value) {
-                if (substr($name, 0, 5) === "HTTP_") {
-                    $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
-                }
-            }
-            return $headers;
-        }
-        else {
-            $headers = apache_request_headers();
-            if (is_array($headers)) {
-                return $headers;
-            }
-            else {
-                return array();
+        // http://www.php.net/manual/en/function.getallheaders.php#84262
+        $headers = array();
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) === "HTTP_") {
+                $name = $this->normalizeHeaderName(substr($name, 5));
+                $headers[$name] = $value;
+            } elseif ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE") {
+                $name = $this->normalizeHeaderName($name);
+                $headers[$name] = $value;
             }
         }
+        return $headers;
+    }
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    private function normalizeHeaderName($name)
+    {
+        $name = ucwords(strtolower(str_replace("_", " ", $name)));
+        return str_replace(" ", "-", $name);
     }
 
     /**
