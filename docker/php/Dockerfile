@@ -1,4 +1,4 @@
-FROM php:7.2-cli
+FROM php:7.4-cli
 
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update && \

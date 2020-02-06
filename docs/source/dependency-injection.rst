@@ -14,7 +14,7 @@ Imaging we have a ``FooHandler`` that depends on a ``BarInterface``, and ``BazIn
         private $bar;
         private $baz;
 
-        public function __construct(BarInterface $bar, BazInterface $bar)
+        public function __construct(BarInterface $bar, BazInterface $baz)
         {
             $this->bar = $bar;
             $this->baz = $baz;

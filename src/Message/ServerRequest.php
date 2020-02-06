@@ -483,10 +483,24 @@ class ServerRequest extends Request implements ServerRequestInterface
         $headers = array();
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) === "HTTP_") {
-                $headers[str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", substr($name, 5)))))] = $value;
+                $name = $this->normalizeHeaderName(substr($name, 5));
+                $headers[$name] = $value;
+            } elseif ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE") {
+                $name = $this->normalizeHeaderName($name);
+                $headers[$name] = $value;
             }
         }
         return $headers;
+    }
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    private function normalizeHeaderName($name)
+    {
+        $name = ucwords(strtolower(str_replace("_", " ", $name)));
+        return str_replace(" ", "-", $name);
     }
 
     /**
