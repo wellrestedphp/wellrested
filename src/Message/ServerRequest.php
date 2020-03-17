@@ -485,12 +485,23 @@ class ServerRequest extends Request implements ServerRequestInterface
             if (substr($name, 0, 5) === "HTTP_") {
                 $name = $this->normalizeHeaderName(substr($name, 5));
                 $headers[$name] = $value;
-            } elseif ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE") {
+            } elseif ($this->isContentHeader($name, $value)) {
                 $name = $this->normalizeHeaderName($name);
                 $headers[$name] = $value;
             }
         }
         return $headers;
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     * @return bool
+     */
+    private function isContentHeader($name, $value)
+    {
+        return ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE")
+            && trim($value);
     }
 
     /**

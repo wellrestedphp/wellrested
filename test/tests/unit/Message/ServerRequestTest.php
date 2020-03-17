@@ -135,6 +135,20 @@ class ServerRequestTest extends TestCase
         $this->assertEquals("application/json", $request->getHeaderLine("Content-type"));
     }
 
+    /**
+     * @backupGlobals enabled
+     */
+    public function testGetServerRequestDoesNotReadEmptyContentHeaders()
+    {
+        $_SERVER = [
+            "CONTENT_LENGTH" => "",
+            "CONTENT_TYPE" => " "
+        ];
+        $request = ServerRequest::getServerRequest();
+        $this->assertFalse($request->hasHeader("Content-length"));
+        $this->assertFalse($request->hasHeader("Content-type"));
+    }
+
     public function testGetServerRequestReadsBody()
     {
         $body = new NullStream();
