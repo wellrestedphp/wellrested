@@ -10,11 +10,13 @@ use WellRESTed\Test\TestCase;
 class StreamTest extends TestCase
 {
     private $resource;
+    private $resourceDevNull;
     private $content = "Hello, world!";
 
     public function setUp(): void
     {
         $this->resource = fopen("php://memory", "w+");
+        $this->resourceDevNull = fopen("/dev/null", "r");
         fwrite($this->resource, $this->content);
     }
 
@@ -39,6 +41,7 @@ class StreamTest extends TestCase
 
     /**
      * @dataProvider invalidResourceProvider
+     * @param mixed $resource
      */
     public function testThrowsExceptionWithInvalidResource($resource)
     {
@@ -88,11 +91,24 @@ class StreamTest extends TestCase
         $this->assertEquals(strlen($this->content), $stream->getSize());
     }
 
+    public function testReturnsNullForSizeWhenUnableToReadFromFstat()
+    {
+        $stream = new Stream($this->resourceDevNull);
+        $this->assertNull($stream->getSize());
+    }
+
     public function testTellReturnsHandlePosition()
     {
         $stream = new Stream($this->resource);
         fseek($this->resource, 10);
         $this->assertEquals(10, $stream->tell());
+    }
+
+    public function testTellThrowsRuntimeExceptionWhenUnableToReadStreamPosition()
+    {
+        $stream = new Stream($this->resourceDevNull);
+        $this->expectException(RuntimeException::class);
+        $stream->tell();
     }
 
     public function testReturnsOef()
@@ -118,12 +134,26 @@ class StreamTest extends TestCase
         $this->assertEquals(10, ftell($this->resource));
     }
 
+    public function testSeekThrowsRuntimeExceptionWhenUnableToSeek()
+    {
+        $stream = new Stream($this->resourceDevNull);
+        $this->expectException(RuntimeException::class);
+        $stream->seek(10);
+    }
+
     public function testRewindReturnsToBeginning()
     {
         $stream = new Stream($this->resource);
         $stream->seek(10);
         $stream->rewind();
         $this->assertEquals(0, ftell($this->resource));
+    }
+
+    public function testRewindThrowsRuntimeExceptionWhenUnableToRewind()
+    {
+        $stream = new Stream($this->resourceDevNull);
+        $this->expectException(RuntimeException::class);
+        $stream->rewind();
     }
 
     public function testWritesToHandle()
@@ -190,7 +220,12 @@ class StreamTest extends TestCase
         $this->assertEquals($metadata["mode"], $stream->getMetadata("mode"));
     }
 
-    /** @dataProvider modeProvider */
+    /**
+     * @dataProvider modeProvider
+     * @param string $mode Access type used to open the stream
+     * @param bool $readable The stream should be readable
+     * @param bool $writable The stream should be writeable
+     */
     public function testReturnsIsReadableForReadableStreams($mode, $readable, $writable)
     {
         $tmp = tempnam(sys_get_temp_dir(), "php");
@@ -202,7 +237,12 @@ class StreamTest extends TestCase
         $this->assertEquals($readable, $stream->isReadable());
     }
 
-    /** @dataProvider modeProvider */
+    /**
+     * @dataProvider modeProvider
+     * @param string $mode Access type used to open the stream
+     * @param bool $readable The stream should be readable
+     * @param bool $writable The stream should be writeable
+     */
     public function testReturnsIsWritableForWritableStreams($mode, $readable, $writable)
     {
         $tmp = tempnam(sys_get_temp_dir(), "php");

@@ -92,7 +92,10 @@ class Stream implements StreamInterface
     public function getSize()
     {
         $statistics = fstat($this->resource);
-        return $statistics["size"] ?: null;
+        if ($statistics && $statistics["size"]) {
+            return $statistics["size"];
+        }
+        return null;
     }
 
     /**
@@ -105,9 +108,7 @@ class Stream implements StreamInterface
     {
         $position = ftell($this->resource);
         if ($position === false) {
-            // @codeCoverageIgnoreStart
             throw new \RuntimeException("Unable to retrieve current position of file pointer.");
-            // @codeCoverageIgnoreEnd
         }
         return $position;
     }
@@ -151,9 +152,7 @@ class Stream implements StreamInterface
             $result = fseek($this->resource, $offset, $whence);
         }
         if ($result === -1) {
-            // @codeCoverageIgnoreStart
             throw new \RuntimeException("Unable to seek to position.");
-            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -174,9 +173,7 @@ class Stream implements StreamInterface
             $result = rewind($this->resource);
         }
         if ($result === false) {
-            // @codeCoverageIgnoreStart
             throw new \RuntimeException("Unable to seek to position.");
-            // @codeCoverageIgnoreEnd
         }
     }
 
