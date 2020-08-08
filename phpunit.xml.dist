@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-        bootstrap="test/bootstrap.php"
-        colors="true"
-        convertErrorsToExceptions="true"
-        convertNoticesToExceptions="true"
-        convertWarningsToExceptions="true"
-        processIsolation="false"
-        stopOnFailure="false"
-        verbose="true"
-        >
-    <testsuites>
-        <testsuite name="unit">
-            <directory>./test/tests/unit</directory>
-        </testsuite>
-        <testsuite name="integration">
-            <directory>./test/tests/integration</directory>
-        </testsuite>
-    </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./src</directory>
-        </whitelist>
-    </filter>
-    <logging>
-        <log type="coverage-html" target="./public/coverage" />
-    </logging>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         verbose="true"
+>
+	<coverage>
+		<include>
+			<directory suffix=".php">./src</directory>
+		</include>
+		<report>
+			<html outputDirectory="./public/coverage"/>
+		</report>
+	</coverage>
+	<testsuites>
+		<testsuite name="unit">
+			<directory>./test/tests/unit</directory>
+		</testsuite>
+		<testsuite name="integration">
+			<directory>./test/tests/integration</directory>
+		</testsuite>
+	</testsuites>
+	<logging/>
 </phpunit>
