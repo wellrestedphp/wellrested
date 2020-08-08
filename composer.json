@@ -19,7 +19,8 @@
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpunit/phpunit": "^9"
+        "phpunit/phpunit": "^9",
+        "vimeo/psalm": "^3.4"
     },
     "autoload": {
         "psr-4": {

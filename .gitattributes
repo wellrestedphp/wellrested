@@ -8,4 +8,5 @@
 /docs               export-ignore
 /test               export-ignore
 /phpunit.xml.dist   export-ignore
+/psalm.xnk          export-ignore
 /public             export-ignore
