@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\PrefixRoute;
 use WellRESTed\Routing\Route\RouteInterface;
@@ -9,6 +10,8 @@ use WellRESTed\Test\TestCase;
 
 class PrefixRouteTest extends TestCase
 {
+    use ProphecyTrait;
+    
     public function testTrimsAsteriskFromEndOfTarget()
     {
         $methodMap = $this->prophesize(MethodMap::class);

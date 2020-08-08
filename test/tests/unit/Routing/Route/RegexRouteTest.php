@@ -2,8 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
-use PHPUnit\Framework\Error\Notice;
-use PHPUnit\Framework\Error\Warning;
+use Prophecy\PhpUnit\ProphecyTrait;
 use RuntimeException;
 use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\RegexRoute;
@@ -12,6 +11,8 @@ use WellRESTed\Test\TestCase;
 
 class RegexRouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $methodMap;
 
     public function setUp(): void

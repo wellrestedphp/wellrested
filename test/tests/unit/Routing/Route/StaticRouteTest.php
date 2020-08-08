@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\StaticRoute;
@@ -9,6 +10,8 @@ use WellRESTed\Test\TestCase;
 
 class StaticRouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testReturnsStaticType()
     {
         $methodMap = $this->prophesize(MethodMap::class);

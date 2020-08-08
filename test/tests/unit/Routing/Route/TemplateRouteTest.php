@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Routing\Route\MethodMap;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Route\TemplateRoute;
@@ -9,6 +10,8 @@ use WellRESTed\Test\TestCase;
 
 class TemplateRouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $methodMap;
 
     public function setUp(): void

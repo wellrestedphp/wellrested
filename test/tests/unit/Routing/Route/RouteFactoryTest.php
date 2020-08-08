@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Test\Unit\Routing\Route;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteInterface;
@@ -9,6 +10,8 @@ use WellRESTed\Test\TestCase;
 
 class RouteFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $dispatcher;
 
     public function setUp(): void

@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Routing;
 
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -14,6 +15,8 @@ use WellRESTed\Test\TestCase;
 
 class RouterTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $factory;
     private $request;
     private $response;

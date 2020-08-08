@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Routing\Route;
 
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -12,6 +13,8 @@ use WellRESTed\Test\TestCase;
 
 class RouteTest extends TestCase
 {
+    use ProphecyTrait;
+
     const TARGET = '/target';
 
     private $methodMap;

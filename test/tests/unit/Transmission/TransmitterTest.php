@@ -3,6 +3,7 @@
 namespace WellRESTed\Test\Unit\Transmission;
 
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\StreamInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -14,6 +15,8 @@ require_once __DIR__ . "/../../../src/HeaderStack.php";
 
 class TransmitterTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $request;
     private $response;
     private $body;
