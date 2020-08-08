@@ -51,9 +51,10 @@ class NullStream implements StreamInterface
     }
 
     /**
-     * Returns 0
+     * Returns the current position of the file read/write pointer
      *
-     * @return int|bool Position of the file pointer or false on error.
+     * @return int Position of the file pointer
+     * @throws \RuntimeException on error.
      */
     public function tell()
     {

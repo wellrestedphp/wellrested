@@ -26,7 +26,7 @@ class DispatchStack implements DispatchStackInterface
      * Push a new middleware onto the stack.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return self
+     * @return static
      */
     public function add($middleware)
     {

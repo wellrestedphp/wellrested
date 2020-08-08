@@ -212,7 +212,7 @@ class Request extends Message implements RequestInterface
 
     /**
      * @param string $method
-     * @return static
+     * @return string
      * @throws \InvalidArgumentException
      */
     private function getValidatedMethod($method)

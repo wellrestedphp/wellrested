@@ -101,7 +101,7 @@ abstract class Message implements MessageInterface
      * While header names are not case-sensitive, getHeaders() will preserve the
      * exact case in which headers were originally specified.
      *
-     * @return array Returns an associative array of the message's headers.
+     * @return string[][] Returns an associative array of the message's headers.
      */
     public function getHeaders()
     {

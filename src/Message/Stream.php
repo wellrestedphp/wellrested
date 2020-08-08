@@ -67,7 +67,9 @@ class Stream implements StreamInterface
      */
     public function close()
     {
-        fclose($this->resource);
+        $resource = $this->resource;
+        fclose($resource);
+        $this->resource = null;
     }
 
     /**
@@ -79,9 +81,9 @@ class Stream implements StreamInterface
      */
     public function detach()
     {
-        $stream = $this->resource;
+        $resource = $this->resource;
         $this->resource = null;
-        return $stream;
+        return $resource;
     }
 
     /**

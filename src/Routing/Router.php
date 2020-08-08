@@ -203,7 +203,7 @@ class Router
     }
 
     /**
-     * @param DispatcherInterface
+     * @param DispatcherInterface $dispatcher
      * @return RouteFactoryInterface
      */
     protected function getRouteFactory($dispatcher)
@@ -266,21 +266,21 @@ class Router
             }
         );
 
-        if ($matches) {
-            if (count($matches) > 0) {
-                // If there are multiple matches, sort them to find the one with
-                // the longest string length.
-                $compareByLength = function ($a, $b) {
-                    return strlen($b) - strlen($a);
-                };
-                usort($matches, $compareByLength);
-            }
-            /** @var string $bestMatch */
-            $bestMatch = $matches[0];
-            $route = $this->prefixRoutes[$bestMatch];
-            return $route;
+        if (!$matches) {
+            return null;
         }
-        return null;
+
+        // If there are multiple matches, sort them to find the one with the
+        // longest string length.
+        if (count($matches) > 1) {
+            $compareByLength = function ($a, $b) {
+                return strlen($b) - strlen($a);
+            };
+            usort($matches, $compareByLength);
+        }
+
+        $bestMatch = $matches[0];
+        return $this->prefixRoutes[$bestMatch];
     }
 
     private function startsWith($haystack, $needle)
