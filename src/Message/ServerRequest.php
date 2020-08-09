@@ -5,6 +5,7 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -336,9 +337,13 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // ------------------------------------------------------------------------
 
-    protected function readFromServerRequest(array $attributes = null)
+    /**
+     * @param array $attributes
+     * @return void
+     */
+    protected function readFromServerRequest(array $attributes = [])
     {
-        $this->attributes = $attributes ?: [];
+        $this->attributes = $attributes;
         $this->serverParams = $_SERVER;
         $this->cookieParams = $_COOKIE;
         $this->readUploadedFiles($_FILES);
@@ -367,7 +372,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
     }
 
-    protected function readUploadedFiles($input)
+    protected function readUploadedFiles(array $input): void
     {
         $uploadedFiles = [];
         foreach ($input as $name => $value) {
@@ -376,8 +381,11 @@ class ServerRequest extends Request implements ServerRequestInterface
         $this->uploadedFiles = $uploadedFiles;
     }
 
-    protected function addUploadedFilesToBranch(&$branch, $name, $value)
-    {
+    protected function addUploadedFilesToBranch(
+        array &$branch,
+        string $name,
+        array $value
+    ): void {
         // Check for each of the expected keys.
         if (isset($value["name"], $value["type"], $value["tmp_name"], $value["error"], $value["size"])) {
             // This is a file. It may be a single file, or a list of files.
@@ -419,7 +427,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
     }
 
-    protected function readUri()
+    protected function readUri(): UriInterface
     {
         $uri = "";
 
@@ -449,7 +457,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      * @return static
      * @static
      */
-    public static function getServerRequest(array $attributes = null)
+    public static function getServerRequest(array $attributes = [])
     {
         $request = new static();
         $request->readFromServerRequest($attributes);
@@ -480,28 +488,22 @@ class ServerRequest extends Request implements ServerRequestInterface
     protected function getServerRequestHeaders()
     {
         // http://www.php.net/manual/en/function.getallheaders.php#84262
-        $headers = array();
+        $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) === "HTTP_") {
                 $name = $this->normalizeHeaderName(substr($name, 5));
-                $headers[$name] = $value;
-            } elseif ($this->isContentHeader($name, $value)) {
+                $headers[$name] = trim($value);
+            } elseif ($this->isContentHeader($name) && !empty(trim($value))) {
                 $name = $this->normalizeHeaderName($name);
-                $headers[$name] = $value;
+                $headers[$name] = trim($value);
             }
         }
         return $headers;
     }
 
-    /**
-     * @param $name
-     * @param $value
-     * @return bool
-     */
-    private function isContentHeader($name, $value)
+    private function isContentHeader(string $name): bool
     {
-        return ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE")
-            && trim($value);
+        return ($name === 'CONTENT_LENGTH' || $name === 'CONTENT_TYPE');
     }
 
     /**
@@ -540,7 +542,11 @@ class ServerRequest extends Request implements ServerRequestInterface
         return true;
     }
 
-    private function isValidUploadedFilesBranch($branch)
+    /**
+     * @param UploadedFileInterface|array $branch
+     * @return bool
+     */
+    private function isValidUploadedFilesBranch($branch): bool
     {
         if (is_array($branch)) {
             // Branch.

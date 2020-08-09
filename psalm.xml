@@ -13,4 +13,16 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <DocblockTypeContradiction>
+            <errorLevel type="suppress">
+                <file name="src/Message/ServerRequest.php" />
+            </errorLevel>
+        </DocblockTypeContradiction>
+        <MissingClosureParamType>
+            <errorLevel type="suppress">
+                <file name="src/Message/Message.php" />
+            </errorLevel>
+        </MissingClosureParamType>
+    </issueHandlers>
 </psalm>

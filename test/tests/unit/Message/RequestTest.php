@@ -19,32 +19,39 @@ class RequestTest extends TestCase
         $this->assertNotNull($request);
     }
 
+    public function testCreatesInstanceWithMethod()
+    {
+        $method = 'POST';
+        $request = new Request($method);
+        $this->assertSame($method, $request->getMethod());
+    }
+
     public function testCreatesInstanceWithUri()
     {
         $uri = new Uri();
-        $request = new Request($uri);
+        $request = new Request('GET', $uri);
         $this->assertSame($uri, $request->getUri());
     }
 
-    public function testCreatesInstanceWithMethod()
+    public function testCreatesInstanceWithStringUri()
     {
-        $method = "POST";
-        $request = new Request(null, $method);
-        $this->assertSame($method, $request->getMethod());
+        $uri = 'http://localhost:8080';
+        $request = new Request('GET', $uri);
+        $this->assertSame($uri, (string) $request->getUri());
     }
 
     public function testSetsHeadersOnConstruction()
     {
-        $request = new Request(null, null, [
-            "X-foo" => ["bar","baz"]
+        $request = new Request('GET', '/', [
+            'X-foo' => ['bar', 'baz']
         ]);
-        $this->assertEquals(["bar","baz"], $request->getHeader("X-foo"));
+        $this->assertEquals(['bar', 'baz'], $request->getHeader('X-foo'));
     }
 
     public function testSetsBodyOnConstruction()
     {
         $body = new NullStream();
-        $request = new Request(null, null, [], $body);
+        $request = new Request('GET', '/', [], $body);
         $this->assertSame($body, $request->getBody());
     }
 

@@ -28,11 +28,13 @@ abstract class Message implements MessageInterface
      *
      * @param array $headers Associative array with header field names as
      *     (string) keys and lists of header field values (string[]) as values.
-     * @param StreamInterface $body A stream representation of the message
+     * @param StreamInterface|null $body A stream representation of the message
      *     entity body
      */
-    public function __construct(array $headers = null, StreamInterface $body = null)
-    {
+    public function __construct(
+        array $headers = [],
+        ?StreamInterface $body = null
+    ) {
         $this->headers = new HeaderCollection();
         if ($headers) {
             foreach ($headers as $name => $values) {
@@ -265,22 +267,32 @@ abstract class Message implements MessageInterface
 
     // ------------------------------------------------------------------------
 
-    private function getValidatedHeaders($name, $value)
+    /**
+     * @param mixed $name
+     * @param mixed|mixed[] $values
+     * @return string[]
+     * @throws \InvalidArgumentException Name is not a string or value is not
+     *   a string or array of strings
+     */
+    private function getValidatedHeaders($name, $values)
     {
-        $is_allowed = function ($item) {
-            return is_string($item) || is_numeric($item);
-        };
-
         if (!is_string($name)) {
             throw new \InvalidArgumentException('Header name must be a string');
         }
 
-        if ($is_allowed($value)) {
-            return [$value];
-        } elseif (is_array($value) && count($value) === count(array_filter($value, $is_allowed))) {
-            return $value;
-        } else {
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+
+        $isNotStringOrNumber = function ($item): bool {
+            return !(is_string($item) || is_numeric($item));
+        };
+
+        $invalid = array_filter($values, $isNotStringOrNumber);
+        if ($invalid) {
             throw new \InvalidArgumentException('Header values must be a string or string[]');
         }
+
+        return array_map('strval', $values);
     }
 }

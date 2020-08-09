@@ -36,10 +36,13 @@ class Response extends Message implements ResponseInterface
      * @see \WellRESTed\Message\Message
      * @param int $statusCode
      * @param array $headers
-     * @param StreamInterface $body
+     * @param StreamInterface|null $body
      */
-    public function __construct($statusCode = 500, array $headers = null, StreamInterface $body = null)
-    {
+    public function __construct(
+        int $statusCode = 500,
+        array $headers = [],
+        ?StreamInterface $body = null
+    ) {
         parent::__construct($headers, $body);
         $this->statusCode = $statusCode;
         $this->reasonPhrase = $this->getDefaultReasonPhraseForStatusCode($statusCode);

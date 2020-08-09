@@ -22,7 +22,7 @@ class Request extends Message implements RequestInterface
 {
     /** @var string  */
     protected $method;
-    /** @var string */
+    /** @var string|null */
     protected $requestTarget;
     /** @var UriInterface */
     protected $uri;
@@ -33,26 +33,24 @@ class Request extends Message implements RequestInterface
      * Create a new Request.
      *
      * @see \WellRESTed\Message\Message
-     * @param UriInterface $uri
+     * @param string|UriInterface $uri
      * @param string $method
      * @param array $headers
-     * @param StreamInterface $body
+     * @param StreamInterface|null $body
      */
     public function __construct(
-        UriInterface $uri = null,
-        $method = "GET",
-        array $headers = null,
-        StreamInterface $body = null
+        string $method = 'GET',
+        $uri = '',
+        array $headers = [],
+        ?StreamInterface $body = null
     ) {
         parent::__construct($headers, $body);
-
-        if ($uri !== null) {
-            $this->uri = $uri;
-        } else {
-            $this->uri = new Uri();
-        }
-
         $this->method = $method;
+        if (!($uri instanceof UriInterface)) {
+            $uri = new Uri($uri);
+        }
+        $this->uri = $uri;
+        $this->requestTarget = null;
     }
 
     public function __clone()
@@ -83,7 +81,7 @@ class Request extends Message implements RequestInterface
     public function getRequestTarget()
     {
         // Use the explicitly set request target first.
-        if (isset($this->requestTarget)) {
+        if ($this->requestTarget !== null) {
             return $this->requestTarget;
         }
 
@@ -211,7 +209,7 @@ class Request extends Message implements RequestInterface
     // ------------------------------------------------------------------------
 
     /**
-     * @param string $method
+     * @param mixed $method
      * @return string
      * @throws \InvalidArgumentException
      */
