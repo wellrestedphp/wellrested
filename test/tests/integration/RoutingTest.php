@@ -185,7 +185,7 @@ class TransmitterMock implements TransmitterInterface
     public function transmit(
         ServerRequestInterface $request,
         ResponseInterface $response
-    ) {
+    ): void {
         $this->response = $response;
     }
 }
