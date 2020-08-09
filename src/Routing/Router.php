@@ -48,8 +48,10 @@ class Router
      *     Attribute name for matched path variables. A null value sets
      *     attributes directly.
      */
-    public function __construct($dispatcher = null, $pathVariablesAttributeName = null)
-    {
+    public function __construct(
+        ?DispatcherInterface $dispatcher = null,
+        ?string $pathVariablesAttributeName = null
+    ) {
         $this->dispatcher = $dispatcher ?: $this->getDefaultDispatcher();
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
         $this->factory = $this->getRouteFactory($this->dispatcher);
@@ -63,8 +65,8 @@ class Router
     public function __invoke(
         ServerRequestInterface $request,
         ResponseInterface $response,
-        $next
-    ) {
+        callable $next
+    ): ResponseInterface {
         // Use only the path for routing.
         $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
 
@@ -101,11 +103,11 @@ class Router
     }
 
     private function dispatch(
-        $route,
+        callable $route,
         ServerRequestInterface $request,
         ResponseInterface $response,
-        $next
-    ) {
+        callable $next
+    ): ResponseInterface {
         if (!$this->stack) {
             return $route($request, $response, $next);
         }
@@ -145,12 +147,12 @@ class Router
      * - An array containing any of the items in this list.
      * @see DispatchedInterface::dispatch
      *
-     * @param string $target Request target or pattern to match
      * @param string $method HTTP method(s) to match
+     * @param string $target Request target or pattern to match
      * @param mixed $dispatchable Handler or middleware to dispatch
      * @return static
      */
-    public function register($method, $target, $dispatchable)
+    public function register(string $method, string $target, $dispatchable): Router
     {
         $route = $this->getRouteForTarget($target);
         $route->register($method, $dispatchable);
@@ -174,7 +176,7 @@ class Router
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return static
      */
-    public function add($middleware)
+    public function add($middleware): Router
     {
         $this->stack[] = $middleware;
         return $this;
@@ -186,38 +188,23 @@ class Router
      *
      * @return static
      */
-    public function continueOnNotFound()
+    public function continueOnNotFound(): Router
     {
         $this->continueOnNotFound = true;
         return $this;
     }
 
-    /**
-     * Return an instance to dispatch middleware.
-     *
-     * @return DispatcherInterface
-     */
-    protected function getDefaultDispatcher()
+    protected function getDefaultDispatcher(): DispatcherInterface
     {
         return new Dispatcher();
     }
 
-    /**
-     * @param DispatcherInterface $dispatcher
-     * @return RouteFactoryInterface
-     */
-    protected function getRouteFactory($dispatcher)
+    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactoryInterface
     {
         return new RouteFactory($dispatcher);
     }
 
-    /**
-     * Return the route for a given target.
-     *
-     * @param $target
-     * @return RouteInterface
-     */
-    private function getRouteForTarget($target)
+    private function getRouteForTarget(string $target): RouteInterface
     {
         if (isset($this->routes[$target])) {
             $route = $this->routes[$target];
@@ -228,7 +215,7 @@ class Router
         return $route;
     }
 
-    private function registerRouteForTarget($route, $target)
+    private function registerRouteForTarget(RouteInterface $route, string $target): void
     {
         // Store the route to the hash indexed by original target.
         $this->routes[$target] = $route;
@@ -247,7 +234,7 @@ class Router
         }
     }
 
-    private function getStaticRoute($requestTarget)
+    private function getStaticRoute(string $requestTarget): ?RouteInterface
     {
         if (isset($this->staticRoutes[$requestTarget])) {
             return $this->staticRoutes[$requestTarget];
@@ -255,7 +242,7 @@ class Router
         return null;
     }
 
-    private function getPrefixRoute($requestTarget)
+    private function getPrefixRoute(string $requestTarget): ?RouteInterface
     {
         // Find all prefixes that match the start of this path.
         $prefixes = array_keys($this->prefixRoutes);
@@ -273,7 +260,7 @@ class Router
         // If there are multiple matches, sort them to find the one with the
         // longest string length.
         if (count($matches) > 1) {
-            $compareByLength = function ($a, $b) {
+            $compareByLength = function (string $a, string $b): int {
                 return strlen($b) - strlen($a);
             };
             usort($matches, $compareByLength);
@@ -283,7 +270,7 @@ class Router
         return $this->prefixRoutes[$bestMatch];
     }
 
-    private function startsWith($haystack, $needle)
+    private function startsWith(string $haystack, string $needle): bool
     {
         $length = strlen($needle);
         return (substr($haystack, 0, $length) === $needle);

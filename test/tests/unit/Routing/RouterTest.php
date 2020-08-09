@@ -5,9 +5,11 @@ namespace WellRESTed\Test\Unit\Routing;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Dispatching\Dispatcher;
+use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\RouteFactory;
+use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Routing\Router;
 use WellRESTed\Test\Doubles\NextMock;
@@ -30,7 +32,7 @@ class RouterTest extends TestCase
 
         $this->route = $this->prophesize(RouteInterface::class);
         $this->route->__invoke(Argument::cetera())->willReturn(new Response());
-        $this->route->register(Argument::cetera())->willReturn();
+        $this->route->register(Argument::cetera());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $this->route->getTarget()->willReturn("/");
         $this->route->getPathVariables()->willReturn([]);
@@ -134,13 +136,13 @@ class RouterTest extends TestCase
     public function testDispatchesStaticRouteBeforePrefixRoute()
     {
         $staticRoute = $this->prophesize(RouteInterface::class);
-        $staticRoute->register(Argument::cetera())->willReturn();
+        $staticRoute->register(Argument::cetera());
         $staticRoute->getTarget()->willReturn("/cats/");
         $staticRoute->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $staticRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $prefixRoute = $this->prophesize(RouteInterface::class);
-        $prefixRoute->register(Argument::cetera())->willReturn();
+        $prefixRoute->register(Argument::cetera());
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -163,13 +165,13 @@ class RouterTest extends TestCase
         // Note: The longest route is also good for 2 points in Settlers of Catan.
 
         $shortRoute = $this->prophesize(RouteInterface::class);
-        $shortRoute->register(Argument::cetera())->willReturn();
+        $shortRoute->register(Argument::cetera());
         $shortRoute->getTarget()->willReturn("/animals/*");
         $shortRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $shortRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $longRoute = $this->prophesize(RouteInterface::class);
-        $longRoute->register(Argument::cetera())->willReturn();
+        $longRoute->register(Argument::cetera());
         $longRoute->getTarget()->willReturn("/animals/cats/*");
         $longRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $longRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -191,13 +193,13 @@ class RouterTest extends TestCase
     public function testDispatchesPrefixRouteBeforePatternRoute()
     {
         $prefixRoute = $this->prophesize(RouteInterface::class);
-        $prefixRoute->register(Argument::cetera())->willReturn();
+        $prefixRoute->register(Argument::cetera());
         $prefixRoute->getTarget()->willReturn("/cats/*");
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute = $this->prophesize(RouteInterface::class);
-        $patternRoute->register(Argument::cetera())->willReturn();
+        $patternRoute->register(Argument::cetera());
         $patternRoute->getTarget()->willReturn("/cats/{id}");
         $patternRoute->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute->__invoke(Argument::cetera())->willReturn(new Response());
@@ -218,7 +220,7 @@ class RouterTest extends TestCase
     public function testDispatchesFirstMatchingPatternRoute()
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
-        $patternRoute1->register(Argument::cetera())->willReturn();
+        $patternRoute1->register(Argument::cetera());
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
@@ -226,7 +228,7 @@ class RouterTest extends TestCase
         $patternRoute1->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
-        $patternRoute2->register(Argument::cetera())->willReturn();
+        $patternRoute2->register(Argument::cetera());
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
@@ -249,7 +251,7 @@ class RouterTest extends TestCase
     public function testStopsTestingPatternsAfterFirstSuccessfulMatch()
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
-        $patternRoute1->register(Argument::cetera())->willReturn();
+        $patternRoute1->register(Argument::cetera());
         $patternRoute1->getTarget()->willReturn("/cats/{id}");
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
@@ -257,7 +259,7 @@ class RouterTest extends TestCase
         $patternRoute1->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
-        $patternRoute2->register(Argument::cetera())->willReturn();
+        $patternRoute2->register(Argument::cetera());
         $patternRoute2->getTarget()->willReturn("/cats/{name}");
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
@@ -447,7 +449,7 @@ class RouterWithFactory extends Router
 {
     static $routeFactory;
 
-    protected function getRouteFactory($dispatcher)
+    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactoryInterface
     {
         return self::$routeFactory;
     }
