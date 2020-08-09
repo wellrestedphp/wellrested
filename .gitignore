@@ -18,9 +18,5 @@ preview
 # PhpStorm
 workspace.xml
 
-# Vagrant
-.vagrant/
-
-# Vagrant sandbox site files.
-/htdocs/
-/autoload/
+# Local scratch files
+notes
