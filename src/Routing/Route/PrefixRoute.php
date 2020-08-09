@@ -4,12 +4,12 @@ namespace WellRESTed\Routing\Route;
 
 class PrefixRoute extends Route
 {
-    public function __construct($target, $methodMap)
+    public function __construct(string $target, MethodMap $methodMap)
     {
         parent::__construct(rtrim($target, "*"), $methodMap);
     }
 
-    public function getType()
+    public function getType(): int
     {
         return RouteInterface::TYPE_PREFIX;
     }
@@ -20,7 +20,7 @@ class PrefixRoute extends Route
      * @param string $requestTarget
      * @return boolean
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         return strrpos($requestTarget, $this->target, -strlen($requestTarget)) !== false;
     }
@@ -28,7 +28,7 @@ class PrefixRoute extends Route
     /**
      * Always returns an empty array.
      */
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
         return [];
     }

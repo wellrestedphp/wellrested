@@ -8,7 +8,9 @@ use WellRESTed\Dispatching\DispatcherInterface;
 
 class MethodMap
 {
+    /** @var DispatcherInterface */
     private $dispatcher;
+    /** @var array */
     private $map;
 
     // ------------------------------------------------------------------------
@@ -39,7 +41,7 @@ class MethodMap
      * @param string $method
      * @param mixed $dispatchable
      */
-    public function register($method, $dispatchable)
+    public function register($method, $dispatchable): void
     {
         $methods = explode(",", $method);
         $methods = array_map("trim", $methods);
@@ -90,13 +92,16 @@ class MethodMap
 
     // ------------------------------------------------------------------------
 
-    private function addAllowHeader(ResponseInterface $response)
+    private function addAllowHeader(ResponseInterface $response): ResponseInterface
     {
         $methods = join(",", $this->getAllowedMethods());
         return $response->withHeader("Allow", $methods);
     }
 
-    private function getAllowedMethods()
+    /**
+     * @return string[]
+     */
+    private function getAllowedMethods(): array
     {
         $methods = array_keys($this->map);
         // Add HEAD if GET is allowed and HEAD is not present.
@@ -111,16 +116,16 @@ class MethodMap
     }
 
     /**
-     * @param $middleware
+     * @param mixed $middleware
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
-     * @param $next
+     * @param callable $next
      * @return ResponseInterface
      */
     private function dispatchMiddleware(
         $middleware,
         ServerRequestInterface $request,
-        ResponseInterface &$response,
+        ResponseInterface $response,
         $next
     ) {
         return $this->dispatcher->dispatch($middleware, $request, $response, $next);

@@ -57,7 +57,7 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider nonMatchingTargetProvider */
     public function testFailsToMatchNonMatchingTarget($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertFalse($route->matchesRequestTarget($target));
     }
 
@@ -77,14 +77,14 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider simpleStringProvider */
     public function testMatchesSimpleStrings($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
     /** @dataProvider simpleStringProvider */
     public function testCapturesFromSimpleStrings($template, $target, $variables)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
@@ -106,14 +106,14 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider reservedStringProvider */
     public function testMatchesReservedStrings($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
     /** @dataProvider reservedStringProvider */
     public function testCapturesFromReservedStrings($template, $target, $variables)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertSame($this->getExpectedValues($variables), $route->getPathVariables());
     }
@@ -133,14 +133,14 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider labelWithDotPrefixProvider */
     public function testMatchesLabelWithDotPrefix($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
     /** @dataProvider labelWithDotPrefixProvider */
     public function testCapturesFromLabelWithDotPrefix($template, $target, $variables)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
@@ -160,14 +160,14 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider pathSegmentProvider */
     public function testMatchesPathSegments($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
     /** @dataProvider pathSegmentProvider */
     public function testCapturesFromPathSegments($template, $target, $variables)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
@@ -187,14 +187,14 @@ class TemplateRouteTest extends TestCase
     /** @dataProvider pathExplosionProvider */
     public function testMatchesExplosion($template, $target)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
     /** @dataProvider pathExplosionProvider */
     public function testCapturesFromExplosion($template, $target, $variables)
     {
-        $route = new TemplateRoute($template, $this->methodMap);
+        $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }

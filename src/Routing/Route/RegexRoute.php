@@ -4,9 +4,10 @@ namespace WellRESTed\Routing\Route;
 
 class RegexRoute extends Route
 {
-    private $captures;
+    /** @var array */
+    private $captures = [];
 
-    public function getType()
+    public function getType(): int
     {
         return RouteInterface::TYPE_PATTERN;
     }
@@ -17,7 +18,7 @@ class RegexRoute extends Route
      * @param string $requestTarget
      * @return boolean
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         $this->captures = [];
         $matched = preg_match($this->getTarget(), $requestTarget, $captures);
@@ -36,7 +37,7 @@ class RegexRoute extends Route
      * @see \preg_match
      * @return array
      */
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
         return $this->captures;
     }

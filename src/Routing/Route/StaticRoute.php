@@ -4,7 +4,7 @@ namespace WellRESTed\Routing\Route;
 
 class StaticRoute extends Route
 {
-    public function getType()
+    public function getType(): int
     {
         return RouteInterface::TYPE_STATIC;
     }
@@ -15,7 +15,7 @@ class StaticRoute extends Route
      * @param string $requestTarget
      * @return boolean
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         return $requestTarget === $this->getTarget();
     }
@@ -23,7 +23,7 @@ class StaticRoute extends Route
     /**
      * Always returns an empty array.
      */
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
         return [];
     }

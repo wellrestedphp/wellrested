@@ -34,7 +34,7 @@ interface RouteInterface extends MiddlewareInterface
      *
      * @return int One of the RouteInterface::TYPE_ constants.
      */
-    public function getType();
+    public function getType(): int;
 
     /**
      * Return an array of variables extracted from the path most recently
@@ -45,7 +45,7 @@ interface RouteInterface extends MiddlewareInterface
      *
      * @return array
      */
-    public function getPathVariables();
+    public function getPathVariables(): array;
 
     /**
      * Examines a request target to see if it is a match for the route.
@@ -55,7 +55,7 @@ interface RouteInterface extends MiddlewareInterface
      * @throw  \RuntimeException Error occurred testing the target such as an
      *      invalid regular expression
      */
-    public function matchesRequestTarget($requestTarget);
+    public function matchesRequestTarget(string $requestTarget): bool;
 
     /**
      * Register a dispatchable (handler or middleware) with a method.
@@ -71,5 +71,5 @@ interface RouteInterface extends MiddlewareInterface
      * @param string $method
      * @param mixed $dispatchable
      */
-    public function register($method, $dispatchable);
+    public function register(string $method, $dispatchable): void;
 }

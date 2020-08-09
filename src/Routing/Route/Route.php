@@ -12,16 +12,13 @@ abstract class Route implements RouteInterface
     /** @var MethodMap  */
     protected $methodMap;
 
-    public function __construct($target, $methodMap)
+    public function __construct(string $target, MethodMap $methodMap)
     {
         $this->target = $target;
         $this->methodMap = $methodMap;
     }
 
-    /**
-     * @return string
-     */
-    public function getTarget()
+    public function getTarget(): string
     {
         return $this->target;
     }
@@ -40,7 +37,7 @@ abstract class Route implements RouteInterface
      * @param string $method
      * @param mixed $dispatchable
      */
-    public function register($method, $dispatchable)
+    public function register(string $method, $dispatchable): void
     {
         $this->methodMap->register($method, $dispatchable);
     }

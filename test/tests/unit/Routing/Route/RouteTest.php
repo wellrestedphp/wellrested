@@ -23,8 +23,7 @@ class RouteTest extends TestCase
     public function setUp(): void
     {
         $this->methodMap = $this->prophesize(MethodMap::class);
-        $this->methodMap->register(Argument::cetera())
-            ->willReturn();
+        $this->methodMap->register(Argument::cetera());
         $this->methodMap->__invoke(Argument::cetera())
             ->willReturn(new Response());
 

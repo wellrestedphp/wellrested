@@ -4,25 +4,27 @@ namespace WellRESTed\Routing\Route;
 
 class TemplateRoute extends Route
 {
-    private $pathVariables;
-    private $explosions;
+    /** @var array */
+    private $pathVariables = [];
+    /** @var array */
+    private $explosions = [];
 
+    /** Regular expression matching a URI template variable (e.g., {id}) */
+    public const URI_TEMPLATE_EXPRESSION_RE = '/{([+.\/]?[a-zA-Z0-9_,]+\*?)}/';
     /**
      * Regular expression matching 1 or more unreserved characters.
      * ALPHA / DIGIT / "-" / "." / "_" / "~"
      */
-    const RE_UNRESERVED = '[0-9a-zA-Z\-._\~%]*';
-    /** Regular expression matching a URI template variable (e.g., {id}) */
-    const URI_TEMPLATE_EXPRESSION_RE = '/{([+.\/]?[a-zA-Z0-9_,]+\*?)}/';
+    private const RE_UNRESERVED = '[0-9a-zA-Z\-._\~%]*';
 
-    public function getType()
+    public function getType(): int
     {
         return RouteInterface::TYPE_PATTERN;
     }
 
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
-        return $this->pathVariables ?: [];
+        return $this->pathVariables;
     }
 
     /**
@@ -31,7 +33,7 @@ class TemplateRoute extends Route
      * @param string $requestTarget
      * @return bool
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         $this->pathVariables = [];
         $this->explosions = [];
@@ -49,11 +51,7 @@ class TemplateRoute extends Route
         return false;
     }
 
-    /**
-     * @param $requestTarget
-     * @return bool
-     */
-    private function matchesStartOfRequestTarget($requestTarget)
+    private function matchesStartOfRequestTarget(string $requestTarget): bool
     {
         $firstVarPos = strpos($this->target, "{");
         if ($firstVarPos === false) {
@@ -62,7 +60,7 @@ class TemplateRoute extends Route
         return (substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos));
     }
 
-    private function processMatches($matches)
+    private function processMatches(array $matches): array
     {
         $variables = [];
 
@@ -87,7 +85,7 @@ class TemplateRoute extends Route
         return $variables;
     }
 
-    private function getMatchingPattern()
+    private function getMatchingPattern(): string
     {
         // Convert the template into the pattern
         $pattern = $this->target;
@@ -119,7 +117,7 @@ class TemplateRoute extends Route
         return $pattern;
     }
 
-    private function uriVariableReplacementCallback($matches)
+    private function uriVariableReplacementCallback(array $matches): string
     {
         $name = $matches[1];
         $pattern = self::RE_UNRESERVED;
