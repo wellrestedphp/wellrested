@@ -17,6 +17,7 @@
         <DocblockTypeContradiction>
             <errorLevel type="suppress">
                 <file name="src/Message/ServerRequest.php" />
+                <file name="src/Message/Uri.php" />
             </errorLevel>
         </DocblockTypeContradiction>
         <MissingClosureParamType>

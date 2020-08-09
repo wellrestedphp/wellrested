@@ -40,7 +40,7 @@ class UploadedFileTest extends TestCase
 
     public function testGetStreamReturnsStreamInterface()
     {
-        $file = new UploadedFile("", "", 0, "", 0);
+        $file = new UploadedFile("", "", 0, $this->tmpName, 0);
         $this->assertInstanceOf(StreamInterface::class, $file->getStream());
     }
 
@@ -53,10 +53,11 @@ class UploadedFileTest extends TestCase
         $this->assertEquals($content, (string) $stream);
     }
 
-    public function testGetStreamReturnsEmptyStreamForNoFile()
+    public function testGetStreamThrowsRuntimeExceptionForNoFile()
     {
         $file = new UploadedFile("", "", 0, "", 0);
-        $this->assertTrue($file->getStream()->eof());
+        $this->expectException(RuntimeException::class);
+        $file->getStream();
     }
 
     public function testGetStreamThrowsExceptionAfterMoveTo()

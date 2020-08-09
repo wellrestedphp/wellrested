@@ -40,36 +40,36 @@ class Uri implements UriInterface
     /**
      * @param string $uri A string representation of a URI.
      */
-    public function __construct($uri = "")
+    public function __construct(string $uri = '')
     {
-        if (is_string($uri) && $uri !== "") {
-            $parsed = parse_url($uri);
-            if ($parsed !== false) {
-                if (isset($parsed["scheme"])) {
-                    $this->scheme = $parsed["scheme"];
-                }
-                if (isset($parsed["host"])) {
-                    $this->host = strtolower($parsed["host"]);
-                }
-                if (isset($parsed["port"])) {
-                    $this->port = $parsed["port"];
-                }
-                if (isset($parsed["user"])) {
-                    $this->user = $parsed["user"];
-                }
-                if (isset($parsed["pass"])) {
-                    $this->password = $parsed["pass"];
-                }
-                if (isset($parsed["path"])) {
-                    $this->path = $parsed["path"];
-                }
-                if (isset($parsed["query"])) {
-                    $this->query = $parsed["query"];
-                }
-                if (isset($parsed["fragment"])) {
-                    $this->fragment = $parsed["fragment"];
-                }
-            }
+        $parsed = parse_url($uri);
+        if (!$parsed) {
+            return;
+        }
+
+        if (isset($parsed['scheme'])) {
+            $this->scheme = $parsed['scheme'];
+        }
+        if (isset($parsed['host'])) {
+            $this->host = strtolower($parsed['host']);
+        }
+        if (isset($parsed['port'])) {
+            $this->port = $parsed['port'];
+        }
+        if (isset($parsed['user'])) {
+            $this->user = $parsed['user'];
+        }
+        if (isset($parsed['pass'])) {
+            $this->password = $parsed['pass'];
+        }
+        if (isset($parsed['path'])) {
+            $this->path = $parsed['path'];
+        }
+        if (isset($parsed['query'])) {
+            $this->query = $parsed['query'];
+        }
+        if (isset($parsed['fragment'])) {
+            $this->fragment = $parsed['fragment'];
         }
     }
 
@@ -538,7 +538,7 @@ class Uri implements UriInterface
         $reserved = ':/?#[]@!$&\'()*+,;=';
         $reserved = preg_quote($reserved);
         $pattern = '~(?:%(?![a-fA-F0-9]{2}))|(?:[^%a-zA-Z0-9\-\.\_\~' . $reserved . ']{1})~';
-        $callback = function ($matches) {
+        $callback = function (array $matches): string {
             return urlencode($matches[0]);
         };
         return preg_replace_callback($pattern, $callback, $subject);
