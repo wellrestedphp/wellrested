@@ -20,7 +20,7 @@ class Response extends Message implements ResponseInterface
 {
     /** @var string Text explanation of the HTTP Status Code. */
     private $reasonPhrase;
-    /** @var int  HTTP status code */
+    /** @var int HTTP status code */
     private $statusCode;
 
     /**
@@ -103,7 +103,7 @@ class Response extends Message implements ResponseInterface
 
     /**
      * @param int $statusCode
-     * @return string|null
+     * @return string
      */
     private function getDefaultReasonPhraseForStatusCode($statusCode)
     {
@@ -167,9 +167,6 @@ class Response extends Message implements ResponseInterface
             510 => "Not Extended",
             511 => "Network Authentication Required"
         ];
-        if (isset($reasonPhraseLookup[$statusCode])) {
-            return $reasonPhraseLookup[$statusCode];
-        }
-        return null;
+        return $reasonPhraseLookup[$statusCode] ?? '';
     }
 }
