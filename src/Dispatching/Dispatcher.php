@@ -67,6 +67,10 @@ class Dispatcher implements DispatcherInterface
         }
     }
 
+    /**
+     * @param mixed[] $dispatchables
+     * @return DispatchStack
+     */
     protected function getDispatchStack($dispatchables)
     {
         $stack = new DispatchStack($this);
