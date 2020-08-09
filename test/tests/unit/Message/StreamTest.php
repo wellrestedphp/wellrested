@@ -13,14 +13,14 @@ class StreamTest extends TestCase
     private $resourceDevNull;
     private $content = "Hello, world!";
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->resource = fopen("php://memory", "w+");
         $this->resourceDevNull = fopen("/dev/null", "r");
         fwrite($this->resource, $this->content);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         if (is_resource($this->resource)) {
             fclose($this->resource);
@@ -268,5 +268,120 @@ class StreamTest extends TestCase
             ["c",  false, true],
             ["c+", true,  true]
         ];
+    }
+
+    // -------------------------------------------------------------------------
+    // After Detach
+
+    public function testAfterDetachToStringReturnsEmptyString(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertEquals('', (string) $stream);
+    }
+
+    public function testAfterDetachCloseDoesNothing(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $stream->close();
+        $this->assertTrue(true);
+    }
+
+    public function testAfterDetachDetachReturnsNull(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertNull($stream->detach());
+    }
+
+    public function testAfterDetachGetSizeReturnsNull(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertNull($stream->getSize());
+    }
+
+    public function testAfterDetachTellThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->tell();
+    }
+
+    public function testAfterDetachEofReturnsTrue(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertTrue($stream->eof());
+    }
+
+    public function testAfterDetachIsSeekableReturnsFalse(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertFalse($stream->isSeekable());
+    }
+
+    public function testAfterDetachSeekThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->seek(0);
+    }
+
+    public function testAfterDetachRewindThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->rewind();
+    }
+
+    public function testAfterDetachIsWritableReturnsFalse(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertFalse($stream->isWritable());
+    }
+
+    public function testAfterDetachWriteThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->write('bork');
+    }
+
+    public function testAfterDetachIsReadableReturnsFalse(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertFalse($stream->isReadable());
+    }
+
+    public function testAfterDetachReadThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->read(10);
+    }
+
+    public function testAfterDetachGetContentsThrowsRuntimeException(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->expectException(RuntimeException::class);
+        $stream->getContents();
+    }
+
+    public function testAfterDetachGetMetadataReturnsNull(): void
+    {
+        $stream = new Stream($this->resource);
+        $stream->detach();
+        $this->assertNull($stream->getMetadata());
     }
 }
