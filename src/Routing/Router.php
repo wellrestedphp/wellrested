@@ -12,7 +12,7 @@ use WellRESTed\Routing\Route\RouteInterface;
 
 class Router
 {
-    /** @var string attribute name for matched path variables */
+    /** @var string|null Attribute name for matched path variables */
     private $pathVariablesAttributeName;
     /** @var DispatcherInterface */
     private $dispatcher;
@@ -42,7 +42,7 @@ class Router
      * stored with the name. The value will be an array containing all of the
      * path variables.
      *
-     * @param DispatcherInterface $dispatcher
+     * @param DispatcherInterface|null $dispatcher
      *     Instance to use for dispatching middleware and handlers.
      * @param string|null $pathVariablesAttributeName
      *     Attribute name for matched path variables. A null value sets

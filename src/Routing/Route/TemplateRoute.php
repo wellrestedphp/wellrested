@@ -29,7 +29,7 @@ class TemplateRoute extends Route
      * Examines a request target to see if it is a match for the route.
      *
      * @param string $requestTarget
-     * @return boolean
+     * @return bool
      */
     public function matchesRequestTarget($requestTarget)
     {
@@ -49,9 +49,16 @@ class TemplateRoute extends Route
         return false;
     }
 
+    /**
+     * @param $requestTarget
+     * @return bool
+     */
     private function matchesStartOfRequestTarget($requestTarget)
     {
         $firstVarPos = strpos($this->target, "{");
+        if ($firstVarPos === false) {
+            return $requestTarget === $this->target;
+        }
         return (substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos));
     }
 
