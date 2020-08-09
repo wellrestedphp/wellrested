@@ -18,5 +18,5 @@ interface TransmitterInterface
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response Response to output
      */
-    public function transmit(ServerRequestInterface $request, ResponseInterface $response);
+    public function transmit(ServerRequestInterface $request, ResponseInterface $response): void;
 }

@@ -27,7 +27,7 @@ class Transmitter implements TransmitterInterface
     public function transmit(
         ServerRequestInterface $request,
         ResponseInterface $response
-    ) {
+    ): void {
         // Prepare the response for output.
         $response = $this->prepareResponse($request, $response);
 
@@ -48,10 +48,7 @@ class Transmitter implements TransmitterInterface
         }
     }
 
-    /**
-     * @param int $chunkSize
-     */
-    public function setChunkSize($chunkSize)
+    public function setChunkSize(int $chunkSize): void
     {
         $this->chunkSize = $chunkSize;
     }
@@ -59,7 +56,8 @@ class Transmitter implements TransmitterInterface
     protected function prepareResponse(
         ServerRequestInterface $request,
         ResponseInterface $response
-    ) {
+    ): ResponseInterface {
+
         // Add a Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header
@@ -77,7 +75,7 @@ class Transmitter implements TransmitterInterface
         return $response;
     }
 
-    private function getStatusLine(ResponseInterface $response)
+    private function getStatusLine(ResponseInterface $response): string
     {
         $protocol = $response->getProtocolVersion();
         $statusCode = $response->getStatusCode();
@@ -89,7 +87,7 @@ class Transmitter implements TransmitterInterface
         }
     }
 
-    private function outputBody(StreamInterface $body)
+    private function outputBody(StreamInterface $body): void
     {
         if ($this->chunkSize > 0) {
             if ($body->isSeekable()) {
