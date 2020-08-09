@@ -27,7 +27,7 @@ class ServerTest extends TestCase
         parent::setUp();
 
         $this->transmitter = $this->prophesize(TransmitterInterface::class);
-        $this->transmitter->transmit(Argument::cetera())->willReturn();
+        $this->transmitter->transmit(Argument::cetera());
 
         $this->server = new Server();
         $this->server->setTransmitter($this->transmitter->reveal());

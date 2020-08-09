@@ -14,14 +14,14 @@ use WellRESTed\Transmission\TransmitterInterface;
 
 class Server
 {
-    /** @var array */
-    protected $attributes;
+    /** @var mixed[] */
+    protected $attributes = [];
     /** @var DispatcherInterface */
     private $dispatcher;
-    /** @var string ServerRequestInterface attribute name for matched path variables */
-    private $pathVariablesAttributeName;
-    /** @var ServerRequestInterface */
-    private $request;
+    /** @var string|null attribute name for matched path variables */
+    private $pathVariablesAttributeName = null;
+    /** @var ServerRequestInterface|null */
+    private $request = null;
     /** @var ResponseInterface */
     private $response;
     /** @var TransmitterInterface */
@@ -31,6 +31,9 @@ class Server
 
     public function __construct() {
         $this->stack = [];
+        $this->response = new Response();
+        $this->dispatcher = new Dispatcher();
+        $this->transmitter = new Transmitter();
     }
 
     /**
@@ -39,7 +42,7 @@ class Server
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return Server
      */
-    public function add($middleware)
+    public function add($middleware): Server
     {
         $this->stack[] = $middleware;
         return $this;
@@ -50,10 +53,10 @@ class Server
      *
      * @return Router
      */
-    public function createRouter()
+    public function createRouter(): Router
     {
         return new Router(
-            $this->getDispatcher(),
+            $this->dispatcher,
             $this->pathVariablesAttributeName
         );
     }
@@ -64,25 +67,26 @@ class Server
      * This method reads a server request, dispatches the request through the
      * server's stack of middleware, and outputs the response via a Transmitter.
      */
-    public function respond()
+    public function respond(): void
     {
         $request = $this->getRequest();
-        foreach ($this->getAttributes() as $name => $value) {
+        foreach ($this->attributes as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
 
-        $response = $this->getResponse();
-
-        $next = function ($rqst, $resp) {
+        $next = function (
+            ServerRequestInterface $rqst,
+            ResponseInterface $resp
+        ): ResponseInterface {
             return $resp;
         };
 
-        $dispatcher = $this->getDispatcher();
-        $response = $dispatcher->dispatch(
+        $response = $this->response;
+
+        $response = $this->dispatcher->dispatch(
             $this->stack, $request, $response, $next);
 
-        $transmitter = $this->getTransmitter();
-        $transmitter->transmit($request, $response);
+        $this->transmitter->transmit($request, $response);
     }
 
     // -------------------------------------------------------------------------
@@ -150,43 +154,11 @@ class Server
     // -------------------------------------------------------------------------
     /* Defaults */
 
-    private function getAttributes()
-    {
-        if (!$this->attributes) {
-            $this->attributes = [];
-        }
-        return $this->attributes;
-    }
-
-    private function getDispatcher()
-    {
-        if (!$this->dispatcher) {
-            $this->dispatcher = new Dispatcher();
-        }
-        return $this->dispatcher;
-    }
-
-    private function getRequest()
+    private function getRequest(): ServerRequestInterface
     {
         if (!$this->request) {
             $this->request = ServerRequest::getServerRequest();
         }
         return $this->request;
-    }
-
-    private function getResponse()
-    {
-        if (!$this->response) {
-            $this->response = new Response();
-        }
-        return $this->response;
-    }
-
-    private function getTransmitter()
-    {
-        if (!$this->transmitter) {
-            $this->transmitter = new Transmitter();
-        }
-        return $this->transmitter;
     }
 }
