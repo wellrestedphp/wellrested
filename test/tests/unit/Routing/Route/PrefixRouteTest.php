@@ -11,7 +11,7 @@ use WellRESTed\Test\TestCase;
 class PrefixRouteTest extends TestCase
 {
     use ProphecyTrait;
-    
+
     public function testTrimsAsteriskFromEndOfTarget()
     {
         $methodMap = $this->prophesize(MethodMap::class);

@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
-use InvalidArgumentException;
 
 /**
  * Representation of an outgoing, server-side response.

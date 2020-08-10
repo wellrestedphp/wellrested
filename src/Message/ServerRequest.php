@@ -2,11 +2,11 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
-use InvalidArgumentException;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -509,7 +509,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     private function isContentHeader(string $name): bool
     {
-        return ($name === 'CONTENT_LENGTH' || $name === 'CONTENT_TYPE');
+        return $name === 'CONTENT_LENGTH' || $name === 'CONTENT_TYPE';
     }
 
     /**

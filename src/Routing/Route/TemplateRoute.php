@@ -57,7 +57,7 @@ class TemplateRoute extends Route
         if ($firstVarPos === false) {
             return $requestTarget === $this->target;
         }
-        return (substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos));
+        return substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos);
     }
 
     private function processMatches(array $matches): array

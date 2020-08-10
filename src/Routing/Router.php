@@ -276,6 +276,6 @@ class Router
     private function startsWith(string $haystack, string $needle): bool
     {
         $length = strlen($needle);
-        return (substr($haystack, 0, $length) === $needle);
+        return substr($haystack, 0, $length) === $needle;
     }
 }

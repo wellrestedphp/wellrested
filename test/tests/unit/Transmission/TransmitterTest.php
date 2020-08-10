@@ -5,12 +5,12 @@ namespace WellRESTed\Test\Unit\Transmission;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\HeaderStack;
 use WellRESTed\Transmission\Transmitter;
-use RuntimeException;
 
 require_once __DIR__ . '/../../../src/HeaderStack.php';
 

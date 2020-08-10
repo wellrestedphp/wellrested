@@ -2,8 +2,8 @@
 
 namespace WellRESTed\Message;
 
-use Psr\Http\Message\UriInterface;
 use InvalidArgumentException;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Value object representing a URI.

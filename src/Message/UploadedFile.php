@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use InvalidArgumentException;
 use RuntimeException;
 
 /**

@@ -2,10 +2,10 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use InvalidArgumentException;
 
 /**
  * Representation of an outgoing, client-side request.

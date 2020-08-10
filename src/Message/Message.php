@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use InvalidArgumentException;
 
 /**
  * Message defines core functionality for classes that represent HTTP messages.
