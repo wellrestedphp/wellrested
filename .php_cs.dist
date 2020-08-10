@@ -1,0 +1,15 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->files()
+    ->in(__DIR__ . '/src')
+    ->in(__DIR__ . '/test');
+
+return PhpCsFixer\Config::create()
+    ->setFinder($finder)
+    ->setRiskyAllowed(true)
+    ->setRules([
+        '@PSR2' => true,
+        'strict_param' => true,
+        'array_syntax' => ['syntax' => 'short'],
+    ]);

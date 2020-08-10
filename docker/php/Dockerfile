@@ -32,7 +32,8 @@ COPY ./test /usr/local/src/wellrested/test
 COPY ./composer.* /usr/local/src/wellrested/
 COPY ./phpunit.xml.dist /usr/local/src/wellrested/
 
-# Add symlinks for phpunit and psalm for easier running
+# Add symlinks for php-cs-fixer, phpunit, and psalm for easier running
+RUN ln -s /usr/local/src/wellrested/vendor/bin/php-cs-fixer /usr/local/bin/php-cs-fixer
 RUN ln -s /usr/local/src/wellrested/vendor/bin/phpunit /usr/local/bin/phpunit
 RUN ln -s /usr/local/src/wellrested/vendor/bin/psalm /usr/local/bin/psalm
 

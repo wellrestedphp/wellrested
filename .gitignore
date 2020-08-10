@@ -8,6 +8,9 @@ phpdoc/
 coverage/
 report/
 
+# Cache
+.php_cs.cache
+
 # Sphinx Documentation
 docs/build
 
