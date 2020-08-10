@@ -70,7 +70,8 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // PSR-15 Middleware
 
-    public function testDispatchesPsr15MiddlewareWithDelegate() {
+    public function testDispatchesPsr15MiddlewareWithDelegate()
+    {
         $this->next->upstreamResponse = $this->stubResponse;
         $middleware = new MiddlewareDouble();
 
@@ -78,7 +79,8 @@ class DispatcherTest extends TestCase
         $this->assertSame($this->stubResponse, $response);
     }
 
-    public function testDispatchesPsr15MiddlewareFromFactoryWithDelegate() {
+    public function testDispatchesPsr15MiddlewareFromFactoryWithDelegate()
+    {
         $this->next->upstreamResponse = $this->stubResponse;
         $factory = function () {
             return new MiddlewareDouble();

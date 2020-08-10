@@ -69,7 +69,6 @@ class TemplateRoute extends Route
 
         // Store named captures to the variables.
         foreach ($keys as $key) {
-
             $value = $matches[$key];
 
             if (isset($this->explosions[$key])) {
@@ -79,7 +78,6 @@ class TemplateRoute extends Route
                 $value = urldecode($value);
                 $variables[$key] = $value;
             }
-
         }
 
         return $variables;

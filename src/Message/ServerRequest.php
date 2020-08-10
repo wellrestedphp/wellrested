@@ -195,7 +195,8 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
             throw new \InvalidArgumentException(
-                "withUploadedFiles expects an array tree with UploadedFileInterface leaves.");
+                "withUploadedFiles expects an array tree with UploadedFileInterface leaves."
+            );
         }
 
         $request = clone $this;
@@ -413,7 +414,11 @@ class ServerRequest extends Request implements ServerRequestInterface
             } else {
                 // All expected keys are present and are not arrays. This is an uploaded file.
                 $uploadedFile = new UploadedFile(
-                    $value["name"], $value["type"], $value["size"], $value["tmp_name"], $value["error"]
+                    $value["name"],
+                    $value["type"],
+                    $value["size"],
+                    $value["tmp_name"],
+                    $value["error"]
                 );
                 $branch[$name] = $uploadedFile;
             }

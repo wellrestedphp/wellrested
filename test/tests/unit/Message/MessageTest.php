@@ -41,7 +41,8 @@ class MessageTest extends TestCase
 
         $this->assertNotEquals(
             $message1->getHeader('Content-type'),
-            $message2->getHeader('Content-type'));
+            $message2->getHeader('Content-type')
+        );
     }
 
     // ------------------------------------------------------------------------
@@ -121,7 +122,8 @@ class MessageTest extends TestCase
         $cookies = $message->getHeader('Set-Cookie');
         $this->assertTrue(
             in_array('cat=Molly', $cookies) &&
-            in_array('dog=Bear', $cookies));
+            in_array('dog=Bear', $cookies)
+        );
     }
 
     public function testWithoutHeaderRemovesHeader()

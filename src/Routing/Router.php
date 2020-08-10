@@ -113,7 +113,10 @@ class Router
         }
         $stack = array_merge($this->stack, [$route]);
         return $this->dispatcher->dispatch(
-            $stack, $request, $response, $next
+            $stack,
+            $request,
+            $response,
+            $next
         );
     }
 

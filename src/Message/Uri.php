@@ -130,7 +130,7 @@ class Uri implements UriInterface
             $port = $this->getPort();
             if ($port !== null) {
                 $scheme = $this->getScheme();
-                if (($scheme === "http" && $port !== 80 ) || ($scheme === "https" && $port !== 443)) {
+                if (($scheme === "http" && $port !== 80) || ($scheme === "https" && $port !== 443)) {
                     $authority .= ":" . $port;
                 }
             }

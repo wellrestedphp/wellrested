@@ -27,7 +27,8 @@ class MethodMapTest extends TestCase
         $this->dispatcher = new Dispatcher();
     }
 
-    private function getMethodMap() {
+    private function getMethodMap()
+    {
         return new MethodMap($this->dispatcher);
     }
 
@@ -194,7 +195,8 @@ class MethodMapTest extends TestCase
         ];
     }
 
-    private function assertContainsEach($expectedList, $actual) {
+    private function assertContainsEach($expectedList, $actual)
+    {
         foreach ($expectedList as $expected) {
             if (strpos($actual, $expected) === false) {
                 $this->assertTrue(false, "'$actual' does not contain expected '$expected'");

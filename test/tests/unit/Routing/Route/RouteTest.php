@@ -28,7 +28,9 @@ class RouteTest extends TestCase
             ->willReturn(new Response());
 
         $this->route = new StaticRoute(
-            self::TARGET, $this->methodMap->reveal());
+            self::TARGET,
+            $this->methodMap->reveal()
+        );
     }
 
     public function testReturnsTarget()

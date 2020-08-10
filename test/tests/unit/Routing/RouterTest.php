@@ -414,7 +414,8 @@ class RouterTest extends TestCase
         $this->route->__invoke(
             $middlewareRequest,
             $middlewareResponse,
-            Argument::any())->shouldHaveBeenCalled();
+            Argument::any()
+        )->shouldHaveBeenCalled();
     }
 
     public function testDoesNotCallRouterMiddlewareWhenNoRouteMatches()
@@ -447,7 +448,7 @@ class RouterTest extends TestCase
 
 class RouterWithFactory extends Router
 {
-    static $routeFactory;
+    public static $routeFactory;
 
     protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactoryInterface
     {

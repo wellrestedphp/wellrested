@@ -29,7 +29,8 @@ class Server
     /** @var mixed[] List array of middleware */
     private $stack;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->stack = [];
         $this->response = new Response();
         $this->dispatcher = new Dispatcher();
@@ -84,7 +85,11 @@ class Server
         $response = $this->response;
 
         $response = $this->dispatcher->dispatch(
-            $this->stack, $request, $response, $next);
+            $this->stack,
+            $request,
+            $response,
+            $next
+        );
 
         $this->transmitter->transmit($request, $response);
     }
@@ -116,7 +121,8 @@ class Server
      * @param string $name
      * @return Server
      */
-    public function setPathVariablesAttributeName(string $name): Server {
+    public function setPathVariablesAttributeName(string $name): Server
+    {
         $this->pathVariablesAttributeName = $name;
         return $this;
     }
