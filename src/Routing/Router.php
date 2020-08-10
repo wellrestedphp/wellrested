@@ -229,7 +229,7 @@ class Router
                 $this->staticRoutes[$route->getTarget()] = $route;
                 break;
             case RouteInterface::TYPE_PREFIX:
-                $this->prefixRoutes[rtrim($route->getTarget(), "*")] = $route;
+                $this->prefixRoutes[rtrim($route->getTarget(), '*')] = $route;
                 break;
             case RouteInterface::TYPE_PATTERN:
                 $this->patternRoutes[] = $route;

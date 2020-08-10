@@ -91,13 +91,13 @@ class UploadedFile implements UploadedFileInterface
     public function getStream()
     {
         if ($this->tmpName === null) {
-            throw new \RuntimeException("Unable to read uploaded file.");
+            throw new \RuntimeException('Unable to read uploaded file.');
         }
         if ($this->moved) {
-            throw new \RuntimeException("File has already been moved.");
+            throw new \RuntimeException('File has already been moved.');
         }
-        if (php_sapi_name() !== "cli" && !is_uploaded_file($this->tmpName)) {
-            throw new \RuntimeException("File is not an uploaded file.");
+        if (php_sapi_name() !== 'cli' && !is_uploaded_file($this->tmpName)) {
+            throw new \RuntimeException('File is not an uploaded file.');
         }
         return $this->stream;
     }
@@ -124,9 +124,9 @@ class UploadedFile implements UploadedFileInterface
     public function moveTo($path)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
-            throw new \RuntimeException("File " . $this->tmpName . " does not exist.");
+            throw new \RuntimeException('File ' . $this->tmpName . ' does not exist.');
         }
-        if (php_sapi_name() === "cli") {
+        if (php_sapi_name() === 'cli') {
             rename($this->tmpName, $path);
         } else {
             move_uploaded_file($this->tmpName, $path);

@@ -89,11 +89,11 @@ class Request extends Message implements RequestInterface
         $target = $this->uri->getPath();
         $query = $this->uri->getQuery();
         if ($query) {
-            $target .= "?" . $query;
+            $target .= '?' . $query;
         }
 
         // Return "/" if the origin form is empty.
-        return $target ?: "/";
+        return $target ?: '/';
     }
 
     /**
@@ -187,18 +187,18 @@ class Request extends Message implements RequestInterface
         $request = clone $this;
 
         $newHost = $uri->getHost();
-        $oldHost = isset($request->headers["Host"]) ? $request->headers["Host"] : "";
+        $oldHost = isset($request->headers['Host']) ? $request->headers['Host'] : '';
 
         if ($preserveHost === false) {
             // Update Host
             if ($newHost && $newHost !== $oldHost) {
-                unset($request->headers["Host"]);
-                $request->headers["Host"] = $newHost;
+                unset($request->headers['Host']);
+                $request->headers['Host'] = $newHost;
             }
         } else {
             // Preserve Host
             if (!$oldHost && $newHost) {
-                $request->headers["Host"] = $newHost;
+                $request->headers['Host'] = $newHost;
             }
         }
 
@@ -216,11 +216,11 @@ class Request extends Message implements RequestInterface
     private function getValidatedMethod($method)
     {
         if (!is_string($method)) {
-            throw new \InvalidArgumentException("Method must be a string.");
+            throw new \InvalidArgumentException('Method must be a string.');
         }
         $method = trim($method);
-        if (strpos($method, " ") !== false) {
-            throw new \InvalidArgumentException("Method cannot contain spaces.");
+        if (strpos($method, ' ') !== false) {
+            throw new \InvalidArgumentException('Method cannot contain spaces.');
         }
         return $method;
     }

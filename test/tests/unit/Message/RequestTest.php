@@ -61,8 +61,8 @@ class RequestTest extends TestCase
     public function testGetRequestTargetPrefersExplicitRequestTarget()
     {
         $request = new Request();
-        $request = $request->withRequestTarget("*");
-        $this->assertEquals("*", $request->getRequestTarget());
+        $request = $request->withRequestTarget('*');
+        $this->assertEquals('*', $request->getRequestTarget());
     }
 
     public function testGetRequestTargetUsesOriginFormOfUri()
@@ -70,20 +70,20 @@ class RequestTest extends TestCase
         $uri = new Uri('/my/path?cat=Molly&dog=Bear');
         $request = new Request();
         $request = $request->withUri($uri);
-        $this->assertEquals("/my/path?cat=Molly&dog=Bear", $request->getRequestTarget());
+        $this->assertEquals('/my/path?cat=Molly&dog=Bear', $request->getRequestTarget());
     }
 
     public function testGetRequestTargetReturnsSlashByDefault()
     {
         $request = new Request();
-        $this->assertEquals("/", $request->getRequestTarget());
+        $this->assertEquals('/', $request->getRequestTarget());
     }
 
     public function testWithRequestTargetCreatesNewInstance()
     {
         $request = new Request();
-        $request = $request->withRequestTarget("*");
-        $this->assertEquals("*", $request->getRequestTarget());
+        $request = $request->withRequestTarget('*');
+        $this->assertEquals('*', $request->getRequestTarget());
     }
 
     // ------------------------------------------------------------------------
@@ -92,14 +92,14 @@ class RequestTest extends TestCase
     public function testGetMethodReturnsGetByDefault()
     {
         $request = new Request();
-        $this->assertEquals("GET", $request->getMethod());
+        $this->assertEquals('GET', $request->getMethod());
     }
 
     public function testWithMethodCreatesNewInstance()
     {
         $request = new Request();
-        $request = $request->withMethod("POST");
-        $this->assertEquals("POST", $request->getMethod());
+        $request = $request->withMethod('POST');
+        $this->assertEquals('POST', $request->getMethod());
     }
 
     /**
@@ -117,7 +117,7 @@ class RequestTest extends TestCase
         return [
             [0],
             [false],
-            ["WITH SPACE"]
+            ['WITH SPACE']
         ];
     }
 
@@ -146,44 +146,44 @@ class RequestTest extends TestCase
 
         $request1 = new Request();
         $request1 = $request1->withUri($uri1);
-        $request1 = $request1->withHeader("Accept", "application/json");
+        $request1 = $request1->withHeader('Accept', 'application/json');
 
         $request2 = $request1->withUri($uri2);
-        $request2 = $request2->withHeader("Accept", "text/plain");
+        $request2 = $request2->withHeader('Accept', 'text/plain');
 
-        $this->assertNotEquals($request1->getHeader("Accept"), $request2->getHeader("Accept"));
+        $this->assertNotEquals($request1->getHeader('Accept'), $request2->getHeader('Accept'));
     }
 
     public function testWithUriUpdatesHostHeader()
     {
-        $hostname = "bar.com";
+        $hostname = 'bar.com';
         $uri = new uri("http://$hostname");
 
         $request = new Request();
-        $request = $request->withHeader("Host", "foo.com");
+        $request = $request->withHeader('Host', 'foo.com');
         $request = $request->withUri($uri);
-        $this->assertSame([$hostname], $request->getHeader("Host"));
+        $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
     public function testWithUriDoesNotUpdatesHostHeaderWhenUriHasNoHost()
     {
-        $hostname = "foo.com";
+        $hostname = 'foo.com';
         $uri = new Uri();
 
         $request = new Request();
-        $request = $request->withHeader("Host", $hostname);
+        $request = $request->withHeader('Host', $hostname);
         $request = $request->withUri($uri);
-        $this->assertSame([$hostname], $request->getHeader("Host"));
+        $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
     public function testPreserveHostUpdatesHostHeaderWhenHeaderIsOriginallyMissing()
     {
-        $hostname = "foo.com";
+        $hostname = 'foo.com';
         $uri = new uri("http://$hostname");
 
         $request = new Request();
         $request = $request->withUri($uri, true);
-        $this->assertSame([$hostname], $request->getHeader("Host"));
+        $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
     public function testPreserveHostDoesNotUpdatesWhenBothAreMissingHosts()
@@ -192,17 +192,17 @@ class RequestTest extends TestCase
 
         $request = new Request();
         $request = $request->withUri($uri, true);
-        $this->assertSame([], $request->getHeader("Host"));
+        $this->assertSame([], $request->getHeader('Host'));
     }
 
     public function testPreserveHostDoesNotUpdateHostHeader()
     {
-        $hostname = "foo.com";
-        $uri = new uri("http://bar.com");
+        $hostname = 'foo.com';
+        $uri = new uri('http://bar.com');
 
         $request = new Request();
-        $request = $request->withHeader("Host", $hostname);
+        $request = $request->withHeader('Host', $hostname);
         $request = $request->withUri($uri, true);
-        $this->assertSame([$hostname], $request->getHeader("Host"));
+        $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 }

@@ -11,12 +11,12 @@ class StreamTest extends TestCase
 {
     private $resource;
     private $resourceDevNull;
-    private $content = "Hello, world!";
+    private $content = 'Hello, world!';
 
     protected function setUp(): void
     {
-        $this->resource = fopen("php://memory", "w+");
-        $this->resourceDevNull = fopen("/dev/null", "r");
+        $this->resource = fopen('php://memory', 'w+');
+        $this->resourceDevNull = fopen('/dev/null', 'r');
         fwrite($this->resource, $this->content);
     }
 
@@ -35,7 +35,7 @@ class StreamTest extends TestCase
 
     public function testCreatesInstanceWithString()
     {
-        $stream = new Stream("Hello, world!");
+        $stream = new Stream('Hello, world!');
         $this->assertNotNull($stream);
     }
 
@@ -123,7 +123,7 @@ class StreamTest extends TestCase
     {
         $stream = new Stream($this->resource);
         $metadata = stream_get_meta_data($this->resource);
-        $seekable = $metadata["seekable"] == 1;
+        $seekable = $metadata['seekable'] == 1;
         $this->assertEquals($seekable, $stream->isSeekable());
     }
 
@@ -167,17 +167,17 @@ class StreamTest extends TestCase
     public function testThrowsExceptionOnErrorWriting()
     {
         $this->expectException(RuntimeException::class);
-        $filename = tempnam(sys_get_temp_dir(), "php");
-        $handle = fopen($filename, "r");
+        $filename = tempnam(sys_get_temp_dir(), 'php');
+        $handle = fopen($filename, 'r');
         $stream = new Stream($handle);
-        $stream->write("Hello, world!");
+        $stream->write('Hello, world!');
     }
 
     public function testThrowsExceptionOnErrorReading()
     {
         $this->expectException(RuntimeException::class);
-        $filename = tempnam(sys_get_temp_dir(), "php");
-        $handle = fopen($filename, "w");
+        $filename = tempnam(sys_get_temp_dir(), 'php');
+        $handle = fopen($filename, 'w');
         $stream = new Stream($handle);
         $stream->read(10);
     }
@@ -187,14 +187,14 @@ class StreamTest extends TestCase
         $stream = new Stream($this->resource);
         $stream->seek(7);
         $string = $stream->read(5);
-        $this->assertEquals("world", $string);
+        $this->assertEquals('world', $string);
     }
 
     public function testThrowsExceptionOnErrorReadingToEnd()
     {
         $this->expectException(RuntimeException::class);
-        $filename = tempnam(sys_get_temp_dir(), "php");
-        $handle = fopen($filename, "w");
+        $filename = tempnam(sys_get_temp_dir(), 'php');
+        $handle = fopen($filename, 'w');
         $stream = new Stream($handle);
         $stream->getContents();
     }
@@ -204,7 +204,7 @@ class StreamTest extends TestCase
         $stream = new Stream($this->resource);
         $stream->seek(7);
         $string = $stream->getContents();
-        $this->assertEquals("world!", $string);
+        $this->assertEquals('world!', $string);
     }
 
     public function testReturnsMetadataArray()
@@ -217,7 +217,7 @@ class StreamTest extends TestCase
     {
         $stream = new Stream($this->resource);
         $metadata = stream_get_meta_data($this->resource);
-        $this->assertEquals($metadata["mode"], $stream->getMetadata("mode"));
+        $this->assertEquals($metadata['mode'], $stream->getMetadata('mode'));
     }
 
     /**
@@ -228,8 +228,8 @@ class StreamTest extends TestCase
      */
     public function testReturnsIsReadableForReadableStreams($mode, $readable, $writable)
     {
-        $tmp = tempnam(sys_get_temp_dir(), "php");
-        if ($mode[0] === "x") {
+        $tmp = tempnam(sys_get_temp_dir(), 'php');
+        if ($mode[0] === 'x') {
             unlink($tmp);
         }
         $resource = fopen($tmp, $mode);
@@ -245,8 +245,8 @@ class StreamTest extends TestCase
      */
     public function testReturnsIsWritableForWritableStreams($mode, $readable, $writable)
     {
-        $tmp = tempnam(sys_get_temp_dir(), "php");
-        if ($mode[0] === "x") {
+        $tmp = tempnam(sys_get_temp_dir(), 'php');
+        if ($mode[0] === 'x') {
             unlink($tmp);
         }
         $resource = fopen($tmp, $mode);
@@ -257,16 +257,16 @@ class StreamTest extends TestCase
     public function modeProvider()
     {
         return [
-            ["r",  true,  false],
-            ["r+", true,  true],
-            ["w",  false, true],
-            ["w+", true,  true],
-            ["a",  false, true],
-            ["a+", true,  true],
-            ["x",  false, true],
-            ["x+", true,  true],
-            ["c",  false, true],
-            ["c+", true,  true]
+            ['r',  true,  false],
+            ['r+', true,  true],
+            ['w',  false, true],
+            ['w+', true,  true],
+            ['a',  false, true],
+            ['a+', true,  true],
+            ['x',  false, true],
+            ['x+', true,  true],
+            ['c',  false, true],
+            ['c+', true,  true]
         ];
     }
 

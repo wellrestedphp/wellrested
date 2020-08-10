@@ -22,17 +22,17 @@ class Stream implements StreamInterface
      * @param resource|string $resource A file system pointer resource or
      *     string
      */
-    public function __construct($resource = "")
+    public function __construct($resource = '')
     {
-        if (is_resource($resource) && get_resource_type($resource) === "stream") {
+        if (is_resource($resource) && get_resource_type($resource) === 'stream') {
             $this->resource = $resource;
         } elseif (is_string($resource)) {
-            $this->resource = fopen("php://temp", "wb+");
-            if ($resource !== "") {
+            $this->resource = fopen('php://temp', 'wb+');
+            if ($resource !== '') {
                 $this->write($resource);
             }
         } else {
-            throw new \InvalidArgumentException("Expected a resource handler.");
+            throw new \InvalidArgumentException('Expected a resource handler.');
         }
     }
 
@@ -103,8 +103,8 @@ class Stream implements StreamInterface
         }
 
         $statistics = fstat($this->resource);
-        if ($statistics && $statistics["size"]) {
-            return $statistics["size"];
+        if ($statistics && $statistics['size']) {
+            return $statistics['size'];
         }
         return null;
     }
@@ -118,12 +118,12 @@ class Stream implements StreamInterface
     public function tell()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to retrieve current position of detached stream.");
+            throw new \RuntimeException('Unable to retrieve current position of detached stream.');
         }
 
         $position = ftell($this->resource);
         if ($position === false) {
-            throw new \RuntimeException("Unable to retrieve current position of file pointer.");
+            throw new \RuntimeException('Unable to retrieve current position of file pointer.');
         }
         return $position;
     }
@@ -153,7 +153,7 @@ class Stream implements StreamInterface
             return false;
         }
 
-        return $this->getMetadata("seekable") == 1;
+        return $this->getMetadata('seekable') == 1;
     }
 
     /**
@@ -172,7 +172,7 @@ class Stream implements StreamInterface
     public function seek($offset, $whence = SEEK_SET)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to seek detached stream.");
+            throw new \RuntimeException('Unable to seek detached stream.');
         }
 
         $result = -1;
@@ -180,7 +180,7 @@ class Stream implements StreamInterface
             $result = fseek($this->resource, $offset, $whence);
         }
         if ($result === -1) {
-            throw new \RuntimeException("Unable to seek to position.");
+            throw new \RuntimeException('Unable to seek to position.');
         }
     }
 
@@ -198,7 +198,7 @@ class Stream implements StreamInterface
     public function rewind()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to seek detached stream.");
+            throw new \RuntimeException('Unable to seek detached stream.');
         }
 
         $result = false;
@@ -206,7 +206,7 @@ class Stream implements StreamInterface
             $result = rewind($this->resource);
         }
         if ($result === false) {
-            throw new \RuntimeException("Unable to rewind.");
+            throw new \RuntimeException('Unable to rewind.');
         }
     }
 
@@ -235,7 +235,7 @@ class Stream implements StreamInterface
     public function write($string)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to write to detached stream.");
+            throw new \RuntimeException('Unable to write to detached stream.');
         }
 
         $result = false;
@@ -243,7 +243,7 @@ class Stream implements StreamInterface
             $result = fwrite($this->resource, $string);
         }
         if ($result === false) {
-            throw new \RuntimeException("Unable to write to stream.");
+            throw new \RuntimeException('Unable to write to stream.');
         }
         return $result;
     }
@@ -276,7 +276,7 @@ class Stream implements StreamInterface
     public function read($length)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to read to detached stream.");
+            throw new \RuntimeException('Unable to read to detached stream.');
         }
 
         $result = false;
@@ -284,7 +284,7 @@ class Stream implements StreamInterface
             $result = fread($this->resource, $length);
         }
         if ($result === false) {
-            throw new \RuntimeException("Unable to read from stream.");
+            throw new \RuntimeException('Unable to read from stream.');
         }
         return $result;
     }
@@ -299,7 +299,7 @@ class Stream implements StreamInterface
     public function getContents()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException("Unable to read to detached stream.");
+            throw new \RuntimeException('Unable to read to detached stream.');
         }
 
         $result = false;
@@ -307,7 +307,7 @@ class Stream implements StreamInterface
             $result = stream_get_contents($this->resource);
         }
         if ($result === false) {
-            throw new \RuntimeException("Unable to read from stream.");
+            throw new \RuntimeException('Unable to read from stream.');
         }
         return $result;
     }

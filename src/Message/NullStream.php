@@ -18,7 +18,7 @@ class NullStream implements StreamInterface
      */
     public function __toString()
     {
-        return "";
+        return '';
     }
 
     /**
@@ -96,7 +96,7 @@ class NullStream implements StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        throw new \RuntimeException("Unable to seek to position.");
+        throw new \RuntimeException('Unable to seek to position.');
     }
 
     /**
@@ -109,7 +109,7 @@ class NullStream implements StreamInterface
      */
     public function rewind()
     {
-        throw new \RuntimeException("Unable to rewind stream.");
+        throw new \RuntimeException('Unable to rewind stream.');
     }
 
     /**
@@ -131,7 +131,7 @@ class NullStream implements StreamInterface
      */
     public function write($string)
     {
-        throw new \RuntimeException("Unable to write to stream.");
+        throw new \RuntimeException('Unable to write to stream.');
     }
 
     /**
@@ -156,7 +156,7 @@ class NullStream implements StreamInterface
      */
     public function read($length)
     {
-        return "";
+        return '';
     }
 
     /**
@@ -168,7 +168,7 @@ class NullStream implements StreamInterface
      */
     public function getContents()
     {
-        return "";
+        return '';
     }
 
     /**

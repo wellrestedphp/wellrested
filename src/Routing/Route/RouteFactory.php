@@ -29,12 +29,12 @@ class RouteFactory implements RouteFactoryInterface
      */
     public function create($target)
     {
-        if ($target[0] === "/") {
+        if ($target[0] === '/') {
 
             // Possible static, prefix, or template
 
             // PrefixRoutes end with *
-            if (substr($target, -1) === "*") {
+            if (substr($target, -1) === '*') {
                 return new PrefixRoute($target, new MethodMap($this->dispatcher));
             }
 

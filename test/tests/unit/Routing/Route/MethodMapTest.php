@@ -36,10 +36,10 @@ class MethodMapTest extends TestCase
 
     public function testDispatchesMiddlewareWithMatchingMethod()
     {
-        $this->request = $this->request->withMethod("GET");
+        $this->request = $this->request->withMethod('GET');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $map($this->request, $this->response, $this->next);
 
         $this->assertTrue($this->middleware->called);
@@ -47,14 +47,14 @@ class MethodMapTest extends TestCase
 
     public function testTreatsMethodNamesCaseSensitively()
     {
-        $this->request = $this->request->withMethod("get");
+        $this->request = $this->request->withMethod('get');
 
         $middlewareUpper = new MiddlewareMock();
         $middlewareLower = new MiddlewareMock();
 
         $map = $this->getMethodMap();
-        $map->register("GET", $middlewareUpper);
-        $map->register("get", $middlewareLower);
+        $map->register('GET', $middlewareUpper);
+        $map->register('get', $middlewareLower);
         $map($this->request, $this->response, $this->next);
 
         $this->assertTrue($middlewareLower->called);
@@ -62,10 +62,10 @@ class MethodMapTest extends TestCase
 
     public function testDispatchesWildcardMiddlewareWithNonMatchingMethod()
     {
-        $this->request = $this->request->withMethod("GET");
+        $this->request = $this->request->withMethod('GET');
 
         $map = $this->getMethodMap();
-        $map->register("*", $this->middleware);
+        $map->register('*', $this->middleware);
         $map($this->request, $this->response, $this->next);
 
         $this->assertTrue($this->middleware->called);
@@ -73,10 +73,10 @@ class MethodMapTest extends TestCase
 
     public function testDispatchesGetMiddlewareForHeadByDefault()
     {
-        $this->request = $this->request->withMethod("HEAD");
+        $this->request = $this->request->withMethod('HEAD');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $map($this->request, $this->response, $this->next);
 
         $this->assertTrue($this->middleware->called);
@@ -85,12 +85,12 @@ class MethodMapTest extends TestCase
     public function testRegistersMiddlewareForMultipleMethods()
     {
         $map = $this->getMethodMap();
-        $map->register("GET,POST", $this->middleware);
+        $map->register('GET,POST', $this->middleware);
 
-        $this->request = $this->request->withMethod("GET");
+        $this->request = $this->request->withMethod('GET');
         $map($this->request, $this->response, $this->next);
 
-        $this->request = $this->request->withMethod("POST");
+        $this->request = $this->request->withMethod('POST');
         $map($this->request, $this->response, $this->next);
 
         $this->assertEquals(2, $this->middleware->callCount);
@@ -98,11 +98,11 @@ class MethodMapTest extends TestCase
 
     public function testSettingNullDeregistersMiddleware()
     {
-        $this->request = $this->request->withMethod("POST");
+        $this->request = $this->request->withMethod('POST');
 
         $map = $this->getMethodMap();
-        $map->register("POST", $this->middleware);
-        $map->register("POST", null);
+        $map->register('POST', $this->middleware);
+        $map->register('POST', null);
         $response = $map($this->request, $this->response, $this->next);
 
         $this->assertEquals(405, $response->getStatusCode());
@@ -110,10 +110,10 @@ class MethodMapTest extends TestCase
 
     public function testSetsStatusTo200ForOptions()
     {
-        $this->request = $this->request->withMethod("OPTIONS");
+        $this->request = $this->request->withMethod('OPTIONS');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $response = $map($this->request, $this->response, $this->next);
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -121,10 +121,10 @@ class MethodMapTest extends TestCase
 
     public function testStopsPropagatingAfterOptions()
     {
-        $this->request = $this->request->withMethod("OPTIONS");
+        $this->request = $this->request->withMethod('OPTIONS');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $map($this->request, $this->response, $this->next);
 
         $this->assertFalse($this->next->called);
@@ -133,7 +133,7 @@ class MethodMapTest extends TestCase
     /** @dataProvider allowedMethodProvider */
     public function testSetsAllowHeaderForOptions($methodsDeclared, $methodsAllowed)
     {
-        $this->request = $this->request->withMethod("OPTIONS");
+        $this->request = $this->request->withMethod('OPTIONS');
 
         $map = $this->getMethodMap();
         foreach ($methodsDeclared as $method) {
@@ -141,16 +141,16 @@ class MethodMapTest extends TestCase
         }
         $response = $map($this->request, $this->response, $this->next);
 
-        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine("Allow"));
+        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine('Allow'));
     }
 
     /** @dataProvider allowedMethodProvider */
     public function testSetsStatusTo405ForBadMethod()
     {
-        $this->request = $this->request->withMethod("POST");
+        $this->request = $this->request->withMethod('POST');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $response = $map($this->request, $this->response, $this->next);
 
         $this->assertEquals(405, $response->getStatusCode());
@@ -162,10 +162,10 @@ class MethodMapTest extends TestCase
      */
     public function testStopsPropagatingAfterBadMethod()
     {
-        $this->request = $this->request->withMethod("POST");
+        $this->request = $this->request->withMethod('POST');
 
         $map = $this->getMethodMap();
-        $map->register("GET", $this->middleware);
+        $map->register('GET', $this->middleware);
         $map($this->request, $this->response, $this->next);
         $this->assertFalse($this->next->called);
     }
@@ -173,7 +173,7 @@ class MethodMapTest extends TestCase
     /** @dataProvider allowedMethodProvider */
     public function testSetsAllowHeaderForBadMethod($methodsDeclared, $methodsAllowed)
     {
-        $this->request = $this->request->withMethod("BAD");
+        $this->request = $this->request->withMethod('BAD');
 
         $map = $this->getMethodMap();
         foreach ($methodsDeclared as $method) {
@@ -181,17 +181,17 @@ class MethodMapTest extends TestCase
         }
         $response = $map($this->request, $this->response, $this->next);
 
-        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine("Allow"));
+        $this->assertContainsEach($methodsAllowed, $response->getHeaderLine('Allow'));
     }
 
     public function allowedMethodProvider()
     {
         return [
-            [["GET"], ["GET", "HEAD", "OPTIONS"]],
-            [["GET", "POST"], ["GET", "POST", "HEAD", "OPTIONS"]],
-            [["POST"], ["POST", "OPTIONS"]],
-            [["POST"], ["POST", "OPTIONS"]],
-            [["GET", "PUT,DELETE"], ["GET", "PUT", "DELETE", "HEAD", "OPTIONS"]],
+            [['GET'], ['GET', 'HEAD', 'OPTIONS']],
+            [['GET', 'POST'], ['GET', 'POST', 'HEAD', 'OPTIONS']],
+            [['POST'], ['POST', 'OPTIONS']],
+            [['POST'], ['POST', 'OPTIONS']],
+            [['GET', 'PUT,DELETE'], ['GET', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']],
         ];
     }
 

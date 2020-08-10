@@ -64,12 +64,12 @@ class Transmitter implements TransmitterInterface
         // - Response does not have a Transfer-encoding: chunked header
         // - Response body stream is readable and reports a non-null size
         //
-        if (!$response->hasHeader("Content-length")
-            && !(strtolower($response->getHeaderLine("Transfer-encoding")) === "chunked")
+        if (!$response->hasHeader('Content-length')
+            && !(strtolower($response->getHeaderLine('Transfer-encoding')) === 'chunked')
         ) {
             $size = $response->getBody()->getSize();
             if ($size !== null) {
-                $response = $response->withHeader("Content-length", (string) $size);
+                $response = $response->withHeader('Content-length', (string) $size);
             }
         }
         return $response;

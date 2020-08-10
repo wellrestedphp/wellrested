@@ -21,21 +21,21 @@ class Uri implements UriInterface
     const MAX_PORT = 65535;
 
     /** @var string */
-    private $scheme = "";
+    private $scheme = '';
     /** @var string  */
-    private $user = "";
+    private $user = '';
     /** @var string|null */
     private $password;
     /** @var string  */
-    private $host = "";
+    private $host = '';
     /** @var int|null */
     private $port;
     /** @var string  */
-    private $path = "";
+    private $path = '';
     /** @var string  */
-    private $query = "";
+    private $query = '';
     /** @var string  */
-    private $fragment = "";
+    private $fragment = '';
 
     /**
      * @param string $uri A string representation of a URI.
@@ -112,15 +112,15 @@ class Uri implements UriInterface
      */
     public function getAuthority()
     {
-        $authority = "";
+        $authority = '';
 
         $host = $this->getHost();
-        if ($host !== "") {
+        if ($host !== '') {
 
             // User Info
             $userInfo = $this->getUserInfo();
-            if ($userInfo !== "") {
-                $authority .= $userInfo . "@";
+            if ($userInfo !== '') {
+                $authority .= $userInfo . '@';
             }
 
             // Host
@@ -130,8 +130,8 @@ class Uri implements UriInterface
             $port = $this->getPort();
             if ($port !== null) {
                 $scheme = $this->getScheme();
-                if (($scheme === "http" && $port !== 80) || ($scheme === "https" && $port !== 443)) {
-                    $authority .= ":" . $port;
+                if (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 443)) {
+                    $authority .= ':' . $port;
                 }
             }
         }
@@ -158,7 +158,7 @@ class Uri implements UriInterface
     {
         $userInfo = $this->user;
         if ($userInfo && $this->password) {
-            $userInfo .= ":" . $this->password;
+            $userInfo .= ':' . $this->password;
         }
         return $userInfo;
     }
@@ -198,9 +198,9 @@ class Uri implements UriInterface
     {
         if ($this->port === null) {
             switch ($this->scheme) {
-                case "http":
+                case 'http':
                     return 80;
-                case "https":
+                case 'https':
                     return 443;
                 default:
                     return null;
@@ -236,7 +236,7 @@ class Uri implements UriInterface
      */
     public function getPath()
     {
-        if ($this->path === "*") {
+        if ($this->path === '*') {
             return $this->path;
         }
         return $this->percentEncode($this->path);
@@ -305,9 +305,9 @@ class Uri implements UriInterface
      */
     public function withScheme($scheme)
     {
-        $scheme = $scheme ? strtolower($scheme) : "";
-        if (!in_array($scheme, ["", "http", "https"])) {
-            throw new \InvalidArgumentException("Scheme must be http, https, or empty.");
+        $scheme = $scheme ? strtolower($scheme) : '';
+        if (!in_array($scheme, ['', 'http', 'https'])) {
+            throw new \InvalidArgumentException('Scheme must be http, https, or empty.');
         }
         $uri = clone $this;
         $uri->scheme = $scheme;
@@ -351,7 +351,7 @@ class Uri implements UriInterface
     public function withHost($host)
     {
         if (!is_string($host)) {
-            throw new \InvalidArgumentException("Host must be a string.");
+            throw new \InvalidArgumentException('Host must be a string.');
         }
 
         $uri = clone $this;
@@ -380,12 +380,12 @@ class Uri implements UriInterface
     {
         if (is_numeric($port)) {
             if ($port < self::MIN_PORT || $port > self::MAX_PORT) {
-                $message = sprintf("Port must be between %s and %s.", self::MIN_PORT, self::MAX_PORT);
+                $message = sprintf('Port must be between %s and %s.', self::MIN_PORT, self::MAX_PORT);
                 throw new \InvalidArgumentException($message);
             }
             $port = (int) $port;
         } elseif ($port !== null) {
-            throw new \InvalidArgumentException("Port must be an int or null.");
+            throw new \InvalidArgumentException('Port must be an int or null.');
         }
 
         $uri = clone $this;
@@ -413,7 +413,7 @@ class Uri implements UriInterface
     public function withPath($path)
     {
         if (!is_string($path)) {
-            throw new \InvalidArgumentException("Path must be a string");
+            throw new \InvalidArgumentException('Path must be a string');
         }
         $uri = clone $this;
         $uri->path = $path;
@@ -488,29 +488,29 @@ class Uri implements UriInterface
      */
     public function __toString()
     {
-        $string = "";
+        $string = '';
 
         $authority = $this->getAuthority();
-        if ($authority !== "") {
+        if ($authority !== '') {
             $scheme = $this->getScheme();
-            if ($scheme !== "") {
-                $string = $scheme . ":";
+            if ($scheme !== '') {
+                $string = $scheme . ':';
             }
             $string .= "//$authority";
         }
 
         $path = $this->getPath();
-        if ($path !== "") {
+        if ($path !== '') {
             $string .= $path;
         }
 
         $query = $this->getQuery();
-        if ($query !== "") {
+        if ($query !== '') {
             $string .= "?$query";
         }
 
         $fragment = $this->getFragment();
-        if ($fragment !== "") {
+        if ($fragment !== '') {
             $string .= "#$fragment";
         }
 

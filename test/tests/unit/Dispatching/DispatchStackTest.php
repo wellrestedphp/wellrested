@@ -29,19 +29,19 @@ class DispatchStackTest extends TestCase
         $callOrder = [];
         $stack = new DispatchStack(new Dispatcher());
         $stack->add(function ($request, $response, $next) use (&$callOrder) {
-            $callOrder[] = "first";
+            $callOrder[] = 'first';
             return $next($request, $response);
         });
         $stack->add(function ($request, $response, $next) use (&$callOrder) {
-            $callOrder[] = "second";
+            $callOrder[] = 'second';
             return $next($request, $response);
         });
         $stack->add(function ($request, $response, $next) use (&$callOrder) {
-            $callOrder[] = "third";
+            $callOrder[] = 'third';
             return $next($request, $response);
         });
         $stack($this->request, $this->response, $this->next);
-        $this->assertEquals(["first", "second", "third"], $callOrder);
+        $this->assertEquals(['first', 'second', 'third'], $callOrder);
     }
 
     public function testCallsNextAfterDispatchingEmptyStack()

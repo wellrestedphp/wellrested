@@ -26,7 +26,7 @@ class RegexRoute extends Route
             $this->captures = $captures;
             return true;
         } elseif ($matched === false) {
-            throw new \RuntimeException("Invalid regular expression: " . $this->getTarget());
+            throw new \RuntimeException('Invalid regular expression: ' . $this->getTarget());
         }
         return false;
     }

@@ -11,7 +11,7 @@ class NullStreamTest extends TestCase
     public function testCastsToString()
     {
         $stream = new NullStream();
-        $this->assertEquals("", (string) $stream);
+        $this->assertEquals('', (string) $stream);
     }
 
     public function testCloseDoesNothing()
@@ -75,7 +75,7 @@ class NullStreamTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         $stream = new NullStream();
-        $stream->write("");
+        $stream->write('');
     }
 
     public function testIsReadableReturnsTrue()
@@ -87,13 +87,13 @@ class NullStreamTest extends TestCase
     public function testReadReturnsEmptyString()
     {
         $stream = new NullStream();
-        $this->assertEquals("", $stream->read(100));
+        $this->assertEquals('', $stream->read(100));
     }
 
     public function testGetContentsReturnsEmptyString()
     {
         $stream = new NullStream();
-        $this->assertEquals("", $stream->getContents());
+        $this->assertEquals('', $stream->getContents());
     }
 
     public function testGetMetadataReturnsNull()
@@ -105,6 +105,6 @@ class NullStreamTest extends TestCase
     public function testGetMetadataReturnsNullWithKey()
     {
         $stream = new NullStream();
-        $this->assertNull($stream->getMetadata("size"));
+        $this->assertNull($stream->getMetadata('size'));
     }
 }

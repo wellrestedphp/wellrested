@@ -53,7 +53,7 @@ class TemplateRoute extends Route
 
     private function matchesStartOfRequestTarget(string $requestTarget): bool
     {
-        $firstVarPos = strpos($this->target, "{");
+        $firstVarPos = strpos($this->target, '{');
         if ($firstVarPos === false) {
             return $requestTarget === $this->target;
         }
@@ -65,7 +65,7 @@ class TemplateRoute extends Route
         $variables = [];
 
         // Isolate the named captures.
-        $keys = array_filter(array_keys($matches), "is_string");
+        $keys = array_filter(array_keys($matches), 'is_string');
 
         // Store named captures to the variables.
         foreach ($keys as $key) {
@@ -73,7 +73,7 @@ class TemplateRoute extends Route
 
             if (isset($this->explosions[$key])) {
                 $values = explode($this->explosions[$key], $value);
-                $variables[$key] = array_map("urldecode", $values);
+                $variables[$key] = array_map('urldecode', $values);
             } else {
                 $value = urldecode($value);
                 $variables[$key] = $value;
@@ -90,16 +90,16 @@ class TemplateRoute extends Route
 
         // Escape allowable characters with regex meaning.
         $escape = [
-            "." => "\\.",
-            "-" => "\\-",
-            "+" => "\\+",
-            "*" => "\\*"
+            '.' => '\\.',
+            '-' => '\\-',
+            '+' => '\\+',
+            '*' => '\\*'
         ];
         $pattern = str_replace(array_keys($escape), array_values($escape), $pattern);
         $unescape = [
-            "{\\+" => "{+",
-            "{\\." => "{.",
-            "\\*}" => "*}"
+            '{\\+' => '{+',
+            '{\\.' => '{.',
+            '\\*}' => '*}'
         ];
         $pattern = str_replace(array_keys($unescape), array_values($unescape), $pattern);
 
@@ -108,7 +108,7 @@ class TemplateRoute extends Route
 
         $pattern = preg_replace_callback(
             self::URI_TEMPLATE_EXPRESSION_RE,
-            [$this, "uriVariableReplacementCallback"],
+            [$this, 'uriVariableReplacementCallback'],
             $pattern
         );
 
@@ -120,35 +120,35 @@ class TemplateRoute extends Route
         $name = $matches[1];
         $pattern = self::RE_UNRESERVED;
 
-        $prefix = "";
-        $delimiter = ",";
-        $explodeDelimiter = ",";
+        $prefix = '';
+        $delimiter = ',';
+        $explodeDelimiter = ',';
 
         // Read the first character as an operator. This determines which
         // characters to allow in the match.
         $operator = $name[0];
 
         // Read the last character as the modifier.
-        $explosion = (substr($name, -1, 1) === "*");
+        $explosion = (substr($name, -1, 1) === '*');
 
         switch ($operator) {
-            case "+":
+            case '+':
                 $name = substr($name, 1);
-                $pattern = ".*";
+                $pattern = '.*';
                 break;
-            case ".":
+            case '.':
                 $name = substr($name, 1);
-                $prefix = "\\.";
-                $delimiter = "\\.";
-                $explodeDelimiter = ".";
+                $prefix = '\\.';
+                $delimiter = '\\.';
+                $explodeDelimiter = '.';
                 break;
-            case "/":
+            case '/':
                 $name = substr($name, 1);
-                $prefix = "\\/";
-                $delimiter = "\\/";
+                $prefix = '\\/';
+                $delimiter = '\\/';
                 if ($explosion) {
                     $pattern = '[0-9a-zA-Z\-._\~%,\/]*'; // Unreserved + "," and "/"
-                    $explodeDelimiter = "/";
+                    $explodeDelimiter = '/';
                 }
                 break;
         }
@@ -162,7 +162,7 @@ class TemplateRoute extends Route
             $this->explosions[$name] = $explodeDelimiter;
         }
 
-        $names = explode(",", $name);
+        $names = explode(',', $name);
         $results = [];
         foreach ($names as $name) {
             $results[] = "(?<{$name}>{$pattern})";

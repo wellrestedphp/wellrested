@@ -10,57 +10,57 @@ class HeaderCollectionTest extends TestCase
     public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
     {
         $collection = new HeaderCollection();
-        $collection["Content-Type"] = "application/json";
-        $this->assertTrue(isset($collection["content-type"]));
+        $collection['Content-Type'] = 'application/json';
+        $this->assertTrue(isset($collection['content-type']));
     }
 
     public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset()
     {
         $collection = new HeaderCollection();
-        $collection["Set-Cookie"] = "cat=Molly";
-        $collection["SET-COOKIE"] = "dog=Bear";
-        $this->assertTrue(isset($collection["set-cookie"]));
+        $collection['Set-Cookie'] = 'cat=Molly';
+        $collection['SET-COOKIE'] = 'dog=Bear';
+        $this->assertTrue(isset($collection['set-cookie']));
     }
 
     public function testReturnsHeadersWithCaseInsensitiveHeaderName()
     {
         $collection = new HeaderCollection();
-        $collection["Set-Cookie"] = "cat=Molly";
-        $collection["SET-COOKIE"] = "dog=Bear";
+        $collection['Set-Cookie'] = 'cat=Molly';
+        $collection['SET-COOKIE'] = 'dog=Bear';
 
-        $headers = $collection["set-cookie"];
-        $this->assertEquals(2, count(array_intersect($headers, ["cat=Molly", "dog=Bear"])));
+        $headers = $collection['set-cookie'];
+        $this->assertEquals(2, count(array_intersect($headers, ['cat=Molly', 'dog=Bear'])));
     }
 
     public function testRemovesHeadersWithCaseInsensitiveHeaderName()
     {
         $collection = new HeaderCollection();
-        $collection["Set-Cookie"] = "cat=Molly";
-        $collection["SET-COOKIE"] = "dog=Bear";
-        unset($collection["set-cookie"]);
-        $this->assertFalse(isset($collection["set-cookie"]));
+        $collection['Set-Cookie'] = 'cat=Molly';
+        $collection['SET-COOKIE'] = 'dog=Bear';
+        unset($collection['set-cookie']);
+        $this->assertFalse(isset($collection['set-cookie']));
     }
 
     /** @coversNothing */
     public function testCloneMakesDeepCopyOfHeaders()
     {
         $collection = new HeaderCollection();
-        $collection["Set-Cookie"] = "cat=Molly";
+        $collection['Set-Cookie'] = 'cat=Molly';
 
         $clone = clone $collection;
-        unset($clone["Set-Cookie"]);
+        unset($clone['Set-Cookie']);
 
-        $this->assertTrue(isset($collection["set-cookie"]) && !isset($clone["set-cookie"]));
+        $this->assertTrue(isset($collection['set-cookie']) && !isset($clone['set-cookie']));
     }
 
     public function testIteratesWithOriginalKeys()
     {
         $collection = new HeaderCollection();
-        $collection["Content-length"] = "100";
-        $collection["Set-Cookie"] = "cat=Molly";
-        $collection["Set-Cookie"] = "dog=Bear";
-        $collection["Content-type"] = "application/json";
-        unset($collection["Content-length"]);
+        $collection['Content-length'] = '100';
+        $collection['Set-Cookie'] = 'cat=Molly';
+        $collection['Set-Cookie'] = 'dog=Bear';
+        $collection['Content-type'] = 'application/json';
+        unset($collection['Content-length']);
 
         $headers = [];
 
@@ -68,7 +68,7 @@ class HeaderCollectionTest extends TestCase
             $headers[] = $key;
         }
 
-        $expected = ["Content-type", "Set-Cookie"];
+        $expected = ['Content-type', 'Set-Cookie'];
 
         $countUnmatched = count(array_diff($expected, $headers)) + count(array_diff($headers, $expected));
         $this->assertEquals(0, $countUnmatched);
@@ -77,11 +77,11 @@ class HeaderCollectionTest extends TestCase
     public function testIteratesWithOriginalKeysAndValues()
     {
         $collection = new HeaderCollection();
-        $collection["Content-length"] = "100";
-        $collection["Set-Cookie"] = "cat=Molly";
-        $collection["Set-Cookie"] = "dog=Bear";
-        $collection["Content-type"] = "application/json";
-        unset($collection["Content-length"]);
+        $collection['Content-length'] = '100';
+        $collection['Set-Cookie'] = 'cat=Molly';
+        $collection['Set-Cookie'] = 'dog=Bear';
+        $collection['Content-type'] = 'application/json';
+        unset($collection['Content-length']);
 
         $headers = [];
 
@@ -96,8 +96,8 @@ class HeaderCollectionTest extends TestCase
         }
 
         $expected = [
-            "Set-Cookie" => ["cat=Molly", "dog=Bear"],
-            "Content-type" => ["application/json"]
+            'Set-Cookie' => ['cat=Molly', 'dog=Bear'],
+            'Content-type' => ['application/json']
         ];
 
         $this->assertEquals($expected, $headers);

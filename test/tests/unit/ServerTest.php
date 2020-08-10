@@ -147,15 +147,15 @@ class ServerTest extends TestCase
         $this->server->setPathVariablesAttributeName('pathVariables');
 
         $request = (new ServerRequest())
-            ->withMethod("GET")
-            ->withRequestTarget("/");
+            ->withMethod('GET')
+            ->withRequestTarget('/');
         $response = new Response();
         $next = function ($rqst, $resp) {
             return $resp;
         };
 
         $router = $this->server->createRouter();
-        $router->register("GET", "/", "middleware");
+        $router->register('GET', '/', 'middleware');
         $router($request, $response, $next);
 
         $dispatcher->dispatch(Argument::cetera())
@@ -209,7 +209,7 @@ class ServerTest extends TestCase
 
     public function testCreatesStockTransmitterByDefault()
     {
-        $content = "Hello, world!";
+        $content = 'Hello, world!';
 
         $response = (new Response())
             ->withBody(new Stream($content));

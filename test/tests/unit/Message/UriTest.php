@@ -14,7 +14,7 @@ class UriTest extends TestCase
     public function testDefaultSchemeIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getScheme());
+        $this->assertSame('', $uri->getScheme());
     }
 
     /** @dataProvider schemeProvider */
@@ -28,12 +28,12 @@ class UriTest extends TestCase
     public function schemeProvider()
     {
         return [
-            ["http", "http"],
-            ["https", "https"],
-            ["http", "HTTP"],
-            ["https", "HTTPS"],
-            ["", null],
-            ["", ""]
+            ['http', 'http'],
+            ['https', 'https'],
+            ['http', 'HTTP'],
+            ['https', 'HTTPS'],
+            ['', null],
+            ['', '']
         ];
     }
 
@@ -41,7 +41,7 @@ class UriTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
-        $uri->withScheme("gopher");
+        $uri->withScheme('gopher');
     }
 
     // ------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class UriTest extends TestCase
     public function testDefaultAuthorityIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getAuthority());
+        $this->assertSame('', $uri->getAuthority());
     }
 
     public function testRespectsMyAuthoritah()
@@ -63,25 +63,25 @@ class UriTest extends TestCase
     {
         $uri = new Uri();
 
-        if (isset($components["scheme"])) {
-            $uri = $uri->withScheme($components["scheme"]);
+        if (isset($components['scheme'])) {
+            $uri = $uri->withScheme($components['scheme']);
         }
 
-        if (isset($components["user"])) {
-            $user = $components["user"];
+        if (isset($components['user'])) {
+            $user = $components['user'];
             $password = null;
-            if (isset($components["password"])) {
-                $password = $components["password"];
+            if (isset($components['password'])) {
+                $password = $components['password'];
             }
             $uri = $uri->withUserInfo($user, $password);
         }
 
-        if (isset($components["host"])) {
-            $uri = $uri->withHost($components["host"]);
+        if (isset($components['host'])) {
+            $uri = $uri->withHost($components['host']);
         }
 
-        if (isset($components["port"])) {
-            $uri = $uri->withPort($components["port"]);
+        if (isset($components['port'])) {
+            $uri = $uri->withPort($components['port']);
         }
 
         $this->assertEquals($expected, $uri->getAuthority());
@@ -91,73 +91,73 @@ class UriTest extends TestCase
     {
         return [
             [
-                "localhost",
+                'localhost',
                 [
-                    "host" => "localhost"
+                    'host' => 'localhost'
                 ]
             ],
             [
-                "user@localhost",
+                'user@localhost',
                 [
-                    "host" => "localhost",
-                    "user" => "user"
+                    'host' => 'localhost',
+                    'user' => 'user'
                 ]
             ],
             [
-                "user:password@localhost",
+                'user:password@localhost',
                 [
-                    "host" => "localhost",
-                    "user" => "user",
-                    "password" => "password"
+                    'host' => 'localhost',
+                    'user' => 'user',
+                    'password' => 'password'
                 ]
             ],
             [
-                "localhost",
+                'localhost',
                 [
-                    "host" => "localhost",
-                    "password" => "password"
+                    'host' => 'localhost',
+                    'password' => 'password'
                 ]
             ],
             [
-                "localhost",
+                'localhost',
                 [
-                    "scheme" => "http",
-                    "host" => "localhost",
-                    "port" => 80
+                    'scheme' => 'http',
+                    'host' => 'localhost',
+                    'port' => 80
                 ]
             ],
             [
-                "localhost",
+                'localhost',
                 [
-                    "scheme" => "https",
-                    "host" => "localhost",
-                    "port" => 443
+                    'scheme' => 'https',
+                    'host' => 'localhost',
+                    'port' => 443
                 ]
             ],
             [
-                "localhost:4430",
+                'localhost:4430',
                 [
-                    "scheme" => "https",
-                    "host" => "localhost",
-                    "port" => 4430
+                    'scheme' => 'https',
+                    'host' => 'localhost',
+                    'port' => 4430
                 ]
             ],
             [
-                "localhost:8080",
+                'localhost:8080',
                 [
-                    "scheme" => "http",
-                    "host" => "localhost",
-                    "port" => 8080
+                    'scheme' => 'http',
+                    'host' => 'localhost',
+                    'port' => 8080
                 ]
             ],
             [
-                "user:password@localhost:4430",
+                'user:password@localhost:4430',
                 [
-                    "scheme" => "https",
-                    "user" => "user",
-                    "password" => "password",
-                    "host" => "localhost",
-                    "port" => 4430
+                    'scheme' => 'https',
+                    'user' => 'user',
+                    'password' => 'password',
+                    'host' => 'localhost',
+                    'port' => 4430
                 ]
             ],
         ];
@@ -169,7 +169,7 @@ class UriTest extends TestCase
     public function testDefaultUserInfoIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getUserInfo());
+        $this->assertSame('', $uri->getUserInfo());
     }
 
     /**
@@ -189,11 +189,11 @@ class UriTest extends TestCase
     public function userInfoProvider()
     {
         return [
-            ["user:password", "user", "password"],
-            ["user", "user", ""],
-            ["user", "user", null],
-            ["", "", "password"],
-            ["", "", ""]
+            ['user:password', 'user', 'password'],
+            ['user', 'user', ''],
+            ['user', 'user', null],
+            ['', '', 'password'],
+            ['', '', '']
         ];
     }
 
@@ -203,7 +203,7 @@ class UriTest extends TestCase
     public function testDefaultHostIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getHost());
+        $this->assertSame('', $uri->getHost());
     }
 
     /** @dataProvider hostProvider */
@@ -217,10 +217,10 @@ class UriTest extends TestCase
     public function hostProvider()
     {
         return [
-            ["", ""],
-            ["localhost", "localhost"],
-            ["localhost", "LOCALHOST"],
-            ["foo.com", "FOO.com"]
+            ['', ''],
+            ['localhost', 'localhost'],
+            ['localhost', 'LOCALHOST'],
+            ['foo.com', 'FOO.com']
         ];
     }
 
@@ -255,13 +255,13 @@ class UriTest extends TestCase
     public function testDefaultPortForHttpSchemeIs80()
     {
         $uri = new Uri();
-        $this->assertSame(80, $uri->withScheme("http")->getPort());
+        $this->assertSame(80, $uri->withScheme('http')->getPort());
     }
 
     public function testDefaultPortForHttpsSchemeIs443()
     {
         $uri = new Uri();
-        $this->assertSame(443, $uri->withScheme("https")->getPort());
+        $this->assertSame(443, $uri->withScheme('https')->getPort());
     }
 
     /** @dataProvider portAndSchemeProvider */
@@ -275,12 +275,12 @@ class UriTest extends TestCase
     public function portAndSchemeProvider()
     {
         return [
-            [null, "", null],
-            [80, "http", null],
-            [443, "https", null],
-            [8080, "", 8080],
-            [8080, "http", "8080"],
-            [8080, "https", 8080.0]
+            [null, '', null],
+            [80, 'http', null],
+            [443, 'https', null],
+            [8080, '', 8080],
+            [8080, 'http', '8080'],
+            [8080, 'https', 8080.0]
         ];
     }
 
@@ -300,7 +300,7 @@ class UriTest extends TestCase
             [true],
             [-1],
             [65536],
-            ["dog"]
+            ['dog']
         ];
     }
 
@@ -310,7 +310,7 @@ class UriTest extends TestCase
     public function testDefaultPathIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getPath());
+        $this->assertSame('', $uri->getPath());
     }
 
     /** @dataProvider pathProvider */
@@ -333,13 +333,13 @@ class UriTest extends TestCase
     public function pathProvider()
     {
         return [
-            ["", ""],
-            ["/", "/"],
-            ["*", "*"],
-            ["/my/path", "/my/path"],
-            ["/encoded%2Fslash", "/encoded%2Fslash"],
-            ["/percent/%25", "/percent/%"],
-            ["/%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA", "/áéíóú"]
+            ['', ''],
+            ['/', '/'],
+            ['*', '*'],
+            ['/my/path', '/my/path'],
+            ['/encoded%2Fslash', '/encoded%2Fslash'],
+            ['/percent/%25', '/percent/%'],
+            ['/%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA', '/áéíóú']
         ];
     }
 
@@ -349,7 +349,7 @@ class UriTest extends TestCase
     public function testDefaultQueryIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getQuery());
+        $this->assertSame('', $uri->getQuery());
     }
 
     /** @dataProvider queryProvider */
@@ -372,9 +372,9 @@ class UriTest extends TestCase
     public function queryProvider()
     {
         return [
-            ["cat=molly", "cat=molly"],
-            ["cat=molly&dog=bear", "cat=molly&dog=bear"],
-            ["accents=%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA", "accents=áéíóú"]
+            ['cat=molly', 'cat=molly'],
+            ['cat=molly&dog=bear', 'cat=molly&dog=bear'],
+            ['accents=%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA', 'accents=áéíóú']
         ];
     }
 
@@ -403,7 +403,7 @@ class UriTest extends TestCase
     public function testDefaultFragmentIsEmpty()
     {
         $uri = new Uri();
-        $this->assertSame("", $uri->getFragment());
+        $this->assertSame('', $uri->getFragment());
     }
 
     /** @dataProvider fragmentProvider */
@@ -426,9 +426,9 @@ class UriTest extends TestCase
     public function fragmentProvider()
     {
         return [
-            ["", null],
-            ["molly", "molly"],
-            ["%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA", "áéíóú"]
+            ['', null],
+            ['molly', 'molly'],
+            ['%C3%A1%C3%A9%C3%AD%C3%B3%C3%BA', 'áéíóú']
         ];
     }
 
@@ -440,37 +440,37 @@ class UriTest extends TestCase
     {
         $uri = new Uri();
 
-        if (isset($components["scheme"])) {
-            $uri = $uri->withScheme($components["scheme"]);
+        if (isset($components['scheme'])) {
+            $uri = $uri->withScheme($components['scheme']);
         }
 
-        if (isset($components["user"])) {
-            $user = $components["user"];
+        if (isset($components['user'])) {
+            $user = $components['user'];
             $password = null;
-            if (isset($components["password"])) {
-                $password = $components["password"];
+            if (isset($components['password'])) {
+                $password = $components['password'];
             }
             $uri = $uri->withUserInfo($user, $password);
         }
 
-        if (isset($components["host"])) {
-            $uri = $uri->withHost($components["host"]);
+        if (isset($components['host'])) {
+            $uri = $uri->withHost($components['host']);
         }
 
-        if (isset($components["port"])) {
-            $uri = $uri->withPort($components["port"]);
+        if (isset($components['port'])) {
+            $uri = $uri->withPort($components['port']);
         }
 
-        if (isset($components["path"])) {
-            $uri = $uri->withPath($components["path"]);
+        if (isset($components['path'])) {
+            $uri = $uri->withPath($components['path']);
         }
 
-        if (isset($components["query"])) {
-            $uri = $uri->withQuery($components["query"]);
+        if (isset($components['query'])) {
+            $uri = $uri->withQuery($components['query']);
         }
 
-        if (isset($components["fragment"])) {
-            $uri = $uri->withFragment($components["fragment"]);
+        if (isset($components['fragment'])) {
+            $uri = $uri->withFragment($components['fragment']);
         }
 
         $this->assertEquals($expected, (string) $uri);
@@ -480,59 +480,59 @@ class UriTest extends TestCase
     {
         return [
             [
-                "http://localhost/path",
+                'http://localhost/path',
                 [
-                    "scheme" => "http",
-                    "host" => "localhost",
-                    "path" => "/path"
+                    'scheme' => 'http',
+                    'host' => 'localhost',
+                    'path' => '/path'
                 ]
             ],
             [
-                "//localhost/path",
+                '//localhost/path',
                 [
-                    "host" => "localhost",
-                    "path" => "/path"
+                    'host' => 'localhost',
+                    'path' => '/path'
                 ]
             ],
             [
-                "/path",
+                '/path',
                 [
-                    "path" => "/path"
+                    'path' => '/path'
                 ]
             ],
             [
-                "/path?cat=molly&dog=bear",
+                '/path?cat=molly&dog=bear',
                 [
-                    "path" => "/path",
-                    "query" => "cat=molly&dog=bear"
+                    'path' => '/path',
+                    'query' => 'cat=molly&dog=bear'
                 ]
             ],
             [
-                "/path?cat=molly&dog=bear#fragment",
+                '/path?cat=molly&dog=bear#fragment',
                 [
-                    "path" => "/path",
-                    "query" => "cat=molly&dog=bear",
-                    "fragment" => "fragment"
+                    'path' => '/path',
+                    'query' => 'cat=molly&dog=bear',
+                    'fragment' => 'fragment'
                 ]
             ],
             [
-                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment",
+                'https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment',
                 [
-                    "scheme" => "https",
-                    "user" => "user",
-                    "password" => "password",
-                    "host" => "localhost",
-                    "port" => 4430,
-                    "path" => "/path",
-                    "query" => "cat=molly&dog=bear",
-                    "fragment" => "fragment"
+                    'scheme' => 'https',
+                    'user' => 'user',
+                    'password' => 'password',
+                    'host' => 'localhost',
+                    'port' => 4430,
+                    'path' => '/path',
+                    'query' => 'cat=molly&dog=bear',
+                    'fragment' => 'fragment'
                 ]
             ],
             // Asterisk Form
             [
-                "*",
+                '*',
                 [
-                    "path" => "*"
+                    'path' => '*'
                 ]
             ],
         ];
@@ -549,36 +549,36 @@ class UriTest extends TestCase
     {
         return [
             [
-                "http://localhost/path",
-                "http://localhost:80/path"
+                'http://localhost/path',
+                'http://localhost:80/path'
             ],
             [
-                "https://localhost/path",
-                "https://localhost:443/path"
+                'https://localhost/path',
+                'https://localhost:443/path'
             ],
             [
-                "https://my.sub.sub.domain.com/path",
-                "https://my.sub.sub.domain.com/path"
+                'https://my.sub.sub.domain.com/path',
+                'https://my.sub.sub.domain.com/path'
             ],
             [
-                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment",
-                "https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment"
+                'https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment',
+                'https://user:password@localhost:4430/path?cat=molly&dog=bear#fragment'
             ],
             [
-                "/path",
-                "/path"
+                '/path',
+                '/path'
             ],
             [
-                "//double/slash",
-                "//double/slash"
+                '//double/slash',
+                '//double/slash'
             ],
             [
-                "no/slash",
-                "no/slash"
+                'no/slash',
+                'no/slash'
             ],
             [
-                "*",
-                "*"
+                '*',
+                '*'
             ]
         ];
     }

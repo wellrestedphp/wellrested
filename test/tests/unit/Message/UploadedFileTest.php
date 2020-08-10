@@ -9,7 +9,7 @@ use WellRESTed\Message\UploadedFileState;
 use WellRESTed\Test\TestCase;
 
 // Hides several php core functions for testing.
-require_once __DIR__ . "/../../../src/UploadedFileState.php";
+require_once __DIR__ . '/../../../src/UploadedFileState.php';
 
 class UploadedFileTest extends TestCase
 {
@@ -19,9 +19,9 @@ class UploadedFileTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        UploadedFileState::$php_sapi_name = "cli";
-        $this->tmpName = tempnam(sys_get_temp_dir(), "tst");
-        $this->movePath = tempnam(sys_get_temp_dir(), "tst");
+        UploadedFileState::$php_sapi_name = 'cli';
+        $this->tmpName = tempnam(sys_get_temp_dir(), 'tst');
+        $this->movePath = tempnam(sys_get_temp_dir(), 'tst');
     }
 
     public function tearDown(): void
@@ -40,22 +40,22 @@ class UploadedFileTest extends TestCase
 
     public function testGetStreamReturnsStreamInterface()
     {
-        $file = new UploadedFile("", "", 0, $this->tmpName, 0);
+        $file = new UploadedFile('', '', 0, $this->tmpName, 0);
         $this->assertInstanceOf(StreamInterface::class, $file->getStream());
     }
 
     public function testGetStreamReturnsStreamWrappingUploadedFile()
     {
-        $content = "Hello, World!";
+        $content = 'Hello, World!';
         file_put_contents($this->tmpName, $content);
-        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file = new UploadedFile('', '', 0, $this->tmpName, '');
         $stream = $file->getStream();
         $this->assertEquals($content, (string) $stream);
     }
 
     public function testGetStreamThrowsRuntimeExceptionForNoFile()
     {
-        $file = new UploadedFile("", "", 0, "", 0);
+        $file = new UploadedFile('', '', 0, '', 0);
         $this->expectException(RuntimeException::class);
         $file->getStream();
     }
@@ -63,9 +63,9 @@ class UploadedFileTest extends TestCase
     public function testGetStreamThrowsExceptionAfterMoveTo()
     {
         $this->expectException(RuntimeException::class);
-        $content = "Hello, World!";
+        $content = 'Hello, World!';
         file_put_contents($this->tmpName, $content);
-        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file = new UploadedFile('', '', 0, $this->tmpName, '');
         $file->moveTo($this->movePath);
         $file->getStream();
     }
@@ -73,9 +73,9 @@ class UploadedFileTest extends TestCase
     public function testGetStreamThrowsExceptionForNonUploadedFile()
     {
         $this->expectException(RuntimeException::class);
-        UploadedFileState::$php_sapi_name = "apache";
+        UploadedFileState::$php_sapi_name = 'apache';
         UploadedFileState::$is_uploaded_file = false;
-        $file = new UploadedFile("", "", 0, "", 0);
+        $file = new UploadedFile('', '', 0, '', 0);
         $file->getStream();
     }
 
@@ -84,13 +84,13 @@ class UploadedFileTest extends TestCase
 
     public function testMoveToSapiRelocatesUploadedFileToDestinationIfExists()
     {
-        UploadedFileState::$php_sapi_name = "fpm-fcgi";
+        UploadedFileState::$php_sapi_name = 'fpm-fcgi';
 
-        $content = "Hello, World!";
+        $content = 'Hello, World!';
         file_put_contents($this->tmpName, $content);
         $originalMd5 = md5_file($this->tmpName);
 
-        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file = new UploadedFile('', '', 0, $this->tmpName, '');
         $file->moveTo($this->movePath);
 
         $this->assertEquals($originalMd5, md5_file($this->movePath));
@@ -98,11 +98,11 @@ class UploadedFileTest extends TestCase
 
     public function testMoveToNonSapiRelocatesUploadedFileToDestinationIfExists()
     {
-        $content = "Hello, World!";
+        $content = 'Hello, World!';
         file_put_contents($this->tmpName, $content);
         $originalMd5 = md5_file($this->tmpName);
 
-        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file = new UploadedFile('', '', 0, $this->tmpName, '');
         $file->moveTo($this->movePath);
 
         $this->assertEquals($originalMd5, md5_file($this->movePath));
@@ -112,10 +112,10 @@ class UploadedFileTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $content = "Hello, World!";
+        $content = 'Hello, World!';
         file_put_contents($this->tmpName, $content);
 
-        $file = new UploadedFile("", "", 0, $this->tmpName, "");
+        $file = new UploadedFile('', '', 0, $this->tmpName, '');
         $file->moveTo($this->movePath);
         $file->moveTo($this->movePath);
     }
@@ -125,7 +125,7 @@ class UploadedFileTest extends TestCase
 
     public function testGetSizeReturnsSize()
     {
-        $file = new UploadedFile("", "", 1024, "", 0);
+        $file = new UploadedFile('', '', 1024, '', 0);
         $this->assertEquals(1024, $file->getSize());
     }
 
@@ -134,7 +134,7 @@ class UploadedFileTest extends TestCase
 
     public function testGetErrorReturnsError()
     {
-        $file = new UploadedFile("", "", 1024, "", UPLOAD_ERR_INI_SIZE);
+        $file = new UploadedFile('', '', 1024, '', UPLOAD_ERR_INI_SIZE);
         $this->assertEquals(UPLOAD_ERR_INI_SIZE, $file->getError());
     }
 
@@ -143,8 +143,8 @@ class UploadedFileTest extends TestCase
 
     public function testGetClientFilenameReturnsClientFilename()
     {
-        $file = new UploadedFile("clientFilename", "", 0, "", 0);
-        $this->assertEquals("clientFilename", $file->getClientFilename());
+        $file = new UploadedFile('clientFilename', '', 0, '', 0);
+        $this->assertEquals('clientFilename', $file->getClientFilename());
     }
 
     // ------------------------------------------------------------------------
@@ -152,7 +152,7 @@ class UploadedFileTest extends TestCase
 
     public function testGetClientMediaTypeReturnsClientMediaType()
     {
-        $file = new UploadedFile("", "clientMediaType", 0, "", 0);
-        $this->assertEquals("clientMediaType", $file->getClientMediaType());
+        $file = new UploadedFile('', 'clientMediaType', 0, '', 0);
+        $this->assertEquals('clientMediaType', $file->getClientMediaType());
     }
 }

@@ -34,7 +34,7 @@ class RouterTest extends TestCase
         $this->route->__invoke(Argument::cetera())->willReturn(new Response());
         $this->route->register(Argument::cetera());
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
-        $this->route->getTarget()->willReturn("/");
+        $this->route->getTarget()->willReturn('/');
         $this->route->getPathVariables()->willReturn([]);
 
         $this->factory = $this->prophesize(RouteFactory::class);
@@ -64,24 +64,24 @@ class RouterTest extends TestCase
 
     public function testCreatesRouteForTarget()
     {
-        $this->router->register("GET", "/", "middleware");
+        $this->router->register('GET', '/', 'middleware');
 
-        $this->factory->create("/")->shouldHaveBeenCalled();
+        $this->factory->create('/')->shouldHaveBeenCalled();
     }
 
     public function testDoesNotRecreateRouteForExistingTarget()
     {
-        $this->router->register("GET", "/", "middleware");
-        $this->router->register("POST", "/", "middleware");
+        $this->router->register('GET', '/', 'middleware');
+        $this->router->register('POST', '/', 'middleware');
 
-        $this->factory->create("/")->shouldHaveBeenCalledTimes(1);
+        $this->factory->create('/')->shouldHaveBeenCalledTimes(1);
     }
 
     public function testPassesMethodAndMiddlewareToRoute()
     {
-        $this->router->register("GET", "/", "middleware");
+        $this->router->register('GET', '/', 'middleware');
 
-        $this->route->register("GET", "middleware")->shouldHaveBeenCalled();
+        $this->route->register('GET', 'middleware')->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -89,13 +89,13 @@ class RouterTest extends TestCase
 
     public function testDispatchesStaticRoute()
     {
-        $target = "/";
+        $target = '/';
         $this->request = $this->request->withRequestTarget($target);
 
         $this->route->getTarget()->willReturn($target);
         $this->route->getType()->willReturn(RouteInterface::TYPE_STATIC);
 
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $this->route->__invoke(Argument::cetera())
@@ -104,13 +104,13 @@ class RouterTest extends TestCase
 
     public function testDispatchesPrefixRoute()
     {
-        $target = "/animals/cats/*";
-        $this->request = $this->request->withRequestTarget("/animals/cats/molly");
+        $target = '/animals/cats/*';
+        $this->request = $this->request->withRequestTarget('/animals/cats/molly');
 
         $this->route->getTarget()->willReturn($target);
         $this->route->getType()->willReturn(RouteInterface::TYPE_PREFIX);
 
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $this->route->__invoke(Argument::cetera())
@@ -119,14 +119,14 @@ class RouterTest extends TestCase
 
     public function testDispatchesPatternRoute()
     {
-        $target = "/";
+        $target = '/';
         $this->request = $this->request->withRequestTarget($target);
 
         $this->route->getTarget()->willReturn($target);
         $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $this->route->__invoke(Argument::cetera())
@@ -137,23 +137,23 @@ class RouterTest extends TestCase
     {
         $staticRoute = $this->prophesize(RouteInterface::class);
         $staticRoute->register(Argument::cetera());
-        $staticRoute->getTarget()->willReturn("/cats/");
+        $staticRoute->getTarget()->willReturn('/cats/');
         $staticRoute->getType()->willReturn(RouteInterface::TYPE_STATIC);
         $staticRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $prefixRoute = $this->prophesize(RouteInterface::class);
         $prefixRoute->register(Argument::cetera());
-        $prefixRoute->getTarget()->willReturn("/cats/*");
+        $prefixRoute->getTarget()->willReturn('/cats/*');
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
-        $this->request = $this->request->withRequestTarget("/cats/");
+        $this->request = $this->request->withRequestTarget('/cats/');
 
-        $this->factory->create("/cats/")->willReturn($staticRoute->reveal());
-        $this->factory->create("/cats/*")->willReturn($prefixRoute->reveal());
+        $this->factory->create('/cats/')->willReturn($staticRoute->reveal());
+        $this->factory->create('/cats/*')->willReturn($prefixRoute->reveal());
 
-        $this->router->register("GET", "/cats/", "middleware");
-        $this->router->register("GET", "/cats/*", "middleware");
+        $this->router->register('GET', '/cats/', 'middleware');
+        $this->router->register('GET', '/cats/*', 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $staticRoute->__invoke(Argument::cetera())
@@ -166,24 +166,24 @@ class RouterTest extends TestCase
 
         $shortRoute = $this->prophesize(RouteInterface::class);
         $shortRoute->register(Argument::cetera());
-        $shortRoute->getTarget()->willReturn("/animals/*");
+        $shortRoute->getTarget()->willReturn('/animals/*');
         $shortRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $shortRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $longRoute = $this->prophesize(RouteInterface::class);
         $longRoute->register(Argument::cetera());
-        $longRoute->getTarget()->willReturn("/animals/cats/*");
+        $longRoute->getTarget()->willReturn('/animals/cats/*');
         $longRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $longRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $this->request = $this->request
-            ->withRequestTarget("/animals/cats/molly");
+            ->withRequestTarget('/animals/cats/molly');
 
-        $this->factory->create("/animals/*")->willReturn($shortRoute->reveal());
-        $this->factory->create("/animals/cats/*")->willReturn($longRoute->reveal());
+        $this->factory->create('/animals/*')->willReturn($shortRoute->reveal());
+        $this->factory->create('/animals/cats/*')->willReturn($longRoute->reveal());
 
-        $this->router->register("GET", "/animals/*", "middleware");
-        $this->router->register("GET", "/animals/cats/*", "middleware");
+        $this->router->register('GET', '/animals/*', 'middleware');
+        $this->router->register('GET', '/animals/cats/*', 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $longRoute->__invoke(Argument::cetera())
@@ -194,23 +194,23 @@ class RouterTest extends TestCase
     {
         $prefixRoute = $this->prophesize(RouteInterface::class);
         $prefixRoute->register(Argument::cetera());
-        $prefixRoute->getTarget()->willReturn("/cats/*");
+        $prefixRoute->getTarget()->willReturn('/cats/*');
         $prefixRoute->getType()->willReturn(RouteInterface::TYPE_PREFIX);
         $prefixRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
         $patternRoute = $this->prophesize(RouteInterface::class);
         $patternRoute->register(Argument::cetera());
-        $patternRoute->getTarget()->willReturn("/cats/{id}");
+        $patternRoute->getTarget()->willReturn('/cats/{id}');
         $patternRoute->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute->__invoke(Argument::cetera())->willReturn(new Response());
 
-        $this->request = $this->request->withRequestTarget("/cats/");
+        $this->request = $this->request->withRequestTarget('/cats/');
 
-        $this->factory->create("/cats/*")->willReturn($prefixRoute->reveal());
-        $this->factory->create("/cats/{id}")->willReturn($patternRoute->reveal());
+        $this->factory->create('/cats/*')->willReturn($prefixRoute->reveal());
+        $this->factory->create('/cats/{id}')->willReturn($patternRoute->reveal());
 
-        $this->router->register("GET", "/cats/*", "middleware");
-        $this->router->register("GET", "/cats/{id}", "middleware");
+        $this->router->register('GET', '/cats/*', 'middleware');
+        $this->router->register('GET', '/cats/{id}', 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $prefixRoute->__invoke(Argument::cetera())
@@ -221,7 +221,7 @@ class RouterTest extends TestCase
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
         $patternRoute1->register(Argument::cetera());
-        $patternRoute1->getTarget()->willReturn("/cats/{id}");
+        $patternRoute1->getTarget()->willReturn('/cats/{id}');
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
@@ -229,19 +229,19 @@ class RouterTest extends TestCase
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
         $patternRoute2->register(Argument::cetera());
-        $patternRoute2->getTarget()->willReturn("/cats/{name}");
+        $patternRoute2->getTarget()->willReturn('/cats/{name}');
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute2->__invoke(Argument::cetera())->willReturn(new Response());
 
-        $this->request = $this->request->withRequestTarget("/cats/molly");
+        $this->request = $this->request->withRequestTarget('/cats/molly');
 
-        $this->factory->create("/cats/{id}")->willReturn($patternRoute1->reveal());
-        $this->factory->create("/cats/{name}")->willReturn($patternRoute2->reveal());
+        $this->factory->create('/cats/{id}')->willReturn($patternRoute1->reveal());
+        $this->factory->create('/cats/{name}')->willReturn($patternRoute2->reveal());
 
-        $this->router->register("GET", "/cats/{id}", "middleware");
-        $this->router->register("GET", "/cats/{name}", "middleware");
+        $this->router->register('GET', '/cats/{id}', 'middleware');
+        $this->router->register('GET', '/cats/{name}', 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $patternRoute1->__invoke(Argument::cetera())
@@ -252,7 +252,7 @@ class RouterTest extends TestCase
     {
         $patternRoute1 = $this->prophesize(RouteInterface::class);
         $patternRoute1->register(Argument::cetera());
-        $patternRoute1->getTarget()->willReturn("/cats/{id}");
+        $patternRoute1->getTarget()->willReturn('/cats/{id}');
         $patternRoute1->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute1->getPathVariables()->willReturn([]);
         $patternRoute1->matchesRequestTarget(Argument::any())->willReturn(true);
@@ -260,19 +260,19 @@ class RouterTest extends TestCase
 
         $patternRoute2 = $this->prophesize(RouteInterface::class);
         $patternRoute2->register(Argument::cetera());
-        $patternRoute2->getTarget()->willReturn("/cats/{name}");
+        $patternRoute2->getTarget()->willReturn('/cats/{name}');
         $patternRoute2->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $patternRoute2->getPathVariables()->willReturn([]);
         $patternRoute2->matchesRequestTarget(Argument::any())->willReturn(true);
         $patternRoute2->__invoke(Argument::cetera())->willReturn(new Response());
 
-        $this->request = $this->request->withRequestTarget("/cats/molly");
+        $this->request = $this->request->withRequestTarget('/cats/molly');
 
-        $this->factory->create("/cats/{id}")->willReturn($patternRoute1->reveal());
-        $this->factory->create("/cats/{name}")->willReturn($patternRoute2->reveal());
+        $this->factory->create('/cats/{id}')->willReturn($patternRoute1->reveal());
+        $this->factory->create('/cats/{name}')->willReturn($patternRoute2->reveal());
 
-        $this->router->register("GET", "/cats/{id}", "middleware");
-        $this->router->register("GET", "/cats/{name}", "middleware");
+        $this->router->register('GET', '/cats/{id}', 'middleware');
+        $this->router->register('GET', '/cats/{name}', 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $patternRoute2->matchesRequestTarget(Argument::any())
@@ -281,7 +281,7 @@ class RouterTest extends TestCase
 
     public function testMatchesPathAgainstRouteWithoutQuery()
     {
-        $target = "/my/path?cat=molly&dog=bear";
+        $target = '/my/path?cat=molly&dog=bear';
 
         $this->request = $this->request->withRequestTarget($target);
 
@@ -289,10 +289,10 @@ class RouterTest extends TestCase
         $this->route->getType()->willReturn(RouteInterface::TYPE_PATTERN);
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
-        $this->route->matchesRequestTarget("/my/path")->shouldHaveBeenCalled();
+        $this->route->matchesRequestTarget('/my/path')->shouldHaveBeenCalled();
     }
 
     // ------------------------------------------------------------------------
@@ -301,10 +301,10 @@ class RouterTest extends TestCase
     /** @dataProvider pathVariableProvider */
     public function testSetPathVariablesAttributeIndividually($name, $value)
     {
-        $target = "/";
+        $target = '/';
         $variables = [
-            "id" => "1024",
-            "name" => "Molly"
+            'id' => '1024',
+            'name' => 'Molly'
         ];
 
         $this->request = $this->request->withRequestTarget($target);
@@ -314,7 +314,7 @@ class RouterTest extends TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
         $this->route->getPathVariables()->willReturn($variables);
 
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $isRequestWithExpectedAttribute = function ($request) use ($name, $value) {
@@ -330,19 +330,19 @@ class RouterTest extends TestCase
     public function pathVariableProvider()
     {
         return [
-            ["id", "1024"],
-            ["name", "Molly"]
+            ['id', '1024'],
+            ['name', 'Molly']
         ];
     }
 
     public function testSetPathVariablesAttributeAsArray()
     {
-        $attributeName = "pathVariables";
+        $attributeName = 'pathVariables';
 
-        $target = "/";
+        $target = '/';
         $variables = [
-            "id" => "1024",
-            "name" => "Molly"
+            'id' => '1024',
+            'name' => 'Molly'
         ];
 
         $this->request = $this->request->withRequestTarget($target);
@@ -353,7 +353,7 @@ class RouterTest extends TestCase
         $this->route->getPathVariables()->willReturn($variables);
 
         $this->router->__construct(new Dispatcher(), $attributeName);
-        $this->router->register("GET", $target, "middleware");
+        $this->router->register('GET', $target, 'middleware');
         $this->router->__invoke($this->request, $this->response, $this->next);
 
         $isRequestWithExpectedAttribute = function ($request) use ($attributeName, $variables) {
@@ -371,21 +371,21 @@ class RouterTest extends TestCase
 
     public function testWhenNoRouteMatchesByDefaultResponds404()
     {
-        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->request = $this->request->withRequestTarget('/no/match');
         $response = $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertEquals(404, $response->getStatusCode());
     }
 
     public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware()
     {
-        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->request = $this->request->withRequestTarget('/no/match');
         $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertFalse($this->next->called);
     }
 
     public function testWhenNoRouteMatchesAndContinueModePropagatesToNextMiddleware()
     {
-        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->request = $this->request->withRequestTarget('/no/match');
         $this->router->continueOnNotFound();
         $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertTrue($this->next->called);
@@ -407,7 +407,7 @@ class RouterTest extends TestCase
         };
 
         $this->router->add($middleware);
-        $this->router->register("GET", "/", "Handler");
+        $this->router->register('GET', '/', 'Handler');
 
         $this->router->__invoke($this->request, $this->response, $this->next);
 
@@ -433,10 +433,10 @@ class RouterTest extends TestCase
             return $next($middlewareRequest, $middlewareResponse);
         };
 
-        $this->request = $this->request->withRequestTarget("/no/match");
+        $this->request = $this->request->withRequestTarget('/no/match');
 
         $this->router->add($middleware);
-        $this->router->register("GET", "/", "Handler");
+        $this->router->register('GET', '/', 'Handler');
 
         $this->router->__invoke($this->request, $this->response, $this->next);
 

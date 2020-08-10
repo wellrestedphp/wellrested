@@ -11,7 +11,7 @@ use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\HeaderStack;
 use WellRESTed\Transmission\Transmitter;
 
-require_once __DIR__ . "/../../../src/HeaderStack.php";
+require_once __DIR__ . '/../../../src/HeaderStack.php';
 
 class TransmitterTest extends TestCase
 {
@@ -26,7 +26,7 @@ class TransmitterTest extends TestCase
         HeaderStack::reset();
 
         $this->request = (new ServerRequest())
-            ->withMethod("HEAD");
+            ->withMethod('HEAD');
 
         $this->body = $this->prophesize(StreamInterface::class);
         $this->body->isReadable()->willReturn(false);
@@ -43,7 +43,7 @@ class TransmitterTest extends TestCase
     {
         $transmitter = new Transmitter();
         $transmitter->transmit($this->request, $this->response);
-        $this->assertContains("HTTP/1.1 200 OK", HeaderStack::getHeaders());
+        $this->assertContains('HTTP/1.1 200 OK', HeaderStack::getHeaders());
     }
 
     public function testSendStatusCodeWithoutReasonPhrase()
@@ -52,15 +52,15 @@ class TransmitterTest extends TestCase
 
         $transmitter = new Transmitter();
         $transmitter->transmit($this->request, $this->response);
-        $this->assertContains("HTTP/1.1 999", HeaderStack::getHeaders());
+        $this->assertContains('HTTP/1.1 999', HeaderStack::getHeaders());
     }
 
     /** @dataProvider headerProvider */
     public function testSendsHeaders($header)
     {
         $this->response = $this->response
-            ->withHeader("Content-length", ["2048"])
-            ->withHeader("X-foo", ["bar", "baz"]);
+            ->withHeader('Content-length', ['2048'])
+            ->withHeader('X-foo', ['bar', 'baz']);
 
         $transmitter = new Transmitter();
         $transmitter->transmit($this->request, $this->response);
@@ -70,15 +70,15 @@ class TransmitterTest extends TestCase
     public function headerProvider()
     {
         return [
-            ["Content-length: 2048"],
-            ["X-foo: bar"],
-            ["X-foo: baz"]
+            ['Content-length: 2048'],
+            ['X-foo: bar'],
+            ['X-foo: baz']
         ];
     }
 
     public function testOutputsBody()
     {
-        $content = "Hello, world!";
+        $content = 'Hello, world!';
 
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn($content);
@@ -96,7 +96,7 @@ class TransmitterTest extends TestCase
 
     public function testOutputsBodyInChunks()
     {
-        $content = "Hello, world!";
+        $content = 'Hello, world!';
         $chunkSize = 3;
         $position = 0;
 
@@ -129,7 +129,7 @@ class TransmitterTest extends TestCase
 
     public function testOutputsUnseekableStreamInChunks()
     {
-        $content = "Hello, world!";
+        $content = 'Hello, world!';
         $chunkSize = 3;
         $position = 0;
 
@@ -167,7 +167,7 @@ class TransmitterTest extends TestCase
     {
         $bodySize = 1024;
         $this->body->isReadable()->willReturn(true);
-        $this->body->__toString()->willReturn("");
+        $this->body->__toString()->willReturn('');
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
@@ -182,10 +182,10 @@ class TransmitterTest extends TestCase
         $streamSize = 1024;
         $headerSize = 2048;
 
-        $this->response = $this->response->withHeader("Content-length", $headerSize);
+        $this->response = $this->response->withHeader('Content-length', $headerSize);
 
         $this->body->isReadable()->willReturn(true);
-        $this->body->__toString()->willReturn("");
+        $this->body->__toString()->willReturn('');
         $this->body->getSize()->willReturn($streamSize);
 
         $transmitter = new Transmitter();
@@ -199,30 +199,30 @@ class TransmitterTest extends TestCase
     {
         $bodySize = 1024;
 
-        $this->response = $this->response->withHeader("Transfer-encoding", "CHUNKED");
+        $this->response = $this->response->withHeader('Transfer-encoding', 'CHUNKED');
 
         $this->body->isReadable()->willReturn(true);
-        $this->body->__toString()->willReturn("");
+        $this->body->__toString()->willReturn('');
         $this->body->getSize()->willReturn($bodySize);
 
         $transmitter = new Transmitter();
         $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
-        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
+        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), 'Content-length:');
     }
 
     public function testDoesNotAddContentLengthHeaderWhenBodySizeIsNull()
     {
         $this->body->isReadable()->willReturn(true);
-        $this->body->__toString()->willReturn("");
+        $this->body->__toString()->willReturn('');
         $this->body->getSize()->willReturn(null);
 
         $transmitter = new Transmitter();
         $transmitter->setChunkSize(0);
         $transmitter->transmit($this->request, $this->response);
 
-        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), "Content-length:");
+        $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), 'Content-length:');
     }
 
     private function assertArrayDoesNotContainValueWithPrefix($arr, $prefix)

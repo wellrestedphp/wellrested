@@ -195,7 +195,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
             throw new \InvalidArgumentException(
-                "withUploadedFiles expects an array tree with UploadedFileInterface leaves."
+                'withUploadedFiles expects an array tree with UploadedFileInterface leaves.'
             );
         }
 
@@ -249,7 +249,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function withParsedBody($data)
     {
         if (!(is_null($data) || is_array($data) || is_object($data))) {
-            throw new \InvalidArgumentException("Parsed body must be null, array, or object.");
+            throw new \InvalidArgumentException('Parsed body must be null, array, or object.');
         }
 
         $request = clone $this;
@@ -350,15 +350,15 @@ class ServerRequest extends Request implements ServerRequestInterface
         $this->readUploadedFiles($_FILES);
         $this->queryParams = [];
         $this->uri = $this->readUri();
-        if (isset($_SERVER["QUERY_STRING"])) {
-            parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
+        if (isset($_SERVER['QUERY_STRING'])) {
+            parse_str($_SERVER['QUERY_STRING'], $this->queryParams);
         }
-        if (isset($_SERVER["SERVER_PROTOCOL"]) && $_SERVER["SERVER_PROTOCOL"] === "HTTP/1.0") {
+        if (isset($_SERVER['SERVER_PROTOCOL']) && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0') {
             // The default is 1.1, so only update if 1.0
-            $this->protocolVersion = "1.0";
+            $this->protocolVersion = '1.0';
         }
-        if (isset($_SERVER["REQUEST_METHOD"])) {
-            $this->method = $_SERVER["REQUEST_METHOD"];
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            $this->method = $_SERVER['REQUEST_METHOD'];
         }
         $headers = $this->getServerRequestHeaders();
         foreach ($headers as $key => $value) {
@@ -366,9 +366,9 @@ class ServerRequest extends Request implements ServerRequestInterface
         }
         $this->body = $this->getStreamForBody();
 
-        $contentType = $this->getHeaderLine("Content-type");
-        if (strpos($contentType, "application/x-www-form-urlencoded") !== false
-            || strpos($contentType, "multipart/form-data") !== false) {
+        $contentType = $this->getHeaderLine('Content-type');
+        if (strpos($contentType, 'application/x-www-form-urlencoded') !== false
+            || strpos($contentType, 'multipart/form-data') !== false) {
             $this->parsedBody = $_POST;
         }
     }
@@ -388,37 +388,37 @@ class ServerRequest extends Request implements ServerRequestInterface
         array $value
     ): void {
         // Check for each of the expected keys.
-        if (isset($value["name"], $value["type"], $value["tmp_name"], $value["error"], $value["size"])) {
+        if (isset($value['name'], $value['type'], $value['tmp_name'], $value['error'], $value['size'])) {
             // This is a file. It may be a single file, or a list of files.
 
             // Check if these items are arrays.
-            if (is_array($value["name"])
-                && is_array($value["type"])
-                && is_array($value["tmp_name"])
-                && is_array($value["error"])
-                && is_array($value["size"])
+            if (is_array($value['name'])
+                && is_array($value['type'])
+                && is_array($value['tmp_name'])
+                && is_array($value['error'])
+                && is_array($value['size'])
             ) {
                 // Each item is an array. This is a list of uploaded files.
                 $files = [];
-                $keys = array_keys($value["name"]);
+                $keys = array_keys($value['name']);
                 foreach ($keys as $key) {
                     $files[$key] = new UploadedFile(
-                        $value["name"][$key],
-                        $value["type"][$key],
-                        $value["size"][$key],
-                        $value["tmp_name"][$key],
-                        $value["error"][$key]
+                        $value['name'][$key],
+                        $value['type'][$key],
+                        $value['size'][$key],
+                        $value['tmp_name'][$key],
+                        $value['error'][$key]
                     );
                 }
                 $branch[$name] = $files;
             } else {
                 // All expected keys are present and are not arrays. This is an uploaded file.
                 $uploadedFile = new UploadedFile(
-                    $value["name"],
-                    $value["type"],
-                    $value["size"],
-                    $value["tmp_name"],
-                    $value["error"]
+                    $value['name'],
+                    $value['type'],
+                    $value['size'],
+                    $value['tmp_name'],
+                    $value['error']
                 );
                 $branch[$name] = $uploadedFile;
             }
@@ -434,21 +434,21 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     protected function readUri(): UriInterface
     {
-        $uri = "";
+        $uri = '';
 
-        $scheme = "http";
-        if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] && $_SERVER["HTTPS"] !== "off") {
-            $scheme = "https";
+        $scheme = 'http';
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] !== 'off') {
+            $scheme = 'https';
         }
 
-        if (isset($_SERVER["HTTP_HOST"])) {
-            $authority = $_SERVER["HTTP_HOST"];
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $authority = $_SERVER['HTTP_HOST'];
             $uri .= "$scheme://$authority";
         }
 
         // Path and query string
-        if (isset($_SERVER["REQUEST_URI"])) {
-            $uri .= $_SERVER["REQUEST_URI"];
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $uri .= $_SERVER['REQUEST_URI'];
         }
 
         return new Uri($uri);
@@ -478,8 +478,8 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     protected function getStreamForBody()
     {
-        $input = fopen("php://input", "rb");
-        $temp = fopen("php://temp", "wb+");
+        $input = fopen('php://input', 'rb');
+        $temp = fopen('php://temp', 'wb+');
         stream_copy_to_stream($input, $temp);
         rewind($temp);
         return new Stream($temp);
@@ -495,7 +495,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         // http://www.php.net/manual/en/function.getallheaders.php#84262
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === "HTTP_") {
+            if (substr($name, 0, 5) === 'HTTP_') {
                 $name = $this->normalizeHeaderName(substr($name, 5));
                 $headers[$name] = trim($value);
             } elseif ($this->isContentHeader($name) && !empty(trim($value))) {
@@ -517,8 +517,8 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     private function normalizeHeaderName($name)
     {
-        $name = ucwords(strtolower(str_replace("_", " ", $name)));
-        return str_replace(" ", "-", $name);
+        $name = ucwords(strtolower(str_replace('_', ' ', $name)));
+        return str_replace(' ', '-', $name);
     }
 
     /**
@@ -534,7 +534,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         // If not empty, the array MUST have all string keys.
         $keys = array_keys($root);
-        if (count($keys) !== count(array_filter($keys, "is_string"))) {
+        if (count($keys) !== count(array_filter($keys, 'is_string'))) {
             return false;
         }
 

@@ -43,8 +43,8 @@ class MethodMap
      */
     public function register($method, $dispatchable): void
     {
-        $methods = explode(",", $method);
-        $methods = array_map("trim", $methods);
+        $methods = explode(',', $method);
+        $methods = array_map('trim', $methods);
         foreach ($methods as $method) {
             $this->map[$method] = $dispatchable;
         }
@@ -71,18 +71,18 @@ class MethodMap
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // For HEAD, dispatch GET by default.
-        if ($method === "HEAD" && isset($this->map["GET"])) {
-            $middleware = $this->map["GET"];
+        if ($method === 'HEAD' && isset($this->map['GET'])) {
+            $middleware = $this->map['GET'];
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Dispatch * middleware, if registered.
-        if (isset($this->map["*"])) {
-            $middleware = $this->map["*"];
+        if (isset($this->map['*'])) {
+            $middleware = $this->map['*'];
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Respond describing the allowed methods, either as a 405 response or
         // in response to an OPTIONS request.
-        if ($method === "OPTIONS") {
+        if ($method === 'OPTIONS') {
             $response = $response->withStatus(200);
         } else {
             $response = $response->withStatus(405);
@@ -94,8 +94,8 @@ class MethodMap
 
     private function addAllowHeader(ResponseInterface $response): ResponseInterface
     {
-        $methods = join(",", $this->getAllowedMethods());
-        return $response->withHeader("Allow", $methods);
+        $methods = join(',', $this->getAllowedMethods());
+        return $response->withHeader('Allow', $methods);
     }
 
     /**
@@ -105,12 +105,12 @@ class MethodMap
     {
         $methods = array_keys($this->map);
         // Add HEAD if GET is allowed and HEAD is not present.
-        if (in_array("GET", $methods) && !in_array("HEAD", $methods)) {
-            $methods[] = "HEAD";
+        if (in_array('GET', $methods) && !in_array('HEAD', $methods)) {
+            $methods[] = 'HEAD';
         }
         // Add OPTIONS if not already present.
-        if (!in_array("OPTIONS", $methods)) {
-            $methods[] = "OPTIONS";
+        if (!in_array('OPTIONS', $methods)) {
+            $methods[] = 'OPTIONS';
         }
         return $methods;
     }
