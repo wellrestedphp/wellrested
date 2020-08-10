@@ -4,6 +4,7 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use InvalidArgumentException;
 
 /**
  * Message defines core functionality for classes that represent HTTP messages.
@@ -189,7 +190,7 @@ abstract class Message implements MessageInterface
      * @param string $name Case-insensitive header field name.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException for invalid header names or values.
+     * @throws InvalidArgumentException for invalid header names or values.
      */
     public function withHeader($name, $value)
     {
@@ -213,7 +214,7 @@ abstract class Message implements MessageInterface
      * @param string $name Case-insensitive header field name to add.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException for invalid header names or values.
+     * @throws InvalidArgumentException for invalid header names or values.
      */
     public function withAddedHeader($name, $value)
     {
@@ -256,7 +257,7 @@ abstract class Message implements MessageInterface
      *
      * @param StreamInterface $body Body.
      * @return static
-     * @throws \InvalidArgumentException When the body is not valid.
+     * @throws InvalidArgumentException When the body is not valid.
      */
     public function withBody(StreamInterface $body)
     {
@@ -271,13 +272,13 @@ abstract class Message implements MessageInterface
      * @param mixed $name
      * @param mixed|mixed[] $values
      * @return string[]
-     * @throws \InvalidArgumentException Name is not a string or value is not
+     * @throws InvalidArgumentException Name is not a string or value is not
      *   a string or array of strings
      */
     private function getValidatedHeaders($name, $values)
     {
         if (!is_string($name)) {
-            throw new \InvalidArgumentException('Header name must be a string');
+            throw new InvalidArgumentException('Header name must be a string');
         }
 
         if (!is_array($values)) {
@@ -290,7 +291,7 @@ abstract class Message implements MessageInterface
 
         $invalid = array_filter($values, $isNotStringOrNumber);
         if ($invalid) {
-            throw new \InvalidArgumentException('Header values must be a string or string[]');
+            throw new InvalidArgumentException('Header values must be a string or string[]');
         }
 
         return array_map('strval', $values);

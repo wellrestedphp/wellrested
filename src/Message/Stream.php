@@ -3,6 +3,9 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\StreamInterface;
+use InvalidArgumentException;
+use Exception;
+use RuntimeException;
 
 class Stream implements StreamInterface
 {
@@ -32,7 +35,7 @@ class Stream implements StreamInterface
                 $this->write($resource);
             }
         } else {
-            throw new \InvalidArgumentException('Expected a resource handler.');
+            throw new InvalidArgumentException('Expected a resource handler.');
         }
     }
 
@@ -54,7 +57,7 @@ class Stream implements StreamInterface
                 $this->rewind();
             }
             return $this->getContents();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silence exceptions in order to conform with PHP's string casting
             // operations.
             return '';
@@ -113,17 +116,17 @@ class Stream implements StreamInterface
      * Returns the current position of the file read/write pointer
      *
      * @return int Position of the file pointer
-     * @throws \RuntimeException on error.
+     * @throws RuntimeException on error.
      */
     public function tell()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to retrieve current position of detached stream.');
+            throw new RuntimeException('Unable to retrieve current position of detached stream.');
         }
 
         $position = ftell($this->resource);
         if ($position === false) {
-            throw new \RuntimeException('Unable to retrieve current position of file pointer.');
+            throw new RuntimeException('Unable to retrieve current position of file pointer.');
         }
         return $position;
     }
@@ -167,12 +170,12 @@ class Stream implements StreamInterface
      *     offset bytes SEEK_CUR: Set position to current location plus offset
      *     SEEK_END: Set position to end-of-stream plus offset.
      * @return void
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function seek($offset, $whence = SEEK_SET)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to seek detached stream.');
+            throw new RuntimeException('Unable to seek detached stream.');
         }
 
         $result = -1;
@@ -180,7 +183,7 @@ class Stream implements StreamInterface
             $result = fseek($this->resource, $offset, $whence);
         }
         if ($result === -1) {
-            throw new \RuntimeException('Unable to seek to position.');
+            throw new RuntimeException('Unable to seek to position.');
         }
     }
 
@@ -193,12 +196,12 @@ class Stream implements StreamInterface
      * @see seek()
      * @link http://www.php.net/manual/en/function.fseek.php
      * @return void
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function rewind()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to seek detached stream.');
+            throw new RuntimeException('Unable to seek detached stream.');
         }
 
         $result = false;
@@ -206,7 +209,7 @@ class Stream implements StreamInterface
             $result = rewind($this->resource);
         }
         if ($result === false) {
-            throw new \RuntimeException('Unable to rewind.');
+            throw new RuntimeException('Unable to rewind.');
         }
     }
 
@@ -230,12 +233,12 @@ class Stream implements StreamInterface
      *
      * @param string $string The string that is to be written.
      * @return int Returns the number of bytes written to the stream.
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function write($string)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to write to detached stream.');
+            throw new RuntimeException('Unable to write to detached stream.');
         }
 
         $result = false;
@@ -243,7 +246,7 @@ class Stream implements StreamInterface
             $result = fwrite($this->resource, $string);
         }
         if ($result === false) {
-            throw new \RuntimeException('Unable to write to stream.');
+            throw new RuntimeException('Unable to write to stream.');
         }
         return $result;
     }
@@ -271,12 +274,12 @@ class Stream implements StreamInterface
      *     call returns fewer bytes.
      * @return string Returns the data read from the stream, or an empty string
      *     if no bytes are available.
-     * @throws \RuntimeException if an error occurs.
+     * @throws RuntimeException if an error occurs.
      */
     public function read($length)
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to read to detached stream.');
+            throw new RuntimeException('Unable to read to detached stream.');
         }
 
         $result = false;
@@ -284,7 +287,7 @@ class Stream implements StreamInterface
             $result = fread($this->resource, $length);
         }
         if ($result === false) {
-            throw new \RuntimeException('Unable to read from stream.');
+            throw new RuntimeException('Unable to read from stream.');
         }
         return $result;
     }
@@ -293,13 +296,13 @@ class Stream implements StreamInterface
      * Returns the remaining contents in a string
      *
      * @return string
-     * @throws \RuntimeException if unable to read or an error occurs while
+     * @throws RuntimeException if unable to read or an error occurs while
      *     reading.
      */
     public function getContents()
     {
         if ($this->resource === null) {
-            throw new \RuntimeException('Unable to read to detached stream.');
+            throw new RuntimeException('Unable to read to detached stream.');
         }
 
         $result = false;
@@ -307,7 +310,7 @@ class Stream implements StreamInterface
             $result = stream_get_contents($this->resource);
         }
         if ($result === false) {
-            throw new \RuntimeException('Unable to read from stream.');
+            throw new RuntimeException('Unable to read from stream.');
         }
         return $result;
     }

@@ -14,5 +14,10 @@ return PhpCsFixer\Config::create()
         'blank_line_after_opening_tag' => true,
         'cast_spaces' => true,
         'class_attributes_separation' => ['elements' => ['method']],
+        'global_namespace_import' => [
+            'import_classes' => true,
+            'import_constants' => true,
+            'import_functions' => true,
+        ],
         'single_quote' => true
     ]);

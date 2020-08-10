@@ -5,6 +5,7 @@ namespace WellRESTed\Message;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use InvalidArgumentException;
 
 /**
  * Representation of an outgoing, client-side request.
@@ -135,7 +136,7 @@ class Request extends Message implements RequestInterface
      *
      * @param string $method Case-insensitive method.
      * @return static
-     * @throws \InvalidArgumentException for invalid HTTP methods.
+     * @throws InvalidArgumentException for invalid HTTP methods.
      */
     public function withMethod($method)
     {
@@ -211,16 +212,16 @@ class Request extends Message implements RequestInterface
     /**
      * @param mixed $method
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function getValidatedMethod($method)
     {
         if (!is_string($method)) {
-            throw new \InvalidArgumentException('Method must be a string.');
+            throw new InvalidArgumentException('Method must be a string.');
         }
         $method = trim($method);
         if (strpos($method, ' ') !== false) {
-            throw new \InvalidArgumentException('Method cannot contain spaces.');
+            throw new InvalidArgumentException('Method cannot contain spaces.');
         }
         return $method;
     }

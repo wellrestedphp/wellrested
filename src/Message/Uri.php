@@ -3,6 +3,7 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\UriInterface;
+use InvalidArgumentException;
 
 /**
  * Value object representing a URI.
@@ -301,13 +302,13 @@ class Uri implements UriInterface
      *
      * @param string $scheme The scheme to use with the new instance.
      * @return static A new instance with the specified scheme.
-     * @throws \InvalidArgumentException for invalid or unsupported schemes.
+     * @throws InvalidArgumentException for invalid or unsupported schemes.
      */
     public function withScheme($scheme)
     {
         $scheme = $scheme ? strtolower($scheme) : '';
         if (!in_array($scheme, ['', 'http', 'https'])) {
-            throw new \InvalidArgumentException('Scheme must be http, https, or empty.');
+            throw new InvalidArgumentException('Scheme must be http, https, or empty.');
         }
         $uri = clone $this;
         $uri->scheme = $scheme;
@@ -346,12 +347,12 @@ class Uri implements UriInterface
      *
      * @param string $host The hostname to use with the new instance.
      * @return static A new instance with the specified host.
-     * @throws \InvalidArgumentException for invalid hostnames.
+     * @throws InvalidArgumentException for invalid hostnames.
      */
     public function withHost($host)
     {
         if (!is_string($host)) {
-            throw new \InvalidArgumentException('Host must be a string.');
+            throw new InvalidArgumentException('Host must be a string.');
         }
 
         $uri = clone $this;
@@ -374,18 +375,18 @@ class Uri implements UriInterface
      * @param null|int $port The port to use with the new instance; a null value
      *     removes the port information.
      * @return static A new instance with the specified port.
-     * @throws \InvalidArgumentException for invalid ports.
+     * @throws InvalidArgumentException for invalid ports.
      */
     public function withPort($port)
     {
         if (is_numeric($port)) {
             if ($port < self::MIN_PORT || $port > self::MAX_PORT) {
                 $message = sprintf('Port must be between %s and %s.', self::MIN_PORT, self::MAX_PORT);
-                throw new \InvalidArgumentException($message);
+                throw new InvalidArgumentException($message);
             }
             $port = (int) $port;
         } elseif ($port !== null) {
-            throw new \InvalidArgumentException('Port must be an int or null.');
+            throw new InvalidArgumentException('Port must be an int or null.');
         }
 
         $uri = clone $this;
@@ -408,12 +409,12 @@ class Uri implements UriInterface
      *
      * @param string $path The path to use with the new instance.
      * @return static A new instance with the specified path.
-     * @throws \InvalidArgumentException for invalid paths.
+     * @throws InvalidArgumentException for invalid paths.
      */
     public function withPath($path)
     {
         if (!is_string($path)) {
-            throw new \InvalidArgumentException('Path must be a string');
+            throw new InvalidArgumentException('Path must be a string');
         }
         $uri = clone $this;
         $uri->path = $path;
@@ -433,7 +434,7 @@ class Uri implements UriInterface
      *
      * @param string $query The query string to use with the new instance.
      * @return static A new instance with the specified query string.
-     * @throws \InvalidArgumentException for invalid query strings.
+     * @throws InvalidArgumentException for invalid query strings.
      */
     public function withQuery($query)
     {

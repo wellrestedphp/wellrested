@@ -10,6 +10,7 @@ use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\HeaderStack;
 use WellRESTed\Transmission\Transmitter;
+use RuntimeException;
 
 require_once __DIR__ . '/../../../src/HeaderStack.php';
 
@@ -135,7 +136,7 @@ class TransmitterTest extends TestCase
 
         $this->body->isSeekable()->willReturn(false);
         $this->body->isReadable()->willReturn(true);
-        $this->body->rewind()->willThrow(new \RuntimeException());
+        $this->body->rewind()->willThrow(new RuntimeException());
         $this->body->eof()->willReturn(false);
         $this->body->read(Argument::any())->will(
             function ($args) use ($content, &$position) {

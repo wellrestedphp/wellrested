@@ -4,6 +4,7 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
+use InvalidArgumentException;
 
 /**
  * Representation of an outgoing, server-side response.
@@ -77,7 +78,7 @@ class Response extends Message implements ResponseInterface
      *     provided status code; if none is provided, implementations MAY
      *     use the defaults as suggested in the HTTP specification.
      * @return static
-     * @throws \InvalidArgumentException For invalid status code arguments.
+     * @throws InvalidArgumentException For invalid status code arguments.
      */
     public function withStatus($code, $reasonPhrase = '')
     {

@@ -3,6 +3,7 @@
 namespace WellRESTed\Message;
 
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 /**
  * NullStream is a minimal, always-empty, non-writable stream.
@@ -54,7 +55,7 @@ class NullStream implements StreamInterface
      * Returns the current position of the file read/write pointer
      *
      * @return int Position of the file pointer
-     * @throws \RuntimeException on error.
+     * @throws RuntimeException on error.
      */
     public function tell()
     {
@@ -92,11 +93,11 @@ class NullStream implements StreamInterface
      *     offset bytes SEEK_CUR: Set position to current location plus offset
      *     SEEK_END: Set position to end-of-stream plus offset.
      * @return void
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        throw new \RuntimeException('Unable to seek to position.');
+        throw new RuntimeException('Unable to seek to position.');
     }
 
     /**
@@ -105,11 +106,11 @@ class NullStream implements StreamInterface
      * @see seek()
      * @link http://www.php.net/manual/en/function.fseek.php
      * @return void
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function rewind()
     {
-        throw new \RuntimeException('Unable to rewind stream.');
+        throw new RuntimeException('Unable to rewind stream.');
     }
 
     /**
@@ -127,11 +128,11 @@ class NullStream implements StreamInterface
      *
      * @param string $string The string that is to be written.
      * @return int Returns the number of bytes written to the stream.
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function write($string)
     {
-        throw new \RuntimeException('Unable to write to stream.');
+        throw new RuntimeException('Unable to write to stream.');
     }
 
     /**
@@ -152,7 +153,7 @@ class NullStream implements StreamInterface
      *     call returns fewer bytes.
      * @return string Returns the data read from the stream, or an empty string
      *     if no bytes are available.
-     * @throws \RuntimeException if an error occurs.
+     * @throws RuntimeException if an error occurs.
      */
     public function read($length)
     {
@@ -163,7 +164,7 @@ class NullStream implements StreamInterface
      * Returns the remaining contents in a string
      *
      * @return string
-     * @throws \RuntimeException if unable to read or an error occurs while
+     * @throws RuntimeException if unable to read or an error occurs while
      *     reading.
      */
     public function getContents()

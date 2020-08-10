@@ -6,6 +6,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
+use InvalidArgumentException;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -189,12 +190,12 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @param array $uploadedFiles An array tree of UploadedFileInterface instances.
      * @return static
-     * @throws \InvalidArgumentException if an invalid structure is provided.
+     * @throws InvalidArgumentException if an invalid structure is provided.
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
         if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'withUploadedFiles expects an array tree with UploadedFileInterface leaves.'
             );
         }
@@ -249,7 +250,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function withParsedBody($data)
     {
         if (!(is_null($data) || is_array($data) || is_object($data))) {
-            throw new \InvalidArgumentException('Parsed body must be null, array, or object.');
+            throw new InvalidArgumentException('Parsed body must be null, array, or object.');
         }
 
         $request = clone $this;

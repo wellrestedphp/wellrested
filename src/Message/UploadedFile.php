@@ -4,6 +4,8 @@ namespace WellRESTed\Message;
 
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Value object representing a file uploaded through an HTTP request.
@@ -85,19 +87,19 @@ class UploadedFile implements UploadedFileInterface
      * raise an exception.
      *
      * @return StreamInterface Stream representation of the uploaded file.
-     * @throws \RuntimeException in cases when no stream is available or can
+     * @throws RuntimeException in cases when no stream is available or can
      *     be created.
      */
     public function getStream()
     {
         if ($this->tmpName === null) {
-            throw new \RuntimeException('Unable to read uploaded file.');
+            throw new RuntimeException('Unable to read uploaded file.');
         }
         if ($this->moved) {
-            throw new \RuntimeException('File has already been moved.');
+            throw new RuntimeException('File has already been moved.');
         }
         if (php_sapi_name() !== 'cli' && !is_uploaded_file($this->tmpName)) {
-            throw new \RuntimeException('File is not an uploaded file.');
+            throw new RuntimeException('File is not an uploaded file.');
         }
         return $this->stream;
     }
@@ -117,14 +119,14 @@ class UploadedFile implements UploadedFileInterface
      * @see http://php.net/move_uploaded_file
      * @param string $path Path to which to move the uploaded file.
      * @return void
-     * @throws \InvalidArgumentException if the $path specified is invalid.
-     * @throws \RuntimeException on any error during the move operation, or on
+     * @throws InvalidArgumentException if the $path specified is invalid.
+     * @throws RuntimeException on any error during the move operation, or on
      *     the second or subsequent call to the method.
      */
     public function moveTo($path)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
-            throw new \RuntimeException('File ' . $this->tmpName . ' does not exist.');
+            throw new RuntimeException('File ' . $this->tmpName . ' does not exist.');
         }
         if (php_sapi_name() === 'cli') {
             rename($this->tmpName, $path);
