@@ -9,6 +9,10 @@ return PhpCsFixer\Config::create()
     ->setFinder($finder)
     ->setRules([
         '@PSR2' => true,
+        'align_multiline_comment' => true,
         'array_syntax' => ['syntax' => 'short'],
+        'blank_line_after_opening_tag' => true,
+        'cast_spaces' => true,
+        'class_attributes_separation' => ['elements' => ['method']],
         'single_quote' => true
     ]);

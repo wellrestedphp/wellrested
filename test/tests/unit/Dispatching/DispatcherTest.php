@@ -190,6 +190,7 @@ class HandlerDouble implements RequestHandlerInterface
 {
     /** @var ResponseInterface */
     private $response;
+
     public function __construct(ResponseInterface $response)
     {
         $this->response = $response;
