@@ -1,18 +1,14 @@
 <?php
 
-namespace WellRESTed\Test\Unit;
+namespace WellRESTed;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Message\Stream;
-use WellRESTed\Server;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
-
-require_once __DIR__ . '/../../src/HeaderStack.php';
 
 class ServerTest extends TestCase
 {
@@ -203,27 +199,5 @@ class ServerTest extends TestCase
             Argument::any(),
             $defaultResponse
         )->shouldHaveBeenCalled();
-    }
-
-    // -------------------------------------------------------------------------
-
-    public function testCreatesStockTransmitterByDefault()
-    {
-        $content = 'Hello, world!';
-
-        $response = (new Response())
-            ->withBody(new Stream($content));
-
-        $server = new Server();
-        $server->add(function () use ($response) {
-            return $response;
-        });
-
-        ob_start();
-        $server->respond();
-        $captured = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertEquals($content, $captured);
     }
 }

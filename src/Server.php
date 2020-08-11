@@ -7,7 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
-use WellRESTed\Message\ServerRequest;
+use WellRESTed\Message\ServerRequestMarshaller;
 use WellRESTed\Routing\Router;
 use WellRESTed\Transmission\Transmitter;
 use WellRESTed\Transmission\TransmitterInterface;
@@ -163,7 +163,8 @@ class Server
     private function getRequest(): ServerRequestInterface
     {
         if (!$this->request) {
-            $this->request = ServerRequest::getServerRequest();
+            $marshaller = new ServerRequestMarshaller();
+            return $marshaller->getServerRequest();
         }
         return $this->request;
     }

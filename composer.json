@@ -30,6 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "WellRESTed\\": "test/tests/unit/",
             "WellRESTed\\Test\\": "test/src/"
         }
     }
