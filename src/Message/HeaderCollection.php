@@ -7,51 +7,44 @@ use Iterator;
 
 /**
  * HeaderCollection provides case-insensitive access to lists of header values.
- *
- * This class is an internal class used by Message and is not intended for
- * direct use by consumers.
- *
+ **
  * HeaderCollection preserves the cases of keys as they are set, but treats key
  * access case insensitively.
  *
  * Any values added to HeaderCollection are added to list arrays. Subsequent
  * calls to add a value for a given key will append the new value to the list
  * array of values for that key.
+ *
+ * @internal This class is an internal class used by Message and is not intended
+ *   for direct use by consumers.
  */
 class HeaderCollection implements ArrayAccess, Iterator
 {
     /**
-     * @var array
-     *
      * Hash array mapping lowercase header names to original case header names.
+     *
+     * @var array<string, string>
      */
-    private $fields;
+    private $fields = [];
 
     /**
-     * @var array
-     *
      * Hash array mapping lowercase header names to values as string[]
+     *
+     * @var array<string, string[]>
      */
-    private $values;
+    private $values = [];
 
     /**
-     * @var string[]
-     *
      * List array of lowercase header names.
+     *
+     * @var string[]
      */
-    private $keys;
+    private $keys = [];
 
     /** @var int */
     private $position = 0;
 
-    public function __construct()
-    {
-        $this->keys = [];
-        $this->fields = [];
-        $this->values = [];
-    }
-
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // ArrayAccess
 
     /**
@@ -111,7 +104,7 @@ class HeaderCollection implements ArrayAccess, Iterator
         }
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Iterator
 
     public function current()

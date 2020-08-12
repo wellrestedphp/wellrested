@@ -1,20 +1,19 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
-use WellRESTed\Message\HeaderCollection;
 use WellRESTed\Test\TestCase;
 
 class HeaderCollectionTest extends TestCase
 {
-    public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset()
+    public function testAddsSingleHeaderAndIndicatesCaseInsensitiveIsset(): void
     {
         $collection = new HeaderCollection();
         $collection['Content-Type'] = 'application/json';
         $this->assertTrue(isset($collection['content-type']));
     }
 
-    public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset()
+    public function testAddsMultipleHeadersAndIndicatesCaseInsensitiveIsset(): void
     {
         $collection = new HeaderCollection();
         $collection['Set-Cookie'] = 'cat=Molly';
@@ -22,17 +21,18 @@ class HeaderCollectionTest extends TestCase
         $this->assertTrue(isset($collection['set-cookie']));
     }
 
-    public function testReturnsHeadersWithCaseInsensitiveHeaderName()
+    public function testReturnsHeadersWithCaseInsensitiveHeaderName(): void
     {
         $collection = new HeaderCollection();
         $collection['Set-Cookie'] = 'cat=Molly';
         $collection['SET-COOKIE'] = 'dog=Bear';
 
         $headers = $collection['set-cookie'];
-        $this->assertEquals(2, count(array_intersect($headers, ['cat=Molly', 'dog=Bear'])));
+        $matched = array_intersect($headers, ['cat=Molly', 'dog=Bear']);
+        $this->assertCount(2, $matched);
     }
 
-    public function testRemovesHeadersWithCaseInsensitiveHeaderName()
+    public function testRemovesHeadersWithCaseInsensitiveHeaderName(): void
     {
         $collection = new HeaderCollection();
         $collection['Set-Cookie'] = 'cat=Molly';
@@ -41,8 +41,7 @@ class HeaderCollectionTest extends TestCase
         $this->assertFalse(isset($collection['set-cookie']));
     }
 
-    /** @coversNothing */
-    public function testCloneMakesDeepCopyOfHeaders()
+    public function testCloneMakesDeepCopyOfHeaders(): void
     {
         $collection = new HeaderCollection();
         $collection['Set-Cookie'] = 'cat=Molly';
@@ -53,7 +52,7 @@ class HeaderCollectionTest extends TestCase
         $this->assertTrue(isset($collection['set-cookie']) && !isset($clone['set-cookie']));
     }
 
-    public function testIteratesWithOriginalKeys()
+    public function testIteratesWithOriginalKeys(): void
     {
         $collection = new HeaderCollection();
         $collection['Content-length'] = '100';
@@ -74,7 +73,7 @@ class HeaderCollectionTest extends TestCase
         $this->assertEquals(0, $countUnmatched);
     }
 
-    public function testIteratesWithOriginalKeysAndValues()
+    public function testIteratesWithOriginalKeysAndValues(): void
     {
         $collection = new HeaderCollection();
         $collection['Content-length'] = '100';
