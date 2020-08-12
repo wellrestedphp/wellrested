@@ -1,38 +1,27 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
 use InvalidArgumentException;
-use WellRESTed\Message\Message;
-use WellRESTed\Message\Response;
-use WellRESTed\Message\Stream;
 use WellRESTed\Test\TestCase;
 
 class MessageTest extends TestCase
 {
-    /** @var Message */
-    private $message;
-
-    public function setUp(): void
-    {
-        $this->message = new Response();
-    }
-
-    public function testSetsHeadersOnConstruction()
+    public function testSetsHeadersOnConstruction(): void
     {
         $headers = ['X-foo' => ['bar', 'baz']];
         $message = new Response(200, $headers);
         $this->assertEquals(['bar', 'baz'], $message->getHeader('X-foo'));
     }
 
-    public function testSetsBodyOnConstruction()
+    public function testSetsBodyOnConstruction(): void
     {
         $body = new Stream('Hello, world');
         $message = new Response(200, [], $body);
         $this->assertSame($body, $message->getBody());
     }
 
-    public function testCloneMakesDeepCopyOfHeaders()
+    public function testCloneMakesDeepCopyOfHeaders(): void
     {
         $message1 = (new Response())
             ->withHeader('Content-type', 'text/plain');
@@ -48,20 +37,20 @@ class MessageTest extends TestCase
     // ------------------------------------------------------------------------
     // Protocol Version
 
-    public function testGetProtocolVersionReturnsProtocolVersion1Point1ByDefault()
+    public function testGetProtocolVersionReturnsProtocolVersion1Point1ByDefault(): void
     {
         $message = new Response();
         $this->assertEquals('1.1', $message->getProtocolVersion());
     }
 
-    public function testGetProtocolVersionReturnsProtocolVersion()
+    public function testGetProtocolVersionReturnsProtocolVersion(): void
     {
         $message = (new Response())
             ->withProtocolVersion('1.0');
         $this->assertEquals('1.0', $message->getProtocolVersion());
     }
 
-    public function testGetProtocolVersionReplacesProtocolVersion()
+    public function testGetProtocolVersionReplacesProtocolVersion(): void
     {
         $message = (new Response())
             ->withProtocolVersion('1.0');
@@ -71,8 +60,12 @@ class MessageTest extends TestCase
     // ------------------------------------------------------------------------
     // Headers
 
-    /** @dataProvider validHeaderValueProvider */
-    public function testWithHeaderReplacesHeader($expected, $value)
+    /**
+     * @dataProvider validHeaderValueProvider
+     * @param array $expected
+     * @param mixed $value
+     */
+    public function testWithHeaderReplacesHeader(array $expected, $value): void
     {
         $message = (new Response())
             ->withHeader('X-foo', 'Original value')
@@ -80,7 +73,7 @@ class MessageTest extends TestCase
         $this->assertEquals($expected, $message->getHeader('X-foo'));
     }
 
-    public function validHeaderValueProvider()
+    public function validHeaderValueProvider(): array
     {
         return [
             [['0'], 0],
@@ -90,15 +83,17 @@ class MessageTest extends TestCase
 
     /**
      * @dataProvider invalidHeaderProvider
+     * @param mixed $name
+     * @param mixed $value
      */
-    public function testWithHeaderThrowsExceptionWithInvalidArgument($name, $value)
+    public function testWithHeaderThrowsExceptionWithInvalidArgument($name, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $message = (new Response())
+        (new Response())
             ->withHeader($name, $value);
     }
 
-    public function invalidHeaderProvider()
+    public function invalidHeaderProvider(): array
     {
         return [
             [0, 1024],
@@ -107,14 +102,14 @@ class MessageTest extends TestCase
         ];
     }
 
-    public function testWithAddedHeaderSetsHeader()
+    public function testWithAddedHeaderSetsHeader(): void
     {
         $message = (new Response())
             ->withAddedHeader('Content-type', 'application/json');
         $this->assertEquals(['application/json'], $message->getHeader('Content-type'));
     }
 
-    public function testWithAddedHeaderAppendsValue()
+    public function testWithAddedHeaderAppendsValue(): void
     {
         $message = (new Response())
             ->withAddedHeader('Set-Cookie', ['cat=Molly'])
@@ -126,7 +121,7 @@ class MessageTest extends TestCase
         );
     }
 
-    public function testWithoutHeaderRemovesHeader()
+    public function testWithoutHeaderRemovesHeader(): void
     {
         $message = (new Response())
             ->withHeader('Content-type', 'application/json')
@@ -134,20 +129,20 @@ class MessageTest extends TestCase
         $this->assertFalse($message->hasHeader('Content-type'));
     }
 
-    public function testGetHeaderReturnsEmptyArrayForUnsetHeader()
+    public function testGetHeaderReturnsEmptyArrayForUnsetHeader(): void
     {
         $message = new Response();
         $this->assertEquals([], $message->getHeader('X-name'));
     }
 
-    public function testGetHeaderReturnsSingleHeader()
+    public function testGetHeaderReturnsSingleHeader(): void
     {
         $message = (new Response())
             ->withAddedHeader('Content-type', 'application/json');
         $this->assertEquals(['application/json'], $message->getHeader('Content-type'));
     }
 
-    public function testGetHeaderReturnsMultipleValuesForHeader()
+    public function testGetHeaderReturnsMultipleValuesForHeader(): void
     {
         $message = (new Response())
             ->withAddedHeader('X-name', 'cat=Molly')
@@ -155,13 +150,13 @@ class MessageTest extends TestCase
         $this->assertEquals(['cat=Molly', 'dog=Bear'], $message->getHeader('X-name'));
     }
 
-    public function testGetHeaderLineReturnsEmptyStringForUnsetHeader()
+    public function testGetHeaderLineReturnsEmptyStringForUnsetHeader(): void
     {
         $message = new Response();
         $this->assertSame('', $message->getHeaderLine('X-not-set'));
     }
 
-    public function testGetHeaderLineReturnsMultipleHeadersJoinedByCommas()
+    public function testGetHeaderLineReturnsMultipleHeadersJoinedByCommas(): void
     {
         $message = (new Response())
             ->withAddedHeader('X-name', 'cat=Molly')
@@ -169,20 +164,20 @@ class MessageTest extends TestCase
         $this->assertEquals('cat=Molly, dog=Bear', $message->getHeaderLine('X-name'));
     }
 
-    public function testHasHeaderReturnsTrueWhenHeaderIsSet()
+    public function testHasHeaderReturnsTrueWhenHeaderIsSet(): void
     {
         $message = (new Response())
             ->withHeader('Content-type', 'application/json');
         $this->assertTrue($message->hasHeader('Content-type'));
     }
 
-    public function testHasHeaderReturnsFalseWhenHeaderIsNotSet()
+    public function testHasHeaderReturnsFalseWhenHeaderIsNotSet(): void
     {
         $message = new Response();
         $this->assertFalse($message->hasHeader('Content-type'));
     }
 
-    public function testGetHeadersReturnOriginalHeaderNamesAsKeys()
+    public function testGetHeadersReturnOriginalHeaderNamesAsKeys(): void
     {
         $message = (new Response())
             ->withHeader('Set-Cookie', 'cat=Molly')
@@ -201,7 +196,7 @@ class MessageTest extends TestCase
         $this->assertEquals(0, $countUnmatched);
     }
 
-    public function testGetHeadersReturnOriginalHeaderNamesAndValues()
+    public function testGetHeadersReturnOriginalHeaderNamesAndValues(): void
     {
         $message = (new Response())
             ->withHeader('Set-Cookie', 'cat=Molly')
@@ -231,13 +226,13 @@ class MessageTest extends TestCase
     // ------------------------------------------------------------------------
     // Body
 
-    public function testGetBodyReturnsEmptyStreamByDefault()
+    public function testGetBodyReturnsEmptyStreamByDefault(): void
     {
         $message = new Response();
         $this->assertEquals('', (string) $message->getBody());
     }
 
-    public function testGetBodyReturnsAttachedStream()
+    public function testGetBodyReturnsAttachedStream(): void
     {
         $stream = new Stream('Hello, world!');
 

@@ -1,11 +1,8 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
 use InvalidArgumentException;
-use WellRESTed\Message\NullStream;
-use WellRESTed\Message\Request;
-use WellRESTed\Message\Uri;
 use WellRESTed\Test\TestCase;
 
 class RequestTest extends TestCase
@@ -13,34 +10,34 @@ class RequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Construction
 
-    public function testCreatesInstanceWithNoParameters()
+    public function testCreatesInstanceWithNoParameters(): void
     {
         $request = new Request();
         $this->assertNotNull($request);
     }
 
-    public function testCreatesInstanceWithMethod()
+    public function testCreatesInstanceWithMethod(): void
     {
         $method = 'POST';
         $request = new Request($method);
         $this->assertSame($method, $request->getMethod());
     }
 
-    public function testCreatesInstanceWithUri()
+    public function testCreatesInstanceWithUri(): void
     {
         $uri = new Uri();
         $request = new Request('GET', $uri);
         $this->assertSame($uri, $request->getUri());
     }
 
-    public function testCreatesInstanceWithStringUri()
+    public function testCreatesInstanceWithStringUri(): void
     {
         $uri = 'http://localhost:8080';
         $request = new Request('GET', $uri);
         $this->assertSame($uri, (string) $request->getUri());
     }
 
-    public function testSetsHeadersOnConstruction()
+    public function testSetsHeadersOnConstruction(): void
     {
         $request = new Request('GET', '/', [
             'X-foo' => ['bar', 'baz']
@@ -48,7 +45,7 @@ class RequestTest extends TestCase
         $this->assertEquals(['bar', 'baz'], $request->getHeader('X-foo'));
     }
 
-    public function testSetsBodyOnConstruction()
+    public function testSetsBodyOnConstruction(): void
     {
         $body = new NullStream();
         $request = new Request('GET', '/', [], $body);
@@ -58,14 +55,14 @@ class RequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Request Target
 
-    public function testGetRequestTargetPrefersExplicitRequestTarget()
+    public function testGetRequestTargetPrefersExplicitRequestTarget(): void
     {
         $request = new Request();
         $request = $request->withRequestTarget('*');
         $this->assertEquals('*', $request->getRequestTarget());
     }
 
-    public function testGetRequestTargetUsesOriginFormOfUri()
+    public function testGetRequestTargetUsesOriginFormOfUri(): void
     {
         $uri = new Uri('/my/path?cat=Molly&dog=Bear');
         $request = new Request();
@@ -73,13 +70,13 @@ class RequestTest extends TestCase
         $this->assertEquals('/my/path?cat=Molly&dog=Bear', $request->getRequestTarget());
     }
 
-    public function testGetRequestTargetReturnsSlashByDefault()
+    public function testGetRequestTargetReturnsSlashByDefault(): void
     {
         $request = new Request();
         $this->assertEquals('/', $request->getRequestTarget());
     }
 
-    public function testWithRequestTargetCreatesNewInstance()
+    public function testWithRequestTargetCreatesNewInstance(): void
     {
         $request = new Request();
         $request = $request->withRequestTarget('*');
@@ -89,13 +86,13 @@ class RequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Method
 
-    public function testGetMethodReturnsGetByDefault()
+    public function testGetMethodReturnsGetByDefault(): void
     {
         $request = new Request();
         $this->assertEquals('GET', $request->getMethod());
     }
 
-    public function testWithMethodCreatesNewInstance()
+    public function testWithMethodCreatesNewInstance(): void
     {
         $request = new Request();
         $request = $request->withMethod('POST');
@@ -104,15 +101,16 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider invalidMethodProvider
+     * @param mixed $method
      */
-    public function testWithMethodThrowsExceptionOnInvalidMethod($method)
+    public function testWithMethodThrowsExceptionOnInvalidMethod($method): void
     {
         $this->expectException(InvalidArgumentException::class);
         $request = new Request();
         $request->withMethod($method);
     }
 
-    public function invalidMethodProvider()
+    public function invalidMethodProvider(): array
     {
         return [
             [0],
@@ -124,14 +122,14 @@ class RequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Request URI
 
-    public function testGetUriReturnsEmptyUriByDefault()
+    public function testGetUriReturnsEmptyUriByDefault(): void
     {
         $request = new Request();
         $uri = new Uri();
         $this->assertEquals($uri, $request->getUri());
     }
 
-    public function testWithUriCreatesNewInstance()
+    public function testWithUriCreatesNewInstance(): void
     {
         $uri = new Uri();
         $request = new Request();
@@ -139,7 +137,7 @@ class RequestTest extends TestCase
         $this->assertSame($uri, $request->getUri());
     }
 
-    public function testWithUriPreservesOriginalRequest()
+    public function testWithUriPreservesOriginalRequest(): void
     {
         $uri1 = new Uri();
         $uri2 = new Uri();
@@ -154,7 +152,7 @@ class RequestTest extends TestCase
         $this->assertNotEquals($request1->getHeader('Accept'), $request2->getHeader('Accept'));
     }
 
-    public function testWithUriUpdatesHostHeader()
+    public function testWithUriUpdatesHostHeader(): void
     {
         $hostname = 'bar.com';
         $uri = new uri("http://$hostname");
@@ -165,7 +163,7 @@ class RequestTest extends TestCase
         $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
-    public function testWithUriDoesNotUpdatesHostHeaderWhenUriHasNoHost()
+    public function testWithUriDoesNotUpdatesHostHeaderWhenUriHasNoHost(): void
     {
         $hostname = 'foo.com';
         $uri = new Uri();
@@ -176,7 +174,7 @@ class RequestTest extends TestCase
         $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
-    public function testPreserveHostUpdatesHostHeaderWhenHeaderIsOriginallyMissing()
+    public function testPreserveHostUpdatesHostHeaderWhenHeaderIsOriginallyMissing(): void
     {
         $hostname = 'foo.com';
         $uri = new uri("http://$hostname");
@@ -186,7 +184,7 @@ class RequestTest extends TestCase
         $this->assertSame([$hostname], $request->getHeader('Host'));
     }
 
-    public function testPreserveHostDoesNotUpdatesWhenBothAreMissingHosts()
+    public function testPreserveHostDoesNotUpdatesWhenBothAreMissingHosts(): void
     {
         $uri = new Uri();
 
@@ -195,7 +193,7 @@ class RequestTest extends TestCase
         $this->assertSame([], $request->getHeader('Host'));
     }
 
-    public function testPreserveHostDoesNotUpdateHostHeader()
+    public function testPreserveHostDoesNotUpdateHostHeader(): void
     {
         $hostname = 'foo.com';
         $uri = new uri('http://bar.com');

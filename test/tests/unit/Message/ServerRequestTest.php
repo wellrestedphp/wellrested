@@ -10,7 +10,7 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Server Params
 
-    public function testGetServerParamsReturnsEmptyArrayByDefault()
+    public function testGetServerParamsReturnsEmptyArrayByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getServerParams());
@@ -19,13 +19,13 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Cookies
 
-    public function testGetCookieParamsReturnsEmptyArrayByDefault()
+    public function testGetCookieParamsReturnsEmptyArrayByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getCookieParams());
     }
 
-    public function testWithCookieParamsCreatesNewInstanceWithCookies()
+    public function testWithCookieParamsCreatesNewInstanceWithCookies(): void
     {
         $cookies = [
             'cat' => 'Oscar'
@@ -41,13 +41,13 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Query
 
-    public function testGetQueryParamsReturnsEmptyArrayByDefault()
+    public function testGetQueryParamsReturnsEmptyArrayByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getQueryParams());
     }
 
-    public function testWithQueryParamsCreatesNewInstance()
+    public function testWithQueryParamsCreatesNewInstance(): void
     {
         $query = [
             'cat' => 'Aggie'
@@ -63,13 +63,13 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Uploaded Files
 
-    public function testGetUploadedFilesReturnsEmptyArrayByDefault()
+    public function testGetUploadedFilesReturnsEmptyArrayByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getUploadedFiles());
     }
 
-    public function testWithUploadedFilesCreatesNewInstance()
+    public function testWithUploadedFilesCreatesNewInstance(): void
     {
         $uploadedFiles = [
             'file' => new UploadedFile('index.html', 'text/html', 524, '/tmp/php9hNlHe', 0)
@@ -80,15 +80,18 @@ class ServerRequestTest extends TestCase
         $this->assertNotSame($request2, $request1);
     }
 
-    /** @dataProvider validUploadedFilesProvider */
-    public function testWithUploadedFilesStoresPassedUploadedFiles($uploadedFiles)
+    /**
+     * @dataProvider validUploadedFilesProvider
+     * @param array $uploadedFiles
+     */
+    public function testWithUploadedFilesStoresPassedUploadedFiles(array $uploadedFiles): void
     {
         $request = new ServerRequest();
         $request = $request->withUploadedFiles($uploadedFiles);
         $this->assertSame($uploadedFiles, $request->getUploadedFiles());
     }
 
-    public function validUploadedFilesProvider()
+    public function validUploadedFilesProvider(): array
     {
         return [
             [[]],
@@ -113,8 +116,9 @@ class ServerRequestTest extends TestCase
 
     /**
      * @dataProvider invalidUploadedFilesProvider
+     * @param array $uploadedFiles
      */
-    public function testWithUploadedFilesThrowsExceptionWithInvalidTree($uploadedFiles)
+    public function testWithUploadedFilesThrowsExceptionWithInvalidTree(array $uploadedFiles): void
     {
         $this->expectException(InvalidArgumentException::class);
         $request = new ServerRequest();
@@ -185,13 +189,13 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Parsed Body
 
-    public function testGetParsedBodyReturnsNullByDefault()
+    public function testGetParsedBodyReturnsNullByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertNull($request->getParsedBody());
     }
 
-    public function testWithParsedBodyCreatesNewInstance()
+    public function testWithParsedBodyCreatesNewInstance(): void
     {
         $body = [
             'guinea_pig' => 'Clyde'
@@ -206,8 +210,9 @@ class ServerRequestTest extends TestCase
 
     /**
      * @dataProvider invalidParsedBodyProvider
+     * @param mixed $body
      */
-    public function testWithParsedBodyThrowsExceptionWithInvalidType($body)
+    public function testWithParsedBodyThrowsExceptionWithInvalidType($body): void
     {
         $this->expectException(InvalidArgumentException::class);
         $request = new ServerRequest();
@@ -222,7 +227,7 @@ class ServerRequestTest extends TestCase
         ];
     }
 
-    public function testCloneMakesDeepCopiesOfParsedBody()
+    public function testCloneMakesDeepCopiesOfParsedBody(): void
     {
         $body = (object) [
             'cat' => 'Dog'
@@ -241,13 +246,13 @@ class ServerRequestTest extends TestCase
     // ------------------------------------------------------------------------
     // Attributes
 
-    public function testGetAttributesReturnsEmptyArrayByDefault()
+    public function testGetAttributesReturnsEmptyArrayByDefault(): void
     {
         $request = new ServerRequest();
         $this->assertEquals([], $request->getAttributes());
     }
 
-    public function testGetAttributesReturnsAllAttributes()
+    public function testGetAttributesReturnsAllAttributes(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');
@@ -259,20 +264,20 @@ class ServerRequestTest extends TestCase
         $this->assertEquals($expected, $request->getAttributes());
     }
 
-    public function testGetAttributeReturnsDefaultIfNotSet()
+    public function testGetAttributeReturnsDefaultIfNotSet(): void
     {
         $request = new ServerRequest();
         $this->assertEquals('Oscar', $request->getAttribute('cat', 'Oscar'));
     }
 
-    public function testWithAttributeCreatesNewInstance()
+    public function testWithAttributeCreatesNewInstance(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');
         $this->assertEquals('Molly', $request->getAttribute('cat'));
     }
 
-    public function testWithAttributePreserversOtherAttributes()
+    public function testWithAttributePreserversOtherAttributes(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');
@@ -284,14 +289,14 @@ class ServerRequestTest extends TestCase
         $this->assertEquals($expected, $request->getAttributes());
     }
 
-    public function testWithoutAttributeCreatesNewInstance()
+    public function testWithoutAttributeCreatesNewInstance(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');
         $this->assertNotEquals($request, $request->withoutAttribute('cat'));
     }
 
-    public function testWithoutAttributeRemovesAttribute()
+    public function testWithoutAttributeRemovesAttribute(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');
@@ -299,7 +304,7 @@ class ServerRequestTest extends TestCase
         $this->assertEquals('Oscar', $request->getAttribute('cat', 'Oscar'));
     }
 
-    public function testWithoutAttributePreservesOtherAttributes()
+    public function testWithoutAttributePreservesOtherAttributes(): void
     {
         $request = new ServerRequest();
         $request = $request->withAttribute('cat', 'Molly');

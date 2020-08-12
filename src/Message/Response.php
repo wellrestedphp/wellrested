@@ -35,6 +35,7 @@ class Response extends Message implements ResponseInterface
      * a NullStream instance for the message body.
      *
      * @see \WellRESTed\Message\Message
+     *
      * @param int $statusCode
      * @param array $headers
      * @param StreamInterface|null $body
@@ -58,7 +59,7 @@ class Response extends Message implements ResponseInterface
      * The status code is a 3-digit integer result code of the server's attempt
      * to understand and satisfy the request.
      *
-     * @return integer Status code.
+     * @return int Status code.
      */
     public function getStatusCode()
     {

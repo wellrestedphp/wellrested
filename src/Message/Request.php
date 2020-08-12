@@ -33,11 +33,18 @@ class Request extends Message implements RequestInterface
     /**
      * Create a new Request.
      *
-     * @see \WellRESTed\Message\Message
-     * @param string|UriInterface $uri
+     * $headers is an optional associative array with header field names as
+     * (string) keys and lists of header field values (string[]) as values.
+     *
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
      * @param string $method
-     * @param array $headers
-     * @param StreamInterface|null $body
+     * @param string|UriInterface $uri
+     * @param array $headers Associative array with header field names as
+     *     (string) keys and lists of header field values (string[]) as values.
+     * @param StreamInterface|null $body A stream representation of the message
+     *     entity body
      */
     public function __construct(
         string $method = 'GET',

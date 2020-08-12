@@ -1,9 +1,7 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
-use WellRESTed\Message\NullStream;
-use WellRESTed\Message\Response;
 use WellRESTed\Test\TestCase;
 
 class ResponseTest extends TestCase
@@ -11,13 +9,13 @@ class ResponseTest extends TestCase
     // ------------------------------------------------------------------------
     // Construction
 
-    public function testSetsStatusCodeOnConstruction()
+    public function testSetsStatusCodeOnConstruction(): void
     {
         $response = new Response(200);
         $this->assertSame(200, $response->getStatusCode());
     }
 
-    public function testSetsHeadersOnConstruction()
+    public function testSetsHeadersOnConstruction(): void
     {
         $response = new Response(200, [
             'X-foo' => ['bar','baz']
@@ -25,7 +23,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(['bar','baz'], $response->getHeader('X-foo'));
     }
 
-    public function testSetsBodyOnConstruction()
+    public function testSetsBodyOnConstruction(): void
     {
         $body = new NullStream();
         $response = new Response(200, [], $body);
@@ -35,22 +33,30 @@ class ResponseTest extends TestCase
     // ------------------------------------------------------------------------
     // Status and Reason Phrase
 
-    public function testCreatesNewInstanceWithStatusCode()
+    public function testCreatesNewInstanceWithStatusCode(): void
     {
         $response = new Response();
         $copy = $response->withStatus(200);
         $this->assertEquals(200, $copy->getStatusCode());
     }
 
-    /** @dataProvider statusProvider */
-    public function testCreatesNewInstanceWithReasonPhrase($code, $reasonPhrase, $expected)
-    {
+    /**
+     * @dataProvider statusProvider
+     * @param int $code
+     * @param string|null $reasonPhrase
+     * @param string $expected
+     */
+    public function testCreatesNewInstanceWithReasonPhrase(
+        int $code,
+        ?string $reasonPhrase,
+        string $expected
+    ): void {
         $response = new Response();
         $copy = $response->withStatus($code, $reasonPhrase);
         $this->assertEquals($expected, $copy->getReasonPhrase());
     }
 
-    public function statusProvider()
+    public function statusProvider(): array
     {
         return [
             [100, null, 'Continue'],
@@ -95,7 +101,7 @@ class ResponseTest extends TestCase
         ];
     }
 
-    public function testWithStatusCodePreservesOriginalResponse()
+    public function testWithStatusCodePreservesOriginalResponse(): void
     {
         $response1 = new Response();
         $response1 = $response1->withStatus(200);
