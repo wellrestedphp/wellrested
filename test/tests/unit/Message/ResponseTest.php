@@ -6,7 +6,7 @@ use WellRESTed\Test\TestCase;
 
 class ResponseTest extends TestCase
 {
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Construction
 
     public function testSetsStatusCodeOnConstruction(): void
@@ -30,7 +30,7 @@ class ResponseTest extends TestCase
         $this->assertSame($body, $response->getBody());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Status and Reason Phrase
 
     public function testCreatesNewInstanceWithStatusCode(): void

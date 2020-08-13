@@ -7,7 +7,7 @@ use WellRESTed\Test\TestCase;
 
 class ServerRequestTest extends TestCase
 {
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Server Params
 
     public function testGetServerParamsReturnsEmptyArrayByDefault(): void
@@ -16,7 +16,7 @@ class ServerRequestTest extends TestCase
         $this->assertEquals([], $request->getServerParams());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Cookies
 
     public function testGetCookieParamsReturnsEmptyArrayByDefault(): void
@@ -38,7 +38,7 @@ class ServerRequestTest extends TestCase
         $this->assertNotSame($request2, $request1);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Query
 
     public function testGetQueryParamsReturnsEmptyArrayByDefault(): void
@@ -60,7 +60,7 @@ class ServerRequestTest extends TestCase
         $this->assertNotSame($request2, $request1);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Uploaded Files
 
     public function testGetUploadedFilesReturnsEmptyArrayByDefault(): void
@@ -186,7 +186,7 @@ class ServerRequestTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Parsed Body
 
     public function testGetParsedBodyReturnsNullByDefault(): void
@@ -243,7 +243,7 @@ class ServerRequestTest extends TestCase
         );
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Attributes
 
     public function testGetAttributesReturnsEmptyArrayByDefault(): void

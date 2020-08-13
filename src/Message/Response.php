@@ -50,7 +50,7 @@ class Response extends Message implements ResponseInterface
         $this->reasonPhrase = $this->getDefaultReasonPhraseForStatusCode($statusCode);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\ResponseInterface
 
     /**

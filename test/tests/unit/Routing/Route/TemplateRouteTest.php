@@ -43,7 +43,7 @@ class TemplateRouteTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     public function testReturnsPatternType()
     {
@@ -51,7 +51,7 @@ class TemplateRouteTest extends TestCase
         $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching
 
     /** @dataProvider nonMatchingTargetProvider */
@@ -71,7 +71,7 @@ class TemplateRouteTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching :: Simple Strings
 
     /** @dataProvider simpleStringProvider */
@@ -100,7 +100,7 @@ class TemplateRouteTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching :: Reserved
 
     /** @dataProvider reservedStringProvider */
@@ -127,7 +127,7 @@ class TemplateRouteTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching :: Label Expansion
 
     /** @dataProvider labelWithDotPrefixProvider */
@@ -154,7 +154,7 @@ class TemplateRouteTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching :: Path Segments
 
     /** @dataProvider pathSegmentProvider */
@@ -181,7 +181,7 @@ class TemplateRouteTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Matching :: Explosion
 
     /** @dataProvider pathExplosionProvider */

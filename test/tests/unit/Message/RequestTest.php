@@ -7,7 +7,7 @@ use WellRESTed\Test\TestCase;
 
 class RequestTest extends TestCase
 {
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Construction
 
     public function testCreatesInstanceWithNoParameters(): void
@@ -52,7 +52,7 @@ class RequestTest extends TestCase
         $this->assertSame($body, $request->getBody());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Request Target
 
     public function testGetRequestTargetPrefersExplicitRequestTarget(): void
@@ -83,7 +83,7 @@ class RequestTest extends TestCase
         $this->assertEquals('*', $request->getRequestTarget());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Method
 
     public function testGetMethodReturnsGetByDefault(): void
@@ -119,7 +119,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Request URI
 
     public function testGetUriReturnsEmptyUriByDefault(): void

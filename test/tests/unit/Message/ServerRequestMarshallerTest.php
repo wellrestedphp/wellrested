@@ -120,7 +120,7 @@ class ServerRequestMarshallerTest extends TestCase
     // -------------------------------------------------------------------------
     // Psr\Http\Message\RequestInterface
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Request Target
 
     /**
@@ -145,7 +145,7 @@ class ServerRequestMarshallerTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Method
 
     /**
@@ -172,7 +172,7 @@ class ServerRequestMarshallerTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // URI
 
     /**
@@ -231,7 +231,7 @@ class ServerRequestMarshallerTest extends TestCase
         $this->assertEquals($_SERVER, $request->getServerParams());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Cookies
 
     public function testProvidesCookieParams(): void
@@ -240,7 +240,7 @@ class ServerRequestMarshallerTest extends TestCase
         $this->assertEquals($_COOKIE, $request->getCookieParams());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Query
 
     public function testProvidesQueryParams(): void
@@ -252,7 +252,7 @@ class ServerRequestMarshallerTest extends TestCase
         $this->assertEquals('aggie', $query['kitten']);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Uploaded Files
 
     /**
@@ -354,7 +354,7 @@ class ServerRequestMarshallerTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Parsed Body
 
     /**

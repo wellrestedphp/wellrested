@@ -34,7 +34,7 @@ class MessageTest extends TestCase
         );
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Protocol Version
 
     public function testGetProtocolVersionReturnsProtocolVersion1Point1ByDefault(): void
@@ -57,7 +57,7 @@ class MessageTest extends TestCase
         $this->assertEquals('1.0', $message->getProtocolVersion());
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Headers
 
     /**
@@ -223,7 +223,7 @@ class MessageTest extends TestCase
         $this->assertEquals($expected, $headers);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Body
 
     public function testGetBodyReturnsEmptyStreamByDefault(): void

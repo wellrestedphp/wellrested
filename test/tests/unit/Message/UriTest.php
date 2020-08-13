@@ -7,7 +7,7 @@ use WellRESTed\Test\TestCase;
 
 class UriTest extends TestCase
 {
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Scheme
 
     public function testDefaultSchemeIsEmpty(): void
@@ -43,7 +43,7 @@ class UriTest extends TestCase
         $uri->withScheme('gopher');
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Authority
 
     public function testDefaultAuthorityIsEmpty(): void
@@ -168,7 +168,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // User Info
 
     public function testDefaultUserInfoIsEmpty(): void
@@ -202,7 +202,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Host
 
     public function testDefaultHostIsEmpty(): void
@@ -253,7 +253,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Port
 
     public function testDefaultPortWithNoSchemeIsNull(): void
@@ -320,7 +320,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Path
 
     public function testDefaultPathIsEmpty(): void
@@ -367,7 +367,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Query
 
     public function testDefaultQueryIsEmpty(): void
@@ -430,7 +430,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Fragment
 
     public function testDefaultFragmentIsEmpty(): void
@@ -473,7 +473,7 @@ class UriTest extends TestCase
         ];
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Concatenation
 
     /**

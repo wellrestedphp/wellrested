@@ -57,7 +57,7 @@ abstract class Message implements MessageInterface
         $this->headers = clone $this->headers;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\MessageInterface
 
     /**
@@ -266,7 +266,7 @@ abstract class Message implements MessageInterface
         return $message;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * @param mixed $name

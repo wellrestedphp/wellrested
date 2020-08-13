@@ -49,7 +49,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     /** @var array */
     private $uploadedFiles;
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     public function __construct(array $serverParams = [])
     {
@@ -69,7 +69,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         parent::__clone();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\ServerRequestInterface
 
     /**
@@ -326,7 +326,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $request;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * @param array $root

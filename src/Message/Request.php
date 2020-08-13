@@ -28,7 +28,7 @@ class Request extends Message implements RequestInterface
     /** @var UriInterface */
     protected $uri;
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Create a new Request.
@@ -67,7 +67,7 @@ class Request extends Message implements RequestInterface
         parent::__clone();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\RequestInterface
 
     /**
@@ -214,7 +214,7 @@ class Request extends Message implements RequestInterface
         return $request;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * @param mixed $method

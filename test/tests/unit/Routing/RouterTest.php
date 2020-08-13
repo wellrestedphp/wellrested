@@ -50,7 +50,7 @@ class RouterTest extends TestCase
         $this->next = new NextMock();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Construction
 
     public function testCreatesInstance()
@@ -59,7 +59,7 @@ class RouterTest extends TestCase
         $this->assertNotNull($router);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Populating
 
     public function testCreatesRouteForTarget()
@@ -84,7 +84,7 @@ class RouterTest extends TestCase
         $this->route->register('GET', 'middleware')->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Dispatching
 
     public function testDispatchesStaticRoute()
@@ -295,7 +295,7 @@ class RouterTest extends TestCase
         $this->route->matchesRequestTarget('/my/path')->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Path Variables
 
     /** @dataProvider pathVariableProvider */
@@ -366,7 +366,7 @@ class RouterTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // No Match
 
     public function testWhenNoRouteMatchesByDefaultResponds404()
@@ -391,7 +391,7 @@ class RouterTest extends TestCase
         $this->assertTrue($this->next->called);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Middleware for Routes
 
     public function testCallsRouterMiddlewareBeforeRouteMiddleware()

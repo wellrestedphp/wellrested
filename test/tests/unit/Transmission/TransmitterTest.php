@@ -160,7 +160,7 @@ class TransmitterTest extends TestCase
         $this->assertEquals($content, $captured);
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Preparation
 
     public function testAddContentLengthHeader(): void
