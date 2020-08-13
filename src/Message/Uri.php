@@ -113,31 +113,36 @@ class Uri implements UriInterface
      */
     public function getAuthority()
     {
+        $host = $this->getHost();
+        if (!$host) {
+            return '';
+        }
+
         $authority = '';
 
-        $host = $this->getHost();
-        if ($host !== '') {
+        // User Info
+        $userInfo = $this->getUserInfo();
+        if ($userInfo) {
+            $authority .= $userInfo . '@';
+        }
 
-            // User Info
-            $userInfo = $this->getUserInfo();
-            if ($userInfo !== '') {
-                $authority .= $userInfo . '@';
-            }
+        // Host
+        $authority .= $host;
 
-            // Host
-            $authority .= $host;
-
-            // Port: Include only if set AND non-standard.
-            $port = $this->getPort();
-            if ($port !== null) {
-                $scheme = $this->getScheme();
-                if (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 443)) {
-                    $authority .= ':' . $port;
-                }
-            }
+        // Port: Include only if non-standard
+        if ($this->nonStandardPort()) {
+            $authority .= ':' . $this->getPort();
         }
 
         return $authority;
+    }
+
+    private function nonStandardPort(): bool
+    {
+        $port = $this->getPort();
+        $scheme = $this->getScheme();
+        return $scheme === 'http' && $port !== 80
+            || $scheme === 'https' && $port !== 443;
     }
 
     /**

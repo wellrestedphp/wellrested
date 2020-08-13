@@ -1,9 +1,8 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
 use InvalidArgumentException;
-use WellRESTed\Message\Uri;
 use WellRESTed\Test\TestCase;
 
 class UriTest extends TestCase
@@ -11,21 +10,21 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Scheme
 
-    public function testDefaultSchemeIsEmpty()
+    public function testDefaultSchemeIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getScheme());
     }
 
     /** @dataProvider schemeProvider */
-    public function testSetsSchemeCaseInsensitively($expected, $scheme)
+    public function testSetsSchemeCaseInsensitively($expected, $scheme): void
     {
         $uri = new Uri();
         $uri = $uri->withScheme($scheme);
         $this->assertSame($expected, $uri->getScheme());
     }
 
-    public function schemeProvider()
+    public function schemeProvider(): array
     {
         return [
             ['http', 'http'],
@@ -37,7 +36,7 @@ class UriTest extends TestCase
         ];
     }
 
-    public function testInvalidSchemeThrowsException()
+    public function testInvalidSchemeThrowsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
@@ -47,20 +46,26 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Authority
 
-    public function testDefaultAuthorityIsEmpty()
+    public function testDefaultAuthorityIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getAuthority());
     }
 
-    public function testRespectsMyAuthoritah()
+    public function testRespectsMyAuthoritah(): void
     {
         $this->assertTrue(true);
     }
 
-    /** @dataProvider authorityProvider */
-    public function testConcatenatesAuthorityFromHostAndUserInfo($expected, $components)
-    {
+    /**
+     * @dataProvider authorityProvider
+     * @param string $expected
+     * @param array $components
+     */
+    public function testConcatenatesAuthorityFromHostAndUserInfo(
+        string $expected,
+        array $components
+    ): void {
         $uri = new Uri();
 
         if (isset($components['scheme'])) {
@@ -166,7 +171,7 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // User Info
 
-    public function testDefaultUserInfoIsEmpty()
+    public function testDefaultUserInfoIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getUserInfo());
@@ -177,16 +182,16 @@ class UriTest extends TestCase
      *
      * @param string $expected The combined user:password value
      * @param string $user The username to set
-     * @param string $password The password to set
+     * @param string|null $password The password to set
      */
-    public function testSetsUserInfo($expected, $user, $password)
+    public function testSetsUserInfo(string $expected, string $user, ?string $password): void
     {
         $uri = new Uri();
         $uri = $uri->withUserInfo($user, $password);
         $this->assertSame($expected, $uri->getUserInfo());
     }
 
-    public function userInfoProvider()
+    public function userInfoProvider(): array
     {
         return [
             ['user:password', 'user', 'password'],
@@ -200,21 +205,25 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Host
 
-    public function testDefaultHostIsEmpty()
+    public function testDefaultHostIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getHost());
     }
 
-    /** @dataProvider hostProvider */
-    public function testSetsHost($expected, $host)
+    /**
+     * @dataProvider hostProvider
+     * @param string $expected
+     * @param string $host
+     */
+    public function testSetsHost(string $expected, string $host): void
     {
         $uri = new Uri();
         $uri = $uri->withHost($host);
         $this->assertSame($expected, $uri->getHost());
     }
 
-    public function hostProvider()
+    public function hostProvider(): array
     {
         return [
             ['', ''],
@@ -226,15 +235,16 @@ class UriTest extends TestCase
 
     /**
      * @dataProvider invalidHostProvider
+     * @param mixed $host
      */
-    public function testInvalidHostThrowsException($host)
+    public function testInvalidHostThrowsException($host): void
     {
         $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withHost($host);
     }
 
-    public function invalidHostProvider()
+    public function invalidHostProvider(): array
     {
         return [
             [null],
@@ -246,33 +256,38 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Port
 
-    public function testDefaultPortWithNoSchemeIsNull()
+    public function testDefaultPortWithNoSchemeIsNull(): void
     {
         $uri = new Uri();
         $this->assertNull($uri->getPort());
     }
 
-    public function testDefaultPortForHttpSchemeIs80()
+    public function testDefaultPortForHttpSchemeIs80(): void
     {
         $uri = new Uri();
         $this->assertSame(80, $uri->withScheme('http')->getPort());
     }
 
-    public function testDefaultPortForHttpsSchemeIs443()
+    public function testDefaultPortForHttpsSchemeIs443(): void
     {
         $uri = new Uri();
         $this->assertSame(443, $uri->withScheme('https')->getPort());
     }
 
-    /** @dataProvider portAndSchemeProvider */
-    public function testReturnsPortWithSchemeDefaults($expectedPort, $scheme, $port)
+    /**
+     * @dataProvider portAndSchemeProvider
+     * @param mixed $expectedPort
+     * @param mixed $scheme
+     * @param mixed $port
+     */
+    public function testReturnsPortWithSchemeDefaults($expectedPort, $scheme, $port): void
     {
         $uri = new Uri();
         $uri = $uri->withScheme($scheme)->withPort($port);
         $this->assertSame($expectedPort, $uri->getPort());
     }
 
-    public function portAndSchemeProvider()
+    public function portAndSchemeProvider(): array
     {
         return [
             [null, '', null],
@@ -286,15 +301,16 @@ class UriTest extends TestCase
 
     /**
      * @dataProvider invalidPortProvider
+     * @param mixed $port
      */
-    public function testInvalidPortThrowsException($port)
+    public function testInvalidPortThrowsException($port): void
     {
         $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withPort($port);
     }
 
-    public function invalidPortProvider()
+    public function invalidPortProvider(): array
     {
         return [
             [true],
@@ -307,22 +323,30 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Path
 
-    public function testDefaultPathIsEmpty()
+    public function testDefaultPathIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getPath());
     }
 
-    /** @dataProvider pathProvider */
-    public function testSetsEncodedPath($expected, $path)
+    /**
+     * @dataProvider pathProvider
+     * @param string $expected
+     * @param string $path
+     */
+    public function testSetsEncodedPath(string $expected, string $path): void
     {
         $uri = new Uri();
         $uri = $uri->withPath($path);
         $this->assertSame($expected, $uri->getPath());
     }
 
-    /** @dataProvider pathProvider */
-    public function testDoesNotDoubleEncodePath($expected, $path)
+    /**
+     * @dataProvider pathProvider
+     * @param string $expected
+     * @param string $path
+     */
+    public function testDoesNotDoubleEncodePath(string $expected, string $path): void
     {
         $uri = new Uri();
         $uri = $uri->withPath($path);
@@ -346,22 +370,30 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Query
 
-    public function testDefaultQueryIsEmpty()
+    public function testDefaultQueryIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getQuery());
     }
 
-    /** @dataProvider queryProvider */
-    public function testSetsEncodedQuery($expected, $query)
+    /**
+     * @dataProvider queryProvider
+     * @param string $expected
+     * @param string $query
+     */
+    public function testSetsEncodedQuery(string $expected, string $query): void
     {
         $uri = new Uri();
         $uri = $uri->withQuery($query);
         $this->assertSame($expected, $uri->getQuery());
     }
 
-    /** @dataProvider queryProvider */
-    public function testDoesNotDoubleEncodeQuery($expected, $query)
+    /**
+     * @dataProvider queryProvider
+     * @param string $expected
+     * @param string $query
+     */
+    public function testDoesNotDoubleEncodeQuery(string $expected, string $query): void
     {
         $uri = new Uri();
         $uri = $uri->withQuery($query);
@@ -369,7 +401,7 @@ class UriTest extends TestCase
         $this->assertSame($expected, $uri->getQuery());
     }
 
-    public function queryProvider()
+    public function queryProvider(): array
     {
         return [
             ['cat=molly', 'cat=molly'],
@@ -380,15 +412,16 @@ class UriTest extends TestCase
 
     /**
      * @dataProvider invalidPathProvider
+     * @param mixed $path
      */
-    public function testInvalidPathThrowsException($path)
+    public function testInvalidPathThrowsException($path): void
     {
         $this->expectException(InvalidArgumentException::class);
         $uri = new Uri();
         $uri->withPath($path);
     }
 
-    public function invalidPathProvider()
+    public function invalidPathProvider(): array
     {
         return [
             [null],
@@ -400,22 +433,30 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Fragment
 
-    public function testDefaultFragmentIsEmpty()
+    public function testDefaultFragmentIsEmpty(): void
     {
         $uri = new Uri();
         $this->assertSame('', $uri->getFragment());
     }
 
-    /** @dataProvider fragmentProvider */
-    public function testSetsEncodedFragment($expected, $fragment)
+    /**
+     * @dataProvider fragmentProvider
+     * @param string $expected
+     * @param string|null $fragment
+     */
+    public function testSetsEncodedFragment(string $expected, ?string $fragment): void
     {
         $uri = new Uri();
         $uri = $uri->withFragment($fragment);
         $this->assertSame($expected, $uri->getFragment());
     }
 
-    /** @dataProvider fragmentProvider */
-    public function testDoesNotDoubleEncodeFragment($expected, $fragment)
+    /**
+     * @dataProvider fragmentProvider
+     * @param string $expected
+     * @param string|null $fragment
+     */
+    public function testDoesNotDoubleEncodeFragment(string $expected, ?string $fragment): void
     {
         $uri = new Uri();
         $uri = $uri->withFragment($fragment);
@@ -423,7 +464,7 @@ class UriTest extends TestCase
         $this->assertSame($expected, $uri->getFragment());
     }
 
-    public function fragmentProvider()
+    public function fragmentProvider(): array
     {
         return [
             ['', null],
@@ -435,8 +476,12 @@ class UriTest extends TestCase
     // ------------------------------------------------------------------------
     // Concatenation
 
-    /** @dataProvider componentProvider */
-    public function testConcatenatesComponents($expected, $components)
+    /**
+     * @dataProvider componentProvider
+     * @param string $expected
+     * @param array $components
+     */
+    public function testConcatenatesComponents(string $expected, array $components): void
     {
         $uri = new Uri();
 
@@ -538,14 +583,18 @@ class UriTest extends TestCase
         ];
     }
 
-    /** @dataProvider stringUriProvider */
-    public function testUriCreatedFromStringNormalizesString($expected, $input)
+    /**
+     * @dataProvider stringUriProvider
+     * @param string $expected
+     * @param string $input
+     */
+    public function testUriCreatedFromStringNormalizesString(string $expected, string $input): void
     {
         $uri = new Uri($input);
         $this->assertSame($expected, (string) $uri);
     }
 
-    public function stringUriProvider()
+    public function stringUriProvider(): array
     {
         return [
             [
