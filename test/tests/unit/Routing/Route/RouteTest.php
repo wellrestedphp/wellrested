@@ -20,7 +20,7 @@ class RouteTest extends TestCase
     private $methodMap;
     private $route;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->methodMap = $this->prophesize(MethodMap::class);
         $this->methodMap->register(Argument::cetera());

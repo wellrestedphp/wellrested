@@ -18,7 +18,7 @@ class ServerTest extends TestCase
     /** @var Server */
     private $server;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

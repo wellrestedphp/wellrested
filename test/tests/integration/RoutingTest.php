@@ -25,7 +25,7 @@ class RoutingTest extends TestCase
     /** @var ResponseInterface */
     private $response;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

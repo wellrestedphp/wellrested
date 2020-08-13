@@ -11,7 +11,7 @@ class UploadedFileTest extends TestCase
     private $tmpName;
     private $movePath;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         UploadedFileState::$php_sapi_name = 'cli';
@@ -19,7 +19,7 @@ class UploadedFileTest extends TestCase
         $this->movePath = tempnam(sys_get_temp_dir(), 'tst');
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (file_exists($this->tmpName)) {

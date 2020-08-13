@@ -22,7 +22,7 @@ class TransmitterTest extends TestCase
     private $response;
     private $body;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         HeaderStack::reset();
 

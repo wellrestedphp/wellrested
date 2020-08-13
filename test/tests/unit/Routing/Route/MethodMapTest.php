@@ -18,7 +18,7 @@ class MethodMapTest extends TestCase
     private $next;
     private $middleware;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->request = new ServerRequest();
         $this->response = new Response();

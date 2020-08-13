@@ -24,7 +24,7 @@ class DispatcherTest extends TestCase
     /** @var ResponseInterface */
     private $stubResponse;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->request = new ServerRequest();
         $this->response = new Response();

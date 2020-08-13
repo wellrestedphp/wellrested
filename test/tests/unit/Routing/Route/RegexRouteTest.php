@@ -15,7 +15,7 @@ class RegexRouteTest extends TestCase
 
     private $methodMap;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->methodMap = $this->prophesize(MethodMap::class);
     }

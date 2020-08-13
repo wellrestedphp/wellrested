@@ -14,7 +14,7 @@ class RouteFactoryTest extends TestCase
 
     private $dispatcher;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->dispatcher = $this->prophesize(DispatcherInterface::class);
     }

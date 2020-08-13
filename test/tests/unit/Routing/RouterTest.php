@@ -26,7 +26,7 @@ class RouterTest extends TestCase
     private $router;
     private $next;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
