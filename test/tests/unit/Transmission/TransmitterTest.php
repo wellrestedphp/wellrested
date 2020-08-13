@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Transmission;
+namespace WellRESTed\Transmission;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -9,10 +9,6 @@ use RuntimeException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\TestCase;
-use WellRESTed\Transmission\HeaderStack;
-use WellRESTed\Transmission\Transmitter;
-
-require_once __DIR__ . '/../../../src/HeaderStack.php';
 
 class TransmitterTest extends TestCase
 {
@@ -40,14 +36,14 @@ class TransmitterTest extends TestCase
             ->withBody($stream);
     }
 
-    public function testSendStatusCodeWithReasonPhrase()
+    public function testSendStatusCodeWithReasonPhrase(): void
     {
         $transmitter = new Transmitter();
         $transmitter->transmit($this->request, $this->response);
         $this->assertContains('HTTP/1.1 200 OK', HeaderStack::getHeaders());
     }
 
-    public function testSendStatusCodeWithoutReasonPhrase()
+    public function testSendStatusCodeWithoutReasonPhrase(): void
     {
         $this->response = $this->response->withStatus(999);
 
@@ -56,8 +52,11 @@ class TransmitterTest extends TestCase
         $this->assertContains('HTTP/1.1 999', HeaderStack::getHeaders());
     }
 
-    /** @dataProvider headerProvider */
-    public function testSendsHeaders($header)
+    /**
+     * @dataProvider headerProvider
+     * @param string $header
+     */
+    public function testSendsHeaders(string $header): void
     {
         $this->response = $this->response
             ->withHeader('Content-length', ['2048'])
@@ -68,7 +67,7 @@ class TransmitterTest extends TestCase
         $this->assertContains($header, HeaderStack::getHeaders());
     }
 
-    public function headerProvider()
+    public function headerProvider(): array
     {
         return [
             ['Content-length: 2048'],
@@ -77,7 +76,7 @@ class TransmitterTest extends TestCase
         ];
     }
 
-    public function testOutputsBody()
+    public function testOutputsBody(): void
     {
         $content = 'Hello, world!';
 
@@ -95,7 +94,7 @@ class TransmitterTest extends TestCase
         $this->assertEquals($content, $captured);
     }
 
-    public function testOutputsBodyInChunks()
+    public function testOutputsBodyInChunks(): void
     {
         $content = 'Hello, world!';
         $chunkSize = 3;
@@ -128,7 +127,7 @@ class TransmitterTest extends TestCase
         $this->assertEquals($content, $captured);
     }
 
-    public function testOutputsUnseekableStreamInChunks()
+    public function testOutputsUnseekableStreamInChunks(): void
     {
         $content = 'Hello, world!';
         $chunkSize = 3;
@@ -164,7 +163,7 @@ class TransmitterTest extends TestCase
     // ------------------------------------------------------------------------
     // Preparation
 
-    public function testAddContentLengthHeader()
+    public function testAddContentLengthHeader(): void
     {
         $bodySize = 1024;
         $this->body->isReadable()->willReturn(true);
@@ -178,7 +177,7 @@ class TransmitterTest extends TestCase
         $this->assertContains("Content-length: $bodySize", HeaderStack::getHeaders());
     }
 
-    public function testDoesNotReplaceContentLengthHeaderWhenContentLengthIsAlreadySet()
+    public function testDoesNotReplaceContentLengthHeaderWhenContentLengthIsAlreadySet(): void
     {
         $streamSize = 1024;
         $headerSize = 2048;
@@ -196,7 +195,7 @@ class TransmitterTest extends TestCase
         $this->assertContains("Content-length: $headerSize", HeaderStack::getHeaders());
     }
 
-    public function testDoesNotAddContentLengthHeaderWhenTransferEncodingIsChunked()
+    public function testDoesNotAddContentLengthHeaderWhenTransferEncodingIsChunked(): void
     {
         $bodySize = 1024;
 
@@ -213,7 +212,7 @@ class TransmitterTest extends TestCase
         $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), 'Content-length:');
     }
 
-    public function testDoesNotAddContentLengthHeaderWhenBodySizeIsNull()
+    public function testDoesNotAddContentLengthHeaderWhenBodySizeIsNull(): void
     {
         $this->body->isReadable()->willReturn(true);
         $this->body->__toString()->willReturn('');
@@ -226,7 +225,7 @@ class TransmitterTest extends TestCase
         $this->assertArrayDoesNotContainValueWithPrefix(HeaderStack::getHeaders(), 'Content-length:');
     }
 
-    private function assertArrayDoesNotContainValueWithPrefix($arr, $prefix)
+    private function assertArrayDoesNotContainValueWithPrefix(array $arr, string $prefix): void
     {
         $normalPrefix = strtolower($prefix);
         foreach ($arr as $item) {
@@ -237,4 +236,34 @@ class TransmitterTest extends TestCase
         }
         $this->assertTrue(true);
     }
+}
+
+// -----------------------------------------------------------------------------
+
+// Declare header function in this namespace so the class under test will use
+// this instead of the internal global functions during testing.
+
+class HeaderStack
+{
+    private static $headers;
+
+    public static function reset()
+    {
+        self::$headers = [];
+    }
+
+    public static function push($header)
+    {
+        self::$headers[] = $header;
+    }
+
+    public static function getHeaders()
+    {
+        return self::$headers;
+    }
+}
+
+function header($string, $dummy = true)
+{
+    HeaderStack::push($string);
 }

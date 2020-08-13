@@ -53,25 +53,26 @@ class Transmitter implements TransmitterInterface
         $this->chunkSize = $chunkSize;
     }
 
-    protected function prepareResponse(
+    private function prepareResponse(
         ServerRequestInterface $request,
         ResponseInterface $response
     ): ResponseInterface {
 
-        // Add a Content-length header to the response when all of these are true:
+        // Add Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header
         // - Response does not have a Transfer-encoding: chunked header
         // - Response body stream is readable and reports a non-null size
         //
-        if (!$response->hasHeader('Content-length')
-            && !(strtolower($response->getHeaderLine('Transfer-encoding')) === 'chunked')
-        ) {
-            $size = $response->getBody()->getSize();
-            if ($size !== null) {
-                $response = $response->withHeader('Content-length', (string) $size);
-            }
+        $contentLengthMissing = !$response->hasHeader('Content-length');
+        $notChunked = strtolower($response->getHeaderLine('Transfer-encoding'))
+            !== 'chunked';
+        $size = $response->getBody()->getSize();
+
+        if ($contentLengthMissing && $notChunked && $size !== null) {
+            $response = $response->withHeader('Content-length', (string) $size);
         }
+
         return $response;
     }
 
