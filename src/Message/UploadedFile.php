@@ -28,7 +28,7 @@ class UploadedFile implements UploadedFileInterface
     private $tmpName;
 
     /**
-     * Create a new Uri. The arguments correspond with keys from arrays
+     * Create a new UploadedFile. The arguments correspond with keys from arrays
      * provided by $_FILES. For example, given this structure for $_FILES:
      *
      *     array(
@@ -66,7 +66,7 @@ class UploadedFile implements UploadedFileInterface
         $this->size = $size;
 
         if (file_exists($tmpName)) {
-            $this->stream = new Stream(fopen($tmpName, 'r'));
+            $this->stream = new Stream(fopen($tmpName, 'rb'));
             $this->tmpName = $tmpName;
         } else {
             $this->stream = new NullStream();
@@ -126,7 +126,7 @@ class UploadedFile implements UploadedFileInterface
     public function moveTo($path)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
-            throw new RuntimeException('File ' . $this->tmpName . ' does not exist.');
+            throw new RuntimeException("File {$this->tmpName} does not exist.");
         }
         if (php_sapi_name() === 'cli') {
             rename($this->tmpName, $path);
