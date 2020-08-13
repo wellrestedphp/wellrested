@@ -15,7 +15,7 @@ use WellRESTed\Transmission\TransmitterInterface;
 class Server
 {
     /** @var mixed[] */
-    protected $attributes = [];
+    private $attributes = [];
     /** @var DispatcherInterface */
     private $dispatcher;
     /** @var string|null attribute name for matched path variables */

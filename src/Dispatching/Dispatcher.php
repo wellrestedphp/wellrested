@@ -71,7 +71,7 @@ class Dispatcher implements DispatcherInterface
      * @param mixed[] $dispatchables
      * @return DispatchStack
      */
-    protected function getDispatchStack($dispatchables)
+    private function getDispatchStack($dispatchables)
     {
         $stack = new DispatchStack($this);
         foreach ($dispatchables as $dispatchable) {
