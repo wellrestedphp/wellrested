@@ -16,7 +16,7 @@ class Stream implements StreamInterface
     private $resource;
 
     /**
-     * Create a new Stream passing either a stream resource handle (e.g.,
+     * Create a new Stream by passing either a stream resource handle (e.g.,
      * from fopen) or a string.
      *
      * If $resource is a string, the Stream will open a php://temp stream,
@@ -35,7 +35,7 @@ class Stream implements StreamInterface
                 $this->write($resource);
             }
         } else {
-            throw new InvalidArgumentException('Expected a resource handler.');
+            throw new InvalidArgumentException('Expected resource or string.');
         }
     }
 

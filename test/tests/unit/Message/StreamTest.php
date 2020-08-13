@@ -1,10 +1,9 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Message;
+namespace WellRESTed\Message;
 
 use InvalidArgumentException;
 use RuntimeException;
-use WellRESTed\Message\Stream;
 use WellRESTed\Test\TestCase;
 
 class StreamTest extends TestCase
@@ -27,13 +26,13 @@ class StreamTest extends TestCase
         }
     }
 
-    public function testCreatesInstanceWithStreamResource()
+    public function testCreatesInstanceWithStreamResource(): void
     {
         $stream = new Stream($this->resource);
         $this->assertNotNull($stream);
     }
 
-    public function testCreatesInstanceWithString()
+    public function testCreatesInstanceWithString(): void
     {
         $stream = new Stream('Hello, world!');
         $this->assertNotNull($stream);
@@ -43,13 +42,13 @@ class StreamTest extends TestCase
      * @dataProvider invalidResourceProvider
      * @param mixed $resource
      */
-    public function testThrowsExceptionWithInvalidResource($resource)
+    public function testThrowsExceptionWithInvalidResource($resource): void
     {
         $this->expectException(InvalidArgumentException::class);
         new Stream($resource);
     }
 
-    public function invalidResourceProvider()
+    public function invalidResourceProvider(): array
     {
         return [
             [null],
@@ -59,59 +58,59 @@ class StreamTest extends TestCase
         ];
     }
 
-    public function testCastsToString()
+    public function testCastsToString(): void
     {
         $stream = new Stream($this->resource);
         $this->assertEquals($this->content, (string) $stream);
     }
 
-    public function testClosesHandle()
+    public function testClosesHandle(): void
     {
         $stream = new Stream($this->resource);
         $stream->close();
         $this->assertFalse(is_resource($this->resource));
     }
 
-    public function testDetachReturnsHandle()
+    public function testDetachReturnsHandle(): void
     {
         $stream = new Stream($this->resource);
         $this->assertSame($this->resource, $stream->detach());
     }
 
-    public function testDetachUnsetsInstanceVariable()
+    public function testDetachUnsetsInstanceVariable(): void
     {
         $stream = new Stream($this->resource);
         $stream->detach();
         $this->assertNull($stream->detach());
     }
 
-    public function testReturnsSize()
+    public function testReturnsSize(): void
     {
         $stream = new Stream($this->resource);
         $this->assertEquals(strlen($this->content), $stream->getSize());
     }
 
-    public function testReturnsNullForSizeWhenUnableToReadFromFstat()
+    public function testReturnsNullForSizeWhenUnableToReadFromFstat(): void
     {
         $stream = new Stream($this->resourceDevNull);
         $this->assertNull($stream->getSize());
     }
 
-    public function testTellReturnsHandlePosition()
+    public function testTellReturnsHandlePosition(): void
     {
         $stream = new Stream($this->resource);
         fseek($this->resource, 10);
         $this->assertEquals(10, $stream->tell());
     }
 
-    public function testTellThrowsRuntimeExceptionWhenUnableToReadStreamPosition()
+    public function testTellThrowsRuntimeExceptionWhenUnableToReadStreamPosition(): void
     {
         $stream = new Stream($this->resourceDevNull);
         $this->expectException(RuntimeException::class);
         $stream->tell();
     }
 
-    public function testReturnsOef()
+    public function testReturnsOef(): void
     {
         $stream = new Stream($this->resource);
         $stream->rewind();
@@ -119,7 +118,7 @@ class StreamTest extends TestCase
         $this->assertTrue($stream->eof());
     }
 
-    public function testReadsSeekableStatusFromMetadata()
+    public function testReadsSeekableStatusFromMetadata(): void
     {
         $stream = new Stream($this->resource);
         $metadata = stream_get_meta_data($this->resource);
@@ -127,21 +126,21 @@ class StreamTest extends TestCase
         $this->assertEquals($seekable, $stream->isSeekable());
     }
 
-    public function testSeeksToPosition()
+    public function testSeeksToPosition(): void
     {
         $stream = new Stream($this->resource);
         $stream->seek(10);
         $this->assertEquals(10, ftell($this->resource));
     }
 
-    public function testSeekThrowsRuntimeExceptionWhenUnableToSeek()
+    public function testSeekThrowsRuntimeExceptionWhenUnableToSeek(): void
     {
         $stream = new Stream($this->resourceDevNull);
         $this->expectException(RuntimeException::class);
         $stream->seek(10);
     }
 
-    public function testRewindReturnsToBeginning()
+    public function testRewindReturnsToBeginning(): void
     {
         $stream = new Stream($this->resource);
         $stream->seek(10);
@@ -149,14 +148,14 @@ class StreamTest extends TestCase
         $this->assertEquals(0, ftell($this->resource));
     }
 
-    public function testRewindThrowsRuntimeExceptionWhenUnableToRewind()
+    public function testRewindThrowsRuntimeExceptionWhenUnableToRewind(): void
     {
         $stream = new Stream($this->resourceDevNull);
         $this->expectException(RuntimeException::class);
         $stream->rewind();
     }
 
-    public function testWritesToHandle()
+    public function testWritesToHandle(): void
     {
         $message = "\nThis is a stream.";
         $stream = new Stream($this->resource);
@@ -164,7 +163,7 @@ class StreamTest extends TestCase
         $this->assertEquals($this->content . $message, (string) $stream);
     }
 
-    public function testThrowsExceptionOnErrorWriting()
+    public function testThrowsExceptionOnErrorWriting(): void
     {
         $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), 'php');
@@ -173,7 +172,7 @@ class StreamTest extends TestCase
         $stream->write('Hello, world!');
     }
 
-    public function testThrowsExceptionOnErrorReading()
+    public function testThrowsExceptionOnErrorReading(): void
     {
         $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), 'php');
@@ -182,7 +181,7 @@ class StreamTest extends TestCase
         $stream->read(10);
     }
 
-    public function testReadsFromStream()
+    public function testReadsFromStream(): void
     {
         $stream = new Stream($this->resource);
         $stream->seek(7);
@@ -190,7 +189,7 @@ class StreamTest extends TestCase
         $this->assertEquals('world', $string);
     }
 
-    public function testThrowsExceptionOnErrorReadingToEnd()
+    public function testThrowsExceptionOnErrorReadingToEnd(): void
     {
         $this->expectException(RuntimeException::class);
         $filename = tempnam(sys_get_temp_dir(), 'php');
@@ -199,7 +198,7 @@ class StreamTest extends TestCase
         $stream->getContents();
     }
 
-    public function testReadsToEnd()
+    public function testReadsToEnd(): void
     {
         $stream = new Stream($this->resource);
         $stream->seek(7);
@@ -207,13 +206,13 @@ class StreamTest extends TestCase
         $this->assertEquals('world!', $string);
     }
 
-    public function testReturnsMetadataArray()
+    public function testReturnsMetadataArray(): void
     {
         $stream = new Stream($this->resource);
         $this->assertEquals(stream_get_meta_data($this->resource), $stream->getMetadata());
     }
 
-    public function testReturnsMetadataItem()
+    public function testReturnsMetadataItem(): void
     {
         $stream = new Stream($this->resource);
         $metadata = stream_get_meta_data($this->resource);
@@ -226,7 +225,7 @@ class StreamTest extends TestCase
      * @param bool $readable The stream should be readable
      * @param bool $writable The stream should be writeable
      */
-    public function testReturnsIsReadableForReadableStreams($mode, $readable, $writable)
+    public function testReturnsIsReadableForReadableStreams(string $mode, bool $readable, bool $writable): void
     {
         $tmp = tempnam(sys_get_temp_dir(), 'php');
         if ($mode[0] === 'x') {
@@ -243,7 +242,7 @@ class StreamTest extends TestCase
      * @param bool $readable The stream should be readable
      * @param bool $writable The stream should be writeable
      */
-    public function testReturnsIsWritableForWritableStreams($mode, $readable, $writable)
+    public function testReturnsIsWritableForWritableStreams(string $mode, bool $readable, bool $writable): void
     {
         $tmp = tempnam(sys_get_temp_dir(), 'php');
         if ($mode[0] === 'x') {
@@ -254,7 +253,7 @@ class StreamTest extends TestCase
         $this->assertEquals($writable, $stream->isWritable());
     }
 
-    public function modeProvider()
+    public function modeProvider(): array
     {
         return [
             ['r',  true,  false],
