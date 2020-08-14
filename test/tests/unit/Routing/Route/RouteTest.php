@@ -1,14 +1,12 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Route;
+namespace WellRESTed\Routing\Route;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Routing\Route\MethodMap;
-use WellRESTed\Routing\Route\StaticRoute;
 use WellRESTed\Test\TestCase;
 
 class RouteTest extends TestCase
@@ -33,12 +31,12 @@ class RouteTest extends TestCase
         );
     }
 
-    public function testReturnsTarget()
+    public function testReturnsTarget(): void
     {
         $this->assertSame(self::TARGET, $this->route->getTarget());
     }
 
-    public function testRegistersDispatchableWithMethodMap()
+    public function testRegistersDispatchableWithMethodMap(): void
     {
         $handler = $this->prophesize(RequestHandlerInterface::class)->reveal();
 
@@ -47,7 +45,7 @@ class RouteTest extends TestCase
         $this->methodMap->register('GET', $handler)->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesMethodMap()
+    public function testDispatchesMethodMap(): void
     {
         $request = new ServerRequest();
         $response = new Response();

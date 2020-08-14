@@ -1,11 +1,8 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Route;
+namespace WellRESTed\Routing\Route;
 
 use Prophecy\PhpUnit\ProphecyTrait;
-use WellRESTed\Routing\Route\MethodMap;
-use WellRESTed\Routing\Route\RouteInterface;
-use WellRESTed\Routing\Route\TemplateRoute;
 use WellRESTed\Test\TestCase;
 
 class TemplateRouteTest extends TestCase
@@ -48,7 +45,7 @@ class TemplateRouteTest extends TestCase
     public function testReturnsPatternType()
     {
         $route = new TemplateRoute('/', $this->methodMap->reveal());
-        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
+        $this->assertSame(Route::TYPE_PATTERN, $route->getType());
     }
 
     // -------------------------------------------------------------------------

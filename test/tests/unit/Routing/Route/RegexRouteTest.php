@@ -1,12 +1,9 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Route;
+namespace WellRESTed\Routing\Route;
 
 use Prophecy\PhpUnit\ProphecyTrait;
 use RuntimeException;
-use WellRESTed\Routing\Route\MethodMap;
-use WellRESTed\Routing\Route\RegexRoute;
-use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Test\TestCase;
 
 class RegexRouteTest extends TestCase
@@ -23,7 +20,7 @@ class RegexRouteTest extends TestCase
     public function testReturnsPatternType()
     {
         $route = new RegexRoute('/', $this->methodMap->reveal());
-        $this->assertSame(RouteInterface::TYPE_PATTERN, $route->getType());
+        $this->assertSame(Route::TYPE_PATTERN, $route->getType());
     }
 
     /** @dataProvider matchingRouteProvider */

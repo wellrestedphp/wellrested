@@ -14,7 +14,7 @@ class PrefixRoute extends Route
 
     public function getType(): int
     {
-        return RouteInterface::TYPE_PREFIX;
+        return Route::TYPE_PREFIX;
     }
 
     /**

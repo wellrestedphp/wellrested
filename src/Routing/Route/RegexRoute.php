@@ -14,7 +14,7 @@ class RegexRoute extends Route
 
     public function getType(): int
     {
-        return RouteInterface::TYPE_PATTERN;
+        return Route::TYPE_PATTERN;
     }
 
     /**

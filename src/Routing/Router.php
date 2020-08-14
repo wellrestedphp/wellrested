@@ -6,9 +6,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteFactory;
 use WellRESTed\Routing\Route\RouteFactoryInterface;
-use WellRESTed\Routing\Route\RouteInterface;
 
 class Router
 {
@@ -18,13 +18,13 @@ class Router
     private $dispatcher;
     /** @var RouteFactoryInterface */
     private $factory;
-    /** @var RouteInterface[] Array of Route objects */
+    /** @var Route[] Array of Route objects */
     private $routes;
-    /** @var RouteInterface[] Hash array mapping exact paths to routes */
+    /** @var Route[] Hash array mapping exact paths to routes */
     private $staticRoutes;
-    /** @var RouteInterface[] Hash array mapping path prefixes to routes */
+    /** @var Route[] Hash array mapping path prefixes to routes */
     private $prefixRoutes;
-    /** @var RouteInterface[] Hash array mapping path prefixes to routes */
+    /** @var Route[] Hash array mapping path prefixes to routes */
     private $patternRoutes;
     /** @var mixed[] List array of middleware */
     private $stack;
@@ -207,7 +207,7 @@ class Router
         return new RouteFactory($dispatcher);
     }
 
-    private function getRouteForTarget(string $target): RouteInterface
+    private function getRouteForTarget(string $target): Route
     {
         if (isset($this->routes[$target])) {
             $route = $this->routes[$target];
@@ -218,26 +218,26 @@ class Router
         return $route;
     }
 
-    private function registerRouteForTarget(RouteInterface $route, string $target): void
+    private function registerRouteForTarget(Route $route, string $target): void
     {
         // Store the route to the hash indexed by original target.
         $this->routes[$target] = $route;
 
         // Store the route to the array of routes for its type.
         switch ($route->getType()) {
-            case RouteInterface::TYPE_STATIC:
+            case Route::TYPE_STATIC:
                 $this->staticRoutes[$route->getTarget()] = $route;
                 break;
-            case RouteInterface::TYPE_PREFIX:
+            case Route::TYPE_PREFIX:
                 $this->prefixRoutes[rtrim($route->getTarget(), '*')] = $route;
                 break;
-            case RouteInterface::TYPE_PATTERN:
+            case Route::TYPE_PATTERN:
                 $this->patternRoutes[] = $route;
                 break;
         }
     }
 
-    private function getStaticRoute(string $requestTarget): ?RouteInterface
+    private function getStaticRoute(string $requestTarget): ?Route
     {
         if (isset($this->staticRoutes[$requestTarget])) {
             return $this->staticRoutes[$requestTarget];
@@ -245,7 +245,7 @@ class Router
         return null;
     }
 
-    private function getPrefixRoute(string $requestTarget): ?RouteInterface
+    private function getPrefixRoute(string $requestTarget): ?Route
     {
         // Find all prefixes that match the start of this path.
         $prefixes = array_keys($this->prefixRoutes);

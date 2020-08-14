@@ -16,7 +16,7 @@ interface RouteFactoryInterface
      * - Regular expressions will create RegexRoutes
      *
      * @param string $target Route target or target pattern
-     * @return RouteInterface
+     * @return Route
      */
     public function create($target);
 }

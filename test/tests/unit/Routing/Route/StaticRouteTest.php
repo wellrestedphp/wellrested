@@ -1,11 +1,8 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Route;
+namespace WellRESTed\Routing\Route;
 
 use Prophecy\PhpUnit\ProphecyTrait;
-use WellRESTed\Routing\Route\MethodMap;
-use WellRESTed\Routing\Route\RouteInterface;
-use WellRESTed\Routing\Route\StaticRoute;
 use WellRESTed\Test\TestCase;
 
 class StaticRouteTest extends TestCase
@@ -16,7 +13,7 @@ class StaticRouteTest extends TestCase
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new StaticRoute('/', $methodMap->reveal());
-        $this->assertSame(RouteInterface::TYPE_STATIC, $route->getType());
+        $this->assertSame(Route::TYPE_STATIC, $route->getType());
     }
 
     public function testMatchesExactRequestTarget()

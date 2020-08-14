@@ -9,7 +9,7 @@ class StaticRoute extends Route
 {
     public function getType(): int
     {
-        return RouteInterface::TYPE_STATIC;
+        return Route::TYPE_STATIC;
     }
 
     /**

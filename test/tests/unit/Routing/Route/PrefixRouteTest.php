@@ -20,7 +20,7 @@ class PrefixRouteTest extends TestCase
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/*', $methodMap->reveal());
-        $this->assertSame(RouteInterface::TYPE_PREFIX, $route->getType());
+        $this->assertSame(Route::TYPE_PREFIX, $route->getType());
     }
 
     public function testReturnsEmptyArrayForPathVariables(): void
