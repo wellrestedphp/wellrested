@@ -16,7 +16,7 @@ class TemplateRouteTest extends TestCase
         $this->methodMap = $this->prophesize(MethodMap::class);
     }
 
-    private function getExpectedValues($keys)
+    private function getExpectedValues(array $keys): array
     {
         $expectedValues = [
             'var' => 'value',
@@ -33,7 +33,7 @@ class TemplateRouteTest extends TestCase
         return array_intersect_key($expectedValues, array_flip($keys));
     }
 
-    private function assertArrayHasSameContents($expected, $actual)
+    private function assertArrayHasSameContents($expected, $actual): void
     {
         ksort($expected);
         ksort($actual);
@@ -42,7 +42,7 @@ class TemplateRouteTest extends TestCase
 
     // -------------------------------------------------------------------------
 
-    public function testReturnsPatternType()
+    public function testReturnsPatternType(): void
     {
         $route = new TemplateRoute('/', $this->methodMap->reveal());
         $this->assertSame(Route::TYPE_PATTERN, $route->getType());
@@ -51,8 +51,12 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching
 
-    /** @dataProvider nonMatchingTargetProvider */
-    public function testFailsToMatchNonMatchingTarget($template, $target)
+    /**
+     * @dataProvider nonMatchingTargetProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testFailsToMatchNonMatchingTarget(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertFalse($route->matchesRequestTarget($target));
@@ -71,22 +75,31 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching :: Simple Strings
 
-    /** @dataProvider simpleStringProvider */
-    public function testMatchesSimpleStrings($template, $target)
+    /**
+     * @dataProvider simpleStringProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesSimpleStrings(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /** @dataProvider simpleStringProvider */
-    public function testCapturesFromSimpleStrings($template, $target, $variables)
+    /**
+     * @dataProvider simpleStringProvider
+     * @param string $template
+     * @param string $target
+     * @param string[] $variables
+     */
+    public function testCapturesFromSimpleStrings(string $template, string $target, array $variables): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
 
-    public function simpleStringProvider()
+    public function simpleStringProvider(): array
     {
         return [
             ['/foo', '/foo', []],
@@ -100,22 +113,31 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching :: Reserved
 
-    /** @dataProvider reservedStringProvider */
-    public function testMatchesReservedStrings($template, $target)
+    /**
+     * @dataProvider reservedStringProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesReservedStrings(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /** @dataProvider reservedStringProvider */
-    public function testCapturesFromReservedStrings($template, $target, $variables)
+    /**
+     * @dataProvider reservedStringProvider
+     * @param string $template
+     * @param string $target
+     * @param array $variables
+     */
+    public function testCapturesFromReservedStrings(string $template, string $target, array $variables): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertSame($this->getExpectedValues($variables), $route->getPathVariables());
     }
 
-    public function reservedStringProvider()
+    public function reservedStringProvider(): array
     {
         return [
             ['/{+var}', '/value', ['var']],
@@ -127,22 +149,31 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching :: Label Expansion
 
-    /** @dataProvider labelWithDotPrefixProvider */
-    public function testMatchesLabelWithDotPrefix($template, $target)
+    /**
+     * @dataProvider labelWithDotPrefixProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesLabelWithDotPrefix(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /** @dataProvider labelWithDotPrefixProvider */
-    public function testCapturesFromLabelWithDotPrefix($template, $target, $variables)
+    /**
+     * @dataProvider labelWithDotPrefixProvider
+     * @param string $template
+     * @param string $target
+     * @param array $variables
+     */
+    public function testCapturesFromLabelWithDotPrefix(string $template, string $target, array $variables): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
 
-    public function labelWithDotPrefixProvider()
+    public function labelWithDotPrefixProvider(): array
     {
         return [
             ['/{.who}', '/.fred', ['who']],
@@ -154,22 +185,31 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching :: Path Segments
 
-    /** @dataProvider pathSegmentProvider */
-    public function testMatchesPathSegments($template, $target)
+    /**
+     * @dataProvider pathSegmentProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesPathSegments(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /** @dataProvider pathSegmentProvider */
-    public function testCapturesFromPathSegments($template, $target, $variables)
+    /**
+     * @dataProvider pathSegmentProvider
+     * @param string $template
+     * @param string $target
+     * @param array $variables
+     */
+    public function testCapturesFromPathSegments(string $template, string $target, array $variables): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
 
-    public function pathSegmentProvider()
+    public function pathSegmentProvider(): array
     {
         return [
             ['{/who}', '/fred', ['who']],
@@ -181,22 +221,31 @@ class TemplateRouteTest extends TestCase
     // -------------------------------------------------------------------------
     // Matching :: Explosion
 
-    /** @dataProvider pathExplosionProvider */
-    public function testMatchesExplosion($template, $target)
+    /**
+     * @dataProvider pathExplosionProvider
+     * @param string $template
+     * @param string $target
+     */
+    public function testMatchesExplosion(string $template, string $target): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($target));
     }
 
-    /** @dataProvider pathExplosionProvider */
-    public function testCapturesFromExplosion($template, $target, $variables)
+    /**
+     * @dataProvider pathExplosionProvider
+     * @param string $template
+     * @param string $target
+     * @param array $variables
+     */
+    public function testCapturesFromExplosion(string $template, string $target, array $variables): void
     {
         $route = new TemplateRoute($template, $this->methodMap->reveal());
         $route->matchesRequestTarget($target);
         $this->assertArrayHasSameContents($this->getExpectedValues($variables), $route->getPathVariables());
     }
 
-    public function pathExplosionProvider()
+    public function pathExplosionProvider(): array
     {
         return [
             ['/{count*}', '/one,two,three', ['count']],

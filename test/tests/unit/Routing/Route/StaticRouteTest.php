@@ -9,28 +9,28 @@ class StaticRouteTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testReturnsStaticType()
+    public function testReturnsStaticType(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new StaticRoute('/', $methodMap->reveal());
         $this->assertSame(Route::TYPE_STATIC, $route->getType());
     }
 
-    public function testMatchesExactRequestTarget()
+    public function testMatchesExactRequestTarget(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new StaticRoute('/', $methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget('/'));
     }
 
-    public function testReturnsEmptyArrayForPathVariables()
+    public function testReturnsEmptyArrayForPathVariables(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new StaticRoute('/', $methodMap->reveal());
         $this->assertSame([], $route->getPathVariables());
     }
 
-    public function testDoesNotMatchNonmatchingRequestTarget()
+    public function testDoesNotMatchNonMatchingRequestTarget(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new StaticRoute('/', $methodMap->reveal());

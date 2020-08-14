@@ -17,35 +17,48 @@ class RegexRouteTest extends TestCase
         $this->methodMap = $this->prophesize(MethodMap::class);
     }
 
-    public function testReturnsPatternType()
+    public function testReturnsPatternType(): void
     {
         $route = new RegexRoute('/', $this->methodMap->reveal());
         $this->assertSame(Route::TYPE_PATTERN, $route->getType());
     }
 
-    /** @dataProvider matchingRouteProvider */
-    public function testMatchesTarget($pattern, $path)
+    /**
+     * @dataProvider matchingRouteProvider
+     * @param string $pattern
+     * @param string $path
+     */
+    public function testMatchesTarget(string $pattern, string $path): void
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget($path));
     }
 
-    /** @dataProvider matchingRouteProvider */
-    public function testMatchesTargetByRegex($pattern, $target)
+    /**
+     * @dataProvider matchingRouteProvider
+     * @param string $pattern
+     * @param string $path
+     */
+    public function testMatchesTargetByRegex(string $pattern, string $path): void
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
-        $this->assertTrue($route->matchesRequestTarget($target));
+        $this->assertTrue($route->matchesRequestTarget($path));
     }
 
-    /** @dataProvider matchingRouteProvider */
-    public function testExtractsPathVariablesByRegex($pattern, $target, $expectedCaptures)
+    /**
+     * @dataProvider matchingRouteProvider
+     * @param string $pattern
+     * @param string $path
+     * @param array $expectedCaptures
+     */
+    public function testExtractsPathVariablesByRegex(string $pattern, string $path, array $expectedCaptures): void
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
-        $route->matchesRequestTarget($target);
+        $route->matchesRequestTarget($path);
         $this->assertEquals($expectedCaptures, $route->getPathVariables());
     }
 
-    public function matchingRouteProvider()
+    public function matchingRouteProvider(): array
     {
         return [
             ['~/cat/[0-9]+~', '/cat/2', [0 => '/cat/2']],
@@ -62,14 +75,18 @@ class RegexRouteTest extends TestCase
         ];
     }
 
-    /** @dataProvider mismatchingRouteProvider */
-    public function testDoesNotMatchNonmatchingTarget($pattern, $path)
+    /**
+     * @dataProvider mismatchingRouteProvider
+     * @param string $pattern
+     * @param string $path
+     */
+    public function testDoesNotMatchNonMatchingTarget(string $pattern, string $path): void
     {
         $route = new RegexRoute($pattern, $this->methodMap->reveal());
         $this->assertFalse($route->matchesRequestTarget($path));
     }
 
-    public function mismatchingRouteProvider()
+    public function mismatchingRouteProvider(): array
     {
         return [
             ['~/cat/[0-9]+~', '/cat/molly'],
@@ -80,8 +97,9 @@ class RegexRouteTest extends TestCase
 
     /**
      * @dataProvider invalidRouteProvider
+     * @param string $pattern
      */
-    public function testThrowsExceptionOnInvalidPattern($pattern)
+    public function testThrowsExceptionOnInvalidPattern(string $pattern): void
     {
         $this->expectException(RuntimeException::class);
         $route = new RegexRoute($pattern, $this->methodMap->reveal());

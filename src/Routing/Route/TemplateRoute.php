@@ -7,11 +7,6 @@ namespace WellRESTed\Routing\Route;
  */
 class TemplateRoute extends Route
 {
-    /** @var array */
-    private $pathVariables = [];
-    /** @var array */
-    private $explosions = [];
-
     /** Regular expression matching a URI template variable (e.g., {id}) */
     public const URI_TEMPLATE_EXPRESSION_RE = '/{([+.\/]?[a-zA-Z0-9_,]+\*?)}/';
     /**
@@ -19,6 +14,11 @@ class TemplateRoute extends Route
      * ALPHA / DIGIT / "-" / "." / "_" / "~"
      */
     private const RE_UNRESERVED = '[0-9a-zA-Z\-._\~%]*';
+
+    /** @var array */
+    private $pathVariables = [];
+    /** @var array */
+    private $explosions = [];
 
     public function getType(): int
     {
