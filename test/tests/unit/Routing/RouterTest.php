@@ -51,7 +51,7 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // Construction
 
-    public function testCreatesInstance()
+    public function testCreatesInstance(): void
     {
         $router = new Router();
         $this->assertNotNull($router);
@@ -60,14 +60,14 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // Populating
 
-    public function testCreatesRouteForTarget()
+    public function testCreatesRouteForTarget(): void
     {
         $this->router->register('GET', '/', 'middleware');
 
         $this->factory->create('/')->shouldHaveBeenCalled();
     }
 
-    public function testDoesNotRecreateRouteForExistingTarget()
+    public function testDoesNotRecreateRouteForExistingTarget(): void
     {
         $this->router->register('GET', '/', 'middleware');
         $this->router->register('POST', '/', 'middleware');
@@ -75,7 +75,7 @@ class RouterTest extends TestCase
         $this->factory->create('/')->shouldHaveBeenCalledTimes(1);
     }
 
-    public function testPassesMethodAndMiddlewareToRoute()
+    public function testPassesMethodAndMiddlewareToRoute(): void
     {
         $this->router->register('GET', '/', 'middleware');
 
@@ -85,7 +85,7 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // Dispatching
 
-    public function testDispatchesStaticRoute()
+    public function testDispatchesStaticRoute(): void
     {
         $target = '/';
         $this->request = $this->request->withRequestTarget($target);
@@ -100,7 +100,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesPrefixRoute()
+    public function testDispatchesPrefixRoute(): void
     {
         $target = '/animals/cats/*';
         $this->request = $this->request->withRequestTarget('/animals/cats/molly');
@@ -115,7 +115,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesPatternRoute()
+    public function testDispatchesPatternRoute(): void
     {
         $target = '/';
         $this->request = $this->request->withRequestTarget($target);
@@ -131,7 +131,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesStaticRouteBeforePrefixRoute()
+    public function testDispatchesStaticRouteBeforePrefixRoute(): void
     {
         $staticRoute = $this->prophesize(Route::class);
         $staticRoute->register(Argument::cetera());
@@ -158,7 +158,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesLongestMatchingPrefixRoute()
+    public function testDispatchesLongestMatchingPrefixRoute(): void
     {
         // Note: The longest route is also good for 2 points in Settlers of Catan.
 
@@ -188,7 +188,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesPrefixRouteBeforePatternRoute()
+    public function testDispatchesPrefixRouteBeforePatternRoute(): void
     {
         $prefixRoute = $this->prophesize(Route::class);
         $prefixRoute->register(Argument::cetera());
@@ -215,7 +215,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testDispatchesFirstMatchingPatternRoute()
+    public function testDispatchesFirstMatchingPatternRoute(): void
     {
         $patternRoute1 = $this->prophesize(Route::class);
         $patternRoute1->register(Argument::cetera());
@@ -246,7 +246,7 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testStopsTestingPatternsAfterFirstSuccessfulMatch()
+    public function testStopsTestingPatternsAfterFirstSuccessfulMatch(): void
     {
         $patternRoute1 = $this->prophesize(Route::class);
         $patternRoute1->register(Argument::cetera());
@@ -277,7 +277,7 @@ class RouterTest extends TestCase
             ->shouldNotHaveBeenCalled();
     }
 
-    public function testMatchesPathAgainstRouteWithoutQuery()
+    public function testMatchesPathAgainstRouteWithoutQuery(): void
     {
         $target = '/my/path?cat=molly&dog=bear';
 
@@ -296,8 +296,12 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // Path Variables
 
-    /** @dataProvider pathVariableProvider */
-    public function testSetPathVariablesAttributeIndividually($name, $value)
+    /**
+     * @dataProvider pathVariableProvider
+     * @param string $name
+     * @param string $value
+     */
+    public function testSetPathVariablesAttributeIndividually(string $name, string $value): void
     {
         $target = '/';
         $variables = [
@@ -325,7 +329,7 @@ class RouterTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    public function pathVariableProvider()
+    public function pathVariableProvider(): array
     {
         return [
             ['id', '1024'],
@@ -333,7 +337,7 @@ class RouterTest extends TestCase
         ];
     }
 
-    public function testSetPathVariablesAttributeAsArray()
+    public function testSetPathVariablesAttributeAsArray(): void
     {
         $attributeName = 'pathVariables';
 
@@ -367,21 +371,21 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // No Match
 
-    public function testWhenNoRouteMatchesByDefaultResponds404()
+    public function testWhenNoRouteMatchesByDefaultResponds404(): void
     {
         $this->request = $this->request->withRequestTarget('/no/match');
         $response = $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware()
+    public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware(): void
     {
         $this->request = $this->request->withRequestTarget('/no/match');
         $this->router->__invoke($this->request, $this->response, $this->next);
         $this->assertFalse($this->next->called);
     }
 
-    public function testWhenNoRouteMatchesAndContinueModePropagatesToNextMiddleware()
+    public function testWhenNoRouteMatchesAndContinueModePropagatesToNextMiddleware(): void
     {
         $this->request = $this->request->withRequestTarget('/no/match');
         $this->router->continueOnNotFound();
@@ -392,7 +396,7 @@ class RouterTest extends TestCase
     // -------------------------------------------------------------------------
     // Middleware for Routes
 
-    public function testCallsRouterMiddlewareBeforeRouteMiddleware()
+    public function testCallsRouterMiddlewareBeforeRouteMiddleware(): void
     {
         $middlewareRequest = new ServerRequest();
         $middlewareResponse = new Response();
@@ -416,7 +420,7 @@ class RouterTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    public function testDoesNotCallRouterMiddlewareWhenNoRouteMatches()
+    public function testDoesNotCallRouterMiddlewareWhenNoRouteMatches(): void
     {
         $middlewareCalled = false;
         $middlewareRequest = new ServerRequest();

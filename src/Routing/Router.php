@@ -6,10 +6,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteFactory;
 
-class Router
+class Router implements MiddlewareInterface
 {
     /** @var string|null Attribute name for matched path variables */
     private $pathVariablesAttributeName;
@@ -61,10 +62,16 @@ class Router
         $this->stack = [];
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable $next
+     * @return ResponseInterface
+     */
     public function __invoke(
         ServerRequestInterface $request,
         ResponseInterface $response,
-        callable $next
+        $next
     ): ResponseInterface {
         // Use only the path for routing.
         $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
