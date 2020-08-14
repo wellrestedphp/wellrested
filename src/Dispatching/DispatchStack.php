@@ -15,9 +15,6 @@ class DispatchStack implements DispatchStackInterface
     /** @var DispatcherInterface */
     private $dispatcher;
 
-    /**
-     * @param DispatcherInterface $dispatcher
-     */
     public function __construct(DispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
@@ -42,7 +39,7 @@ class DispatchStack implements DispatchStackInterface
      * The first middleware that was added is dispatched first.
      *
      * Each middleware, when dispatched, receives a $next callable that, when
-     * called, will dispatch the next middleware in the sequence.
+     * called, will dispatch the following middleware in the sequence.
      *
      * When the stack is dispatched empty, or when all middleware in the stack
      * call the $next argument they were passed, this method will call the

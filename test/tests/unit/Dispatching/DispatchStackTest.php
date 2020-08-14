@@ -1,9 +1,7 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Dispatching;
+namespace WellRESTed\Dispatching;
 
-use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Dispatching\DispatchStack;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\Doubles\NextMock;
@@ -23,7 +21,7 @@ class DispatchStackTest extends TestCase
         $this->next = new NextMock();
     }
 
-    public function testDispatchesMiddlewareInOrderAdded()
+    public function testDispatchesMiddlewareInOrderAdded(): void
     {
         // Each middleware will add its "name" to this array.
         $callOrder = [];
@@ -44,14 +42,14 @@ class DispatchStackTest extends TestCase
         $this->assertEquals(['first', 'second', 'third'], $callOrder);
     }
 
-    public function testCallsNextAfterDispatchingEmptyStack()
+    public function testCallsNextAfterDispatchingEmptyStack(): void
     {
         $stack = new DispatchStack(new Dispatcher());
         $stack($this->request, $this->response, $this->next);
         $this->assertTrue($this->next->called);
     }
 
-    public function testCallsNextAfterDispatchingStack()
+    public function testCallsNextAfterDispatchingStack(): void
     {
         $middleware = function ($request, $response, $next) use (&$callOrder) {
             return $next($request, $response);
@@ -66,7 +64,7 @@ class DispatchStackTest extends TestCase
         $this->assertTrue($this->next->called);
     }
 
-    public function testDoesNotCallNextWhenStackStopsEarly()
+    public function testDoesNotCallNextWhenStackStopsEarly(): void
     {
         $middlewareGo = function ($request, $response, $next) use (&$callOrder) {
             return $next($request, $response);

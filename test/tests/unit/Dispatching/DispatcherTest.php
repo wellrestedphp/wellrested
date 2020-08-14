@@ -1,12 +1,10 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Dispatching;
+namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Dispatching\DispatchException;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
@@ -35,6 +33,8 @@ class DispatcherTest extends TestCase
     /**
      * Dispatch the provided dispatchable using the class under test and the
      * ivars $request, $response, and $next. Return the response.
+     * @param $dispatchable
+     * @return ResponseInterface
      */
     private function dispatch($dispatchable): ResponseInterface
     {
@@ -50,14 +50,14 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // PSR-15 Handler
 
-    public function testDispatchesPsr15Handler()
+    public function testDispatchesPsr15Handler(): void
     {
         $handler = new HandlerDouble($this->stubResponse);
         $response = $this->dispatch($handler);
         $this->assertSame($this->stubResponse, $response);
     }
 
-    public function testDispatchesPsr15HandlerFromFactory()
+    public function testDispatchesPsr15HandlerFromFactory(): void
     {
         $factory = function () {
             return new HandlerDouble($this->stubResponse);
@@ -70,7 +70,7 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // PSR-15 Middleware
 
-    public function testDispatchesPsr15MiddlewareWithDelegate()
+    public function testDispatchesPsr15MiddlewareWithDelegate(): void
     {
         $this->next->upstreamResponse = $this->stubResponse;
         $middleware = new MiddlewareDouble();
@@ -79,7 +79,7 @@ class DispatcherTest extends TestCase
         $this->assertSame($this->stubResponse, $response);
     }
 
-    public function testDispatchesPsr15MiddlewareFromFactoryWithDelegate()
+    public function testDispatchesPsr15MiddlewareFromFactoryWithDelegate(): void
     {
         $this->next->upstreamResponse = $this->stubResponse;
         $factory = function () {
@@ -93,7 +93,7 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // Double-Pass Middleware Callable
 
-    public function testDispatchesDoublePassMiddlewareCallable()
+    public function testDispatchesDoublePassMiddlewareCallable(): void
     {
         $doublePass = function ($request, $response, $next) {
             return $next($request, $this->stubResponse);
@@ -103,7 +103,7 @@ class DispatcherTest extends TestCase
         $this->assertSame($this->stubResponse, $response);
     }
 
-    public function testDispatchesDoublePassMiddlewareCallableFromFactory()
+    public function testDispatchesDoublePassMiddlewareCallableFromFactory(): void
     {
         $factory = function () {
             return function ($request, $response, $next) {
@@ -118,14 +118,14 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // Double-Pass Middleware Instance
 
-    public function testDispatchesDoublePassMiddlewareInstance()
+    public function testDispatchesDoublePassMiddlewareInstance(): void
     {
         $doublePass = new DoublePassMiddlewareDouble();
         $response = $this->dispatch($doublePass);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testDispatchesDoublePassMiddlewareInstanceFromFactory()
+    public function testDispatchesDoublePassMiddlewareInstanceFromFactory(): void
     {
         $factory = function () {
             return new DoublePassMiddlewareDouble();
@@ -137,7 +137,7 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // String
 
-    public function testDispatchesInstanceFromStringName()
+    public function testDispatchesInstanceFromStringName(): void
     {
         $response = $this->dispatch(DoublePassMiddlewareDouble::class);
         $this->assertEquals(200, $response->getStatusCode());
@@ -146,14 +146,14 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // Arrays
 
-    public function testDispatchesArrayAsDispatchStack()
+    public function testDispatchesArrayAsDispatchStack(): void
     {
         $doublePass = new DoublePassMiddlewareDouble();
         $response = $this->dispatch([$doublePass]);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testThrowsExceptionWhenUnableToDispatch()
+    public function testThrowsExceptionWhenUnableToDispatch(): void
     {
         $this->expectException(DispatchException::class);
         $this->dispatch(null);

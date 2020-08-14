@@ -8,12 +8,12 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * Dispatches handlers and middleware
+ * Runs a handler or middleware with a request and return the response.
  */
 class Dispatcher implements DispatcherInterface
 {
     /**
-     * Dispatch a handler or middleware and return the response.
+     * Run a handler or middleware with a request and return the response.
      *
      * Dispatcher can dispatch any of the following:
      *   - An instance implementing one of these interfaces:
@@ -63,7 +63,7 @@ class Dispatcher implements DispatcherInterface
         } elseif ($dispatchable instanceof ResponseInterface) {
             return $dispatchable;
         } else {
-            throw new DispatchException('Unable to dispatch middleware.');
+            throw new DispatchException('Unable to dispatch handler.');
         }
     }
 
