@@ -10,7 +10,6 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteFactory;
-use WellRESTed\Routing\Route\RouteFactoryInterface;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 
@@ -449,7 +448,7 @@ class RouterWithFactory extends Router
 {
     public static $routeFactory;
 
-    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactoryInterface
+    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactory
     {
         return self::$routeFactory;
     }

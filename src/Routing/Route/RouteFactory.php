@@ -7,7 +7,7 @@ use WellRESTed\Dispatching\DispatcherInterface;
 /**
  * @internal
  */
-class RouteFactory implements RouteFactoryInterface
+class RouteFactory
 {
     private $dispatcher;
 
@@ -27,7 +27,7 @@ class RouteFactory implements RouteFactoryInterface
      * @param string $target Route target or target pattern
      * @return Route
      */
-    public function create($target)
+    public function create(string $target): Route
     {
         if ($target[0] === '/') {
 

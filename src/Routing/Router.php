@@ -8,7 +8,6 @@ use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteFactory;
-use WellRESTed\Routing\Route\RouteFactoryInterface;
 
 class Router
 {
@@ -16,7 +15,7 @@ class Router
     private $pathVariablesAttributeName;
     /** @var DispatcherInterface */
     private $dispatcher;
-    /** @var RouteFactoryInterface */
+    /** @var RouteFactory */
     private $factory;
     /** @var Route[] Array of Route objects */
     private $routes;
@@ -202,7 +201,7 @@ class Router
         return new Dispatcher();
     }
 
-    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactoryInterface
+    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactory
     {
         return new RouteFactory($dispatcher);
     }

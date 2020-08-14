@@ -17,28 +17,28 @@ class RouteFactoryTest extends TestCase
         $this->dispatcher = $this->prophesize(DispatcherInterface::class);
     }
 
-    public function testCreatesStaticRoute()
+    public function testCreatesStaticRoute(): void
     {
         $factory = new RouteFactory($this->dispatcher->reveal());
         $route = $factory->create('/cats/');
         $this->assertSame(Route::TYPE_STATIC, $route->getType());
     }
 
-    public function testCreatesPrefixRoute()
+    public function testCreatesPrefixRoute(): void
     {
         $factory = new RouteFactory($this->dispatcher->reveal());
         $route = $factory->create('/cats/*');
         $this->assertSame(Route::TYPE_PREFIX, $route->getType());
     }
 
-    public function testCreatesRegexRoute()
+    public function testCreatesRegexRoute(): void
     {
         $factory = new RouteFactory($this->dispatcher->reveal());
         $route = $factory->create('~/cat/[0-9]+~');
         $this->assertSame(Route::TYPE_PATTERN, $route->getType());
     }
 
-    public function testCreatesTemplateRoute()
+    public function testCreatesTemplateRoute(): void
     {
         $factory = new RouteFactory($this->dispatcher->reveal());
         $route = $factory->create('/cat/{id}');
