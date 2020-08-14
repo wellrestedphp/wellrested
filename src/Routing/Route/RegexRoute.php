@@ -4,6 +4,9 @@ namespace WellRESTed\Routing\Route;
 
 use RuntimeException;
 
+/**
+ * @internal
+ */
 class RegexRoute extends Route
 {
     /** @var array */

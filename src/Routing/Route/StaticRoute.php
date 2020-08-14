@@ -2,6 +2,9 @@
 
 namespace WellRESTed\Routing\Route;
 
+/**
+ * @internal
+ */
 class StaticRoute extends Route
 {
     public function getType(): int

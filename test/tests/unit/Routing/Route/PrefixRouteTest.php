@@ -1,53 +1,50 @@
 <?php
 
-namespace WellRESTed\Test\Unit\Routing\Route;
+namespace WellRESTed\Routing\Route;
 
 use Prophecy\PhpUnit\ProphecyTrait;
-use WellRESTed\Routing\Route\MethodMap;
-use WellRESTed\Routing\Route\PrefixRoute;
-use WellRESTed\Routing\Route\RouteInterface;
 use WellRESTed\Test\TestCase;
 
 class PrefixRouteTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testTrimsAsteriskFromEndOfTarget()
+    public function testTrimsAsteriskFromEndOfTarget(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/cats/*', $methodMap->reveal());
         $this->assertEquals('/cats/', $route->getTarget());
     }
 
-    public function testReturnsPrefixType()
+    public function testReturnsPrefixType(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/*', $methodMap->reveal());
         $this->assertSame(RouteInterface::TYPE_PREFIX, $route->getType());
     }
 
-    public function testReturnsEmptyArrayForPathVariables()
+    public function testReturnsEmptyArrayForPathVariables(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/*', $methodMap->reveal());
         $this->assertSame([], $route->getPathVariables());
     }
 
-    public function testMatchesExactRequestTarget()
+    public function testMatchesExactRequestTarget(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/*', $methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget('/'));
     }
 
-    public function testMatchesRequestTargetWithSamePrefix()
+    public function testMatchesRequestTargetWithSamePrefix(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/*', $methodMap->reveal());
         $this->assertTrue($route->matchesRequestTarget('/cats/'));
     }
 
-    public function testDoesNotMatchNonmatchingRequestTarget()
+    public function testDoesNotMatchNonMatchingRequestTarget(): void
     {
         $methodMap = $this->prophesize(MethodMap::class);
         $route = new PrefixRoute('/animals/cats/', $methodMap->reveal());

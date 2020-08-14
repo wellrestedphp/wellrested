@@ -5,8 +5,12 @@ namespace WellRESTed\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\MiddlewareInterface;
 
-class MethodMap
+/**
+ * @internal
+ */
+class MethodMap implements MiddlewareInterface
 {
     /** @var DispatcherInterface */
     private $dispatcher;
@@ -21,11 +25,8 @@ class MethodMap
         $this->dispatcher = $dispatcher;
     }
 
-    // -------------------------------------------------------------------------
-    // MethodMapInterface
-
     /**
-     * Register a dispatchable (handler or middleware) with a method.
+     * Register a dispatchable (e.g.m handler or middleware) with a method.
      *
      * $method may be:
      * - A single verb ("GET"),
@@ -41,7 +42,7 @@ class MethodMap
      * @param string $method
      * @param mixed $dispatchable
      */
-    public function register($method, $dispatchable): void
+    public function register(string $method, $dispatchable): void
     {
         $methods = explode(',', $method);
         $methods = array_map('trim', $methods);

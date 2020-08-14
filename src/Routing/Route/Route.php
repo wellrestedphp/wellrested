@@ -5,6 +5,9 @@ namespace WellRESTed\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @internal
+ */
 abstract class Route implements RouteInterface
 {
     /** @var string */
@@ -18,6 +21,11 @@ abstract class Route implements RouteInterface
         $this->methodMap = $methodMap;
     }
 
+    /**
+     * Path, partial path, or pattern to match request paths against.
+     *
+     * @return string
+     */
     public function getTarget(): string
     {
         return $this->target;

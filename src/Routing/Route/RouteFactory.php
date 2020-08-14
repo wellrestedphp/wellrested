@@ -5,7 +5,7 @@ namespace WellRESTed\Routing\Route;
 use WellRESTed\Dispatching\DispatcherInterface;
 
 /**
- * Class for creating routes
+ * @internal
  */
 class RouteFactory implements RouteFactoryInterface
 {

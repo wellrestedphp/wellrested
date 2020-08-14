@@ -2,6 +2,9 @@
 
 namespace WellRESTed\Routing\Route;
 
+/**
+ * @internal
+ */
 interface RouteFactoryInterface
 {
     /**

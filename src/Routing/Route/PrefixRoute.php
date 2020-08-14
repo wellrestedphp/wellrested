@@ -2,6 +2,9 @@
 
 namespace WellRESTed\Routing\Route;
 
+/**
+ * @internal
+ */
 class PrefixRoute extends Route
 {
     public function __construct(string $target, MethodMap $methodMap)

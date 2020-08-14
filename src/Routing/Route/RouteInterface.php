@@ -4,19 +4,24 @@ namespace WellRESTed\Routing\Route;
 
 use WellRESTed\MiddlewareInterface;
 
+/**
+ * @internal
+ */
 interface RouteInterface extends MiddlewareInterface
 {
-    /** Matches when path is an exact match only */
+    /** Matches when request path is an exact match to entire target */
     const TYPE_STATIC = 0;
-    /** Matches when path has the expected beginning */
+    /** Matches when request path is an exact match to start of target */
     const TYPE_PREFIX = 1;
-    /** Matches by pattern. Use matchesRequestTarget to test for matches */
+    /** Matches by request path by pattern and may extract matched varialbes */
     const TYPE_PATTERN = 2;
 
     /**
+     * Path, partial path, or pattern to match request paths against.
+     *
      * @return string
      */
-    public function getTarget();
+    public function getTarget(): string;
 
     /**
      * Return the RouteInterface::TYPE_ constants that identifies the type.

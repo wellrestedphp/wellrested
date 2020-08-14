@@ -2,6 +2,9 @@
 
 namespace WellRESTed\Routing\Route;
 
+/**
+ * @internal
+ */
 class TemplateRoute extends Route
 {
     /** @var array */
