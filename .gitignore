@@ -23,3 +23,7 @@ workspace.xml
 
 # Local scratch files
 notes
+
+# Local overrides
+.env
+docker-compose.override.yml
