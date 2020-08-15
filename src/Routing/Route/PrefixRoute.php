@@ -21,7 +21,7 @@ class PrefixRoute extends Route
      * Examines a request target to see if it is a match for the route.
      *
      * @param string $requestTarget
-     * @return boolean
+     * @return bool
      */
     public function matchesRequestTarget(string $requestTarget): bool
     {
