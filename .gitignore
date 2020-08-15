@@ -27,3 +27,4 @@ notes
 # Local overrides
 .env
 docker-compose.override.yml
+phpunit.xml

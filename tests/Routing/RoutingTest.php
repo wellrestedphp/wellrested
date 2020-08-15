@@ -1,6 +1,6 @@
 <?php
 
-namespace WellRESTed\Test\Integration;
+namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +13,10 @@ use WellRESTed\Server;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
-/** @coversNothing */
+/**
+ * Integration test for Routing components
+ * @coversNothing
+ */
 class RoutingTest extends TestCase
 {
     /** @var Server */
