@@ -13,7 +13,7 @@ class RouteTest extends TestCase
 {
     use ProphecyTrait;
 
-    const TARGET = '/target';
+    private const TARGET = '/target';
 
     private $methodMap;
     private $route;
