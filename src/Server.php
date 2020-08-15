@@ -50,7 +50,7 @@ class Server
     }
 
     /**
-     * Return a new Router that uses the server's dispatcher.
+     * Return a new Router that uses the server's configuration.
      *
      * @return Router
      */

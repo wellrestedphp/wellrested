@@ -31,7 +31,7 @@ class ServerTest extends TestCase
 
     // -------------------------------------------------------------------------
 
-    public function testDispatchesMiddlewareStack()
+    public function testDispatchesMiddlewareStack(): void
     {
         // This test will add a string to this array from each middleware.
 
@@ -63,7 +63,7 @@ class ServerTest extends TestCase
         $this->assertEquals(['first', 'second', 'third'], $steps);
     }
 
-    public function testDispatchedRequest()
+    public function testDispatchedRequest(): void
     {
         $request = new ServerRequest();
         $capturedRequest = null;
@@ -78,7 +78,7 @@ class ServerTest extends TestCase
         $this->assertSame($request, $capturedRequest);
     }
 
-    public function testDispatchedResponse()
+    public function testDispatchedResponse(): void
     {
         $response = new Response();
         $capturedResponse = null;
@@ -96,7 +96,7 @@ class ServerTest extends TestCase
     // -------------------------------------------------------------------------
     // Respond
 
-    public function testRespondSendsResponseToTransmitter()
+    public function testRespondSendsResponseToTransmitter(): void
     {
         $expectedResponse = new Response(200);
 
@@ -129,7 +129,7 @@ class ServerTest extends TestCase
     // -------------------------------------------------------------------------
     // Router
 
-    public function testCreatesRouterWithDispatcher()
+    public function testCreatesRouterWithDispatcher(): void
     {
         $dispatcher = $this->prophesize(DispatcherInterface::class);
         $dispatcher->dispatch(Argument::cetera())->will(
@@ -161,7 +161,7 @@ class ServerTest extends TestCase
     // -------------------------------------------------------------------------
     // Attributes
 
-    public function testAddsAttributesToRequest()
+    public function testAddsAttributesToRequest(): void
     {
         $this->server->setAttributes([
             'name' => 'value'
@@ -181,7 +181,7 @@ class ServerTest extends TestCase
     // -------------------------------------------------------------------------
     // End of Stack
 
-    public function testReturnsLastDoublePassResponseAtEndOfStack()
+    public function testReturnsLastDoublePassResponseAtEndOfStack(): void
     {
         $defaultResponse = new Response(404);
 
