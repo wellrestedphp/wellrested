@@ -53,7 +53,7 @@ class RouteTest extends TestCase
             return $resp;
         };
 
-        $this->route->__invoke($request, $response, $next);
+        call_user_func($this->route, $request, $response, $next);
 
         $this->methodMap->__invoke(Argument::cetera())->shouldHaveBeenCalled();
     }

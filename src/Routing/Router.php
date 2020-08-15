@@ -42,19 +42,24 @@ class Router implements MiddlewareInterface
      * stored with the name. The value will be an array containing all of the
      * path variables.
      *
-     * @param DispatcherInterface|null $dispatcher
-     *     Instance to use for dispatching middleware and handlers.
+     * Use Server->createRouter to instantiate a new Router rather than calling
+     * this constructor manually.
+     *
      * @param string|null $pathVariablesAttributeName
      *     Attribute name for matched path variables. A null value sets
      *     attributes directly.
+     * @param DispatcherInterface|null $dispatcher
+     *     Instance to use for dispatching middleware and handlers.
+     * @param RouteFactory|null $routeFactory
      */
     public function __construct(
+        ?string $pathVariablesAttributeName = null,
         ?DispatcherInterface $dispatcher = null,
-        ?string $pathVariablesAttributeName = null
+        ?RouteFactory $routeFactory = null
     ) {
-        $this->dispatcher = $dispatcher ?: $this->getDefaultDispatcher();
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
-        $this->factory = $this->getRouteFactory($this->dispatcher);
+        $this->dispatcher = $dispatcher ?? new Dispatcher();
+        $this->factory = $routeFactory ?? new RouteFactory($this->dispatcher);
         $this->routes = [];
         $this->staticRoutes = [];
         $this->prefixRoutes = [];
@@ -201,16 +206,6 @@ class Router implements MiddlewareInterface
     {
         $this->continueOnNotFound = true;
         return $this;
-    }
-
-    protected function getDefaultDispatcher(): DispatcherInterface
-    {
-        return new Dispatcher();
-    }
-
-    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactory
-    {
-        return new RouteFactory($dispatcher);
     }
 
     private function getRouteForTarget(string $target): Route

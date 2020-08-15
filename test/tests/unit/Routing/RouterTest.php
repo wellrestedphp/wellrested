@@ -4,8 +4,8 @@ namespace WellRESTed\Routing;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Message\ResponseInterface;
 use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Routing\Route\Route;
@@ -39,22 +39,26 @@ class RouterTest extends TestCase
         $this->factory->create(Argument::any())
             ->willReturn($this->route->reveal());
 
-        RouterWithFactory::$routeFactory = $this->factory->reveal();
-
-        $this->router = new RouterWithFactory();
+        $this->router = new Router(null, null, $this->factory->reveal());
 
         $this->request = new ServerRequest();
         $this->response = new Response();
         $this->next = new NextMock();
     }
 
-    // -------------------------------------------------------------------------
-    // Construction
-
-    public function testCreatesInstance(): void
+    /**
+     * Run a request through the class under test and return the response.
+     *
+     * @return ResponseInterface
+     */
+    private function dispatch(): ResponseInterface
     {
-        $router = new Router();
-        $this->assertNotNull($router);
+        return call_user_func(
+            $this->router,
+            $this->request,
+            $this->response,
+            $this->next
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -94,7 +98,8 @@ class RouterTest extends TestCase
         $this->route->getType()->willReturn(Route::TYPE_STATIC);
 
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $this->route->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -109,7 +114,8 @@ class RouterTest extends TestCase
         $this->route->getType()->willReturn(Route::TYPE_PREFIX);
 
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $this->route->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -125,7 +131,8 @@ class RouterTest extends TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $this->route->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -152,7 +159,8 @@ class RouterTest extends TestCase
 
         $this->router->register('GET', '/cats/', 'middleware');
         $this->router->register('GET', '/cats/*', 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $staticRoute->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -182,7 +190,8 @@ class RouterTest extends TestCase
 
         $this->router->register('GET', '/animals/*', 'middleware');
         $this->router->register('GET', '/animals/cats/*', 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $longRoute->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -209,7 +218,8 @@ class RouterTest extends TestCase
 
         $this->router->register('GET', '/cats/*', 'middleware');
         $this->router->register('GET', '/cats/{id}', 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $prefixRoute->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -240,7 +250,8 @@ class RouterTest extends TestCase
 
         $this->router->register('GET', '/cats/{id}', 'middleware');
         $this->router->register('GET', '/cats/{name}', 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $patternRoute1->__invoke(Argument::cetera())
             ->shouldHaveBeenCalled();
@@ -271,7 +282,8 @@ class RouterTest extends TestCase
 
         $this->router->register('GET', '/cats/{id}', 'middleware');
         $this->router->register('GET', '/cats/{name}', 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $patternRoute2->matchesRequestTarget(Argument::any())
             ->shouldNotHaveBeenCalled();
@@ -288,7 +300,8 @@ class RouterTest extends TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $this->route->matchesRequestTarget('/my/path')->shouldHaveBeenCalled();
     }
@@ -317,7 +330,8 @@ class RouterTest extends TestCase
         $this->route->getPathVariables()->willReturn($variables);
 
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $isRequestWithExpectedAttribute = function ($request) use ($name, $value) {
             return $request->getAttribute($name) === $value;
@@ -354,9 +368,15 @@ class RouterTest extends TestCase
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
         $this->route->getPathVariables()->willReturn($variables);
 
-        $this->router->__construct(new Dispatcher(), $attributeName);
+        $this->router = new Router(
+            $attributeName,
+            new Dispatcher(),
+            $this->factory->reveal()
+        );
+
         $this->router->register('GET', $target, 'middleware');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
 
         $isRequestWithExpectedAttribute = function ($request) use ($attributeName, $variables) {
             return $request->getAttribute($attributeName) === $variables;
@@ -374,14 +394,18 @@ class RouterTest extends TestCase
     public function testWhenNoRouteMatchesByDefaultResponds404(): void
     {
         $this->request = $this->request->withRequestTarget('/no/match');
-        $response = $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $response = $this->dispatch();
+
         $this->assertEquals(404, $response->getStatusCode());
     }
 
     public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware(): void
     {
         $this->request = $this->request->withRequestTarget('/no/match');
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
+
         $this->assertFalse($this->next->called);
     }
 
@@ -389,7 +413,9 @@ class RouterTest extends TestCase
     {
         $this->request = $this->request->withRequestTarget('/no/match');
         $this->router->continueOnNotFound();
-        $this->router->__invoke($this->request, $this->response, $this->next);
+
+        $this->dispatch();
+
         $this->assertTrue($this->next->called);
     }
 
@@ -411,7 +437,7 @@ class RouterTest extends TestCase
         $this->router->add($middleware);
         $this->router->register('GET', '/', 'Handler');
 
-        $this->router->__invoke($this->request, $this->response, $this->next);
+        $this->dispatch();
 
         $this->route->__invoke(
             $middlewareRequest,
@@ -440,20 +466,8 @@ class RouterTest extends TestCase
         $this->router->add($middleware);
         $this->router->register('GET', '/', 'Handler');
 
-        $this->router->__invoke($this->request, $this->response, $this->next);
+        $this->dispatch();
 
         $this->assertFalse($middlewareCalled);
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-class RouterWithFactory extends Router
-{
-    public static $routeFactory;
-
-    protected function getRouteFactory(DispatcherInterface $dispatcher): RouteFactory
-    {
-        return self::$routeFactory;
     }
 }
