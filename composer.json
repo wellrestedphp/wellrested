@@ -31,7 +31,8 @@
     "autoload-dev": {
         "psr-4": {
             "WellRESTed\\": "test/tests/unit/",
-            "WellRESTed\\Test\\": "test/src/"
+            "WellRESTed\\Test\\": "test/src/",
+            "WellRESTed\\Test\\Integration\\": "test/tests/integration/"
         }
     }
 }

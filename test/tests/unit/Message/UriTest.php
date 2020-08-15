@@ -16,7 +16,11 @@ class UriTest extends TestCase
         $this->assertSame('', $uri->getScheme());
     }
 
-    /** @dataProvider schemeProvider */
+    /**
+     * @dataProvider schemeProvider
+     * @param $expected
+     * @param $scheme
+     */
     public function testSetsSchemeCaseInsensitively($expected, $scheme): void
     {
         $uri = new Uri();

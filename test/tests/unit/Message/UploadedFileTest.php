@@ -70,7 +70,7 @@ class UploadedFileTest extends TestCase
         $this->expectException(RuntimeException::class);
         UploadedFileState::$php_sapi_name = 'apache';
         UploadedFileState::$is_uploaded_file = false;
-        $file = new UploadedFile('', '', 0, '', 0);
+        $file = new UploadedFile('', '', 0, $this->tmpName, 0);
         $file->getStream();
     }
 

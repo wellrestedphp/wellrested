@@ -18,25 +18,25 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
-    const MIN_PORT = 0;
-    const MAX_PORT = 65535;
+    private const MIN_PORT = 0;
+    private const MAX_PORT = 65535;
 
     /** @var string */
-    private $scheme = '';
+    private $scheme;
     /** @var string  */
-    private $user = '';
-    /** @var string|null */
+    private $user;
+    /** @var string */
     private $password;
-    /** @var string  */
-    private $host = '';
+    /** @var string */
+    private $host;
     /** @var int|null */
     private $port;
-    /** @var string  */
-    private $path = '';
-    /** @var string  */
-    private $query = '';
-    /** @var string  */
-    private $fragment = '';
+    /** @var string */
+    private $path;
+    /** @var string */
+    private $query;
+    /** @var string */
+    private $fragment;
 
     /**
      * @param string $uri A string representation of a URI.
@@ -44,34 +44,15 @@ class Uri implements UriInterface
     public function __construct(string $uri = '')
     {
         $parsed = parse_url($uri);
-        if (!$parsed) {
-            return;
-        }
 
-        if (isset($parsed['scheme'])) {
-            $this->scheme = $parsed['scheme'];
-        }
-        if (isset($parsed['host'])) {
-            $this->host = strtolower($parsed['host']);
-        }
-        if (isset($parsed['port'])) {
-            $this->port = $parsed['port'];
-        }
-        if (isset($parsed['user'])) {
-            $this->user = $parsed['user'];
-        }
-        if (isset($parsed['pass'])) {
-            $this->password = $parsed['pass'];
-        }
-        if (isset($parsed['path'])) {
-            $this->path = $parsed['path'];
-        }
-        if (isset($parsed['query'])) {
-            $this->query = $parsed['query'];
-        }
-        if (isset($parsed['fragment'])) {
-            $this->fragment = $parsed['fragment'];
-        }
+        $this->scheme = $parsed['scheme'] ?? '';
+        $this->user = $parsed['user'] ?? '';
+        $this->password = $parsed['pass'] ?? '';
+        $this->host = strtolower($parsed['host'] ?? '');
+        $this->port = $parsed['port'] ?? null;
+        $this->path = $parsed['path'] ?? '';
+        $this->query = $parsed['query'] ?? '';
+        $this->fragment = $parsed['fragment'] ?? '';
     }
 
     /**
@@ -338,7 +319,7 @@ class Uri implements UriInterface
     {
         $uri = clone $this;
         $uri->user = $user;
-        $uri->password = $password;
+        $uri->password = $password ?? '';
         return $uri;
     }
 
