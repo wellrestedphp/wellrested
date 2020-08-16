@@ -1,12 +1,19 @@
 WellRESTed
 ==========
 
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.0-8892BF.svg?style=flat-square)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.3-8892BF.svg?style=flat-square)](https://php.net/)
 [![Build Status](https://travis-ci.org/wellrestedphp/wellrested.svg?branch=master)](https://travis-ci.org/wellrestedphp/wellrested)
 [![Documentation Status](https://readthedocs.org/projects/wellrested/badge/?version=latest)](http://wellrested.readthedocs.org/en/latest/)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e/mini.png)](https://insight.sensiolabs.com/projects/b0a2efcb-49f8-4a90-a5bd-0c14e409f59e)
 
-WellRESTed is a library for creating RESTful Web services and websites in PHP.
+WellRESTed is a library for creating RESTful APIs and websites in PHP that provides abstraction for HTTP messages, a powerful handler and middleware system, and a flexible router.
+
+### Features
+
+- Uses [PSR-7](https://www.php-fig.org/psr/psr-7/) interfaces for requests, responses, and streams. This lets you use other PSR-7 compatable libraries seamlessly with WellRESTed.
+- Uses [PSR-15](https://www.php-fig.org/psr/psr-15/) interfaces for handlers and middleware to allow sharing and reusing code
+- Router allows you to match paths with variables such as `/foo/{bar}/{baz}`.
+- Middleware system provides a way to compose your application from discrete, modular components.
+- Lazy-loaded handlers and middleware don't instantiate unless they're needed.
 
 Install
 -------
@@ -16,7 +23,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 ```json
 {
     "require": {
-        "wellrested/wellrested": "^4"
+        "wellrested/wellrested": "^5"
     }
 }
 ```
@@ -55,14 +62,14 @@ class HomePageHandler implements RequestHandlerInterface
 
 // -----------------------------------------------------------------------------
 
-// Create a new server.
+// Create a new Server instance.
 $server = new Server();
-
 // Add a router to the server to map methods and endpoints to handlers.
 $router = $server->createRouter();
-$router->register('GET', '/', new HomePageHandler());
+// Register the route GET / with an anonymous function that provides a handler.
+$router->register("GET", "/", function () { return new HomePageHandler(); });
+// Add the router to the server.
 $server->add($router);
-
 // Read the request from the client, dispatch a handler, and output.
 $server->respond();
 ```
@@ -85,6 +92,18 @@ To run PHPUnit tests, use the `php` service:
 docker-compose run --rm php phpunit
 ```
 
+To run Psalm for static analysis:
+
+```bash
+docker-compose run --rm php psalm
+```
+
+To run PHP Coding Standards Fixer:
+
+```bash
+docker-compose run --rm php php-cs-fixer
+```
+
 To generate documentation, use the `docs` service:
 
 ```bash
@@ -104,5 +123,5 @@ The runs a site you can access at [http://localhost:8080](http://localhost:8080)
 
 Copyright and License
 ---------------------
-Copyright © 2018 by PJ Dietz
+Copyright © 202 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
