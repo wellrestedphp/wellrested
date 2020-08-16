@@ -10,14 +10,14 @@ The recommended method for installing WellRESTed is to use Composer_. Add an ent
 
     {
       "require": {
-         "wellrested/wellrested": "^4"
+         "wellrested/wellrested": "^5"
       }
    }
 
 Requirements
 ^^^^^^^^^^^^
 
-- PHP 7.0
+- PHP 7.3
 
 License
 ^^^^^^^

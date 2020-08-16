@@ -123,5 +123,5 @@ The runs a site you can access at [http://localhost:8080](http://localhost:8080)
 
 Copyright and License
 ---------------------
-Copyright © 202 by PJ Dietz
+Copyright © 2020 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
