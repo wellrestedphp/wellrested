@@ -8,38 +8,28 @@ use Psr\Http\Message\UriInterface;
 
 class ServerRequestMarshaller
 {
-    public function getServerRequest(
-        ?array $serverParams = null,
-        ?array $cookieParams = null,
-        ?array $queryParams = null,
-        ?array $postParams = null,
-        ?array $fileParams = null,
-        string $inputStream = 'php://input'
-    ): ServerRequestInterface {
-        $serverParams = $serverParams ?? $_SERVER;
-        $cookieParams = $cookieParams ?? $_COOKIE;
-        $queryParams = $queryParams ?? self::parseQuery($serverParams);
-        $postParams = $postParams ?? $_POST;
-        $fileParams = $fileParams ?? $_FILES;
+    /**
+     * Read the request as sent from the client and construct a ServerRequest
+     * representation.
+     *
+     * @return ServerRequestInterface
+     * @internal
+     */
+    public function getServerRequest(): ServerRequestInterface
+    {
+        $method = self::parseMethod($_SERVER);
+        $uri = self::readUri($_SERVER);
+        $headers = self::parseHeaders($_SERVER);
+        $body = self::readBody();
 
-        $request = new ServerRequest($serverParams);
-
-        $request = $request
-            ->withProtocolVersion(self::parseProtocolVersion($serverParams))
-            ->withMethod(self::parseMethod($serverParams))
-            ->withBody(self::readBody($inputStream))
-            ->withUri(self::readUri($serverParams))
-            ->withUploadedFiles(self::readUploadedFiles($fileParams))
-            ->withCookieParams($cookieParams)
-            ->withQueryParams($queryParams);
-
-        $headers = self::parseHeaders($serverParams);
-        foreach ($headers as $name => $value) {
-            $request = $request->withAddedHeader($name, $value);
-        }
+        $request = (new ServerRequest($method, $uri, $headers, $body, $_SERVER))
+            ->withProtocolVersion(self::parseProtocolVersion($_SERVER))
+            ->withUploadedFiles(self::readUploadedFiles($_FILES))
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams(self::parseQuery($_SERVER));
 
         if (self::isForm($request)) {
-            $request = $request->withParsedBody($postParams);
+            $request = $request->withParsedBody($_POST);
         }
 
         return $request;
@@ -95,9 +85,9 @@ class ServerRequestMarshaller
         return $serverParams['REQUEST_METHOD'] ?? 'GET';
     }
 
-    private static function readBody(string $inputStream): StreamInterface
+    private static function readBody(): StreamInterface
     {
-        $input = fopen($inputStream, 'rb');
+        $input = fopen('php://input', 'rb');
         $temp = fopen('php://temp', 'wb+');
         stream_copy_to_stream($input, $temp);
         rewind($temp);

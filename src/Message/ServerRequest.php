@@ -4,7 +4,9 @@ namespace WellRESTed\Message;
 
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -51,9 +53,31 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     // -------------------------------------------------------------------------
 
-    public function __construct(array $serverParams = [])
-    {
-        parent::__construct();
+    /**
+     * Create a new ServerRequest.
+     *
+     * $headers is an optional associative array with header field names as
+     * string keys and values as either string or string[].
+     *
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
+     * @param string $method
+     * @param string|UriInterface $uri
+     * @param array $headers Associative array with header field names as
+     *     keys and values as string|string[]
+     * @param StreamInterface|null $body A stream representation of the message
+     *     entity body
+     * @param array $serverParams An array of Server API (SAPI) parameters
+     */
+    public function __construct(
+        string $method = 'GET',
+        $uri = '',
+        array $headers = [],
+        ?StreamInterface $body = null,
+        array $serverParams = []
+    ){
+        parent::__construct($method, $uri, $headers, $body);
         $this->serverParams = $serverParams;
         $this->cookieParams = [];
         $this->queryParams = [];

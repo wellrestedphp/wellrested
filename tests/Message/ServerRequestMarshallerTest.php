@@ -28,6 +28,8 @@ class ServerRequestMarshallerTest extends TestCase
             'hamster' => 'Dusty'
         ];
 
+        FopenHelper::$inputTempFile = null;
+
         $this->marshaller = new ServerRequestMarshaller();
     }
 
@@ -103,15 +105,9 @@ class ServerRequestMarshallerTest extends TestCase
         $tempFilePath = tempnam(sys_get_temp_dir(), 'test');
         $content = 'Body content';
         file_put_contents($tempFilePath, $content);
+        FopenHelper::$inputTempFile = $tempFilePath;
 
-        $request = $this->marshaller->getServerRequest(
-            null,
-            null,
-            null,
-            null,
-            null,
-            $tempFilePath
-        );
+        $request = $this->marshaller->getServerRequest();
         unlink($tempFilePath);
 
         $this->assertEquals($content, (string) $request->getBody());
@@ -182,7 +178,8 @@ class ServerRequestMarshallerTest extends TestCase
      */
     public function testProvidesUri(UriInterface $expected, array $serverParams): void
     {
-        $request = $this->marshaller->getServerRequest($serverParams);
+        $_SERVER = $serverParams;
+        $request = $this->marshaller->getServerRequest();
         $this->assertEquals($expected, $request->getUri());
     }
 
@@ -378,4 +375,26 @@ class ServerRequestMarshallerTest extends TestCase
             ['multipart/form-data']
         ];
     }
+}
+
+// -----------------------------------------------------------------------------
+
+// Declare fopen function in this namespace so the class under test will use
+// this instead of the internal global functions during testing.
+
+class FopenHelper
+{
+    /**
+     * @var string Path to temp file to read in place of 'php://input'
+     */
+    public static $inputTempFile;
+}
+
+function fopen($filename, $mode)
+{
+    if (FopenHelper::$inputTempFile && $filename === 'php://input') {
+        $filename = FopenHelper::$inputTempFile;
+    }
+
+    return \fopen($filename, $mode);
 }
