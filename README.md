@@ -101,7 +101,7 @@ docker-compose run --rm php psalm
 To run PHP Coding Standards Fixer:
 
 ```bash
-docker-compose run --rm php php-cs-fixer
+docker-compose run --rm php php-cs-fixer fix
 ```
 
 To generate documentation, use the `docs` service:
