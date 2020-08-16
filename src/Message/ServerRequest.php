@@ -2,9 +2,11 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Representation of an incoming, server-side HTTP request.
@@ -49,24 +51,37 @@ class ServerRequest extends Request implements ServerRequestInterface
     /** @var array */
     private $uploadedFiles;
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
-     * Creates a new, empty representation of a server-side HTTP request.
+     * Create a new ServerRequest.
      *
-     * To obtain a ServerRequest representing the request sent to the server
-     * instantiating the request, use the factory method
-     * ServerRequest::getServerRequest
+     * $headers is an optional associative array with header field names as
+     * string keys and values as either string or string[].
      *
-     * @see ServerRequest::getServerRequest
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
+     * @param string $method
+     * @param string|UriInterface $uri
+     * @param array $headers Associative array with header field names as
+     *     keys and values as string|string[]
+     * @param StreamInterface|null $body A stream representation of the message
+     *     entity body
+     * @param array $serverParams An array of Server API (SAPI) parameters
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->attributes = [];
+    public function __construct(
+        string $method = 'GET',
+        $uri = '',
+        array $headers = [],
+        ?StreamInterface $body = null,
+        array $serverParams = []
+    ) {
+        parent::__construct($method, $uri, $headers, $body);
+        $this->serverParams = $serverParams;
         $this->cookieParams = [];
         $this->queryParams = [];
-        $this->serverParams = [];
+        $this->attributes = [];
         $this->uploadedFiles = [];
     }
 
@@ -78,7 +93,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         parent::__clone();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\ServerRequestInterface
 
     /**
@@ -188,13 +203,14 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @param array $uploadedFiles An array tree of UploadedFileInterface instances.
      * @return static
-     * @throws \InvalidArgumentException if an invalid structure is provided.
+     * @throws InvalidArgumentException if an invalid structure is provided.
      */
     public function withUploadedFiles(array $uploadedFiles)
     {
         if (!$this->isValidUploadedFilesTree($uploadedFiles)) {
-            throw new \InvalidArgumentException(
-                "withUploadedFiles expects an array tree with UploadedFileInterface leaves.");
+            throw new InvalidArgumentException(
+                'withUploadedFiles expects an array tree with UploadedFileInterface leaves.'
+            );
         }
 
         $request = clone $this;
@@ -247,7 +263,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function withParsedBody($data)
     {
         if (!(is_null($data) || is_array($data) || is_object($data))) {
-            throw new \InvalidArgumentException("Parsed body must be null, array, or object.");
+            throw new InvalidArgumentException('Parsed body must be null, array, or object.');
         }
 
         $request = clone $this;
@@ -334,185 +350,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $request;
     }
 
-    // ------------------------------------------------------------------------
-
-    protected function readFromServerRequest(array $attributes = null)
-    {
-        $this->attributes = $attributes ?: [];
-        $this->serverParams = $_SERVER;
-        $this->cookieParams = $_COOKIE;
-        $this->readUploadedFiles($_FILES);
-        $this->queryParams = [];
-        $this->uri = $this->readUri();
-        if (isset($_SERVER["QUERY_STRING"])) {
-            parse_str($_SERVER["QUERY_STRING"], $this->queryParams);
-        }
-        if (isset($_SERVER["SERVER_PROTOCOL"]) && $_SERVER["SERVER_PROTOCOL"] === "HTTP/1.0") {
-            // The default is 1.1, so only update if 1.0
-            $this->protocolVersion = "1.0";
-        }
-        if (isset($_SERVER["REQUEST_METHOD"])) {
-            $this->method = $_SERVER["REQUEST_METHOD"];
-        }
-        $headers = $this->getServerRequestHeaders();
-        foreach ($headers as $key => $value) {
-            $this->headers[$key] = $value;
-        }
-        $this->body = $this->getStreamForBody();
-
-        $contentType = $this->getHeaderLine("Content-type");
-        if (strpos($contentType, "application/x-www-form-urlencoded") !== false
-            || strpos($contentType, "multipart/form-data") !== false) {
-            $this->parsedBody = $_POST;
-        }
-    }
-
-    protected function readUploadedFiles($input)
-    {
-        $uploadedFiles = [];
-        foreach ($input as $name => $value) {
-            $this->addUploadedFilesToBranch($uploadedFiles, $name, $value);
-        }
-        $this->uploadedFiles = $uploadedFiles;
-    }
-
-    protected function addUploadedFilesToBranch(&$branch, $name, $value)
-    {
-        // Check for each of the expected keys.
-        if (isset($value["name"], $value["type"], $value["tmp_name"], $value["error"], $value["size"])) {
-            // This is a file. It may be a single file, or a list of files.
-
-            // Check if these items are arrays.
-            if (is_array($value["name"])
-                && is_array($value["type"])
-                && is_array($value["tmp_name"])
-                && is_array($value["error"])
-                && is_array($value["size"])
-            ) {
-                // Each item is an array. This is a list of uploaded files.
-                $files = [];
-                $keys = array_keys($value["name"]);
-                foreach ($keys as $key) {
-                    $files[$key] = new UploadedFile(
-                        $value["name"][$key],
-                        $value["type"][$key],
-                        $value["size"][$key],
-                        $value["tmp_name"][$key],
-                        $value["error"][$key]
-                    );
-                }
-                $branch[$name] = $files;
-            } else {
-                // All expected keys are present and are not arrays. This is an uploaded file.
-                $uploadedFile = new UploadedFile(
-                    $value["name"], $value["type"], $value["size"], $value["tmp_name"], $value["error"]
-                );
-                $branch[$name] = $uploadedFile;
-            }
-        } else {
-            // Add another branch
-            $nextBranch = [];
-            foreach ($value as $nextName => $nextValue) {
-                $this->addUploadedFilesToBranch($nextBranch, $nextName, $nextValue);
-            }
-            $branch[$name] = $nextBranch;
-        }
-    }
-
-    protected function readUri()
-    {
-        $uri = "";
-
-        $scheme = "http";
-        if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] && $_SERVER["HTTPS"] !== "off") {
-            $scheme = "https";
-        }
-
-        if (isset($_SERVER["HTTP_HOST"])) {
-            $authority = $_SERVER["HTTP_HOST"];
-            $uri .= "$scheme://$authority";
-        }
-
-        // Path and query string
-        if (isset($_SERVER["REQUEST_URI"])) {
-            $uri .= $_SERVER["REQUEST_URI"];
-        }
-
-        return new Uri($uri);
-    }
-
-    /**
-     * Return a reference to the singleton instance of the Request derived
-     * from the server's information about the request sent to the server.
-     *
-     * @param array $attributes Key-value pairs to add to the request.
-     * @return static
-     * @static
-     */
-    public static function getServerRequest(array $attributes = null)
-    {
-        $request = new static();
-        $request->readFromServerRequest($attributes);
-        return $request;
-    }
-
-    /**
-     * Return a stream representing the request's body.
-     *
-     * Override this method to use a specific StreamInterface implementation.
-     *
-     * @return StreamInterface
-     */
-    protected function getStreamForBody()
-    {
-        $input = fopen("php://input", "rb");
-        $temp = fopen("php://temp", "wb+");
-        stream_copy_to_stream($input, $temp);
-        rewind($temp);
-        return new Stream($temp);
-    }
-
-    /**
-     * Read and return all request headers from the request issued to the server.
-     *
-     * @return array Associative array of headers
-     */
-    protected function getServerRequestHeaders()
-    {
-        // http://www.php.net/manual/en/function.getallheaders.php#84262
-        $headers = array();
-        foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === "HTTP_") {
-                $name = $this->normalizeHeaderName(substr($name, 5));
-                $headers[$name] = $value;
-            } elseif ($this->isContentHeader($name, $value)) {
-                $name = $this->normalizeHeaderName($name);
-                $headers[$name] = $value;
-            }
-        }
-        return $headers;
-    }
-
-    /**
-     * @param $name
-     * @param $value
-     * @return bool
-     */
-    private function isContentHeader($name, $value)
-    {
-        return ($name === "CONTENT_LENGTH" || $name === "CONTENT_TYPE")
-            && trim($value);
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    private function normalizeHeaderName($name)
-    {
-        $name = ucwords(strtolower(str_replace("_", " ", $name)));
-        return str_replace(" ", "-", $name);
-    }
+    // -------------------------------------------------------------------------
 
     /**
      * @param array $root
@@ -527,7 +365,7 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         // If not empty, the array MUST have all string keys.
         $keys = array_keys($root);
-        if (count($keys) !== count(array_filter($keys, "is_string"))) {
+        if (count($keys) !== count(array_filter($keys, 'is_string'))) {
             return false;
         }
 
@@ -540,7 +378,11 @@ class ServerRequest extends Request implements ServerRequestInterface
         return true;
     }
 
-    private function isValidUploadedFilesBranch($branch)
+    /**
+     * @param UploadedFileInterface|array $branch
+     * @return bool
+     */
+    private function isValidUploadedFilesBranch($branch): bool
     {
         if (is_array($branch)) {
             // Branch.

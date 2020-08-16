@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -17,60 +18,41 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
-    const MIN_PORT = 0;
-    const MAX_PORT = 65535;
+    private const MIN_PORT = 0;
+    private const MAX_PORT = 65535;
 
     /** @var string */
-    private $scheme = "";
+    private $scheme;
     /** @var string  */
-    private $user = "";
-    /** @var string|null */
+    private $user;
+    /** @var string */
     private $password;
-    /** @var string  */
-    private $host = "";
+    /** @var string */
+    private $host;
     /** @var int|null */
     private $port;
-    /** @var string  */
-    private $path = "";
-    /** @var string  */
-    private $query = "";
-    /** @var string  */
-    private $fragment = "";
+    /** @var string */
+    private $path;
+    /** @var string */
+    private $query;
+    /** @var string */
+    private $fragment;
 
     /**
      * @param string $uri A string representation of a URI.
      */
-    public function __construct($uri = "")
+    public function __construct(string $uri = '')
     {
-        if (is_string($uri) && $uri !== "") {
-            $parsed = parse_url($uri);
-            if ($parsed !== false) {
-                if (isset($parsed["scheme"])) {
-                    $this->scheme = $parsed["scheme"];
-                }
-                if (isset($parsed["host"])) {
-                    $this->host = strtolower($parsed["host"]);
-                }
-                if (isset($parsed["port"])) {
-                    $this->port = $parsed["port"];
-                }
-                if (isset($parsed["user"])) {
-                    $this->user = $parsed["user"];
-                }
-                if (isset($parsed["pass"])) {
-                    $this->password = $parsed["pass"];
-                }
-                if (isset($parsed["path"])) {
-                    $this->path = $parsed["path"];
-                }
-                if (isset($parsed["query"])) {
-                    $this->query = $parsed["query"];
-                }
-                if (isset($parsed["fragment"])) {
-                    $this->fragment = $parsed["fragment"];
-                }
-            }
-        }
+        $parsed = parse_url($uri);
+
+        $this->scheme = $parsed['scheme'] ?? '';
+        $this->user = $parsed['user'] ?? '';
+        $this->password = $parsed['pass'] ?? '';
+        $this->host = strtolower($parsed['host'] ?? '');
+        $this->port = $parsed['port'] ?? null;
+        $this->path = $parsed['path'] ?? '';
+        $this->query = $parsed['query'] ?? '';
+        $this->fragment = $parsed['fragment'] ?? '';
     }
 
     /**
@@ -112,31 +94,36 @@ class Uri implements UriInterface
      */
     public function getAuthority()
     {
-        $authority = "";
-
         $host = $this->getHost();
-        if ($host !== "") {
+        if (!$host) {
+            return '';
+        }
 
-            // User Info
-            $userInfo = $this->getUserInfo();
-            if ($userInfo !== "") {
-                $authority .= $userInfo . "@";
-            }
+        $authority = '';
 
-            // Host
-            $authority .= $host;
+        // User Info
+        $userInfo = $this->getUserInfo();
+        if ($userInfo) {
+            $authority .= $userInfo . '@';
+        }
 
-            // Port: Include only if set AND non-standard.
-            $port = $this->getPort();
-            if ($port !== null) {
-                $scheme = $this->getScheme();
-                if (($scheme === "http" && $port !== 80 ) || ($scheme === "https" && $port !== 443)) {
-                    $authority .= ":" . $port;
-                }
-            }
+        // Host
+        $authority .= $host;
+
+        // Port: Include only if non-standard
+        if ($this->nonStandardPort()) {
+            $authority .= ':' . $this->getPort();
         }
 
         return $authority;
+    }
+
+    private function nonStandardPort(): bool
+    {
+        $port = $this->getPort();
+        $scheme = $this->getScheme();
+        return $scheme === 'http' && $port !== 80
+            || $scheme === 'https' && $port !== 443;
     }
 
     /**
@@ -158,7 +145,7 @@ class Uri implements UriInterface
     {
         $userInfo = $this->user;
         if ($userInfo && $this->password) {
-            $userInfo .= ":" . $this->password;
+            $userInfo .= ':' . $this->password;
         }
         return $userInfo;
     }
@@ -198,9 +185,9 @@ class Uri implements UriInterface
     {
         if ($this->port === null) {
             switch ($this->scheme) {
-                case "http":
+                case 'http':
                     return 80;
-                case "https":
+                case 'https':
                     return 443;
                 default:
                     return null;
@@ -236,7 +223,7 @@ class Uri implements UriInterface
      */
     public function getPath()
     {
-        if ($this->path === "*") {
+        if ($this->path === '*') {
             return $this->path;
         }
         return $this->percentEncode($this->path);
@@ -301,13 +288,13 @@ class Uri implements UriInterface
      *
      * @param string $scheme The scheme to use with the new instance.
      * @return static A new instance with the specified scheme.
-     * @throws \InvalidArgumentException for invalid or unsupported schemes.
+     * @throws InvalidArgumentException for invalid or unsupported schemes.
      */
     public function withScheme($scheme)
     {
-        $scheme = $scheme ? strtolower($scheme) : "";
-        if (!in_array($scheme, ["", "http", "https"])) {
-            throw new \InvalidArgumentException("Scheme must be http, https, or empty.");
+        $scheme = $scheme ? strtolower($scheme) : '';
+        if (!in_array($scheme, ['', 'http', 'https'])) {
+            throw new InvalidArgumentException('Scheme must be http, https, or empty.');
         }
         $uri = clone $this;
         $uri->scheme = $scheme;
@@ -332,7 +319,7 @@ class Uri implements UriInterface
     {
         $uri = clone $this;
         $uri->user = $user;
-        $uri->password = $password;
+        $uri->password = $password ?? '';
         return $uri;
     }
 
@@ -346,12 +333,12 @@ class Uri implements UriInterface
      *
      * @param string $host The hostname to use with the new instance.
      * @return static A new instance with the specified host.
-     * @throws \InvalidArgumentException for invalid hostnames.
+     * @throws InvalidArgumentException for invalid hostnames.
      */
     public function withHost($host)
     {
         if (!is_string($host)) {
-            throw new \InvalidArgumentException("Host must be a string.");
+            throw new InvalidArgumentException('Host must be a string.');
         }
 
         $uri = clone $this;
@@ -374,18 +361,18 @@ class Uri implements UriInterface
      * @param null|int $port The port to use with the new instance; a null value
      *     removes the port information.
      * @return static A new instance with the specified port.
-     * @throws \InvalidArgumentException for invalid ports.
+     * @throws InvalidArgumentException for invalid ports.
      */
     public function withPort($port)
     {
         if (is_numeric($port)) {
             if ($port < self::MIN_PORT || $port > self::MAX_PORT) {
-                $message = sprintf("Port must be between %s and %s.", self::MIN_PORT, self::MAX_PORT);
-                throw new \InvalidArgumentException($message);
+                $message = sprintf('Port must be between %s and %s.', self::MIN_PORT, self::MAX_PORT);
+                throw new InvalidArgumentException($message);
             }
             $port = (int) $port;
         } elseif ($port !== null) {
-            throw new \InvalidArgumentException("Port must be an int or null.");
+            throw new InvalidArgumentException('Port must be an int or null.');
         }
 
         $uri = clone $this;
@@ -408,12 +395,12 @@ class Uri implements UriInterface
      *
      * @param string $path The path to use with the new instance.
      * @return static A new instance with the specified path.
-     * @throws \InvalidArgumentException for invalid paths.
+     * @throws InvalidArgumentException for invalid paths.
      */
     public function withPath($path)
     {
         if (!is_string($path)) {
-            throw new \InvalidArgumentException("Path must be a string");
+            throw new InvalidArgumentException('Path must be a string');
         }
         $uri = clone $this;
         $uri->path = $path;
@@ -433,7 +420,7 @@ class Uri implements UriInterface
      *
      * @param string $query The query string to use with the new instance.
      * @return static A new instance with the specified query string.
-     * @throws \InvalidArgumentException for invalid query strings.
+     * @throws InvalidArgumentException for invalid query strings.
      */
     public function withQuery($query)
     {
@@ -488,29 +475,29 @@ class Uri implements UriInterface
      */
     public function __toString()
     {
-        $string = "";
+        $string = '';
 
         $authority = $this->getAuthority();
-        if ($authority !== "") {
+        if ($authority !== '') {
             $scheme = $this->getScheme();
-            if ($scheme !== "") {
-                $string = $scheme . ":";
+            if ($scheme !== '') {
+                $string = $scheme . ':';
             }
             $string .= "//$authority";
         }
 
         $path = $this->getPath();
-        if ($path !== "") {
+        if ($path !== '') {
             $string .= $path;
         }
 
         $query = $this->getQuery();
-        if ($query !== "") {
+        if ($query !== '') {
             $string .= "?$query";
         }
 
         $fragment = $this->getFragment();
-        if ($fragment !== "") {
+        if ($fragment !== '') {
             $string .= "#$fragment";
         }
 
@@ -538,7 +525,7 @@ class Uri implements UriInterface
         $reserved = ':/?#[]@!$&\'()*+,;=';
         $reserved = preg_quote($reserved);
         $pattern = '~(?:%(?![a-fA-F0-9]{2}))|(?:[^%a-zA-Z0-9\-\.\_\~' . $reserved . ']{1})~';
-        $callback = function ($matches) {
+        $callback = function (array $matches): string {
             return urlencode($matches[0]);
         };
         return preg_replace_callback($pattern, $callback, $subject);

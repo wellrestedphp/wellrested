@@ -6,12 +6,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Dispatches handlers and middleware
+ * Runs a handler or middleware with a request and return the response.
  */
 interface DispatcherInterface
 {
     /**
-     * Dispatch a handler or middleware and return the response.
+     * Run a handler or middleware with a request and return the response.
      *
      * Dispatchables (middleware and handlers) comes in a number of varieties
      * (e.g., instance, string, callable). DispatcherInterface interface unpacks

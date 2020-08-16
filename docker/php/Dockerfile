@@ -1,4 +1,4 @@
-FROM php:7.4-cli
+FROM php:7.3-fpm
 
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update && \
@@ -27,18 +27,18 @@ RUN mkdir /usr/local/src/wellrested && \
   chown -R www-data:www-data /usr/local/src/wellrested && \
   chown -R www-data:www-data /var/www
 
-COPY ./src /usr/local/src/wellrested/src
-COPY ./test /usr/local/src/wellrested/test
-COPY ./composer.* /usr/local/src/wellrested/
-COPY ./phpunit.xml.dist /usr/local/src/wellrested/
+# Copy entrypoint script
+COPY docker/php/entrypoint /usr/local/bin
 
-# Add symlink for phpunit for easier running
+# Add symlinks for php-cs-fixer, phpunit, and psalm for easier running
+RUN ln -s /usr/local/src/wellrested/vendor/bin/php-cs-fixer /usr/local/bin/php-cs-fixer
 RUN ln -s /usr/local/src/wellrested/vendor/bin/phpunit /usr/local/bin/phpunit
+RUN ln -s /usr/local/src/wellrested/vendor/bin/psalm /usr/local/bin/psalm
+
+ENTRYPOINT ["entrypoint"]
+
+CMD ["php-fpm"]
 
 WORKDIR /usr/local/src/wellrested
 
 USER www-data
-
-ENTRYPOINT ["dumb-init", "--"]
-
-RUN composer install

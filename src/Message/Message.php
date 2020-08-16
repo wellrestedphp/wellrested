@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -21,32 +22,32 @@ abstract class Message implements MessageInterface
      * Create a new Message, optionally with headers and a body.
      *
      * $headers is an optional associative array with header field names as
-     * (string) keys and lists of header field values (string[]) as values.
+     * string keys and values as either string or string[].
      *
      * If no StreamInterface is provided for $body, the instance will create
      * a NullStream instance for the message body.
      *
      * @param array $headers Associative array with header field names as
-     *     (string) keys and lists of header field values (string[]) as values.
-     * @param StreamInterface $body A stream representation of the message
+     *     keys and values as string|string[]
+     * @param StreamInterface|null $body A stream representation of the message
      *     entity body
      */
-    public function __construct(array $headers = null, StreamInterface $body = null)
-    {
+    public function __construct(
+        array $headers = [],
+        ?StreamInterface $body = null
+    ) {
         $this->headers = new HeaderCollection();
-        if ($headers) {
-            foreach ($headers as $name => $values) {
-                foreach ($values as $value) {
-                    $this->headers[$name] = $value;
-                }
+
+        foreach ($headers as $name => $values) {
+            if (is_string($values)) {
+                $values = [$values];
+            }
+            foreach ($values as $value) {
+                $this->headers[$name] = $value;
             }
         }
 
-        if ($body !== null) {
-            $this->body = $body;
-        } else {
-            $this->body = new Stream('');
-        }
+        $this->body = $body ?? new Stream('');
     }
 
     public function __clone()
@@ -54,7 +55,7 @@ abstract class Message implements MessageInterface
         $this->headers = clone $this->headers;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\MessageInterface
 
     /**
@@ -101,7 +102,7 @@ abstract class Message implements MessageInterface
      * While header names are not case-sensitive, getHeaders() will preserve the
      * exact case in which headers were originally specified.
      *
-     * @return array Returns an associative array of the message's headers.
+     * @return string[][] Returns an associative array of the message's headers.
      */
     public function getHeaders()
     {
@@ -187,7 +188,7 @@ abstract class Message implements MessageInterface
      * @param string $name Case-insensitive header field name.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException for invalid header names or values.
+     * @throws InvalidArgumentException for invalid header names or values.
      */
     public function withHeader($name, $value)
     {
@@ -211,7 +212,7 @@ abstract class Message implements MessageInterface
      * @param string $name Case-insensitive header field name to add.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException for invalid header names or values.
+     * @throws InvalidArgumentException for invalid header names or values.
      */
     public function withAddedHeader($name, $value)
     {
@@ -254,7 +255,7 @@ abstract class Message implements MessageInterface
      *
      * @param StreamInterface $body Body.
      * @return static
-     * @throws \InvalidArgumentException When the body is not valid.
+     * @throws InvalidArgumentException When the body is not valid.
      */
     public function withBody(StreamInterface $body)
     {
@@ -263,24 +264,34 @@ abstract class Message implements MessageInterface
         return $message;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
-    private function getValidatedHeaders($name, $value)
+    /**
+     * @param mixed $name
+     * @param mixed|mixed[] $values
+     * @return string[]
+     * @throws InvalidArgumentException Name is not a string or value is not
+     *   a string or array of strings
+     */
+    private function getValidatedHeaders($name, $values)
     {
-        $is_allowed = function ($item) {
-            return is_string($item) || is_numeric($item);
+        if (!is_string($name)) {
+            throw new InvalidArgumentException('Header name must be a string');
+        }
+
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+
+        $isNotStringOrNumber = function ($item): bool {
+            return !(is_string($item) || is_numeric($item));
         };
 
-        if (!is_string($name)) {
-            throw new \InvalidArgumentException('Header name must be a string');
+        $invalid = array_filter($values, $isNotStringOrNumber);
+        if ($invalid) {
+            throw new InvalidArgumentException('Header values must be a string or string[]');
         }
 
-        if ($is_allowed($value)) {
-            return [$value];
-        } elseif (is_array($value) && count($value) === count(array_filter($value, $is_allowed))) {
-            return $value;
-        } else {
-            throw new \InvalidArgumentException('Header values must be a string or string[]');
-        }
+        return array_map('strval', $values);
     }
 }

@@ -2,22 +2,28 @@
 
 namespace WellRESTed\Routing\Route;
 
+use RuntimeException;
+
+/**
+ * @internal
+ */
 class RegexRoute extends Route
 {
-    private $captures;
+    /** @var array */
+    private $captures = [];
 
-    public function getType()
+    public function getType(): int
     {
-        return RouteInterface::TYPE_PATTERN;
+        return Route::TYPE_PATTERN;
     }
 
     /**
      * Examines a request target to see if it is a match for the route.
      *
      * @param string $requestTarget
-     * @return boolean
+     * @return bool
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         $this->captures = [];
         $matched = preg_match($this->getTarget(), $requestTarget, $captures);
@@ -25,7 +31,7 @@ class RegexRoute extends Route
             $this->captures = $captures;
             return true;
         } elseif ($matched === false) {
-            throw new \RuntimeException("Invalid regular expression: " . $this->getTarget());
+            throw new RuntimeException('Invalid regular expression: ' . $this->getTarget());
         }
         return false;
     }
@@ -36,7 +42,7 @@ class RegexRoute extends Route
      * @see \preg_match
      * @return array
      */
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
         return $this->captures;
     }

@@ -2,24 +2,33 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
 
 /**
  * Value object representing a file uploaded through an HTTP request.
  */
 class UploadedFile implements UploadedFileInterface
 {
+    /** @var string */
     private $clientFilename;
+    /** @var string */
     private $clientMediaType;
+    /** @var int */
     private $error;
+    /** @var bool */
     private $moved = false;
+    /** @var int */
     private $size;
+    /** @var StreamInterface */
     private $stream;
+    /** @var string|null */
     private $tmpName;
 
     /**
-     * Create a new Uri. The arguments correspond with keys from arrays
+     * Create a new UploadedFile. The arguments correspond with keys from arrays
      * provided by $_FILES. For example, given this structure for $_FILES:
      *
      *     array(
@@ -57,10 +66,11 @@ class UploadedFile implements UploadedFileInterface
         $this->size = $size;
 
         if (file_exists($tmpName)) {
+            $this->stream = new Stream(fopen($tmpName, 'rb'));
             $this->tmpName = $tmpName;
-            $this->stream = new Stream(fopen($tmpName, "r"));
         } else {
             $this->stream = new NullStream();
+            $this->tmpName = null;
         }
     }
 
@@ -77,16 +87,19 @@ class UploadedFile implements UploadedFileInterface
      * raise an exception.
      *
      * @return StreamInterface Stream representation of the uploaded file.
-     * @throws \RuntimeException in cases when no stream is available or can
+     * @throws RuntimeException in cases when no stream is available or can
      *     be created.
      */
     public function getStream()
     {
-        if ($this->moved) {
-            throw new \RuntimeException("File has already been moved");
+        if ($this->tmpName === null) {
+            throw new RuntimeException('Unable to read uploaded file.');
         }
-        if (php_sapi_name() !== "cli" && !is_uploaded_file($this->tmpName)) {
-            throw new \RuntimeException("File is not an uploaded file.");
+        if ($this->moved) {
+            throw new RuntimeException('File has already been moved.');
+        }
+        if (php_sapi_name() !== 'cli' && !is_uploaded_file($this->tmpName)) {
+            throw new RuntimeException('File is not an uploaded file.');
         }
         return $this->stream;
     }
@@ -105,16 +118,17 @@ class UploadedFile implements UploadedFileInterface
      * @see http://php.net/is_uploaded_file
      * @see http://php.net/move_uploaded_file
      * @param string $path Path to which to move the uploaded file.
-     * @throws \InvalidArgumentException if the $path specified is invalid.
-     * @throws \RuntimeException on any error during the move operation, or on
+     * @return void
+     * @throws InvalidArgumentException if the $path specified is invalid.
+     * @throws RuntimeException on any error during the move operation, or on
      *     the second or subsequent call to the method.
      */
     public function moveTo($path)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
-            throw new \RuntimeException("File " . $this->tmpName . " does not exist.");
+            throw new RuntimeException("File {$this->tmpName} does not exist.");
         }
-        if (php_sapi_name() === "cli") {
+        if (php_sapi_name() === 'cli') {
             rename($this->tmpName, $path);
         } else {
             move_uploaded_file($this->tmpName, $path);

@@ -10,12 +10,11 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class DispatchStack implements DispatchStackInterface
 {
+    /** @var mixed[] */
     private $stack;
+    /** @var DispatcherInterface */
     private $dispatcher;
 
-    /**
-     * @param DispatcherInterface $dispatcher
-     */
     public function __construct(DispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
@@ -26,7 +25,7 @@ class DispatchStack implements DispatchStackInterface
      * Push a new middleware onto the stack.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return self
+     * @return static
      */
     public function add($middleware)
     {
@@ -40,7 +39,7 @@ class DispatchStack implements DispatchStackInterface
      * The first middleware that was added is dispatched first.
      *
      * Each middleware, when dispatched, receives a $next callable that, when
-     * called, will dispatch the next middleware in the sequence.
+     * called, will dispatch the following middleware in the sequence.
      *
      * When the stack is dispatched empty, or when all middleware in the stack
      * call the $next argument they were passed, this method will call the
@@ -66,7 +65,10 @@ class DispatchStack implements DispatchStackInterface
 
         // The final middleware's $next returns $response unchanged and sets
         // the $stackCompleted flag to indicate the stack has completed.
-        $chain = function ($request, $response) use (&$stackCompleted) {
+        $chain = function (
+            ServerRequestInterface $request,
+            ResponseInterface $response
+        ) use (&$stackCompleted): ResponseInterface {
             $stackCompleted = true;
             return $response;
         };
@@ -77,8 +79,16 @@ class DispatchStack implements DispatchStackInterface
         // contain a dispatcher, the associated middleware, and a $next function
         // that serves as the link to the next middleware in the chain.
         foreach (array_reverse($this->stack) as $middleware) {
-            $chain = function ($request, $response) use ($dispatcher, $middleware, $chain) {
-                return $dispatcher->dispatch($middleware, $request, $response, $chain);
+            $chain = function (
+                ServerRequestInterface $request,
+                ResponseInterface $response
+            ) use ($dispatcher, $middleware, $chain): ResponseInterface {
+                return $dispatcher->dispatch(
+                    $middleware,
+                    $request,
+                    $response,
+                    $chain
+                );
             };
         }
 

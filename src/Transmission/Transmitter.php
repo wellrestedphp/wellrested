@@ -27,7 +27,7 @@ class Transmitter implements TransmitterInterface
     public function transmit(
         ServerRequestInterface $request,
         ResponseInterface $response
-    ) {
+    ): void {
         // Prepare the response for output.
         $response = $this->prepareResponse($request, $response);
 
@@ -48,36 +48,35 @@ class Transmitter implements TransmitterInterface
         }
     }
 
-    /**
-     * @param int $chunkSize
-     */
-    public function setChunkSize($chunkSize)
+    public function setChunkSize(int $chunkSize): void
     {
         $this->chunkSize = $chunkSize;
     }
 
-    protected function prepareResponse(
+    private function prepareResponse(
         ServerRequestInterface $request,
         ResponseInterface $response
-    ) {
-        // Add a Content-length header to the response when all of these are true:
+    ): ResponseInterface {
+
+        // Add Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header
         // - Response does not have a Transfer-encoding: chunked header
         // - Response body stream is readable and reports a non-null size
         //
-        if (!$response->hasHeader("Content-length")
-            && !(strtolower($response->getHeaderLine("Transfer-encoding")) === "chunked")
-        ) {
-            $size = $response->getBody()->getSize();
-            if ($size !== null) {
-                $response = $response->withHeader("Content-length", (string) $size);
-            }
+        $contentLengthMissing = !$response->hasHeader('Content-length');
+        $notChunked = strtolower($response->getHeaderLine('Transfer-encoding'))
+            !== 'chunked';
+        $size = $response->getBody()->getSize();
+
+        if ($contentLengthMissing && $notChunked && $size !== null) {
+            $response = $response->withHeader('Content-length', (string) $size);
         }
+
         return $response;
     }
 
-    private function getStatusLine(ResponseInterface $response)
+    private function getStatusLine(ResponseInterface $response): string
     {
         $protocol = $response->getProtocolVersion();
         $statusCode = $response->getStatusCode();
@@ -89,7 +88,7 @@ class Transmitter implements TransmitterInterface
         }
     }
 
-    private function outputBody(StreamInterface $body)
+    private function outputBody(StreamInterface $body): void
     {
         if ($this->chunkSize > 0) {
             if ($body->isSeekable()) {

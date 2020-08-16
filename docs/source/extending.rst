@@ -73,7 +73,7 @@ If you need the ability to dispatch other types of middleware, you can create yo
                 $response = parent::dispatch($dispatchable, $request, $response, $next);
             } catch (\WellRESTed\Dispatching\DispatchException $e) {
                 // If there's a problem, check if the handler or middleware
-                // (the "dispatchable") implements OtherHandlerInterface. 
+                // (the "dispatchable") implements OtherHandlerInterface.
                 // Dispatch it if it does.
                 if ($dispatchable instanceof OtherHandlerInterface) {
                     $response = $dispatchable->run($request);
@@ -93,18 +93,9 @@ To use this dispatcher, create an instance implementing ``WellRESTed\Dispatching
     $server = new WellRESTed\Server();
     $server->setDispatcher(new MyApi\CustomDispatcher());
 
-Message Customization
----------------------
+.. warning::
 
-In the example above, we passed a custom dispatcher to the server. You can also customize your server in other ways. For example, when the server reaches these end of its stack of middleware and has not had the response handled, it returns a blank 404 error response. You can customize this by passing a response to the server's ``setUnhandledResponse`` method.
-
-.. code-block:: php
-
-    $unhandled = (new Response(404))
-        ->withHeader('text/html')
-        ->withBody($fancy404message);
-    
-    $server->setUnhandledResponse($unhandled);
+    When you supply a custom Dispatcher, be sure to call ``Server::setDispatcher`` before you create any routers with ``Server::createRouter`` to allow the ``Server`` to pass you customer ``Dispatcher`` on to the newly created ``Router``.
 
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _Handlers and Middleware: handlers-and-middleware.html

@@ -2,36 +2,41 @@
 
 namespace WellRESTed\Routing\Route;
 
+/**
+ * @internal
+ */
 class TemplateRoute extends Route
 {
-    private $pathVariables;
-    private $explosions;
-
+    /** Regular expression matching a URI template variable (e.g., {id}) */
+    public const URI_TEMPLATE_EXPRESSION_RE = '/{([+.\/]?[a-zA-Z0-9_,]+\*?)}/';
     /**
      * Regular expression matching 1 or more unreserved characters.
      * ALPHA / DIGIT / "-" / "." / "_" / "~"
      */
-    const RE_UNRESERVED = '[0-9a-zA-Z\-._\~%]*';
-    /** Regular expression matching a URI template variable (e.g., {id}) */
-    const URI_TEMPLATE_EXPRESSION_RE = '/{([+.\/]?[a-zA-Z0-9_,]+\*?)}/';
+    private const RE_UNRESERVED = '[0-9a-zA-Z\-._\~%]*';
 
-    public function getType()
+    /** @var array */
+    private $pathVariables = [];
+    /** @var array */
+    private $explosions = [];
+
+    public function getType(): int
     {
-        return RouteInterface::TYPE_PATTERN;
+        return Route::TYPE_PATTERN;
     }
 
-    public function getPathVariables()
+    public function getPathVariables(): array
     {
-        return $this->pathVariables ?: [];
+        return $this->pathVariables;
     }
 
     /**
      * Examines a request target to see if it is a match for the route.
      *
      * @param string $requestTarget
-     * @return boolean
+     * @return bool
      */
-    public function matchesRequestTarget($requestTarget)
+    public function matchesRequestTarget(string $requestTarget): bool
     {
         $this->pathVariables = [];
         $this->explosions = [];
@@ -49,54 +54,55 @@ class TemplateRoute extends Route
         return false;
     }
 
-    private function matchesStartOfRequestTarget($requestTarget)
+    private function matchesStartOfRequestTarget(string $requestTarget): bool
     {
-        $firstVarPos = strpos($this->target, "{");
-        return (substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos));
+        $firstVarPos = strpos($this->target, '{');
+        if ($firstVarPos === false) {
+            return $requestTarget === $this->target;
+        }
+        return substr($requestTarget, 0, $firstVarPos) === substr($this->target, 0, $firstVarPos);
     }
 
-    private function processMatches($matches)
+    private function processMatches(array $matches): array
     {
         $variables = [];
 
         // Isolate the named captures.
-        $keys = array_filter(array_keys($matches), "is_string");
+        $keys = array_filter(array_keys($matches), 'is_string');
 
         // Store named captures to the variables.
         foreach ($keys as $key) {
-
             $value = $matches[$key];
 
             if (isset($this->explosions[$key])) {
                 $values = explode($this->explosions[$key], $value);
-                $variables[$key] = array_map("urldecode", $values);
+                $variables[$key] = array_map('urldecode', $values);
             } else {
                 $value = urldecode($value);
                 $variables[$key] = $value;
             }
-
         }
 
         return $variables;
     }
 
-    private function getMatchingPattern()
+    private function getMatchingPattern(): string
     {
         // Convert the template into the pattern
         $pattern = $this->target;
 
         // Escape allowable characters with regex meaning.
         $escape = [
-            "." => "\\.",
-            "-" => "\\-",
-            "+" => "\\+",
-            "*" => "\\*"
+            '.' => '\\.',
+            '-' => '\\-',
+            '+' => '\\+',
+            '*' => '\\*'
         ];
         $pattern = str_replace(array_keys($escape), array_values($escape), $pattern);
         $unescape = [
-            "{\\+" => "{+",
-            "{\\." => "{.",
-            "\\*}" => "*}"
+            '{\\+' => '{+',
+            '{\\.' => '{.',
+            '\\*}' => '*}'
         ];
         $pattern = str_replace(array_keys($unescape), array_values($unescape), $pattern);
 
@@ -105,47 +111,47 @@ class TemplateRoute extends Route
 
         $pattern = preg_replace_callback(
             self::URI_TEMPLATE_EXPRESSION_RE,
-            [$this, "uriVariableReplacementCallback"],
+            [$this, 'uriVariableReplacementCallback'],
             $pattern
         );
 
         return $pattern;
     }
 
-    private function uriVariableReplacementCallback($matches)
+    private function uriVariableReplacementCallback(array $matches): string
     {
         $name = $matches[1];
         $pattern = self::RE_UNRESERVED;
 
-        $prefix = "";
-        $delimiter = ",";
-        $explodeDelimiter = ",";
+        $prefix = '';
+        $delimiter = ',';
+        $explodeDelimiter = ',';
 
         // Read the first character as an operator. This determines which
         // characters to allow in the match.
         $operator = $name[0];
 
         // Read the last character as the modifier.
-        $explosion = (substr($name, -1, 1) === "*");
+        $explosion = (substr($name, -1, 1) === '*');
 
         switch ($operator) {
-            case "+":
+            case '+':
                 $name = substr($name, 1);
-                $pattern = ".*";
+                $pattern = '.*';
                 break;
-            case ".":
+            case '.':
                 $name = substr($name, 1);
-                $prefix = "\\.";
-                $delimiter = "\\.";
-                $explodeDelimiter = ".";
+                $prefix = '\\.';
+                $delimiter = '\\.';
+                $explodeDelimiter = '.';
                 break;
-            case "/":
+            case '/':
                 $name = substr($name, 1);
-                $prefix = "\\/";
-                $delimiter = "\\/";
+                $prefix = '\\/';
+                $delimiter = '\\/';
                 if ($explosion) {
                     $pattern = '[0-9a-zA-Z\-._\~%,\/]*'; // Unreserved + "," and "/"
-                    $explodeDelimiter = "/";
+                    $explodeDelimiter = '/';
                 }
                 break;
         }
@@ -159,7 +165,7 @@ class TemplateRoute extends Route
             $this->explosions[$name] = $explodeDelimiter;
         }
 
-        $names = explode(",", $name);
+        $names = explode(',', $name);
         $results = [];
         foreach ($names as $name) {
             $results[] = "(?<{$name}>{$pattern})";

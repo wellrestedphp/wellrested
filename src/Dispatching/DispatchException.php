@@ -2,6 +2,8 @@
 
 namespace WellRESTed\Dispatching;
 
-class DispatchException extends \InvalidArgumentException
+use InvalidArgumentException;
+
+class DispatchException extends InvalidArgumentException
 {
 }

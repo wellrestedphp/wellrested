@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Message;
 
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
@@ -22,37 +23,42 @@ class Request extends Message implements RequestInterface
 {
     /** @var string  */
     protected $method;
-    /** @var string */
+    /** @var string|null */
     protected $requestTarget;
     /** @var UriInterface */
     protected $uri;
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Create a new Request.
      *
-     * @see \WellRESTed\Message\Message
-     * @param UriInterface $uri
+     * $headers is an optional associative array with header field names as
+     * string keys and values as either string or string[].
+     *
+     * If no StreamInterface is provided for $body, the instance will create
+     * a NullStream instance for the message body.
+     *
      * @param string $method
-     * @param array $headers
-     * @param StreamInterface $body
+     * @param string|UriInterface $uri
+     * @param array $headers Associative array with header field names as
+     *     keys and values as string|string[]
+     * @param StreamInterface|null $body A stream representation of the message
+     *     entity body
      */
     public function __construct(
-        UriInterface $uri = null,
-        $method = "GET",
-        array $headers = null,
-        StreamInterface $body = null
+        string $method = 'GET',
+        $uri = '',
+        array $headers = [],
+        ?StreamInterface $body = null
     ) {
         parent::__construct($headers, $body);
-
-        if ($uri !== null) {
-            $this->uri = $uri;
-        } else {
-            $this->uri = new Uri();
-        }
-
         $this->method = $method;
+        if (!($uri instanceof UriInterface)) {
+            $uri = new Uri($uri);
+        }
+        $this->uri = $uri;
+        $this->requestTarget = null;
     }
 
     public function __clone()
@@ -61,7 +67,7 @@ class Request extends Message implements RequestInterface
         parent::__clone();
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Psr\Http\Message\RequestInterface
 
     /**
@@ -83,7 +89,7 @@ class Request extends Message implements RequestInterface
     public function getRequestTarget()
     {
         // Use the explicitly set request target first.
-        if (isset($this->requestTarget)) {
+        if ($this->requestTarget !== null) {
             return $this->requestTarget;
         }
 
@@ -91,11 +97,11 @@ class Request extends Message implements RequestInterface
         $target = $this->uri->getPath();
         $query = $this->uri->getQuery();
         if ($query) {
-            $target .= "?" . $query;
+            $target .= '?' . $query;
         }
 
         // Return "/" if the origin form is empty.
-        return $target ?: "/";
+        return $target ?: '/';
     }
 
     /**
@@ -137,7 +143,7 @@ class Request extends Message implements RequestInterface
      *
      * @param string $method Case-insensitive method.
      * @return static
-     * @throws \InvalidArgumentException for invalid HTTP methods.
+     * @throws InvalidArgumentException for invalid HTTP methods.
      */
     public function withMethod($method)
     {
@@ -189,18 +195,18 @@ class Request extends Message implements RequestInterface
         $request = clone $this;
 
         $newHost = $uri->getHost();
-        $oldHost = isset($request->headers["Host"]) ? $request->headers["Host"] : "";
+        $oldHost = isset($request->headers['Host']) ? $request->headers['Host'] : '';
 
         if ($preserveHost === false) {
             // Update Host
             if ($newHost && $newHost !== $oldHost) {
-                unset($request->headers["Host"]);
-                $request->headers["Host"] = $newHost;
+                unset($request->headers['Host']);
+                $request->headers['Host'] = $newHost;
             }
         } else {
             // Preserve Host
             if (!$oldHost && $newHost) {
-                $request->headers["Host"] = $newHost;
+                $request->headers['Host'] = $newHost;
             }
         }
 
@@ -208,21 +214,21 @@ class Request extends Message implements RequestInterface
         return $request;
     }
 
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
-     * @param string $method
-     * @return static
-     * @throws \InvalidArgumentException
+     * @param mixed $method
+     * @return string
+     * @throws InvalidArgumentException
      */
     private function getValidatedMethod($method)
     {
         if (!is_string($method)) {
-            throw new \InvalidArgumentException("Method must be a string.");
+            throw new InvalidArgumentException('Method must be a string.');
         }
         $method = trim($method);
-        if (strpos($method, " ") !== false) {
-            throw new \InvalidArgumentException("Method cannot contain spaces.");
+        if (strpos($method, ' ') !== false) {
+            throw new InvalidArgumentException('Method cannot contain spaces.');
         }
         return $method;
     }

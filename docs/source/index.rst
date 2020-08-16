@@ -138,7 +138,6 @@ Contents
    dependency-injection
    additional
    web-server-configuration
-   changes-from-version-3
 
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/

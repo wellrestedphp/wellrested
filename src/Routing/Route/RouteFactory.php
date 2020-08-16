@@ -5,9 +5,9 @@ namespace WellRESTed\Routing\Route;
 use WellRESTed\Dispatching\DispatcherInterface;
 
 /**
- * Class for creating routes
+ * @internal
  */
-class RouteFactory implements RouteFactoryInterface
+class RouteFactory
 {
     private $dispatcher;
 
@@ -25,16 +25,16 @@ class RouteFactory implements RouteFactoryInterface
      * - Regular expressions will create RegexRoutes
      *
      * @param string $target Route target or target pattern
-     * @return RouteInterface
+     * @return Route
      */
-    public function create($target)
+    public function create(string $target): Route
     {
-        if ($target[0] === "/") {
+        if ($target[0] === '/') {
 
             // Possible static, prefix, or template
 
             // PrefixRoutes end with *
-            if (substr($target, -1) === "*") {
+            if (substr($target, -1) === '*') {
                 return new PrefixRoute($target, new MethodMap($this->dispatcher));
             }
 

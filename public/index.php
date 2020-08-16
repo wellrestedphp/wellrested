@@ -25,15 +25,15 @@ class HomePageHandler implements RequestHandlerInterface
     <meta charset="utf-8">
     <title>WellRESTed Development Site</title>
 </head>
-<body>   
+<body>
     <h1>WellRESTed Development Site</h1>
-   
+
     <p>To run unit tests, run:</p>
     <code>docker-compose run --rm php phpunit</code>
     <p>View the <a href="/coverage/">code coverage report</a>.</p>
-    
+
     <p>To generate documentation, run:</p>
-    <code>docker-compose run --rm docs</code>    
+    <code>docker-compose run --rm docs</code>
     <p>View <a href="/docs/"> documentation</a>.</p>
   </body>
 </html>
@@ -47,36 +47,13 @@ HTML;
 
 // -----------------------------------------------------------------------------
 
+// Create a new Server instance.
 $server = new Server();
-
 // Add a router to the server to map methods and endpoints to handlers.
 $router = $server->createRouter();
-$router->register("GET", "/", new HomePageHandler());
+// Register the route GET / with an anonymous function that provides a handler.
+$router->register("GET", "/", function () { return new HomePageHandler(); });
+// Add the router to the server.
 $server->add($router);
-
-
-$server->add($server->createRouter()
-    ->register('GET, POST', '/cat', function ($rqst, $resp, $next) {
-
-        $resp = $resp
-            ->withStatus(200)
-            ->withHeader('Content-type', 'text/html')
-            ->withBody(new Stream('Molly'));
-        return $next($rqst, $resp);
-    })
-);
-
-$server->add($server->createRouter()
-    ->register('GET', '/cat', function ($rqst, $resp) {
-
-        $body = (string) $resp->getBody();
-
-
-        return (new Response(200))
-            ->withHeader('Content-type', 'text/html')
-            ->withBody(new Stream($body . ' Oscar'));
-    })
-);
-
 // Read the request from the client, dispatch a handler, and output.
 $server->respond();
