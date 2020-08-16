@@ -76,7 +76,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         array $headers = [],
         ?StreamInterface $body = null,
         array $serverParams = []
-    ){
+    ) {
         parent::__construct($method, $uri, $headers, $body);
         $this->serverParams = $serverParams;
         $this->cookieParams = [];

@@ -9,18 +9,17 @@
          stopOnFailure="false"
          verbose="true"
 >
-	<coverage>
-		<include>
-			<directory suffix=".php">./src</directory>
-		</include>
-		<report>
-			<html outputDirectory="./coverage"/>
-		</report>
-	</coverage>
 	<testsuites>
 		<testsuite name="unit">
 			<directory>./tests</directory>
 		</testsuite>
 	</testsuites>
-	<logging/>
+	<filter>
+		<whitelist>
+			<directory suffix=".php">./src</directory>
+		</whitelist>
+	</filter>
+	<logging>
+		<log type="coverage-html" target="./coverage" />
+	</logging>
 </phpunit>
