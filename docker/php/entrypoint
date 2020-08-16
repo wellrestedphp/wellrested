@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Run CLI commands with dumb-init to allow better signal handling.
+# Run PHP-FPM as PID 1.
+# https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
+if [ "$1" == 'php-fpm' ] ; then
+  exec php-fpm
+else
+  exec dumb-init -- "$@"
+fi

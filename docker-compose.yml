@@ -25,8 +25,3 @@ services:
     volumes:
       - .:/usr/local/src/wellrested
       - ./docker/nginx/site.conf:/etc/nginx/conf.d/default.conf
-
-  php-fpm:
-    image: php:7.4-fpm
-    volumes:
-      - .:/usr/local/src/wellrested
