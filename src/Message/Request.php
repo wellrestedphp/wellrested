@@ -34,7 +34,7 @@ class Request extends Message implements RequestInterface
      * Create a new Request.
      *
      * $headers is an optional associative array with header field names as
-     * (string) keys and lists of header field values (string[]) as values.
+     * string keys and values as either string or string[].
      *
      * If no StreamInterface is provided for $body, the instance will create
      * a NullStream instance for the message body.
@@ -42,7 +42,7 @@ class Request extends Message implements RequestInterface
      * @param string $method
      * @param string|UriInterface $uri
      * @param array $headers Associative array with header field names as
-     *     (string) keys and lists of header field values (string[]) as values.
+     *     keys and values as string|string[]
      * @param StreamInterface|null $body A stream representation of the message
      *     entity body
      */

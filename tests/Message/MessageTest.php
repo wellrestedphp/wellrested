@@ -7,7 +7,14 @@ use WellRESTed\Test\TestCase;
 
 class MessageTest extends TestCase
 {
-    public function testSetsHeadersOnConstruction(): void
+    public function testSetsHeadersWithStringValueOnConstruction(): void
+    {
+        $headers = ['X-foo' => 'bar'];
+        $message = new Response(200, $headers);
+        $this->assertEquals(['bar'], $message->getHeader('X-foo'));
+    }
+
+    public function testSetsHeadersWithArrayValueOnConstruction(): void
     {
         $headers = ['X-foo' => ['bar', 'baz']];
         $message = new Response(200, $headers);

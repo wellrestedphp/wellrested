@@ -22,13 +22,13 @@ abstract class Message implements MessageInterface
      * Create a new Message, optionally with headers and a body.
      *
      * $headers is an optional associative array with header field names as
-     * (string) keys and lists of header field values (string[]) as values.
+     * string keys and values as either string or string[].
      *
      * If no StreamInterface is provided for $body, the instance will create
      * a NullStream instance for the message body.
      *
      * @param array $headers Associative array with header field names as
-     *     (string) keys and lists of header field values (string[]) as values.
+     *     keys and values as string|string[]
      * @param StreamInterface|null $body A stream representation of the message
      *     entity body
      */
@@ -37,19 +37,17 @@ abstract class Message implements MessageInterface
         ?StreamInterface $body = null
     ) {
         $this->headers = new HeaderCollection();
-        if ($headers) {
-            foreach ($headers as $name => $values) {
-                foreach ($values as $value) {
-                    $this->headers[$name] = $value;
-                }
+
+        foreach ($headers as $name => $values) {
+            if (is_string($values)) {
+                $values = [$values];
+            }
+            foreach ($values as $value) {
+                $this->headers[$name] = $value;
             }
         }
 
-        if ($body !== null) {
-            $this->body = $body;
-        } else {
-            $this->body = new Stream('');
-        }
+        $this->body = $body ?? new Stream('');
     }
 
     public function __clone()
