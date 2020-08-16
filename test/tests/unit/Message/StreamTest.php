@@ -5,7 +5,10 @@ namespace WellRESTed\Test\Unit\Message;
 use InvalidArgumentException;
 use RuntimeException;
 use WellRESTed\Message\Stream;
+use WellRESTed\Message\StreamHelper;
 use WellRESTed\Test\TestCase;
+
+require_once __DIR__ . "/../../../src/StreamHelper.php";
 
 class StreamTest extends TestCase
 {
@@ -18,6 +21,7 @@ class StreamTest extends TestCase
         $this->resource = fopen("php://memory", "w+");
         $this->resourceDevNull = fopen("/dev/null", "r");
         fwrite($this->resource, $this->content);
+        StreamHelper::$fail = false;
     }
 
     public function tearDown(): void
@@ -106,7 +110,8 @@ class StreamTest extends TestCase
 
     public function testTellThrowsRuntimeExceptionWhenUnableToReadStreamPosition()
     {
-        $stream = new Stream($this->resourceDevNull);
+        StreamHelper::$fail = true;
+        $stream = new Stream($this->resource);
         $this->expectException(RuntimeException::class);
         $stream->tell();
     }
@@ -136,7 +141,8 @@ class StreamTest extends TestCase
 
     public function testSeekThrowsRuntimeExceptionWhenUnableToSeek()
     {
-        $stream = new Stream($this->resourceDevNull);
+        StreamHelper::$fail = true;
+        $stream = new Stream($this->resource);
         $this->expectException(RuntimeException::class);
         $stream->seek(10);
     }
@@ -151,7 +157,8 @@ class StreamTest extends TestCase
 
     public function testRewindThrowsRuntimeExceptionWhenUnableToRewind()
     {
-        $stream = new Stream($this->resourceDevNull);
+        StreamHelper::$fail = true;
+        $stream = new Stream($this->resource);
         $this->expectException(RuntimeException::class);
         $stream->rewind();
     }
