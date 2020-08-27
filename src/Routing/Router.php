@@ -78,22 +78,21 @@ class Router implements MiddlewareInterface
         ResponseInterface $response,
         $next
     ): ResponseInterface {
-        // Use only the path for routing.
-        $requestTarget = parse_url($request->getRequestTarget(), PHP_URL_PATH);
+        $path = $this->getPath($request->getRequestTarget());
 
-        $route = $this->getStaticRoute($requestTarget);
+        $route = $this->getStaticRoute($path);
         if ($route) {
             return $this->dispatch($route, $request, $response, $next);
         }
 
-        $route = $this->getPrefixRoute($requestTarget);
+        $route = $this->getPrefixRoute($path);
         if ($route) {
             return $this->dispatch($route, $request, $response, $next);
         }
 
         // Try each of the routes.
         foreach ($this->patternRoutes as $route) {
-            if ($route->matchesRequestTarget($requestTarget)) {
+            if ($route->matchesRequestTarget($path)) {
                 $pathVariables = $route->getPathVariables();
                 if ($this->pathVariablesAttributeName) {
                     $request = $request->withAttribute($this->pathVariablesAttributeName, $pathVariables);
@@ -111,6 +110,15 @@ class Router implements MiddlewareInterface
         }
 
         return $next($request, $response);
+    }
+
+    private function getPath(string $requestTarget): string
+    {
+        $queryStart = strpos($requestTarget, '?');
+        if ($queryStart === false) {
+            return $requestTarget;
+        }
+        return substr($requestTarget, 0, $queryStart);
     }
 
     private function dispatch(

@@ -291,7 +291,8 @@ class RouterTest extends TestCase
 
     public function testMatchesPathAgainstRouteWithoutQuery(): void
     {
-        $target = '/my/path?cat=molly&dog=bear';
+        $path = '/my/path';
+        $target = $path . '?cat=molly&dog=bear';
 
         $this->request = $this->request->withRequestTarget($target);
 
@@ -299,11 +300,28 @@ class RouterTest extends TestCase
         $this->route->getType()->willReturn(Route::TYPE_PATTERN);
         $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
 
-        $this->router->register('GET', $target, 'middleware');
+        $this->router->register('GET', $path, 'middleware');
 
         $this->dispatch();
 
-        $this->route->matchesRequestTarget('/my/path')->shouldHaveBeenCalled();
+        $this->route->matchesRequestTarget($path)->shouldHaveBeenCalled();
+    }
+
+    public function testMatchesPathWithDuplicateLeadingSlashes(): void
+    {
+        $path = '//my/path';
+
+        $this->request = $this->request->withRequestTarget($path);
+
+        $this->route->getTarget()->willReturn($path);
+        $this->route->getType()->willReturn(Route::TYPE_PATTERN);
+        $this->route->matchesRequestTarget(Argument::cetera())->willReturn(true);
+
+        $this->router->register('GET', $path, 'middleware');
+
+        $this->dispatch();
+
+        $this->route->matchesRequestTarget($path)->shouldHaveBeenCalled();
     }
 
     // -------------------------------------------------------------------------
