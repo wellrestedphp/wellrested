@@ -25,7 +25,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'WellRESTed'
-copyright = u'202, PJ Dietz'
+copyright = u'2021, PJ Dietz'
 version = '5.0.0'
 release = '5.0.0'
 
