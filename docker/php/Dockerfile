@@ -10,9 +10,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
     zip \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Xdebug
-RUN yes | pecl install xdebug \
-  && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini
+# Xdebug
+RUN pecl install xdebug \
+  && docker-php-ext-enable xdebug
 
  # Install Composer.
 RUN curl -sS https://getcomposer.org/installer | php -- \
@@ -26,6 +26,9 @@ RUN chmod +x /usr/local/bin/dumb-init
 RUN mkdir /usr/local/src/wellrested && \
   chown -R www-data:www-data /usr/local/src/wellrested && \
   chown -R www-data:www-data /var/www
+
+# Copy XDebug config file
+COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 # Copy entrypoint script
 COPY docker/php/entrypoint /usr/local/bin
