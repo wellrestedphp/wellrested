@@ -4,6 +4,7 @@ php:
   - "7.4"
 
 before_script:
+  - phpenv config-add docker/php/xdebug.ini
   - composer selfupdate
   - composer install --prefer-source
 
