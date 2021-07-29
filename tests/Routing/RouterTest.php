@@ -166,6 +166,35 @@ class RouterTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
+    public function testDispatchesMatchingPrefixRoute(): void
+    {
+        $catsRoute = $this->prophesize(Route::class);
+        $catsRoute->register(Argument::cetera());
+        $catsRoute->getTarget()->willReturn('/animals/cats/*');
+        $catsRoute->getType()->willReturn(Route::TYPE_PREFIX);
+        $catsRoute->__invoke(Argument::cetera())->willReturn(new Response());
+
+        $dogsRoute = $this->prophesize(Route::class);
+        $dogsRoute->register(Argument::cetera());
+        $dogsRoute->getTarget()->willReturn('/animals/dogs/*');
+        $dogsRoute->getType()->willReturn(Route::TYPE_PREFIX);
+        $dogsRoute->__invoke(Argument::cetera())->willReturn(new Response());
+
+        $this->request = $this->request
+            ->withRequestTarget('/animals/dogs/bear');
+
+        $this->factory->create('/animals/cats/*')->willReturn($catsRoute->reveal());
+        $this->factory->create('/animals/dogs/*')->willReturn($dogsRoute->reveal());
+
+        $this->router->register('GET', '/animals/cats/*', 'middleware');
+        $this->router->register('GET', '/animals/dogs/*', 'middleware');
+
+        $this->dispatch();
+
+        $dogsRoute->__invoke(Argument::cetera())
+            ->shouldHaveBeenCalled();
+    }
+
     public function testDispatchesLongestMatchingPrefixRoute(): void
     {
         // Note: The longest route is also good for 2 points in Settlers of Catan.

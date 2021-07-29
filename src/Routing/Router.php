@@ -278,7 +278,7 @@ class Router implements MiddlewareInterface
             usort($matches, $compareByLength);
         }
 
-        $bestMatch = $matches[0];
+        $bestMatch = array_values($matches)[0];
         return $this->prefixRoutes[$bestMatch];
     }
 
