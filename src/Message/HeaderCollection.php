@@ -7,7 +7,7 @@ use Iterator;
 
 /**
  * HeaderCollection provides case-insensitive access to lists of header values.
- **
+ *
  * HeaderCollection preserves the cases of keys as they are set, but treats key
  * access case insensitively.
  *
@@ -51,7 +51,7 @@ class HeaderCollection implements ArrayAccess, Iterator
      * @param string $offset
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->values[strtolower($offset)]);
     }
@@ -60,7 +60,7 @@ class HeaderCollection implements ArrayAccess, Iterator
      * @param mixed $offset
      * @return string[]
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): array
     {
         return $this->values[strtolower($offset)];
     }
@@ -69,7 +69,7 @@ class HeaderCollection implements ArrayAccess, Iterator
      * @param string $offset
      * @param string $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $normalized = strtolower($offset);
 
@@ -92,7 +92,7 @@ class HeaderCollection implements ArrayAccess, Iterator
     /**
      * @param string $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $normalized = strtolower($offset);
         unset($this->fields[$normalized]);
@@ -107,27 +107,30 @@ class HeaderCollection implements ArrayAccess, Iterator
     // -------------------------------------------------------------------------
     // Iterator
 
-    public function current()
+    /**
+     * @return string[]
+     */
+    public function current(): array
     {
         return $this->values[$this->keys[$this->position]];
     }
 
-    public function next()
+    public function next(): void
     {
         ++$this->position;
     }
 
-    public function key()
+    public function key(): string
     {
         return $this->fields[$this->keys[$this->position]];
     }
 
-    public function valid()
+    public function valid(): bool
     {
         return isset($this->keys[$this->position]);
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->position = 0;
     }

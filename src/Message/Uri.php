@@ -292,7 +292,7 @@ class Uri implements UriInterface
      */
     public function withScheme($scheme)
     {
-        $scheme = $scheme ? strtolower($scheme) : '';
+        $scheme = strtolower($scheme ?? '');
         if (!in_array($scheme, ['', 'http', 'https'])) {
             throw new InvalidArgumentException('Scheme must be http, https, or empty.');
         }
@@ -446,7 +446,7 @@ class Uri implements UriInterface
     public function withFragment($fragment)
     {
         $uri = clone $this;
-        $uri->fragment = $fragment;
+        $uri->fragment = $fragment ?? '';
         return $uri;
     }
 
@@ -520,7 +520,7 @@ class Uri implements UriInterface
      * @param string $subject
      * @return string
      */
-    private function percentEncode($subject)
+    private function percentEncode(string $subject)
     {
         $reserved = ':/?#[]@!$&\'()*+,;=';
         $reserved = preg_quote($reserved);

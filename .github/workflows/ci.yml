@@ -1,0 +1,79 @@
+on:
+  - pull_request
+  - push
+
+permissions:
+  contents: read
+
+jobs:
+
+  coding-guidelines:
+    name: Code Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run friendsofphp/php-cs-fixer
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --show-progress=dots --using-cache=no --verbose
+
+  type-checker:
+    name: Type Checker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run vimeo/psalm
+        run: ./vendor/bin/psalm --no-progress --stats
+
+  unit-tests:
+    name: Unit Tests ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+    env:
+      PHP_INI_VALUES: memory_limit=-1, assert.exception=1, zend.assertions=1, error_reporting=-1, log_errors_max_len=0, display_errors=On
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP with extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          ini-values: ${{ env.PHP_INI_VALUES }}
+          coverage: xdebug
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run tests with phpunit
+        run: ./vendor/bin/phpunit --testsuite unit

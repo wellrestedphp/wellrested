@@ -195,7 +195,7 @@ class Request extends Message implements RequestInterface
         $request = clone $this;
 
         $newHost = $uri->getHost();
-        $oldHost = isset($request->headers['Host']) ? $request->headers['Host'] : '';
+        $oldHost = $request->headers['Host'] ?? '';
 
         if ($preserveHost === false) {
             // Update Host

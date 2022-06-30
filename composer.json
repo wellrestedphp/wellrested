@@ -19,10 +19,10 @@
         "psr/http-server-middleware": "~1.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2",
-        "phpspec/prophecy-phpunit": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3",
+        "phpspec/prophecy-phpunit": "^2",
         "phpunit/phpunit": "^9",
-        "vimeo/psalm": "^3.4"
+        "vimeo/psalm": "^4"
     },
     "autoload": {
         "psr-4": {
