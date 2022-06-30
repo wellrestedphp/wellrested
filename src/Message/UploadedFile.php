@@ -117,21 +117,21 @@ class UploadedFile implements UploadedFileInterface
      *
      * @see http://php.net/is_uploaded_file
      * @see http://php.net/move_uploaded_file
-     * @param string $path Path to which to move the uploaded file.
+     * @param string $targetPath Path to which to move the uploaded file.
      * @return void
      * @throws InvalidArgumentException if the $path specified is invalid.
      * @throws RuntimeException on any error during the move operation, or on
      *     the second or subsequent call to the method.
      */
-    public function moveTo($path)
+    public function moveTo($targetPath)
     {
         if ($this->tmpName === null || !file_exists($this->tmpName)) {
             throw new RuntimeException("File {$this->tmpName} does not exist.");
         }
         if (php_sapi_name() === 'cli') {
-            rename($this->tmpName, $path);
+            rename($this->tmpName, $targetPath);
         } else {
-            move_uploaded_file($this->tmpName, $path);
+            move_uploaded_file($this->tmpName, $targetPath);
         }
         $this->moved = true;
     }
