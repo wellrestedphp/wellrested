@@ -25,5 +25,17 @@
                 <file name="src/Message/Message.php" />
             </errorLevel>
         </MissingClosureParamType>
+        <RedundantCastGivenDocblockType>
+            <errorLevel type="suppress">
+                <file name="src/Message/Message.php" />
+                <file name="src/Message/Uri.php" />
+            </errorLevel>
+        </RedundantCastGivenDocblockType>
+        <RedundantConditionGivenDocblockType>
+            <errorLevel type="suppress">
+                <file name="src/Message/Message.php" />
+                <file name="src/Message/Uri.php" />
+            </errorLevel>
+        </RedundantConditionGivenDocblockType>
     </issueHandlers>
 </psalm>
