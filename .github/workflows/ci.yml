@@ -7,6 +7,26 @@ permissions:
 
 jobs:
 
+  coding-guidelines:
+    name: Code Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run friendsofphp/php-cs-fixer
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --show-progress=dots --using-cache=no --verbose
+
   type-checker:
     name: Type Checker
     runs-on: ubuntu-latest
