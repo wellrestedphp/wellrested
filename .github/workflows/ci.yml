@@ -1,0 +1,38 @@
+on:
+  - pull_request
+  - push
+
+permissions:
+  contents: read
+
+jobs:
+
+  unit-tests:
+    name: Unit Tests {{ matrix.php-versions }} on ${{ matrix.operating-system }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        php-version:
+          - "7.4"
+          - "8.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP with extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: ${{ env.PHP_INI_VALUES }}
+          tools: composer
+
+      - name: Install highest dependencies with composer
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run tests with phpunit
+        run: ./vendor/bin/phpunit --testsuite unit
