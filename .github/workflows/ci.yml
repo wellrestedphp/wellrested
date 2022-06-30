@@ -28,7 +28,7 @@ jobs:
         run: ./vendor/bin/psalm --no-progress --stats
 
   unit-tests:
-    name: Unit Tests ${{ matrix.php-versions }}
+    name: Unit Tests ${{ matrix.php-version }}
     runs-on: ubuntu-latest
     env:
       PHP_INI_VALUES: memory_limit=-1, assert.exception=1, zend.assertions=1, error_reporting=-1, log_errors_max_len=0, display_errors=On
