@@ -7,20 +7,39 @@ permissions:
 
 jobs:
 
+  type-checker:
+    name: Type Checker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer update --no-ansi --no-interaction --no-progress
+
+      - name: Run vimeo/psalm
+        run: ./vendor/bin/psalm --no-progress --stats
+
   unit-tests:
-    name: Unit Tests {{ matrix.php-versions }} on ${{ matrix.operating-system }}
-    runs-on: ${{ matrix.os }}
+    name: Unit Tests ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
+    env:
+      PHP_INI_VALUES: memory_limit=-1, assert.exception=1, zend.assertions=1, error_reporting=-1, log_errors_max_len=0, display_errors=On
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
         php-version:
           - "7.3"
           - "7.4"
           - "8.0"
           - "8.1"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,12 +48,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: ${{ env.PHP_EXTENSIONS }}
           ini-values: ${{ env.PHP_INI_VALUES }}
           coverage: xdebug
           tools: composer
 
-      - name: Install highest dependencies with composer
+      - name: Install composer dependencies
         run: composer update --no-ansi --no-interaction --no-progress
 
       - name: Run tests with phpunit
