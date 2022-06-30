@@ -9,6 +9,7 @@ coverage/
 report/
 
 # Cache
+.php-cs-fixer.cache
 .php_cs.cache
 
 # Sphinx Documentation

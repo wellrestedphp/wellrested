@@ -5,16 +5,18 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__ . '/src')
     ->in(__DIR__ . '/tests');
 
-return PhpCsFixer\Config::create()
-    ->setFinder($finder)
+$config = new PhpCsFixer\Config();
+return $config
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PSR2' => true,
+        '@PSR12' => true,
         'align_multiline_comment' => true,
         'array_syntax' => ['syntax' => 'short'],
         'blank_line_after_opening_tag' => true,
         'cast_spaces' => true,
-        'class_attributes_separation' => ['elements' => ['method']],
+        'class_attributes_separation' => ['elements' => [
+            'method' => 'one',
+        ]],
         'global_namespace_import' => [
             'import_classes' => true,
             'import_constants' => true,
@@ -27,7 +29,6 @@ return PhpCsFixer\Config::create()
         'modernize_types_casting' => true,
         'multiline_comment_opening_closing' => true,
         'multiline_whitespace_before_semicolons' => true,
-        'native_function_casing' => true,
         'no_alternative_syntax' => true,
         'no_extra_blank_lines' => true,
         'no_leading_import_slash' => true,
@@ -45,6 +46,7 @@ return PhpCsFixer\Config::create()
         'normalize_index_brace' => true,
         'nullable_type_declaration_for_default_null_value' => true,
         'ordered_imports' => [
+            'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha'
         ],
         'ordered_interfaces' => [
@@ -56,4 +58,5 @@ return PhpCsFixer\Config::create()
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'ternary_to_null_coalescing' => true
-    ]);
+    ])
+    ->setFinder($finder);
