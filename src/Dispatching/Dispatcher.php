@@ -54,26 +54,33 @@ class Dispatcher implements DispatcherInterface
         ResponseInterface $response,
         $next
     ) {
-        if (is_callable($dispatchable)) {
-            $dispatchable = $dispatchable($request, $response, $next);
-        } elseif (is_string($dispatchable)) {
+        if (is_string($dispatchable)) {
+            // String: resolve from DI or instantiate from class name.
             if ($this->container && $this->container->has($dispatchable)) {
                 $dispatchable = $this->container->get($dispatchable);
             } else {
                 $dispatchable = new $dispatchable();
             }
+        } elseif (is_callable($dispatchable)) {
+            // Callable: may be a factory function or double pass middleware.
+            $dispatchable = $dispatchable($request, $response, $next);
         } elseif (is_array($dispatchable)) {
+            // Array: convert to DispatchStack.
             $dispatchable = $this->getDispatchStack($dispatchable);
         }
 
         if (is_callable($dispatchable)) {
+            // Double pass
             return $dispatchable($request, $response, $next);
         } elseif ($dispatchable instanceof RequestHandlerInterface) {
+            // PSR-15 Handler
             return $dispatchable->handle($request);
         } elseif ($dispatchable instanceof MiddlewareInterface) {
-            $delegate = new DispatcherDelegate($response, $next);
-            return $dispatchable->process($request, $delegate);
+            // PSR-15 Middleware
+            $adapter = new Psr15Adapter($response, $next);
+            return $dispatchable->process($request, $adapter);
         } elseif ($dispatchable instanceof ResponseInterface) {
+            // PSR-7 Response
             return $dispatchable;
         } else {
             throw new DispatchException('Unable to dispatch handler.');
