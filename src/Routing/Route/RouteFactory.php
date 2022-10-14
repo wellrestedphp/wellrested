@@ -30,7 +30,6 @@ class RouteFactory
     public function create(string $target): Route
     {
         if ($target[0] === '/') {
-
             // Possible static, prefix, or template
 
             // PrefixRoutes end with *

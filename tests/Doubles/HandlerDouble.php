@@ -27,5 +27,3 @@ class HandlerDouble implements RequestHandlerInterface
         return $this->response;
     }
 }
-
-

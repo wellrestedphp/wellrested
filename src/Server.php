@@ -33,7 +33,7 @@ class Server
     /** @var mixed[] List array of middleware */
     private array $stack = [];
 
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
         $this->response = new Response();

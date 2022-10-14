@@ -26,4 +26,3 @@ class ContainerDouble implements ContainerInterface
         return isset($this->services);
     }
 }
-
