@@ -4,9 +4,12 @@ namespace WellRESTed;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ProphecyInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Test\Doubles\ContainerDouble;
+use WellRESTed\Test\Doubles\HandlerDouble;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
@@ -14,9 +17,8 @@ class ServerTest extends TestCase
 {
     use ProphecyTrait;
 
-    private $transmitter;
-    /** @var Server */
-    private $server;
+    private ProphecyInterface $transmitter;
+    private Server $server;
 
     protected function setUp(): void
     {
@@ -78,7 +80,7 @@ class ServerTest extends TestCase
         $this->assertSame($request, $capturedRequest);
     }
 
-    public function testDispatchedResponse(): void
+    public function testDispatchesResponse(): void
     {
         $response = new Response();
         $capturedResponse = null;
@@ -156,6 +158,35 @@ class ServerTest extends TestCase
 
         $dispatcher->dispatch(Argument::cetera())
             ->shouldHaveBeenCalled();
+    }
+
+    // -------------------------------------------------------------------------
+    // Dependency Injection
+
+    public function testRoutesResolveServicesFromContainer(): void
+    {
+        // Arrange
+        $response = new Response(200);
+        $handler = new HandlerDouble($response);
+        $container = new ContainerDouble(['handler' => $handler]);
+        $this->server->setContainer($container);
+        $router = $this->server->createRouter();
+        $router->register('GET', '/', 'handler');
+        $this->server->add($router);
+
+        $request = (new ServerRequest())
+            ->withMethod('GET')
+            ->withRequestTarget('/');
+        $this->server->setRequest($request);
+
+        // Act
+        $this->server->respond();
+
+        // Assert
+        $this->transmitter->transmit(
+            Argument::any(),
+            $response
+        )->shouldHaveBeenCalled();
     }
 
     // -------------------------------------------------------------------------

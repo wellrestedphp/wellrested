@@ -4,7 +4,9 @@ namespace WellRESTed\Routing;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ProphecyInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -17,12 +19,12 @@ class RouterTest extends TestCase
 {
     use ProphecyTrait;
 
-    private $factory;
-    private $request;
-    private $response;
-    private $route;
-    private $router;
-    private $next;
+    private ProphecyInterface $factory;
+    private ServerRequestInterface $request;
+    private ResponseInterface $response;
+    private ProphecyInterface $route;
+    private Router $router;
+    private NextMock $next;
 
     protected function setUp(): void
     {
@@ -39,7 +41,7 @@ class RouterTest extends TestCase
         $this->factory->create(Argument::any())
             ->willReturn($this->route->reveal());
 
-        $this->router = new Router(null, null, $this->factory->reveal());
+        $this->router = new Router(new Dispatcher(), null, $this->factory->reveal());
 
         $this->request = new ServerRequest();
         $this->response = new Response();
@@ -416,8 +418,8 @@ class RouterTest extends TestCase
         $this->route->getPathVariables()->willReturn($variables);
 
         $this->router = new Router(
-            $attributeName,
             new Dispatcher(),
+            $attributeName,
             $this->factory->reveal()
         );
 

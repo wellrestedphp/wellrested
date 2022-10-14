@@ -9,6 +9,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
+use WellRESTed\Test\Doubles\ContainerDouble;
+use WellRESTed\Test\Doubles\HandlerDouble;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 
@@ -261,31 +263,6 @@ class DispatcherTest extends TestCase
 // Doubles
 
 /**
- * PSR-11 Dependency Injection Container.
- */
-class ContainerDouble implements ContainerInterface
-{
-    public array $services;
-
-    public function __construct(array $services = [])
-    {
-        $this->services = $services;
-    }
-
-    public function get(string $id)
-    {
-        return $this->services[$id];
-    }
-
-    public function has(string $id)
-    {
-        return isset($this->services);
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-/**
  * Double pass middleware that sends a response with a 200 status to $next
  * and return the response.
  *
@@ -300,26 +277,6 @@ class DoublePassMiddlewareDouble implements MiddlewareInterface
     ) {
         $response = $response->withStatus(200);
         return $next($request, $response);
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-/**
- * PSR-15 Handler that returns a ResponseInterface stub
- */
-class HandlerDouble implements RequestHandlerInterface
-{
-    private ResponseInterface $response;
-
-    public function __construct(ResponseInterface $response)
-    {
-        $this->response = $response;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        return $this->response;
     }
 }
 

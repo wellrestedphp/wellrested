@@ -2,6 +2,7 @@
 
 namespace WellRESTed;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
@@ -14,26 +15,28 @@ use WellRESTed\Transmission\TransmitterInterface;
 
 class Server
 {
-    /** @var mixed[] */
-    private $attributes = [];
-    /** @var DispatcherInterface */
-    private $dispatcher;
-    /** @var string|null attribute name for matched path variables */
-    private $pathVariablesAttributeName = null;
-    /** @var ServerRequestInterface|null */
-    private $request = null;
-    /** @var ResponseInterface */
-    private $response;
-    /** @var TransmitterInterface */
-    private $transmitter;
-    /** @var mixed[] List array of middleware */
-    private $stack;
+    private ?ContainerInterface $container;
 
-    public function __construct()
+    private array $attributes = [];
+
+    private ?DispatcherInterface $dispatcher = null;
+
+    /** @var string|null attribute name for matched path variables */
+    private ?string $pathVariablesAttributeName = null;
+
+    private ?ServerRequestInterface $request = null;
+
+    private ResponseInterface $response;
+
+    private TransmitterInterface $transmitter;
+
+    /** @var mixed[] List array of middleware */
+    private array $stack = [];
+
+    public function __construct(ContainerInterface $container = null)
     {
-        $this->stack = [];
+        $this->container = $container;
         $this->response = new Response();
-        $this->dispatcher = new Dispatcher();
         $this->transmitter = new Transmitter();
     }
 
@@ -57,8 +60,8 @@ class Server
     public function createRouter(): Router
     {
         return new Router(
+            $this->getDispatcher(),
             $this->pathVariablesAttributeName,
-            $this->dispatcher
         );
     }
 
@@ -84,7 +87,7 @@ class Server
 
         $response = $this->response;
 
-        $response = $this->dispatcher->dispatch(
+        $response = $this->getDispatcher()->dispatch(
             $this->stack,
             $request,
             $response,
@@ -107,6 +110,12 @@ class Server
         return $this;
     }
 
+    public function setContainer(ContainerInterface $container): Server
+    {
+        $this->container = $container;
+        return $this;
+    }
+
     /**
      * @param DispatcherInterface $dispatcher
      * @return Server
@@ -115,6 +124,14 @@ class Server
     {
         $this->dispatcher = $dispatcher;
         return $this;
+    }
+
+    private function getDispatcher(): DispatcherInterface
+    {
+        if (!$this->dispatcher) {
+            $this->dispatcher = new Dispatcher($this->container);
+        }
+        return $this->dispatcher;
     }
 
     /**

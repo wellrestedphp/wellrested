@@ -4,7 +4,6 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
@@ -13,21 +12,27 @@ use WellRESTed\Routing\Route\RouteFactory;
 class Router implements MiddlewareInterface
 {
     /** @var string|null Attribute name for matched path variables */
-    private $pathVariablesAttributeName;
-    /** @var DispatcherInterface */
-    private $dispatcher;
-    /** @var RouteFactory */
-    private $factory;
+    private ?string $pathVariablesAttributeName;
+
+    private DispatcherInterface $dispatcher;
+
+    private RouteFactory $factory;
+
     /** @var Route[] Array of Route objects */
-    private $routes;
-    /** @var Route[] Hash array mapping exact paths to routes */
-    private $staticRoutes;
-    /** @var Route[] Hash array mapping path prefixes to routes */
+    private array $routes;
+
+    /** @var array<string, Route> Hash array mapping exact paths to routes */
+    private array $staticRoutes;
+
+    /** @var array<string, Route> Hash array mapping path prefixes to routes */
     private $prefixRoutes;
-    /** @var Route[] Hash array mapping path prefixes to routes */
+
+    /** @var Route[] List array or routes that match by pattern */
     private $patternRoutes;
+
     /** @var mixed[] List array of middleware */
     private $stack;
+
     /** @var bool Call the next middleware when no route matches */
     private $continueOnNotFound = false;
 
@@ -45,20 +50,20 @@ class Router implements MiddlewareInterface
      * Use Server->createRouter to instantiate a new Router rather than calling
      * this constructor manually.
      *
+     * @param DispatcherInterface $dispatcher
+     *     Instance to use for dispatching handlers and middleware.
      * @param string|null $pathVariablesAttributeName
      *     Attribute name for matched path variables. A null value sets
      *     attributes directly.
-     * @param DispatcherInterface|null $dispatcher
-     *     Instance to use for dispatching middleware and handlers.
      * @param RouteFactory|null $routeFactory
      */
     public function __construct(
+        DispatcherInterface $dispatcher,
         ?string $pathVariablesAttributeName = null,
-        ?DispatcherInterface $dispatcher = null,
         ?RouteFactory $routeFactory = null
     ) {
+        $this->dispatcher = $dispatcher;
         $this->pathVariablesAttributeName = $pathVariablesAttributeName;
-        $this->dispatcher = $dispatcher ?? new Dispatcher();
         $this->factory = $routeFactory ?? new RouteFactory($this->dispatcher);
         $this->routes = [];
         $this->staticRoutes = [];
@@ -160,6 +165,7 @@ class Router implements MiddlewareInterface
      *     - Psr\Http\Server\MiddlewareInterface
      *     - WellRESTed\MiddlewareInterface
      *     - Psr\Http\Message\ResponseInterface
+     * - A string matching the name of a service in the depdency container
      * - A string containing the fully qualified class name of a class
      *     implementing one of the interfaces listed above.
      * - A callable that returns an instance implementing one of the
