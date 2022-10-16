@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
 
 class RouteMap
@@ -31,52 +30,36 @@ class RouteMap
 
     public function getRoute(ServerRequestInterface $request): ?Route
     {
-        $path = $this->getPath($request->getRequestTarget());
+        $target = $this->getPath($request->getRequestTarget());
 
-        $route = $this->getStaticRoute($path);
-        if ($route) {
-            return $route;
-        }
-
-        $route = $this->getPrefixRoute($path);
-        if ($route) {
-            return $route;
-        }
-
-        // Try each of the routes.
-        foreach ($this->patternRoutes as $route) {
-            if ($route->matchesRequestTarget($path)) {
-                return $route;
-            }
-        }
-        return null;
+        return $this->getStaticRoute($target)
+            ?? $this->getPrefixRoute($target)
+            ?? $this->getPatternRoute($target)
+            ?? null;
     }
 
-    private function getPath(string $requestTarget): string
+    private function getPath(string $target): string
     {
-        $queryStart = strpos($requestTarget, '?');
+        $queryStart = strpos($target, '?');
         if ($queryStart === false) {
-            return $requestTarget;
+            return $target;
         }
-        return substr($requestTarget, 0, $queryStart);
+        return substr($target, 0, $queryStart);
     }
 
-    private function getStaticRoute(string $requestTarget): ?Route
+    private function getStaticRoute(string $target): ?Route
     {
-        if (isset($this->staticRoutes[$requestTarget])) {
-            return $this->staticRoutes[$requestTarget];
-        }
-        return null;
+        return $this->staticRoutes[$target] ?? null;
     }
 
-    private function getPrefixRoute(string $requestTarget): ?Route
+    private function getPrefixRoute(string $target): ?Route
     {
         // Find all prefixes that match the start of this path.
         $prefixes = array_keys($this->prefixRoutes);
         $matches = array_filter(
             $prefixes,
-            function ($prefix) use ($requestTarget) {
-                return str_starts_with($requestTarget, $prefix);
+            function ($prefix) use ($target) {
+                return str_starts_with($target, $prefix);
             }
         );
 
@@ -97,6 +80,23 @@ class RouteMap
         return $this->prefixRoutes[$bestMatch];
     }
 
+    private function getPatternRoute(string $target): ?Route
+    {
+        foreach ($this->patternRoutes as $route) {
+            if ($route->matchesRequestTarget($target)) {
+                return $route;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param string $method HTTP method(s) to match
+     * @param string $target Request target or pattern to match
+     * @param mixed $dispatchable Handler or middleware to dispatch
+     *
+     * @see DispatchedInterface::dispatch
+     */
     public function register(string $method, string $target, $dispatchable): void
     {
         $route = $this->getRouteForTarget($target);

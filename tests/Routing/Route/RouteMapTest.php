@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace WellRESTed\Routing\Route;
 
@@ -44,8 +44,6 @@ class RouteMapTest extends TestCase
             $this->next
         );
     }
-
-    // TODO: Adding second method to route
 
     // -------------------------------------------------------------------------
     // Locating Route
