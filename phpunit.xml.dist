@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         verbose="true"
->
-	<testsuites>
-		<testsuite name="unit">
-			<directory>./tests</directory>
-		</testsuite>
-	</testsuites>
-	<filter>
-		<whitelist>
-			<directory suffix=".php">./src</directory>
-		</whitelist>
-	</filter>
-	<logging>
-		<log type="coverage-html" target="./coverage" />
-	</logging>
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    processIsolation="false"
+    stopOnFailure="false"
+    verbose="true">
+  <coverage>
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+    <report>
+      <html outputDirectory="./coverage"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="unit">
+      <directory>./tests</directory>
+    </testsuite>
+  </testsuites>
+  <logging/>
 </phpunit>
