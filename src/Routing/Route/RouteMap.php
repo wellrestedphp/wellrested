@@ -18,10 +18,10 @@ class RouteMap
     private array $staticRoutes = [];
 
     /** @var array<string, Route> Hash array mapping path prefixes to routes */
-    private $prefixRoutes = [];
+    private array $prefixRoutes = [];
 
     /** @var Route[] List array or routes that match by pattern */
-    private $patternRoutes = [];
+    private array $patternRoutes = [];
 
     public function __construct(DispatcherInterface $dispatcher)
     {

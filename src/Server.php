@@ -59,10 +59,9 @@ class Server
      */
     public function createRouter(): Router
     {
-        return new Router(
-            $this->getDispatcher(),
-            $this->pathVariablesAttributeName,
-        );
+        $router = new Router($this->getDispatcher());
+        $router->setPathVariablesAttributeName($this->pathVariablesAttributeName);
+        return $router;
     }
 
     /**

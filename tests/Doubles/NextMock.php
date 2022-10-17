@@ -7,10 +7,10 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class NextMock
 {
-    public $called = false;
-    public $request = null;
-    public $response = null;
-    public $upstreamResponse = null;
+    public bool $called = false;
+    public ?ServerRequestInterface $request = null;
+    public ?ResponseInterface $response = null;
+    public ?ResponseInterface $upstreamResponse = null;
 
     public function __invoke(
         ServerRequestInterface $request,
