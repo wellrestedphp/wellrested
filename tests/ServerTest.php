@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed;
 
 use Prophecy\Argument;
@@ -10,6 +12,8 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\Doubles\ContainerDouble;
 use WellRESTed\Test\Doubles\HandlerDouble;
+use WellRESTed\Test\Doubles\MiddlewareMock;
+use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 use WellRESTed\Transmission\TransmitterInterface;
 
@@ -35,24 +39,21 @@ class ServerTest extends TestCase
 
     public function testDispatchesMiddlewareStack(): void
     {
-        // This test will add a string to this array from each middleware.
-
+        // Arrange
+        // Add three middleware. Each will add a string to this array.
         $steps = [];
-
         $this->server->add(
             function ($rqst, $resp, $next) use (&$steps) {
                 $steps[] = 'first';
                 return $next($rqst, $resp);
             }
         );
-
         $this->server->add(
             function ($rqst, $resp, $next) use (&$steps) {
                 $steps[] = 'second';
                 return $next($rqst, $resp);
             }
         );
-
         $this->server->add(
             function ($rqst, $resp, $next) use (&$steps) {
                 $steps[] = 'third';
@@ -60,39 +61,41 @@ class ServerTest extends TestCase
             }
         );
 
+        // Act
         $this->server->respond();
 
+        // Assert
         $this->assertEquals(['first', 'second', 'third'], $steps);
     }
 
     public function testDispatchedRequest(): void
     {
+        // Arrange
         $request = new ServerRequest();
-        $capturedRequest = null;
-
+        $middleware = new MiddlewareMock();
         $this->server->setRequest($request);
-        $this->server->add(function ($rqst, $resp) use (&$capturedRequest) {
-            $capturedRequest = $rqst;
-            return $resp;
-        });
+        $this->server->add($middleware);
+
+        // Act
         $this->server->respond();
 
-        $this->assertSame($request, $capturedRequest);
+        // Assert
+        $this->assertSame($request, $middleware->request);
     }
 
     public function testDispatchesResponse(): void
     {
+        // Arrange
         $response = new Response();
-        $capturedResponse = null;
-
+        $middleware = new MiddlewareMock();
         $this->server->setResponse($response);
-        $this->server->add(function ($rqst, $resp) use (&$capturedResponse) {
-            $capturedResponse = $resp;
-            return $resp;
-        });
+        $this->server->add($middleware);
+
+        // Act
         $this->server->respond();
 
-        $this->assertSame($response, $capturedResponse);
+        // Assert
+        $this->assertSame($response, $middleware->response);
     }
 
     // -------------------------------------------------------------------------
@@ -100,28 +103,17 @@ class ServerTest extends TestCase
 
     public function testRespondSendsResponseToTransmitter(): void
     {
+        // Arrange
         $expectedResponse = new Response(200);
+        $handler = new HandlerDouble($expectedResponse);
+        $this->server->add(new MiddlewareMock());
+        $this->server->add(new MiddlewareMock());
+        $this->server->add($handler);
 
-        $this->server->add(
-            function ($rqst, $resp, $next) {
-                return $next($rqst, $resp);
-            }
-        );
-
-        $this->server->add(
-            function ($rqst, $resp, $next) {
-                return $next($rqst, $resp);
-            }
-        );
-
-        $this->server->add(
-            function () use ($expectedResponse) {
-                return $expectedResponse;
-            }
-        );
-
+        // Act
         $this->server->respond();
 
+        // Assert
         $this->transmitter->transmit(
             Argument::any(),
             $expectedResponse
@@ -133,37 +125,38 @@ class ServerTest extends TestCase
 
     public function testCreatesRouterWithDispatcher(): void
     {
+        // Arrange
+
+        // Configure the server with a double for the dispatcher.
         $dispatcher = $this->prophesize(DispatcherInterface::class);
-        $dispatcher->dispatch(Argument::cetera())->will(
-            function ($args) {
-                list($middleware, $request, $response, $next) = $args;
-                return $next($request, $response);
-            }
-        );
-
+        $dispatcher->dispatch(Argument::cetera())
+            ->willReturn(new Response(200));
         $this->server->setDispatcher($dispatcher->reveal());
-        $this->server->setPathVariablesAttributeName('pathVariables');
 
+        // Create a new router that should get the custom dispatcher.
+        $router = $this->server->createRouter();
+        $router->register('GET', '/', 'middleware');
+
+        // Act
         $request = (new ServerRequest())
             ->withMethod('GET')
             ->withRequestTarget('/');
-        $response = new Response();
-        $next = function ($rqst, $resp) {
-            return $resp;
-        };
+        $router($request, new Response(), new NextMock());
 
-        $router = $this->server->createRouter();
-        $router->register('GET', '/', 'middleware');
-        $router($request, $response, $next);
-
+        // Assert
         $dispatcher->dispatch(Argument::cetera())
             ->shouldHaveBeenCalled();
     }
 
     public function testCreatesRouterWithPathVariablesAttributeName(): void
     {
+        // Arrange
         $this->server->setPathVariablesAttributeName('pathVariables');
+
+        // Act
         $router = $this->server->createRouter();
+
+        // Assert
         $this->assertEquals('pathVariables', $router->getPathVariablesAttributeName());
     }
 
@@ -181,12 +174,11 @@ class ServerTest extends TestCase
         $router->register('GET', '/', 'handler');
         $this->server->add($router);
 
+        // Act
         $request = (new ServerRequest())
             ->withMethod('GET')
             ->withRequestTarget('/');
         $this->server->setRequest($request);
-
-        // Act
         $this->server->respond();
 
         // Assert
@@ -201,19 +193,18 @@ class ServerTest extends TestCase
 
     public function testAddsAttributesToRequest(): void
     {
+        // Arrange
         $this->server->setAttributes([
             'name' => 'value'
         ]);
+        $middleware = new MiddlewareMock();
+        $this->server->add($middleware);
 
-        $capturedRequest = null;
-        $this->server->add(function ($rqst, $resp) use (&$capturedRequest) {
-            $capturedRequest = $rqst;
-            return $resp;
-        });
-
+        // Act
         $this->server->respond();
 
-        $this->assertEquals('value', $capturedRequest->getAttribute('name'));
+        // Assert
+        $this->assertEquals('value', $middleware->request?->getAttribute('name'));
     }
 
     // -------------------------------------------------------------------------
@@ -221,18 +212,15 @@ class ServerTest extends TestCase
 
     public function testReturnsLastDoublePassResponseAtEndOfStack(): void
     {
+        // Arrange
         $defaultResponse = new Response(404);
-
         $this->server->setResponse($defaultResponse);
+        $this->server->add(new MiddlewareMock());
 
-        $this->server->add(
-            function ($rqst, $resp, $next) {
-                return $next($rqst, $resp);
-            }
-        );
-
+        // Act
         $this->server->respond();
 
+        // Assert
         $this->transmitter->transmit(
             Argument::any(),
             $defaultResponse

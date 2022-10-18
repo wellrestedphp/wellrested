@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed;
 
 use Psr\Container\ContainerInterface;
@@ -17,6 +19,7 @@ class Server
 {
     private ?ContainerInterface $container;
 
+    /** @var array<string, mixed> */
     private array $attributes = [];
 
     private ?DispatcherInterface $dispatcher = null;
@@ -100,7 +103,7 @@ class Server
     /* Configuration */
 
     /**
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      * @return Server
      */
     public function setAttributes(array $attributes): Server
@@ -172,9 +175,6 @@ class Server
         $this->transmitter = $transmitter;
         return $this;
     }
-
-    // -------------------------------------------------------------------------
-    /* Defaults */
 
     private function getRequest(): ServerRequestInterface
     {
