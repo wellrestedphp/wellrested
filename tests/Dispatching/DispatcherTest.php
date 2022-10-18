@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Dispatching;
 
 use Psr\Container\ContainerInterface;
@@ -32,11 +34,11 @@ class DispatcherTest extends TestCase
     /**
      * Dispatch the provided dispatchable using the class under test and the
      * ivars $request, $response, and $next. Return the response.
-     * @param $dispatchable
+     * @param mixed $dispatchable
      * @return ResponseInterface
      */
     private function dispatch(
-        $dispatchable,
+        mixed $dispatchable,
         ?ContainerInterface $container = null
     ): ResponseInterface {
         $dispatcher = new Dispatcher($container);

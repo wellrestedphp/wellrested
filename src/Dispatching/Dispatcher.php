@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Dispatching;
 
 use Psr\Container\ContainerInterface;
@@ -91,7 +93,7 @@ class Dispatcher implements DispatcherInterface
      * @param mixed[] $dispatchables
      * @return DispatchStack
      */
-    private function getDispatchStack($dispatchables)
+    private function getDispatchStack(array $dispatchables): DispatchStack
     {
         $stack = new DispatchStack($this);
         foreach ($dispatchables as $dispatchable) {
