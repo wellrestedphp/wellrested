@@ -6,7 +6,6 @@ namespace WellRESTed;
 
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ProphecyInterface;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -14,25 +13,24 @@ use WellRESTed\Test\Doubles\ContainerDouble;
 use WellRESTed\Test\Doubles\HandlerDouble;
 use WellRESTed\Test\Doubles\MiddlewareMock;
 use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\TransmitterDouble;
 use WellRESTed\Test\TestCase;
-use WellRESTed\Transmission\TransmitterInterface;
 
 class ServerTest extends TestCase
 {
     use ProphecyTrait;
 
-    private ProphecyInterface $transmitter;
+    private TransmitterDouble $transmitter;
     private Server $server;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->transmitter = $this->prophesize(TransmitterInterface::class);
-        $this->transmitter->transmit(Argument::cetera());
+        $this->transmitter = new TransmitterDouble();
 
         $this->server = new Server();
-        $this->server->setTransmitter($this->transmitter->reveal());
+        $this->server->setTransmitter($this->transmitter);
     }
 
     // -------------------------------------------------------------------------
@@ -114,10 +112,7 @@ class ServerTest extends TestCase
         $this->server->respond();
 
         // Assert
-        $this->transmitter->transmit(
-            Argument::any(),
-            $expectedResponse
-        )->shouldHaveBeenCalled();
+        $this->assertEquals($expectedResponse, $this->transmitter->response);
     }
 
     // -------------------------------------------------------------------------
@@ -182,10 +177,7 @@ class ServerTest extends TestCase
         $this->server->respond();
 
         // Assert
-        $this->transmitter->transmit(
-            Argument::any(),
-            $response
-        )->shouldHaveBeenCalled();
+        $this->assertEquals($response, $this->transmitter->response);
     }
 
     // -------------------------------------------------------------------------
@@ -221,9 +213,6 @@ class ServerTest extends TestCase
         $this->server->respond();
 
         // Assert
-        $this->transmitter->transmit(
-            Argument::any(),
-            $defaultResponse
-        )->shouldHaveBeenCalled();
+        $this->assertEquals($defaultResponse, $this->transmitter->response);
     }
 }
