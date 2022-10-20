@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use WellRESTed\Configuration;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
@@ -41,7 +42,9 @@ class DispatcherTest extends TestCase
         mixed $dispatchable,
         ?ContainerInterface $container = null
     ): ResponseInterface {
-        $dispatcher = new Dispatcher($container);
+        $configuration = (new Configuration())
+            ->setContainer($container);
+        $dispatcher = new Dispatcher($configuration);
         return $dispatcher->dispatch(
             $dispatchable,
             $this->request,

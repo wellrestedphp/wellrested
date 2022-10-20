@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace WellRESTed\Dispatching;
 
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use WellRESTed\Configuration;
 
 /**
  * Runs a handler or middleware with a request and returns the response.
  */
 class Dispatcher implements DispatcherInterface
 {
-    private ?ContainerInterface $container;
+    private Configuration $configuration;
 
-    public function __construct(?ContainerInterface $container = null)
+    public function __construct(Configuration $configuration)
     {
-        $this->container = $container;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -58,8 +58,9 @@ class Dispatcher implements DispatcherInterface
     ) {
         if (is_string($dispatchable)) {
             // String: resolve from DI or instantiate from class name.
-            if ($this->container && $this->container->has($dispatchable)) {
-                $dispatchable = $this->container->get($dispatchable);
+            $container = $this->configuration->getContainer();
+            if ($container && $container->has($dispatchable)) {
+                $dispatchable = $container->get($dispatchable);
             } else {
                 $dispatchable = new $dispatchable();
             }

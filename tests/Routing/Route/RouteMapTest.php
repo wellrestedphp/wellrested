@@ -6,6 +6,7 @@ namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Configuration;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -24,7 +25,7 @@ class RouteMapTest extends TestCase
         parent::setUp();
 
         $this->routeMap = new RouteMap(
-            new Dispatcher()
+            new Dispatcher(new Configuration())
         );
 
         $this->request = new ServerRequest();

@@ -17,7 +17,7 @@ use WellRESTed\Transmission\TransmitterInterface;
 
 class Server
 {
-    private ?ContainerInterface $container;
+    private Configuration $configuration;
 
     /** @var array<string, mixed> */
     private array $attributes = [];
@@ -36,9 +36,9 @@ class Server
     /** @var mixed[] List array of middleware */
     private array $stack = [];
 
-    public function __construct(?ContainerInterface $container = null)
+    public function __construct()
     {
-        $this->container = $container;
+        $this->configuration = new Configuration();
         $this->response = new Response();
         $this->transmitter = new Transmitter();
     }
@@ -114,7 +114,7 @@ class Server
 
     public function setContainer(ContainerInterface $container): Server
     {
-        $this->container = $container;
+        $this->configuration->setContainer($container);
         return $this;
     }
 
@@ -131,7 +131,7 @@ class Server
     private function getDispatcher(): DispatcherInterface
     {
         if (!$this->dispatcher) {
-            $this->dispatcher = new Dispatcher($this->container);
+            $this->dispatcher = new Dispatcher($this->configuration);
         }
         return $this->dispatcher;
     }

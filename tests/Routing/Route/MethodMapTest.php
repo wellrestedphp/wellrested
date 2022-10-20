@@ -2,6 +2,7 @@
 
 namespace WellRESTed\Routing\Route;
 
+use WellRESTed\Configuration;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -23,7 +24,7 @@ class MethodMapTest extends TestCase
         $this->response = new Response();
         $this->next = new NextMock();
         $this->middleware = new MiddlewareMock();
-        $this->dispatcher = new Dispatcher();
+        $this->dispatcher = new Dispatcher(new Configuration());
     }
 
     private function getMethodMap(): MethodMap

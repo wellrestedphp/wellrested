@@ -8,6 +8,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ProphecyInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Configuration;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
@@ -29,7 +30,7 @@ class RouterTest extends TestCase
     {
         parent::setUp();
 
-        $this->router = new Router(new Dispatcher(), null);
+        $this->router = new Router(new Dispatcher(new Configuration()), null);
         $this->request = new ServerRequest();
         $this->response = new Response();
         $this->next = new NextMock();
