@@ -1,22 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Routing\Route;
 
-use WellRESTed\Configuration;
-use WellRESTed\Dispatching\Dispatcher;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Server;
 use WellRESTed\Test\Doubles\MiddlewareMock;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 
 class MethodMapTest extends TestCase
 {
-    private $dispatcher;
-    private $request;
-    private $response;
-    private $next;
-    private $middleware;
+    private ServerRequestInterface $request;
+    private ResponseInterface $response;
+    private NextMock $next;
+    private MiddlewareMock $middleware;
+    private Server $server;
 
     protected function setUp(): void
     {
@@ -24,12 +27,12 @@ class MethodMapTest extends TestCase
         $this->response = new Response();
         $this->next = new NextMock();
         $this->middleware = new MiddlewareMock();
-        $this->dispatcher = new Dispatcher(new Configuration());
+        $this->server = new Server();
     }
 
     private function getMethodMap(): MethodMap
     {
-        return new MethodMap($this->dispatcher);
+        return new MethodMap($this->server);
     }
 
     // -------------------------------------------------------------------------

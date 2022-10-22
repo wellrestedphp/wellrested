@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Server;
 
 class RouteMap
 {
@@ -23,9 +23,9 @@ class RouteMap
     /** @var Route[] List array or routes that match by pattern */
     private array $patternRoutes = [];
 
-    public function __construct(DispatcherInterface $dispatcher)
+    public function __construct(Server $server)
     {
-        $this->routeFactory = new RouteFactory($dispatcher);
+        $this->routeFactory = new RouteFactory($server);
     }
 
     public function getRoute(ServerRequestInterface $request): ?Route

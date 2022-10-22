@@ -6,15 +6,15 @@ namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Configuration;
-use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Server;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 
 class RouteMapTest extends TestCase
 {
+    private Server $server;
     private ServerRequestInterface $request;
     private ResponseInterface $response;
     private NextMock $next;
@@ -24,10 +24,8 @@ class RouteMapTest extends TestCase
     {
         parent::setUp();
 
-        $this->routeMap = new RouteMap(
-            new Dispatcher(new Configuration())
-        );
-
+        $this->server = new Server();
+        $this->routeMap = new RouteMap($this->server);
         $this->request = new ServerRequest();
         $this->response = new Response();
         $this->next = new NextMock();

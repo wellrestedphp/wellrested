@@ -39,7 +39,7 @@ class Router implements MiddlewareInterface
         Server $server,
     ) {
         $this->server = WeakReference::create($server);
-        $this->routeMap = new RouteMap($server->getDispatcher());
+        $this->routeMap = new RouteMap($server);
         $this->middleware = [];
     }
 
