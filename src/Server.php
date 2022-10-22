@@ -59,10 +59,7 @@ class Server
      */
     public function createRouter(): Router
     {
-        $router = new Router(
-            $this->getDispatcher(),
-            $this->configuration
-        );
+        $router = new Router($this);
         return $router;
     }
 
@@ -127,12 +124,17 @@ class Server
         return $this;
     }
 
-    private function getDispatcher(): DispatcherInterface
+    public function getDispatcher(): DispatcherInterface
     {
         if (!$this->dispatcher) {
             $this->dispatcher = new Dispatcher($this->configuration);
         }
         return $this->dispatcher;
+    }
+
+    public function getPathVariablesAttributeName(): ?string
+    {
+        return $this->configuration->getPathVariablesAttributeName();
     }
 
     public function setPathVariablesAttributeName(?string $name): Server

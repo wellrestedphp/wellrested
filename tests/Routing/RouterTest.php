@@ -9,9 +9,9 @@ use Prophecy\Prophecy\ProphecyInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Configuration;
-use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Server;
 use WellRESTed\Test\Doubles\MiddlewareMock;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
@@ -20,6 +20,7 @@ class RouterTest extends TestCase
 {
     use ProphecyTrait;
 
+    private Server $server;
     private Configuration $configuration;
     private ProphecyInterface $routeMap;
     private ServerRequestInterface $request;
@@ -31,10 +32,8 @@ class RouterTest extends TestCase
     {
         parent::setUp();
 
-        $this->configuration = new Configuration();
-        $this->router = new Router(
-            new Dispatcher($this->configuration),
-            $this->configuration);
+        $this->server = new Server();
+        $this->router = $this->server->createRouter();
         $this->request = new ServerRequest();
         $this->response = new Response();
         $this->next = new NextMock();
@@ -92,7 +91,7 @@ class RouterTest extends TestCase
         // Arrange
         $handler = new MiddlewareMock();
         $this->router->register('GET', '/pets/{type}/{name}', $handler);
-        $this->configuration->setPathVariablesAttributeName('pathVars');
+        $this->server->setPathVariablesAttributeName('pathVars');
 
         // Act
         $this->request = $this->request->withRequestTarget('/pets/cats/molly');

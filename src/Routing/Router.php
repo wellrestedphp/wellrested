@@ -6,17 +6,17 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Configuration;
-use WellRESTed\Dispatching\DispatcherInterface;
+use RuntimeException;
+use WeakReference;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteMap;
+use WellRESTed\Server;
 
 class Router implements MiddlewareInterface
 {
-    private Configuration $configuration;
-
-    private DispatcherInterface $dispatcher;
+    /** @var WeakReference<Server> */
+    private WeakReference $server;
 
     private RouteMap $routeMap;
 
@@ -32,16 +32,14 @@ class Router implements MiddlewareInterface
      * Use Server::createRouter to instantiate a new Router rather than calling
      * this constructor directly.
      *
-     * @param DispatcherInterface $dispatcher
-     *     Instance to use for dispatching handlers and middleware.
+     * @param Server $server
+     *     The server that created this instance.
      */
     public function __construct(
-        DispatcherInterface $dispatcher,
-        Configuration $configuration
+        Server $server,
     ) {
-        $this->dispatcher = $dispatcher;
-        $this->configuration = $configuration;
-        $this->routeMap = new RouteMap($this->dispatcher);
+        $this->server = WeakReference::create($server);
+        $this->routeMap = new RouteMap($server->getDispatcher());
         $this->middleware = [];
     }
 
@@ -75,7 +73,7 @@ class Router implements MiddlewareInterface
         Route $route
     ): ServerRequestInterface {
         $vars = $route->getPathVariables();
-        $name = $this->configuration->getPathVariablesAttributeName();
+        $name = $this->server->get()?->getPathVariablesAttributeName();
         if ($name) {
             $request = $request->withAttribute($name, $vars);
         } else {
@@ -96,7 +94,8 @@ class Router implements MiddlewareInterface
             return $route($request, $response, $next);
         }
         $stack = [...$this->middleware, $route];
-        return $this->dispatcher->dispatch(
+        $dispatcher = $this->server->get()?->getDispatcher() ?? throw new RuntimeException('Server no longer available');
+        return $dispatcher->dispatch(
             $stack,
             $request,
             $response,
