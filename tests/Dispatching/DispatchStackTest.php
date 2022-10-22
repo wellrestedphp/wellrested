@@ -2,9 +2,9 @@
 
 namespace WellRESTed\Dispatching;
 
-use WellRESTed\Configuration;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
+use WellRESTed\Server;
 use WellRESTed\Test\Doubles\NextMock;
 use WellRESTed\Test\TestCase;
 
@@ -26,7 +26,7 @@ class DispatchStackTest extends TestCase
     {
         // Each middleware will add its "name" to this array.
         $callOrder = [];
-        $stack = new DispatchStack(new Dispatcher(new Configuration()));
+        $stack = new DispatchStack(new Dispatcher(new Server()));
         $stack->add(function ($request, $response, $next) use (&$callOrder) {
             $callOrder[] = 'first';
             return $next($request, $response);
@@ -45,7 +45,7 @@ class DispatchStackTest extends TestCase
 
     public function testCallsNextAfterDispatchingEmptyStack(): void
     {
-        $stack = new DispatchStack(new Dispatcher(new Configuration()));
+        $stack = new DispatchStack(new Dispatcher(new Server()));
         $stack($this->request, $this->response, $this->next);
         $this->assertTrue($this->next->called);
     }
@@ -56,7 +56,7 @@ class DispatchStackTest extends TestCase
             return $next($request, $response);
         };
 
-        $stack = new DispatchStack(new Dispatcher(new Configuration()));
+        $stack = new DispatchStack(new Dispatcher(new Server()));
         $stack->add($middleware);
         $stack->add($middleware);
         $stack->add($middleware);
@@ -74,7 +74,7 @@ class DispatchStackTest extends TestCase
             return $response;
         };
 
-        $stack = new DispatchStack(new Dispatcher(new Configuration()));
+        $stack = new DispatchStack(new Dispatcher(new Server()));
         $stack->add($middlewareGo);
         $stack->add($middlewareStop);
         $stack->add($middlewareStop);

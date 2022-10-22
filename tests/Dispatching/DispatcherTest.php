@@ -8,10 +8,10 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WellRESTed\Configuration;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
+use WellRESTed\Server;
 use WellRESTed\Test\Doubles\ContainerDouble;
 use WellRESTed\Test\Doubles\HandlerDouble;
 use WellRESTed\Test\Doubles\NextMock;
@@ -23,6 +23,8 @@ class DispatcherTest extends TestCase
     private ResponseInterface $response;
     private NextMock $next;
     private ResponseInterface $stubResponse;
+    private Server $server;
+    private Dispatcher $dispatcher;
 
     protected function setUp(): void
     {
@@ -30,6 +32,8 @@ class DispatcherTest extends TestCase
         $this->response = new Response(500);
         $this->next = new NextMock();
         $this->stubResponse = new Response();
+        $this->server = new Server();
+        $this->dispatcher = new Dispatcher($this->server);
     }
 
     /**
@@ -42,10 +46,8 @@ class DispatcherTest extends TestCase
         mixed $dispatchable,
         ?ContainerInterface $container = null
     ): ResponseInterface {
-        $configuration = (new Configuration())
-            ->setContainer($container);
-        $dispatcher = new Dispatcher($configuration);
-        return $dispatcher->dispatch(
+        $this->server->setContainer($container);
+        return $this->dispatcher->dispatch(
             $dispatchable,
             $this->request,
             $this->response,

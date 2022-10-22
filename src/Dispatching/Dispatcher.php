@@ -8,18 +8,20 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use WellRESTed\Configuration;
+use WeakReference;
+use WellRESTed\Server;
 
 /**
  * Runs a handler or middleware with a request and returns the response.
  */
 class Dispatcher implements DispatcherInterface
 {
-    private Configuration $configuration;
+    /** @var WeakReference<Server> */
+    private WeakReference $server;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(Server $server)
     {
-        $this->configuration = $configuration;
+        $this->server = WeakReference::create($server);
     }
 
     /**
@@ -58,7 +60,7 @@ class Dispatcher implements DispatcherInterface
     ) {
         if (is_string($dispatchable)) {
             // String: resolve from DI or instantiate from class name.
-            $container = $this->configuration->getContainer();
+            $container = $this->server->get()?->getContainer();
             if ($container && $container->has($dispatchable)) {
                 $dispatchable = $container->get($dispatchable);
             } else {

@@ -108,7 +108,12 @@ class Server
         return $this;
     }
 
-    public function setContainer(ContainerInterface $container): Server
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->configuration->getContainer();
+    }
+
+    public function setContainer(?ContainerInterface $container): Server
     {
         $this->configuration->setContainer($container);
         return $this;
@@ -127,7 +132,7 @@ class Server
     public function getDispatcher(): DispatcherInterface
     {
         if (!$this->dispatcher) {
-            $this->dispatcher = new Dispatcher($this->configuration);
+            $this->dispatcher = new Dispatcher($this);
         }
         return $this->dispatcher;
     }
