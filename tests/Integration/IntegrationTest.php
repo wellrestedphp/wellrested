@@ -27,7 +27,9 @@ class IntegrationTest extends TestCase
 
         $router = $this->server->createRouter()
             ->register('GET', '/', new Response(200))
-            ->register('GET', '/status', StatusCodeHandler::class);
+            ->register('GET', '/status', StatusCodeHandler::class)
+            ->register('GET', '/cats/{name}', AttributeHandler::class)
+            ->register('GET', '/dogs/{name}', AttributeArrayHandler::class);
 
         $this->server->add($router);
     }
@@ -82,6 +84,17 @@ class IntegrationTest extends TestCase
                     $server->setContainer($container);
                 }
             ],
+            'Path variables as attributes' => [
+                new ServerRequest('GET', '/cats/aggie'),
+                new Response(200),
+            ],
+            'Path variables as attributes array' => [
+                new ServerRequest('GET', '/dogs/louisa'),
+                new Response(200),
+                function (Server $server) {
+                    $server->setPathVariablesAttributeName('vars');
+                }
+            ]
         ];
     }
 }
@@ -100,5 +113,29 @@ class StatusCodeHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return new Response($this->statusCode);
+    }
+}
+
+class AttributeHandler implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        if ($request->getAttribute('name')) {
+            return new Response(200);
+        }
+        return new Response(404);
+    }
+}
+
+class AttributeArrayHandler implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $vars = $request->getAttribute('vars', []);
+        $name = $vars['name'] ?? '';
+        if ($name) {
+            return new Response(200);
+        }
+        return new Response(404);
     }
 }

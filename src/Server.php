@@ -24,9 +24,6 @@ class Server
 
     private ?DispatcherInterface $dispatcher = null;
 
-    /** @var string|null attribute name for matched path variables */
-    private ?string $pathVariablesAttributeName = null;
-
     private ?ServerRequestInterface $request = null;
 
     private ResponseInterface $response;
@@ -62,8 +59,10 @@ class Server
      */
     public function createRouter(): Router
     {
-        $router = new Router($this->getDispatcher());
-        $router->setPathVariablesAttributeName($this->pathVariablesAttributeName);
+        $router = new Router(
+            $this->getDispatcher(),
+            $this->configuration
+        );
         return $router;
     }
 
@@ -136,13 +135,9 @@ class Server
         return $this->dispatcher;
     }
 
-    /**
-     * @param string $name
-     * @return Server
-     */
-    public function setPathVariablesAttributeName(string $name): Server
+    public function setPathVariablesAttributeName(?string $name): Server
     {
-        $this->pathVariablesAttributeName = $name;
+        $this->configuration->setPathVariablesAttributeName($name);
         return $this;
     }
 

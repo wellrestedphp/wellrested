@@ -20,6 +20,7 @@ class RouterTest extends TestCase
 {
     use ProphecyTrait;
 
+    private Configuration $configuration;
     private ProphecyInterface $routeMap;
     private ServerRequestInterface $request;
     private ResponseInterface $response;
@@ -30,7 +31,10 @@ class RouterTest extends TestCase
     {
         parent::setUp();
 
-        $this->router = new Router(new Dispatcher(new Configuration()), null);
+        $this->configuration = new Configuration();
+        $this->router = new Router(
+            new Dispatcher($this->configuration),
+            $this->configuration);
         $this->request = new ServerRequest();
         $this->response = new Response();
         $this->next = new NextMock();
@@ -88,7 +92,7 @@ class RouterTest extends TestCase
         // Arrange
         $handler = new MiddlewareMock();
         $this->router->register('GET', '/pets/{type}/{name}', $handler);
-        $this->router->setPathVariablesAttributeName('pathVars');
+        $this->configuration->setPathVariablesAttributeName('pathVars');
 
         // Act
         $this->request = $this->request->withRequestTarget('/pets/cats/molly');

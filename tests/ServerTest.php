@@ -143,18 +143,6 @@ class ServerTest extends TestCase
             ->shouldHaveBeenCalled();
     }
 
-    public function testCreatesRouterWithPathVariablesAttributeName(): void
-    {
-        // Arrange
-        $this->server->setPathVariablesAttributeName('pathVariables');
-
-        // Act
-        $router = $this->server->createRouter();
-
-        // Assert
-        $this->assertEquals('pathVariables', $router->getPathVariablesAttributeName());
-    }
-
     // -------------------------------------------------------------------------
     // Dependency Injection
 

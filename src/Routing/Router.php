@@ -6,6 +6,7 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\Configuration;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
@@ -13,15 +14,14 @@ use WellRESTed\Routing\Route\RouteMap;
 
 class Router implements MiddlewareInterface
 {
+    private Configuration $configuration;
+
     private DispatcherInterface $dispatcher;
 
     private RouteMap $routeMap;
 
     /** @var mixed[] List array of middleware */
     private array $middleware;
-
-    /** @var string|null Attribute name for matched path variables */
-    private ?string $pathVariablesAttributeName = null;
 
     /** @var bool Call the next middleware when no route matches */
     private bool $continueOnNotFound = false;
@@ -35,9 +35,12 @@ class Router implements MiddlewareInterface
      * @param DispatcherInterface $dispatcher
      *     Instance to use for dispatching handlers and middleware.
      */
-    public function __construct(DispatcherInterface $dispatcher)
-    {
+    public function __construct(
+        DispatcherInterface $dispatcher,
+        Configuration $configuration
+    ) {
         $this->dispatcher = $dispatcher;
+        $this->configuration = $configuration;
         $this->routeMap = new RouteMap($this->dispatcher);
         $this->middleware = [];
     }
@@ -71,11 +74,12 @@ class Router implements MiddlewareInterface
         ServerRequestInterface $request,
         Route $route
     ): ServerRequestInterface {
-        $pathVariables = $route->getPathVariables();
-        if ($this->pathVariablesAttributeName) {
-            $request = $request->withAttribute($this->pathVariablesAttributeName, $pathVariables);
+        $vars = $route->getPathVariables();
+        $name = $this->configuration->getPathVariablesAttributeName();
+        if ($name) {
+            $request = $request->withAttribute($name, $vars);
         } else {
-            foreach ($pathVariables as $name => $value) {
+            foreach ($vars as $name => $value) {
                 $request = $request->withAttribute($name, $value);
             }
         }
@@ -175,16 +179,5 @@ class Router implements MiddlewareInterface
     {
         $this->continueOnNotFound = true;
         return $this;
-    }
-
-    public function setPathVariablesAttributeName(?string $name): Router
-    {
-        $this->pathVariablesAttributeName = $name;
-        return $this;
-    }
-
-    public function getPathVariablesAttributeName(): ?string
-    {
-        return $this->pathVariablesAttributeName;
     }
 }
