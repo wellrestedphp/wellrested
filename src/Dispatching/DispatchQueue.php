@@ -6,24 +6,23 @@ namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
-use WeakReference;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * Ordered sequence of middleware and handlers.
  */
 class DispatchQueue implements MiddlewareInterface
 {
-    private WeakReference $server;
+    use ServerReferenceTrait;
 
     /** @var mixed[] */
     private array $dispatchables;
 
     public function __construct(Server $server, array $dispatchables = [])
     {
-        $this->server = WeakReference::create($server);
+        $this->setServer($server);
         $this->dispatchables = $dispatchables;
     }
 
@@ -60,7 +59,7 @@ class DispatchQueue implements MiddlewareInterface
         ResponseInterface $response,
         $next
     ) {
-        $dispatcher = $this->server->get()?->getDispatcher() ?? throw new RuntimeException('No reference to server');
+        $dispatcher = $this->getServer()->getDispatcher();
 
         // This flag will be set to true when the last middleware calls $next.
         $stackCompleted = false;

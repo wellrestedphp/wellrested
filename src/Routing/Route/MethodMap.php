@@ -6,19 +6,17 @@ namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
-use WeakReference;
-use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * @internal
  */
 class MethodMap implements MiddlewareInterface
 {
-    /** @var WeakReference<Server> */
-    private WeakReference $server;
+    use ServerReferenceTrait;
+
     /** @var array<string, mixed> */
     private array $map;
 
@@ -26,7 +24,7 @@ class MethodMap implements MiddlewareInterface
 
     public function __construct(Server $server)
     {
-        $this->server = WeakReference::create($server);
+        $this->setServer($server);
         $this->map = [];
     }
 
@@ -134,8 +132,7 @@ class MethodMap implements MiddlewareInterface
         ResponseInterface $response,
         $next
     ) {
-        $dispatcher = $this->server->get()?->getDispatcher()
-            ?? throw new RuntimeException('No reference to server');
+        $dispatcher = $this->getServer()->getDispatcher();
         return $dispatcher->dispatch($middleware, $request, $response, $next);
     }
 }

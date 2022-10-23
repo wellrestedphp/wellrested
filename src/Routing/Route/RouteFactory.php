@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace WellRESTed\Routing\Route;
 
-use RuntimeException;
-use WeakReference;
 use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * @internal
  */
 class RouteFactory
 {
-    /** @var WeakReference<Server> */
-    private WeakReference $server;
+    use ServerReferenceTrait;
 
     public function __construct(Server $server)
     {
-        $this->server = WeakReference::create($server);
+        $this->setServer($server);
     }
 
     /**
@@ -34,7 +32,7 @@ class RouteFactory
      */
     public function create(string $target): Route
     {
-        $server = $this->server->get() ?? throw new RuntimeException('No reference to server');
+        $server = $this->getServer();
 
         if ($target[0] === '/') {
             // Possible static, prefix, or template

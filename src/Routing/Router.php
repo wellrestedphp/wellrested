@@ -6,17 +6,15 @@ namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
-use WeakReference;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
 use WellRESTed\Routing\Route\RouteMap;
 use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 class Router implements MiddlewareInterface
 {
-    /** @var WeakReference<Server> */
-    private WeakReference $server;
+    use ServerReferenceTrait;
 
     private RouteMap $routeMap;
 
@@ -38,7 +36,7 @@ class Router implements MiddlewareInterface
     public function __construct(
         Server $server,
     ) {
-        $this->server = WeakReference::create($server);
+        $this->setServer($server);
         $this->routeMap = new RouteMap($server);
         $this->middleware = [];
     }
@@ -73,7 +71,7 @@ class Router implements MiddlewareInterface
         Route $route
     ): ServerRequestInterface {
         $vars = $route->getPathVariables();
-        $name = $this->server->get()?->getPathVariablesAttributeName();
+        $name = $this->getServer()->getPathVariablesAttributeName();
         if ($name) {
             $request = $request->withAttribute($name, $vars);
         } else {
@@ -94,7 +92,7 @@ class Router implements MiddlewareInterface
             return $route($request, $response, $next);
         }
         $stack = [...$this->middleware, $route];
-        $dispatcher = $this->server->get()?->getDispatcher() ?? throw new RuntimeException('Server no longer available');
+        $dispatcher = $this->getServer()->getDispatcher();
         return $dispatcher->dispatch(
             $stack,
             $request,

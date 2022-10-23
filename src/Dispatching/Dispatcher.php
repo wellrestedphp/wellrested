@@ -8,21 +8,19 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use RuntimeException;
-use WeakReference;
 use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * Runs a handler or middleware with a request and returns the response.
  */
 class Dispatcher implements DispatcherInterface
 {
-    /** @var WeakReference<Server> */
-    private WeakReference $server;
+    use ServerReferenceTrait;
 
     public function __construct(Server $server)
     {
-        $this->server = WeakReference::create($server);
+        $this->setServer($server);
     }
 
     /**
@@ -61,7 +59,7 @@ class Dispatcher implements DispatcherInterface
     ) {
         if (is_string($dispatchable)) {
             // String: resolve from DI or instantiate from class name.
-            $container = $this->server->get()?->getContainer();
+            $container = $this->getServer()->getContainer();
             if ($container && $container->has($dispatchable)) {
                 $dispatchable = $container->get($dispatchable);
             } else {
@@ -99,7 +97,6 @@ class Dispatcher implements DispatcherInterface
      */
     private function createDispatchQueue(array $dispatchables): DispatchQueue
     {
-        $server = $this->server->get() ?? throw new RuntimeException('No reference to server');
-        return new DispatchQueue($server, $dispatchables);
+        return new DispatchQueue($this->getServer(), $dispatchables);
     }
 }
