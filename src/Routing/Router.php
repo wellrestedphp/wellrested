@@ -91,10 +91,10 @@ class Router implements MiddlewareInterface
         if (!$this->middleware) {
             return $route($request, $response, $next);
         }
-        $stack = [...$this->middleware, $route];
+        $dispatchables = [...$this->middleware, $route];
         $dispatcher = $this->getServer()->getDispatcher();
         return $dispatcher->dispatch(
-            $stack,
+            $dispatchables,
             $request,
             $response,
             $next
