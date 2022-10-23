@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\MiddlewareInterface;
 
-class MiddlewareMock implements MiddlewareInterface
+class MiddlewareDouble implements MiddlewareInterface
 {
     public bool $called = false;
     public int $callCount = 0;

@@ -14,14 +14,14 @@ use WellRESTed\MiddlewareInterface;
 use WellRESTed\Server;
 use WellRESTed\Test\Doubles\ContainerDouble;
 use WellRESTed\Test\Doubles\HandlerDouble;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class DispatcherTest extends TestCase
 {
     private ServerRequestInterface $request;
     private ResponseInterface $response;
-    private NextMock $next;
+    private NextDouble $next;
     private ResponseInterface $stubResponse;
     private Server $server;
     private Dispatcher $dispatcher;
@@ -30,7 +30,7 @@ class DispatcherTest extends TestCase
     {
         $this->request = new ServerRequest();
         $this->response = new Response(500);
-        $this->next = new NextMock();
+        $this->next = new NextDouble();
         $this->stubResponse = new Response();
         $this->server = new Server();
         $this->dispatcher = new Dispatcher($this->server);

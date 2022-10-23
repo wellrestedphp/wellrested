@@ -11,8 +11,8 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Test\Doubles\ContainerDouble;
 use WellRESTed\Test\Doubles\HandlerDouble;
-use WellRESTed\Test\Doubles\MiddlewareMock;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\MiddlewareDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\Doubles\TransmitterDouble;
 use WellRESTed\Test\TestCase;
 
@@ -70,7 +70,7 @@ class ServerTest extends TestCase
     {
         // Arrange
         $request = new ServerRequest();
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $this->server->setRequest($request);
         $this->server->add($middleware);
 
@@ -85,7 +85,7 @@ class ServerTest extends TestCase
     {
         // Arrange
         $response = new Response();
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $this->server->setResponse($response);
         $this->server->add($middleware);
 
@@ -104,8 +104,8 @@ class ServerTest extends TestCase
         // Arrange
         $expectedResponse = new Response(200);
         $handler = new HandlerDouble($expectedResponse);
-        $this->server->add(new MiddlewareMock());
-        $this->server->add(new MiddlewareMock());
+        $this->server->add(new MiddlewareDouble());
+        $this->server->add(new MiddlewareDouble());
         $this->server->add($handler);
 
         // Act
@@ -136,7 +136,7 @@ class ServerTest extends TestCase
         $request = (new ServerRequest())
             ->withMethod('GET')
             ->withRequestTarget('/');
-        $router($request, new Response(), new NextMock());
+        $router($request, new Response(), new NextDouble());
 
         // Assert
         $dispatcher->dispatch(Argument::cetera())
@@ -177,7 +177,7 @@ class ServerTest extends TestCase
         $this->server->setAttributes([
             'name' => 'value'
         ]);
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $this->server->add($middleware);
 
         // Act
@@ -195,7 +195,7 @@ class ServerTest extends TestCase
         // Arrange
         $defaultResponse = new Response(404);
         $this->server->setResponse($defaultResponse);
-        $this->server->add(new MiddlewareMock());
+        $this->server->add(new MiddlewareDouble());
 
         // Act
         $this->server->respond();

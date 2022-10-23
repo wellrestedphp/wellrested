@@ -10,15 +10,15 @@ use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
 use WellRESTed\Test\Doubles\HandlerDouble;
-use WellRESTed\Test\Doubles\MiddlewareMock;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\MiddlewareDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class DispatchQueueTest extends TestCase
 {
     private ServerRequestInterface $request;
     private ResponseInterface $response;
-    private NextMock $next;
+    private NextDouble $next;
     private Server $server;
     private DispatchQueue $queue;
 
@@ -27,7 +27,7 @@ class DispatchQueueTest extends TestCase
         parent::setUp();
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextMock();
+        $this->next = new NextDouble();
         $this->server = new Server();
         $this->queue = new DispatchQueue($this->server);
     }
@@ -82,7 +82,7 @@ class DispatchQueueTest extends TestCase
     public function testCallsNextAfterDispatchingQueue(): void
     {
         // Arrange
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $this->queue->add($middleware);
         $this->queue->add($middleware);
         $this->queue->add($middleware);
@@ -97,7 +97,7 @@ class DispatchQueueTest extends TestCase
     public function testDoesNotCallNextWhenQueueStopsEarly(): void
     {
         // Arrange
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $handler = new HandlerDouble(new Response(200));
         $this->queue->add($middleware);
         $this->queue->add($handler);

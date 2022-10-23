@@ -9,24 +9,24 @@ use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
-use WellRESTed\Test\Doubles\MiddlewareMock;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\MiddlewareDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class MethodMapTest extends TestCase
 {
     private ServerRequestInterface $request;
     private ResponseInterface $response;
-    private NextMock $next;
-    private MiddlewareMock $middleware;
+    private NextDouble $next;
+    private MiddlewareDouble $middleware;
     private Server $server;
 
     protected function setUp(): void
     {
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextMock();
-        $this->middleware = new MiddlewareMock();
+        $this->next = new NextDouble();
+        $this->middleware = new MiddlewareDouble();
         $this->server = new Server();
     }
 
@@ -52,8 +52,8 @@ class MethodMapTest extends TestCase
     {
         $this->request = $this->request->withMethod('get');
 
-        $middlewareUpper = new MiddlewareMock();
-        $middlewareLower = new MiddlewareMock();
+        $middlewareUpper = new MiddlewareDouble();
+        $middlewareLower = new MiddlewareDouble();
 
         $map = $this->getMethodMap();
         $map->register('GET', $middlewareUpper);

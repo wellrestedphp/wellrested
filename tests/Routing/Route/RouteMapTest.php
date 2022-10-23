@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class RouteMapTest extends TestCase
@@ -17,7 +17,7 @@ class RouteMapTest extends TestCase
     private Server $server;
     private ServerRequestInterface $request;
     private ResponseInterface $response;
-    private NextMock $next;
+    private NextDouble $next;
     private RouteMap $routeMap;
 
     protected function setUp(): void
@@ -28,7 +28,7 @@ class RouteMapTest extends TestCase
         $this->routeMap = new RouteMap($this->server);
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextMock();
+        $this->next = new NextDouble();
     }
 
     /**
@@ -51,7 +51,7 @@ class RouteMapTest extends TestCase
     public function testSingleRoute(string $target, string $requestTarget): void
     {
         // Arrange
-        $dispatchable = new NextMock();
+        $dispatchable = new NextDouble();
         $this->routeMap->register('GET', $target, $dispatchable);
         $this->request = $this->request->withRequestTarget($requestTarget);
 
@@ -84,8 +84,8 @@ class RouteMapTest extends TestCase
         // Regsiter two handlers. Expect the request to match the "primary".
 
         // Arrange
-        $primaryHandler = new NextMock();
-        $secondaryHandler = new NextMock();
+        $primaryHandler = new NextDouble();
+        $secondaryHandler = new NextDouble();
 
         $this->routeMap->register('GET', $primaryTarget, $primaryHandler);
         $this->routeMap->register('GET', $secondaryTarget, $secondaryHandler);
@@ -137,7 +137,7 @@ class RouteMapTest extends TestCase
     public function testReturnsNullWhenNoRouteMatchesRequest(): void
     {
         // Arrange
-        $dispatchable = new NextMock();
+        $dispatchable = new NextDouble();
         $this->routeMap->register('GET', '/cats/aggie', $dispatchable);
         $this->routeMap->register('GET', '/cats/oscar', $dispatchable);
         $this->routeMap->register('GET', '/cats/molly', $dispatchable);
@@ -154,7 +154,7 @@ class RouteMapTest extends TestCase
     public function testMatchesVariablesInPath(): void
     {
         // Arrange
-        $dispatchable = new NextMock();
+        $dispatchable = new NextDouble();
 
         $this->routeMap->register('GET', '/pets/{type}/{name}', $dispatchable);
 
@@ -176,8 +176,8 @@ class RouteMapTest extends TestCase
     {
         // Arrange
         $target = '/cats/{name}';
-        $getHandler = new NextMock();
-        $putHandler = new NextMock();
+        $getHandler = new NextDouble();
+        $putHandler = new NextDouble();
 
         $this->routeMap->register('GET', $target, $getHandler);
         $this->routeMap->register('PUT', $target, $putHandler);

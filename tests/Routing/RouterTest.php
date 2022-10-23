@@ -12,8 +12,8 @@ use WellRESTed\Configuration;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
-use WellRESTed\Test\Doubles\MiddlewareMock;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Test\Doubles\MiddlewareDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class RouterTest extends TestCase
@@ -26,7 +26,7 @@ class RouterTest extends TestCase
     private ServerRequestInterface $request;
     private ResponseInterface $response;
     private Router $router;
-    private NextMock $next;
+    private NextDouble $next;
 
     protected function setUp(): void
     {
@@ -36,7 +36,7 @@ class RouterTest extends TestCase
         $this->router = $this->server->createRouter();
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextMock();
+        $this->next = new NextDouble();
     }
 
     /**
@@ -59,7 +59,7 @@ class RouterTest extends TestCase
     public function testWhenRequestMatchesRouteDispatchesRoute(): void
     {
         // Arrange
-        $handler = new MiddlewareMock();
+        $handler = new MiddlewareDouble();
         $this->router->register('GET', '/cats/', $handler);
 
         // Act
@@ -73,7 +73,7 @@ class RouterTest extends TestCase
     public function testAddsPathVariablesAsRequestAttributes(): void
     {
         // Arrange
-        $handler = new MiddlewareMock();
+        $handler = new MiddlewareDouble();
         $this->router->register('GET', '/pets/{type}/{name}', $handler);
 
         // Act
@@ -89,7 +89,7 @@ class RouterTest extends TestCase
     public function testAddsPathVariablesAsSingleArrayAttributeWhenConfigured(): void
     {
         // Arrange
-        $handler = new MiddlewareMock();
+        $handler = new MiddlewareDouble();
         $this->router->register('GET', '/pets/{type}/{name}', $handler);
         $this->server->setPathVariablesAttributeName('pathVars');
 
@@ -107,9 +107,9 @@ class RouterTest extends TestCase
     public function testRunsMiddlewareWhenRouteMatchesRequest(): void
     {
         // Arrange
-        $handler = new MiddlewareMock();
-        $middleware1 = new MiddlewareMock();
-        $middleware2 = new MiddlewareMock();
+        $handler = new MiddlewareDouble();
+        $middleware1 = new MiddlewareDouble();
+        $middleware2 = new MiddlewareDouble();
         $this->router->register('GET', '/cats/', $handler);
         $this->router->add($middleware1);
         $this->router->add($middleware2);
@@ -127,7 +127,7 @@ class RouterTest extends TestCase
     public function testDoesNotRunMiddlewareWhenNoRouteMatches(): void
     {
         // Arrange
-        $middleware = new MiddlewareMock();
+        $middleware = new MiddlewareDouble();
         $this->router->add($middleware);
 
         // Act

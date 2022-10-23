@@ -5,7 +5,7 @@ namespace WellRESTed\Test\Doubles;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class NextMock
+class NextDouble
 {
     public bool $called = false;
     public ?ServerRequestInterface $request = null;
