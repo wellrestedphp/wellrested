@@ -17,7 +17,9 @@ use WellRESTed\Transmission\TransmitterInterface;
 
 class Server
 {
-    private Configuration $configuration;
+    private ?ContainerInterface $container = null;
+
+    private ?string $pathVariablesAttributeName = null;
 
     /** @var array<string, mixed> */
     private array $attributes = [];
@@ -35,7 +37,6 @@ class Server
 
     public function __construct()
     {
-        $this->configuration = new Configuration();
         $this->response = new Response();
         $this->transmitter = new Transmitter();
     }
@@ -110,12 +111,12 @@ class Server
 
     public function getContainer(): ?ContainerInterface
     {
-        return $this->configuration->getContainer();
+        return $this->container;
     }
 
     public function setContainer(?ContainerInterface $container): Server
     {
-        $this->configuration->setContainer($container);
+        $this->container = $container;
         return $this;
     }
 
@@ -123,7 +124,7 @@ class Server
      * @param DispatcherInterface $dispatcher
      * @return Server
      */
-    public function setDispatcher(DispatcherInterface $dispatcher): Server
+    public function setDispatcher(DispatcherInterface $dispatcher): self
     {
         $this->dispatcher = $dispatcher;
         return $this;
@@ -139,12 +140,12 @@ class Server
 
     public function getPathVariablesAttributeName(): ?string
     {
-        return $this->configuration->getPathVariablesAttributeName();
+        return $this->pathVariablesAttributeName;
     }
 
-    public function setPathVariablesAttributeName(?string $name): Server
+    public function setPathVariablesAttributeName(?string $name): self
     {
-        $this->configuration->setPathVariablesAttributeName($name);
+        $this->pathVariablesAttributeName = $name;
         return $this;
     }
 
