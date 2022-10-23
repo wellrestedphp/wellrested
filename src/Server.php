@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Dispatching\DispatchQueue;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequestMarshaller;
 use WellRESTed\Routing\Router;
@@ -32,24 +33,24 @@ class Server
 
     private TransmitterInterface $transmitter;
 
-    /** @var mixed[] List array of middleware */
-    private array $stack = [];
+    private DispatchQueue $dispatchables;
 
     public function __construct()
     {
+        $this->dispatchables = new DispatchQueue($this);
         $this->response = new Response();
         $this->transmitter = new Transmitter();
     }
 
     /**
-     * Push a new middleware onto the stack.
+     * Push a new middleware onto the queue.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
      * @return Server
      */
     public function add($middleware): Server
     {
-        $this->stack[] = $middleware;
+        $this->dispatchables->add($middleware);
         return $this;
     }
 
@@ -68,7 +69,7 @@ class Server
      * Perform the request-response cycle.
      *
      * This method reads a server request, dispatches the request through the
-     * server's stack of middleware, and outputs the response via a Transmitter.
+     * server's queue of middleware, and outputs the response via a Transmitter.
      */
     public function respond(): void
     {
@@ -84,12 +85,10 @@ class Server
             return $resp;
         };
 
-        $response = $this->response;
-
-        $response = $this->getDispatcher()->dispatch(
-            $this->stack,
+        $response = call_user_func(
+            $this->dispatchables,
             $request,
-            $response,
+            $this->response,
             $next
         );
 
