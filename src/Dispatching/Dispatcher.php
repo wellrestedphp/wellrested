@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use WeakReference;
 use WellRESTed\Server;
 
@@ -71,7 +72,7 @@ class Dispatcher implements DispatcherInterface
             $dispatchable = $dispatchable($request, $response, $next);
         } elseif (is_array($dispatchable)) {
             // Array: convert to DispatchStack.
-            $dispatchable = $this->getDispatchStack($dispatchable);
+            $dispatchable = $this->createDispatchQueue($dispatchable);
         }
 
         if (is_callable($dispatchable)) {
@@ -94,14 +95,11 @@ class Dispatcher implements DispatcherInterface
 
     /**
      * @param mixed[] $dispatchables
-     * @return DispatchStack
+     * @return DispatchQueue
      */
-    private function getDispatchStack(array $dispatchables): DispatchStack
+    private function createDispatchQueue(array $dispatchables): DispatchQueue
     {
-        $stack = new DispatchStack($this);
-        foreach ($dispatchables as $dispatchable) {
-            $stack->add($dispatchable);
-        }
-        return $stack;
+        $server = $this->server->get() ?? throw new RuntimeException('No reference to server');
+        return new DispatchQueue($server, $dispatchables);
     }
 }

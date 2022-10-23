@@ -234,14 +234,30 @@ class DispatcherTest extends TestCase
     // -------------------------------------------------------------------------
     // Arrays
 
-    public function testDispatchesArrayAsDispatchStack(): void
+    public function testDispatchesArrayInOrder(): void
     {
         // Arrange
-        $doublePass = new DoublePassMiddlewareDouble();
+
+        // Each middleware will add its "name" to this array.
+        $callOrder = [];
+        $middleware1 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'first';
+            return $next($request, $response);
+        };
+        $middleware2 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'second';
+            return $next($request, $response);
+        };
+        $middleware3 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'third';
+            return $next($request, $response);
+        };
+
         // Act
-        $response = $this->dispatch([$doublePass]);
+        $this->dispatch([$middleware1, $middleware2, $middleware3]);
+
         // Assert
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(['first', 'second', 'third'], $callOrder);
     }
 
     public function testDispatchesArrayWithServicesFromContainer(): void
