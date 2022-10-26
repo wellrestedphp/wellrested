@@ -54,6 +54,36 @@ class Router implements MiddlewareInterface
     ): ResponseInterface {
         $route = $this->routeMap->getRoute($request);
 
+        if (!$route) {
+            $mode = $this->getServer()->getTrailingSlashMode();
+
+            $path = $request->getRequestTarget();
+            $query = '';
+            if (str_contains($path, '?')) {
+                [$path, $query] = explode('?', $path);
+            }
+
+            if (!str_ends_with($path, '/')) {
+                $retryTarget = $path . '/';
+                if ($query) {
+                    $retryTarget .= '?' . $query;
+                }
+
+                $retryRequest = $request->withRequestTarget($retryTarget);
+                $retryRoute = $this->routeMap->getRoute($retryRequest);
+
+                if ($retryRoute) {
+                    if ($mode === TrailingSlashMode::Loose) {
+                        $route = $retryRoute;
+                    } elseif ($mode === TrailingSlashMode::Redirect) {
+                        return $response
+                            ->withStatus(301)
+                            ->withHeader('Location', $retryTarget);
+                    }
+                }
+            }
+        }
+
         if ($route) {
             $request = $this->withPathVriables($request, $route);
             return $this->dispatch($route, $request, $response, $next);

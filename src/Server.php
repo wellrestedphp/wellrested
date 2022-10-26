@@ -13,6 +13,7 @@ use WellRESTed\Dispatching\DispatchQueue;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequestMarshaller;
 use WellRESTed\Routing\Router;
+use WellRESTed\Routing\TrailingSlashMode;
 use WellRESTed\Transmission\Transmitter;
 use WellRESTed\Transmission\TransmitterInterface;
 
@@ -21,6 +22,8 @@ class Server
     private ?ContainerInterface $container = null;
 
     private ?string $pathVariablesAttributeName = null;
+
+    private TrailingSlashMode $trailingSlashMode = TrailingSlashMode::Strict;
 
     /** @var array<string, mixed> */
     private array $attributes = [];
@@ -46,9 +49,9 @@ class Server
      * Push a new middleware onto the queue.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return Server
+     * @return self
      */
-    public function add($middleware): Server
+    public function add($middleware): self
     {
         $this->dispatchables->add($middleware);
         return $this;
@@ -100,9 +103,9 @@ class Server
 
     /**
      * @param array<string, mixed> $attributes
-     * @return Server
+     * @return self
      */
-    public function setAttributes(array $attributes): Server
+    public function setAttributes(array $attributes): self
     {
         $this->attributes = $attributes;
         return $this;
@@ -113,7 +116,7 @@ class Server
         return $this->container;
     }
 
-    public function setContainer(?ContainerInterface $container): Server
+    public function setContainer(?ContainerInterface $container): self
     {
         $this->container = $container;
         return $this;
@@ -121,7 +124,7 @@ class Server
 
     /**
      * @param DispatcherInterface $dispatcher
-     * @return Server
+     * @return self
      */
     public function setDispatcher(DispatcherInterface $dispatcher): self
     {
@@ -148,11 +151,22 @@ class Server
         return $this;
     }
 
+    public function getTrailingSlashMode(): TrailingSlashMode
+    {
+        return $this->trailingSlashMode;
+    }
+
+    public function setTrailingSlashMode(TrailingSlashMode $mode): self
+    {
+        $this->trailingSlashMode = $mode;
+        return $this;
+    }
+
     /**
      * @param ServerRequestInterface $request
-     * @return Server
+     * @return self
      */
-    public function setRequest(ServerRequestInterface $request): Server
+    public function setRequest(ServerRequestInterface $request): self
     {
         $this->request = $request;
         return $this;
@@ -160,9 +174,9 @@ class Server
 
     /**
      * @param ResponseInterface $response
-     * @return Server
+     * @return self
      */
-    public function setResponse(ResponseInterface $response): Server
+    public function setResponse(ResponseInterface $response): self
     {
         $this->response = $response;
         return $this;
@@ -170,9 +184,9 @@ class Server
 
     /**
      * @param TransmitterInterface $transmitter
-     * @return Server
+     * @return self
      */
-    public function setTransmitter(TransmitterInterface $transmitter): Server
+    public function setTransmitter(TransmitterInterface $transmitter): self
     {
         $this->transmitter = $transmitter;
         return $this;

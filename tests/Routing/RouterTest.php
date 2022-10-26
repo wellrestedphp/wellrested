@@ -8,10 +8,10 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ProphecyInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Configuration;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\Server;
+use WellRESTed\Test\Doubles\HandlerDouble;
 use WellRESTed\Test\Doubles\MiddlewareDouble;
 use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
@@ -21,7 +21,6 @@ class RouterTest extends TestCase
     use ProphecyTrait;
 
     private Server $server;
-    private Configuration $configuration;
     private ProphecyInterface $routeMap;
     private ServerRequestInterface $request;
     private ResponseInterface $response;
@@ -145,6 +144,48 @@ class RouterTest extends TestCase
 
         // Assert
         $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    // -------------------------------------------------------------------------
+    // Trailing Shash
+
+    /** @dataProvider trailingSlashProvider */
+    public function testRequestReturnsExpectedResponse(
+        int $expected,
+        string $path,
+        TrailingSlashMode $mode,
+        string $location = ''
+    ): void {
+        // Arrange
+        $handler = new HandlerDouble(new Response(200));
+        $this->router->register('GET', '/path/', $handler);
+        $this->server->setTrailingSlashMode($mode);
+
+        // Act
+        $this->request = $this->request->withRequestTarget($path);
+        $response = $this->dispatch();
+
+        // Assert
+        $this->assertEquals($expected, $response->getStatusCode());
+        $this->assertEquals($location, $response->getHeaderLine('Location'));
+    }
+
+    public function trailingSlashProvider(): array
+    {
+        return [
+            'Strict: missing slash'   => [404, '/path',  TrailingSlashMode::Strict],
+            'Strict: exact match'     => [200, '/path/', TrailingSlashMode::Strict],
+            'Strict: no match'        => [404, '/nope',  TrailingSlashMode::Strict],
+
+            'Loose: missing slash'    => [200, '/path',  TrailingSlashMode::Loose],
+            'Loose: exact match'      => [200, '/path/', TrailingSlashMode::Loose],
+            'Losse: no match'         => [404, '/nope',  TrailingSlashMode::Loose],
+
+            'Redirect: missing slash' => [301, '/path',        TrailingSlashMode::Redirect, '/path/'],
+            'Redirect: exact match'   => [200, '/path/',       TrailingSlashMode::Redirect],
+            'Redirect: no match'      => [404, '/nope',        TrailingSlashMode::Redirect],
+            'Redirect: query'         => [301, '/path?query',  TrailingSlashMode::Redirect, '/path/?query']
+        ];
     }
 
     public function testWhenNoRouteMatchesByDefaultDoesNotPropagatesToNextMiddleware(): void
