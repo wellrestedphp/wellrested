@@ -23,7 +23,7 @@ class Server
 
     private ?string $pathVariablesAttributeName = null;
 
-    private TrailingSlashMode $trailingSlashMode = TrailingSlashMode::Strict;
+    private TrailingSlashMode $trailingSlashMode = TrailingSlashMode::STRICT;
 
     /** @var array<string, mixed> */
     private array $attributes = [];

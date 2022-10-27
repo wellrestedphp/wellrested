@@ -173,18 +173,19 @@ class RouterTest extends TestCase
     public function trailingSlashProvider(): array
     {
         return [
-            'Strict: missing slash'   => [404, '/path',  TrailingSlashMode::Strict],
-            'Strict: exact match'     => [200, '/path/', TrailingSlashMode::Strict],
-            'Strict: no match'        => [404, '/nope',  TrailingSlashMode::Strict],
+            'Strict: missing slash'    => [404, '/path',       TrailingSlashMode::STRICT],
+            'Strict: exact match'      => [200, '/path/',      TrailingSlashMode::STRICT],
+            'Strict: no match'         => [404, '/nope',       TrailingSlashMode::STRICT],
 
-            'Loose: missing slash'    => [200, '/path',  TrailingSlashMode::Loose],
-            'Loose: exact match'      => [200, '/path/', TrailingSlashMode::Loose],
-            'Losse: no match'         => [404, '/nope',  TrailingSlashMode::Loose],
+            'Loose: missing slash'     => [200, '/path',       TrailingSlashMode::LOOSE],
+            'Loose: exact match'       => [200, '/path/',      TrailingSlashMode::LOOSE],
+            'Losse: no match'          => [404, '/nope',       TrailingSlashMode::LOOSE],
 
-            'Redirect: missing slash' => [301, '/path',        TrailingSlashMode::Redirect, '/path/'],
-            'Redirect: exact match'   => [200, '/path/',       TrailingSlashMode::Redirect],
-            'Redirect: no match'      => [404, '/nope',        TrailingSlashMode::Redirect],
-            'Redirect: query'         => [301, '/path?query',  TrailingSlashMode::Redirect, '/path/?query']
+            'Redirect: missing slash'  => [301, '/path',       TrailingSlashMode::REDIRECT, '/path/'],
+            'Redirect: exact match'    => [200, '/path/',      TrailingSlashMode::REDIRECT],
+            'Redirect: no match'       => [404, '/nope',       TrailingSlashMode::REDIRECT],
+            'Redirect: no match slash' => [404, '/nope/',      TrailingSlashMode::REDIRECT],
+            'Redirect: query'          => [301, '/path?query', TrailingSlashMode::REDIRECT, '/path/?query']
         ];
     }
 

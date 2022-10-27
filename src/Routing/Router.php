@@ -33,9 +33,8 @@ class Router implements MiddlewareInterface
      * @param Server $server
      *     The server that created this instance.
      */
-    public function __construct(
-        Server $server,
-    ) {
+    public function __construct(Server $server)
+    {
         $this->setServer($server);
         $this->routeMap = new RouteMap($server);
         $this->middleware = [];
@@ -55,32 +54,13 @@ class Router implements MiddlewareInterface
         $route = $this->routeMap->getRoute($request);
 
         if (!$route) {
-            $mode = $this->getServer()->getTrailingSlashMode();
-
-            $path = $request->getRequestTarget();
-            $query = '';
-            if (str_contains($path, '?')) {
-                [$path, $query] = explode('?', $path);
-            }
-
-            if (!str_ends_with($path, '/')) {
-                $retryTarget = $path . '/';
-                if ($query) {
-                    $retryTarget .= '?' . $query;
-                }
-
-                $retryRequest = $request->withRequestTarget($retryTarget);
-                $retryRoute = $this->routeMap->getRoute($retryRequest);
-
-                if ($retryRoute) {
-                    if ($mode === TrailingSlashMode::Loose) {
-                        $route = $retryRoute;
-                    } elseif ($mode === TrailingSlashMode::Redirect) {
-                        return $response
-                            ->withStatus(301)
-                            ->withHeader('Location', $retryTarget);
-                    }
-                }
+            $result = $this->getTrailingSlashRoute($request);
+            if ($result instanceof Route) {
+                $route = $result;
+            } elseif ($result instanceof ServerRequestInterface) {
+                return $response
+                    ->withStatus(301)
+                    ->withHeader('Location', $result->getRequestTarget());
             }
         }
 
@@ -94,6 +74,63 @@ class Router implements MiddlewareInterface
         }
 
         return $response->withStatus(404);
+    }
+
+    /**
+     * Retry a request with an added trailing slash.
+     *
+     * The return type varies based on the traliling slash mode.
+     *   - null: STRICT (or adding a traliling slash does not match a route)
+     *   - Route: LOOSE
+     *   - ServerRequestInterface: REDIRECT
+     *
+     * @return Route|ServerRequestInterface|null
+     */
+    private function getTrailingSlashRoute(
+        ServerRequestInterface $request
+    ): Route|ServerRequestInterface|null {
+        $mode = $this->getServer()->getTrailingSlashMode();
+        if ($mode === TrailingSlashMode::STRICT) {
+            return null;
+        }
+
+        $slashRequest = $this->getTrailingSlashRequest($request);
+        if (!$slashRequest) {
+            return null;
+        }
+
+        $slashRoute = $this->routeMap->getRoute($slashRequest);
+        if (!$slashRoute) {
+            return null;
+        }
+
+        return match ($mode) {
+            TrailingSlashMode::LOOSE => $slashRoute,
+            TrailingSlashMode::REDIRECT => $slashRequest,
+            TrailingSlashMode::STRICT => null
+        };
+    }
+
+    private function getTrailingSlashRequest(
+        ServerRequestInterface $request
+    ): ?ServerRequestInterface
+    {
+        $path = $request->getRequestTarget();
+        $query = '';
+        if (str_contains($path, '?')) {
+            [$path, $query] = explode('?', $path);
+        }
+
+        if (str_ends_with($path, '/')) {
+            return null;
+        }
+
+        $retryTarget = $path . '/';
+        if ($query) {
+            $retryTarget .= '?' . $query;
+        }
+
+        return $request->withRequestTarget($retryTarget);
     }
 
     private function withPathVriables(
