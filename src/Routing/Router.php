@@ -54,13 +54,11 @@ class Router implements MiddlewareInterface
         $route = $this->routeMap->getRoute($request);
 
         if (!$route) {
-            $result = $this->getTrailingSlashRoute($request);
+            $result = $this->getTrailingSlashRoute($request, $response);
             if ($result instanceof Route) {
                 $route = $result;
-            } elseif ($result instanceof ServerRequestInterface) {
-                return $response
-                    ->withStatus(301)
-                    ->withHeader('Location', $result->getRequestTarget());
+            } elseif ($result instanceof ResponseInterface) {
+                return $result;
             }
         }
 
@@ -82,13 +80,12 @@ class Router implements MiddlewareInterface
      * The return type varies based on the traliling slash mode.
      *   - null: STRICT (or adding a traliling slash does not match a route)
      *   - Route: LOOSE
-     *   - ServerRequestInterface: REDIRECT
-     *
-     * @return Route|ServerRequestInterface|null
+     *   - ResponseInterface: REDIRECT
      */
     private function getTrailingSlashRoute(
-        ServerRequestInterface $request
-    ): Route|ServerRequestInterface|null {
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ): Route|ResponseInterface|null {
         $mode = $this->getServer()->getTrailingSlashMode();
         if ($mode === TrailingSlashMode::STRICT) {
             return null;
@@ -105,16 +102,18 @@ class Router implements MiddlewareInterface
         }
 
         return match ($mode) {
+            TrailingSlashMode::STRICT => null,
             TrailingSlashMode::LOOSE => $slashRoute,
-            TrailingSlashMode::REDIRECT => $slashRequest,
-            TrailingSlashMode::STRICT => null
+            TrailingSlashMode::REDIRECT => $this->getRedirectResponse(
+                $response,
+                $slashRequest->getRequestTarget()
+            ),
         };
     }
 
     private function getTrailingSlashRequest(
         ServerRequestInterface $request
-    ): ?ServerRequestInterface
-    {
+    ): ?ServerRequestInterface {
         $path = $request->getRequestTarget();
         $query = '';
         if (str_contains($path, '?')) {
@@ -131,6 +130,15 @@ class Router implements MiddlewareInterface
         }
 
         return $request->withRequestTarget($retryTarget);
+    }
+
+    private function getRedirectResponse(
+        ResponseInterface $response,
+        string $location
+    ): ResponseInterface {
+        return $response
+            ->withStatus(301)
+            ->withHeader('Location', $location);
     }
 
     private function withPathVriables(
