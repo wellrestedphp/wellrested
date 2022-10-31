@@ -57,6 +57,11 @@ class Server
         return $this;
     }
 
+    public function getMiddleware(): array
+    {
+        return $this->dispatchables->getMiddleware();
+    }
+
     /**
      * Return a new Router that uses the server's configuration.
      *

@@ -66,6 +66,24 @@ class ServerTest extends TestCase
         $this->assertEquals(['first', 'second', 'third'], $steps);
     }
 
+    public function testReturnsArrayOfMiddleware(): void
+    {
+        // Arrange
+        $middleware1 = new MiddlewareDouble();
+        $middleware2 = new MiddlewareDouble();
+        $router = $this->server->createRouter();
+        $this->server
+            ->add($middleware1)
+            ->add($middleware2)
+            ->add($router);
+
+        // Act
+        $middleware = $this->server->getMiddleware();
+
+        // Assert
+        $this->assertEquals([$middleware1, $middleware2, $router], $middleware);
+    }
+
     public function testDispatchedRequest(): void
     {
         // Arrange

@@ -38,6 +38,12 @@ class DispatchQueue implements MiddlewareInterface
         return $this;
     }
 
+    /** @return mixed[] Middleware to dispatch in sequence */
+    public function getMiddleware(): array
+    {
+        return $this->dispatchables;
+    }
+
     /**
      * Dispatch the contained middleware in the order in which they were added.
      *
