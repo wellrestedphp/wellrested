@@ -11,16 +11,16 @@ class RouteMap
 {
     private RouteFactory $routeFactory;
 
-    /** @var Route[] Array of Route objects */
+    /** @var array<string, Route> Map of targets to Routes */
     private array $routes = [];
 
-    /** @var array<string, Route> Hash array mapping exact paths to routes */
+    /** @var array<string, Route> Map of exact paths to Routes */
     private array $staticRoutes = [];
 
-    /** @var array<string, Route> Hash array mapping path prefixes to routes */
+    /** @var array<string, Route> Map of path prefixes to Routes */
     private array $prefixRoutes = [];
 
-    /** @var Route[] List array or routes that match by pattern */
+    /** @var Route[] List array or Routes that match by pattern */
     private array $patternRoutes = [];
 
     public function __construct(Server $server)
@@ -131,5 +131,11 @@ class RouteMap
                 $this->patternRoutes[] = $route;
                 break;
         }
+    }
+
+    /** @return array<string, Route> Map of targets to Routes */
+    public function getRoutes(): array
+    {
+        return $this->routes;
     }
 }

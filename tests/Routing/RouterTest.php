@@ -209,4 +209,43 @@ class RouterTest extends TestCase
         // Assert
         $this->assertTrue($this->next->called);
     }
+
+    public function testReturnsArrayOfMiddleware(): void
+    {
+        // Arrange
+        $middleware1 = new MiddlewareDouble();
+        $middleware2 = new MiddlewareDouble();
+        $middleware3 = new MiddlewareDouble();
+
+        $this->router
+            ->add($middleware1)
+            ->add($middleware2)
+            ->add($middleware3);
+
+        // Act
+        $middleware = $this->router->getMiddleware();
+
+        // Assert
+        $this->assertEquals([$middleware1, $middleware2, $middleware3], $middleware);
+    }
+
+    public function testReturnsMapOfRoutesByTarget(): void
+    {
+        // Arrange
+        $this->router->register('GET', '/cats/', new MiddlewareDouble());
+        $this->router->register('POST', '/cats/', new MiddlewareDouble());
+        $this->router->register('GET', '/cats/{id}', new MiddlewareDouble());
+        $this->router->register('PUT', '/cats/{id}', new MiddlewareDouble());
+        $this->router->register('GET', '/dogs/', new MiddlewareDouble());
+        $this->router->register('GET', '/dogs/{id}', new MiddlewareDouble());
+
+        // Act
+        $routes = $this->router->getRoutes();
+
+        // Assert
+        $this->assertArrayHasKey('/cats/', $routes);
+        $this->assertArrayHasKey('/cats/{id}', $routes);
+        $this->assertArrayHasKey('/dogs/', $routes);
+        $this->assertArrayHasKey('/dogs/{id}', $routes);
+    }
 }

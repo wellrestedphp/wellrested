@@ -218,6 +218,12 @@ class Router implements MiddlewareInterface
         return $this;
     }
 
+    /** @return array<string, Route> Map of routes by target */
+    public function getRoutes(): array
+    {
+        return $this->routeMap->getRoutes();
+    }
+
     /**
      * Push a new middleware onto the stack.
      *
@@ -239,6 +245,12 @@ class Router implements MiddlewareInterface
     {
         $this->middleware[] = $middleware;
         return $this;
+    }
+
+    /** @return mixed[] Middleware to run before the matched route */
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
     }
 
     /**
