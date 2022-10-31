@@ -13,17 +13,17 @@ use WellRESTed\ServerReferenceTrait;
 /**
  * Ordered sequence of middleware and handlers.
  */
-class DispatchQueue implements MiddlewareInterface
+class MiddlewareQueue implements MiddlewareInterface
 {
     use ServerReferenceTrait;
 
     /** @var mixed[] */
-    private array $dispatchables;
+    private array $middleware;
 
     public function __construct(Server $server, array $dispatchables = [])
     {
         $this->setServer($server);
-        $this->dispatchables = $dispatchables;
+        $this->middleware = $dispatchables;
     }
 
     /**
@@ -34,14 +34,14 @@ class DispatchQueue implements MiddlewareInterface
      */
     public function add($dispatchable)
     {
-        $this->dispatchables[] = $dispatchable;
+        $this->middleware[] = $dispatchable;
         return $this;
     }
 
     /** @return mixed[] Middleware to dispatch in sequence */
     public function getMiddleware(): array
     {
-        return $this->dispatchables;
+        return $this->middleware;
     }
 
     /**
@@ -85,7 +85,7 @@ class DispatchQueue implements MiddlewareInterface
         // Each callable will take $request and $response parameters, and will
         // contain a dispatcher, the associated middleware, and a $next function
         // that serves as the link to the next middleware in the chain.
-        foreach (array_reverse($this->dispatchables) as $middleware) {
+        foreach (array_reverse($this->middleware) as $middleware) {
             $chain = function (
                 ServerRequestInterface $request,
                 ResponseInterface $response

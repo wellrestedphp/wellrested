@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
-use WellRESTed\Dispatching\DispatchQueue;
+use WellRESTed\Dispatching\MiddlewareQueue;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequestMarshaller;
 use WellRESTed\Routing\Router;
@@ -36,11 +36,11 @@ class Server
 
     private TransmitterInterface $transmitter;
 
-    private DispatchQueue $dispatchables;
+    private MiddlewareQueue $middlewareQueue;
 
     public function __construct()
     {
-        $this->dispatchables = new DispatchQueue($this);
+        $this->middlewareQueue = new MiddlewareQueue($this);
         $this->response = new Response();
         $this->transmitter = new Transmitter();
     }
@@ -53,13 +53,13 @@ class Server
      */
     public function add($middleware): self
     {
-        $this->dispatchables->add($middleware);
+        $this->middlewareQueue->add($middleware);
         return $this;
     }
 
     public function getMiddleware(): array
     {
-        return $this->dispatchables->getMiddleware();
+        return $this->middlewareQueue->getMiddleware();
     }
 
     /**
@@ -94,7 +94,7 @@ class Server
         };
 
         $response = call_user_func(
-            $this->dispatchables,
+            $this->middlewareQueue,
             $request,
             $this->response,
             $next

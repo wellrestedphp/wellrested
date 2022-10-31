@@ -93,10 +93,10 @@ class Dispatcher implements DispatcherInterface
 
     /**
      * @param mixed[] $dispatchables
-     * @return DispatchQueue
+     * @return MiddlewareQueue
      */
-    private function createDispatchQueue(array $dispatchables): DispatchQueue
+    private function createDispatchQueue(array $dispatchables): MiddlewareQueue
     {
-        return new DispatchQueue($this->getServer(), $dispatchables);
+        return new MiddlewareQueue($this->getServer(), $dispatchables);
     }
 }

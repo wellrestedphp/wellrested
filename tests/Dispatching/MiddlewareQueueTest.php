@@ -14,13 +14,13 @@ use WellRESTed\Test\Doubles\MiddlewareDouble;
 use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
-class DispatchQueueTest extends TestCase
+class MiddlewareQueueTest extends TestCase
 {
     private ServerRequestInterface $request;
     private ResponseInterface $response;
     private NextDouble $next;
     private Server $server;
-    private DispatchQueue $queue;
+    private MiddlewareQueue $queue;
 
     protected function setUp(): void
     {
@@ -29,7 +29,7 @@ class DispatchQueueTest extends TestCase
         $this->response = new Response();
         $this->next = new NextDouble();
         $this->server = new Server();
-        $this->queue = new DispatchQueue($this->server);
+        $this->queue = new MiddlewareQueue($this->server);
     }
 
     private function dispatch(): ResponseInterface

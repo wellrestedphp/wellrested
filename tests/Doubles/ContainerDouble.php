@@ -21,7 +21,7 @@ class ContainerDouble implements ContainerInterface
         return $this->services[$id];
     }
 
-    public function has(string $id)
+    public function has(string $id): bool
     {
         return isset($this->services);
     }
