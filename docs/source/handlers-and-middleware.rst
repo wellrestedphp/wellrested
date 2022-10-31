@@ -156,44 +156,42 @@ Using Handlers and Middleware
 
 Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that returns an instance, or an ``array`` of middleware to use in sequence. The following examples will demonstrate all of the ways you can register handlers and middleware.
 
+Dependency Service Name (Recommended)
+-------------------------------------
+
+If you're using a PSR-11_ `dependency injection`_ container, register the service name, and WellRESTed will retrieve the service. The advantage of this approach is that no handlers (and their dependencies) are instantiated until they are needed.
+
+.. code-block:: php
+
+    $container['WidgetHandler'] = fn($c) => new WidgetHandler();
+
+    $router->register("GET,PUT,DELETE", "/widgets/{id}", "WidgetHandler");
+
 Factory Functions
 -----------------
 
-The best method is to use a function that returns an instance of your handler. The main benefit of this approach is that no handlers are instantiated until they are needed.
+Prior to v6, using a function that returns an instance of your handler was the best approach. You can still use this if you're using a DI container that does not conform to PSR-11_.
 
 .. code-block:: php
 
     $router->register("GET,PUT,DELETE", "/widgets/{id}",
-        function () { return new App\WidgetHandler() }
+        function () { return new App\WidgetHandler(); }
     );
-
-If you're using ``Pimple``, a popular `dependency injection`_ container for PHP, you may have code that looks like this:
-
-.. code-block:: php
-
-    // Create a DI container.
-    $c = new Container();
-    // Store a function to the container that will create and return the handler.
-    $c['widgetHandler'] = $c->protect(function () use ($c) {
-        return new App\WidgetHandler();
-    });
-
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", $c['widgetHandler']);
 
 Instance
 --------
 
-WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although the factory function approach is better in most cases.
+WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although registering by service name or factory function is better in most cases.
 
 .. code-block:: php
 
-    $widgetHandler = new App\WidgetHandler();
+    $widgetHandler = new WidgetHandler();
 
     $router->register("GET,PUT,DELETE", "/widgets/{id}", $widgetHandler);
 
 .. warning::
 
-    This is simple, but has a significant disadvantage over the other options because each middleware used this way will be loaded and instantiated, even if it's not needed for a given request-response cycle. You may find this approach useful for testing, but avoid if for production code.
+    This is simple, but has a significant disadvantage over the other options because each handler used this way will be loaded and instantiated, even if it's not needed to handler the current request. You may find this approach useful for testing, but avoid if for production code.
 
 Fully Qualified Class Name (FQCN)
 ---------------------------------
@@ -233,4 +231,5 @@ We could provide these as a sequence by using an ``array``.
 
 .. _Dependency Injection: dependency-injection.html
 .. _Pimple: https://pimple.symfony.com/
+.. _PSR-11: https://www.php-fig.org/psr/psr-11/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/

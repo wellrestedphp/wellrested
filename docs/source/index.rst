@@ -18,6 +18,11 @@ PSR-15 Handler Interfaces
 
 WellRESTed can use handlers and middleware using the interfaces defined by the PSR-15_ standard.
 
+PSR-11 Dependency Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+New in version 6, WellRESTed can integrate with any dependency injection container implementing the PSR-11_ standard such as `PHP DI`_.
+
 Router
 ^^^^^^
 
@@ -33,7 +38,7 @@ The middleware_ system allows you to build your Web service out of discrete, mod
 Lazy Loading
 ^^^^^^^^^^^^
 
-Handlers and middleware can be registered using `factory functions`_ so that they are only instantiated if needed. This way, a Web service with hundreds of handlers and middleware only creates instances required for the current request-response cycle.
+Handlers and middleware can be registered with a PSR-11_ dependency container or as `factory functions`_ so that they are only instantiated if needed. This way, a Web service with hundreds of handlers and middleware only creates instances required for the current request-response cycle.
 
 Extensible
 ^^^^^^^^^^
@@ -140,7 +145,9 @@ Contents
    web-server-configuration
 
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
+.. _PSR-11: https://www.php-fig.org/psr/psr-11/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/
+.. _PHP Di: https://php-di.org/
 .. _factory functions: handlers-and-middleware.html#factory-functions
 .. _middleware: handlers-and-middleware.html
 .. _router: router.html
