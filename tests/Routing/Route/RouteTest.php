@@ -57,4 +57,15 @@ class RouteTest extends TestCase
 
         $this->methodMap->__invoke(Argument::cetera())->shouldHaveBeenCalled();
     }
+
+    public function testProvidesMapOfMethodsToHandlers(): void
+    {
+        // Arrange
+        $map = ['GET' => new Response()];
+        $this->methodMap->getMethods()->willReturn($map);
+        // Act
+        $methods = $this->route->getMethods();
+        // Assert
+        $this->assertEquals($map, $methods);
+    }
 }

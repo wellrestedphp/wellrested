@@ -210,4 +210,18 @@ class MethodMapTest extends TestCase
         }
         $this->assertTrue(true);
     }
+
+    public function testReturnsArrayWithEntryForEachMethod(): void
+    {
+        // Arrange
+        $map = $this->getMethodMap();
+        $map->register('GET,POST', $this->middleware);
+
+        // Act
+        $methods = $map->getMethods();
+
+        // Assert
+        $this->assertArrayHasKey('GET', $methods);
+        $this->assertArrayHasKey('POST', $methods);
+    }
 }
