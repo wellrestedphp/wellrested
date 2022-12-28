@@ -1,19 +1,24 @@
 WellRESTed
 ==========
 
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.3-8892BF.svg?style=flat-square)](https://php.net/)
-[![Build Status](https://travis-ci.org/wellrestedphp/wellrested.svg?branch=master)](https://travis-ci.org/wellrestedphp/wellrested)
-[![Documentation Status](https://readthedocs.org/projects/wellrested/badge/?version=latest)](http://wellrested.readthedocs.org/en/latest/)
+
+[![Packagist PHP Version](https://img.shields.io/packagist/dependency-v/wellrested/wellrested/php?style=flat-square)](https://packagist.org/packages/wellrested/wellrested)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/wellrestedphp/wellrested/ci.yml?style=flat-square)](https://github.com/wellrestedphp/wellrested/actions/workflows/ci.yml)
+[![Read the Docs](https://img.shields.io/readthedocs/wellrested?style=flat-square)](https://wellrested.readthedocs.io/en/latest/)
 
 WellRESTed is a library for creating RESTful APIs and websites in PHP that provides abstraction for HTTP messages, a powerful handler and middleware system, and a flexible router.
 
 ### Features
 
-- Uses [PSR-7](https://www.php-fig.org/psr/psr-7/) interfaces for requests, responses, and streams. This lets you use other PSR-7 compatable libraries seamlessly with WellRESTed.
-- Uses [PSR-15](https://www.php-fig.org/psr/psr-15/) interfaces for handlers and middleware to allow sharing and reusing code
 - Router allows you to match paths with variables such as `/foo/{bar}/{baz}`.
 - Middleware system provides a way to compose your application from discrete, modular components.
 - Lazy-loaded handlers and middleware don't instantiate unless they're needed.
+
+### Supports PSR Standards
+
+- [PSR-7](https://www.php-fig.org/psr/psr-7/) interfaces for requests, responses, and streams
+- [PSR-15](https://www.php-fig.org/psr/psr-15/) interfaces for handlers and middleware
+- [PSR-11](https://www.php-fig.org/psr/psr-11/) interfaces dependency injection
 
 Install
 -------
@@ -23,7 +28,7 @@ Add an entry for "wellrested/wellrested" to your composer.json file's `require` 
 ```json
 {
     "require": {
-        "wellrested/wellrested": "^5"
+        "wellrested/wellrested": "^6"
     }
 }
 ```
@@ -123,5 +128,5 @@ The runs a site you can access at [http://localhost:8080](http://localhost:8080)
 
 Copyright and License
 ---------------------
-Copyright © 2020 by PJ Dietz
+Copyright © 2022 by PJ Dietz
 Licensed under the [MIT license](http://opensource.org/licenses/MIT)
