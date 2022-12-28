@@ -12,6 +12,7 @@ lexers['php-annotations'] = PhpLexer(startinline=True, linenos=1)
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

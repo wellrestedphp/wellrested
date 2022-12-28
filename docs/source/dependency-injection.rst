@@ -1,63 +1,51 @@
 Dependency Injection
 ====================
 
-WellRESTed strives to play nicely with other code and not force developers into using any specific libraries or frameworks. As such, WellRESTed does not provide a dependency injection container, nor does it require you to use a specific container (or any).
+While WellRESTed does not provide its own dependency injection container, it does support the PSR-11_ standard used by various libraries such as PHP-DI_.
 
-This section describes the recommended way of using WellRESTed with Pimple_, a common dependency injection container for PHP.
+To configure your WellRESTed ``Server`` with a dependency container, call ``Server::setContainer``. Then, register handlers and middleware using the service names (usually, these will be the fully qualified class names).
 
-Imaging we have a ``FooHandler`` that depends on a ``BarInterface``, and ``BazInterface``. Our handler looks something like this:
-
-.. code-block:: php
-
-    class FooHandler implements RequestHandlerInterface
-    {
-        private $bar;
-        private $baz;
-
-        public function __construct(BarInterface $bar, BazInterface $baz)
-        {
-            $this->bar = $bar;
-            $this->baz = $baz;
-        }
-
-        public function handle(ServerRequestInterface $request): ResponseInterface
-        {
-            // Do something with the bar and baz and return a response...
-            // ...
-        }
-    }
-
-We can register the handler and these dependencies in a Pimple_ service provider.
+An example using PHP-DI_ looks like this:
 
 .. code-block:: php
 
-    class MyServiceProvider implements ServiceProviderInterface
-    {
-        public function register(Container $c) 
-        {
-            // Register the Bar and Baz as services.
-            $c['bar'] = function ($c) {
-                return new Bar();
-            };
-            $c['baz'] = function ($c) {
-                return new Baz();
-            };
+    $builder = new DI\ContainerBuilder();
+    $builder->addDefinitions([
 
-            // Register the Handler as a protected function. When you use
-            // protect, Pimple returns the function itself instead of the return
-            // value of the function.
-            $c['fooHandler'] = $c->protect(function () use ($c) {
-                return new FooHandler($c['bar'], $c['baz']);
-            });
-        }
-    }
+        Server::class => function (DI\Container $c): Server {
 
-To register this handler with a router, we can pass the service:
+            $server = new Server();
+            // Pass the reference to the container.
+            $server->setContainer($c);
+
+            $router = $server->createRouter();
+            $server->add($router);
+
+            // Register handlers and middleware using service names.
+            $router->register('GET,POST', '/cats/', CatsHandler::class);
+            $router->register('GET', '/cats/{id}', GetCatHandler::class);
+            $router->register('GET', '/dogs/', 'dogs.list.handler');
+
+            return $server;
+        },
+
+        // This handler is configured using a specific name instead of FQCN.
+        'dogs.list.handler' => DI\autowire(DogsHandler::class),
+
+    ]);
+
+When the server receives a request that matches a route, it will resolve the needed handler from the dependency container along with any dependencies. The server will not instantiate anything else.
+
+When registering routes, be sure to pass the service name as a string. **Do not resolve the service**. This will instantiate the handler for **every** request, even when it is not needed.
 
 .. code-block:: php
 
-    $router->register('GET', '/foo', $c['fooHandler']);
+    // Correct. Provides the the service name.
+    $router->register('GET,POST', '/cats/', CatsHandler::class);
 
-By "protecting" the ``fooHandler`` service, we are delaying the instantiation of the ``FooHandler``, the ``Bar``, and the ``Baz`` until the handler needs to be dispatched. This works because we're not passing instance of ``FooHandler`` when we register this with a router, we're passing a function to it that does the instantiation on demand.
+    // Avoid! Resolving the handler here Will instatiate the handler for
+    // every request, even when it is not needed
+    $router->register('GET,POST', '/cats/', $c->get(CatsHandler::class))
 
-.. _Pimple: https://pimple.symfony.com/
+.. _PSR-11: https://www.php-fig.org/psr/psr-11/
+.. _PHP-DI: https://php-di.org/

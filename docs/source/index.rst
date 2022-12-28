@@ -137,10 +137,10 @@ Contents
    messages
    handlers-and-middleware
    router
+   dependency-injection
    uri-templates
    uri-templates-advanced
    extending
-   dependency-injection
    additional
    web-server-configuration
 
