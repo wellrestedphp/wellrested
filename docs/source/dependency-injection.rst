@@ -12,7 +12,7 @@ An example using PHP-DI_ looks like this:
     $builder = new DI\ContainerBuilder();
     $builder->addDefinitions([
 
-        Server::class => function (DI\Container $c): Server {
+        Server::class => function (ContainerInterface $c): Server {
 
             $server = new Server();
             // Pass the reference to the container.

@@ -21,10 +21,10 @@ WellRESTed can use handlers and middleware using the interfaces defined by the P
 PSR-11 Dependency Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-New in version 6, WellRESTed can integrate with any dependency injection container implementing the PSR-11_ standard such as `PHP DI`_.
+New in version 6, WellRESTed can integrate with any dependency injection container implementing the PSR-11_ standard such as `PHP-DI`_.
 
-Router
-^^^^^^
+Routing
+^^^^^^^
 
 The router_ allows you to define your endpoints using `URI Templates`_ like ``/foo/{bar}/{baz}`` that match patterns of paths and provide captured variables. You can also match exact paths for extra speed or regular expressions for extra flexibility.
 
@@ -133,6 +133,7 @@ Contents
    :maxdepth: 4
 
    overview
+   whats-new
    getting-started
    messages
    handlers-and-middleware
@@ -147,7 +148,7 @@ Contents
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _PSR-11: https://www.php-fig.org/psr/psr-11/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/
-.. _PHP Di: https://php-di.org/
+.. _PHP-DI: https://php-di.org/
 .. _factory functions: handlers-and-middleware.html#factory-functions
 .. _middleware: handlers-and-middleware.html
 .. _router: router.html
