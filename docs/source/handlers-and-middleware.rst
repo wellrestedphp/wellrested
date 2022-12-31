@@ -154,44 +154,52 @@ You may also use a ``callable`` similar to the legacy ``WellRESTed\MiddlewareInt
 Using Handlers and Middleware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that returns an instance, or an ``array`` of middleware to use in sequence. The following examples will demonstrate all of the ways you can register handlers and middleware.
+Methods that accept handlers and middleware (e.g., ``Server::add``, ``Router::register``, ``Router::add``) allow you to provide them in a number of ways. For example, you can provide an instance, a ``callable`` that returns an instance, or an ``array`` of middleware to use in sequence. The following examples demonstrate each of the ways you can register handlers and middleware.
 
 Dependency Service Name (Recommended)
 -------------------------------------
 
-If you're using a PSR-11_ `dependency injection`_ container, register the service name, and WellRESTed will retrieve the service. The advantage of this approach is that no handlers (and their dependencies) are instantiated until they are needed.
+The recommonded approach is to use a :ref:`dependency injection` container and register the service by the service name. WellRESTed will resolve the handler needed for the current request automatically. No other handlers (and their dependencies) will be instantiated. See the section on :ref:`dependency injection` for more information.
 
 .. code-block:: php
 
-    $container['WidgetHandler'] = fn($c) => new WidgetHandler();
+    // How you add the handler to the container varies by DI library.
 
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", "WidgetHandler");
+    // PHP-DI looks like this:
+    WidgetHandler::class => DI\autowire()
+
+    // Pimple looks like:
+    $container[WidgetHandler::class] = fn($c) => new WidgetHandler($c[MyDependency::class]);
+
+    // In both examples, the service name for the handler is the FQCN.
+    // Register the handler with the route using this service name.
+    $router->register("GET,PUT,DELETE", "/widgets/{id}", WidgetHandler::class);
 
 Factory Functions
 -----------------
 
-Prior to v6, using a function that returns an instance of your handler was the best approach. You can still use this if you're using a DI container that does not conform to PSR-11_.
+Prior to v6, using a function that returns an instance of your handler was the best approach. You can still use this if you're not using a DI container or if your DI container does not conform to PSR-11_.
 
 .. code-block:: php
 
-    $router->register("GET,PUT,DELETE", "/widgets/{id}",
-        function () { return new App\WidgetHandler(); }
+    $widgetFactory = function (): WidgetHandler {
+        return new WidgetHandler(new MyDependency());
+    }
+
+    $router->register("GET,PUT,DELETE", "/widgets/{id}", $widgetFactory);
+
+For sites using Pimple_, WellRESTed used to recomend using the ``protect`` feature to wrap the handlers in a factory function. Here's an example:
+
+.. code-block:: php
+
+    // Adding the handler to the container.
+    $pimple[WidgetHandler::class] = $pimple->protect(
+        function () use ($pimple): WidgetHandler {
+            return new WidgetHandler($pimple[MyDependency::class]);
+        }
     );
 
-Instance
---------
-
-WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although registering by service name or factory function is better in most cases.
-
-.. code-block:: php
-
-    $widgetHandler = new WidgetHandler();
-
-    $router->register("GET,PUT,DELETE", "/widgets/{id}", $widgetHandler);
-
-.. warning::
-
-    This is simple, but has a significant disadvantage over the other options because each handler used this way will be loaded and instantiated, even if it's not needed to handler the current request. You may find this approach useful for testing, but avoid if for production code.
+While you can still do this, consider using Pimple's `PSR-11 adapter`_ and follow the instructions under :ref:`Dependency Service Name (Recommended)`.
 
 Fully Qualified Class Name (FQCN)
 ---------------------------------
@@ -206,30 +214,48 @@ For handlers that do not require any arguments passed to the constructor, you ma
 
 The class is not loaded, and no instances are created, until the route is matched and dispatched. However, the drawback to this approach is the there is no way to pass any arguments to the constructor.
 
+.. note::
+
+    When using :ref:`Dependency Injection`, WellRESTed will always attempt to resolve strings from the dependency container first. If no services exists with that name, or there is no container, WellRESTed will create an instance without passing constructor arguments.
+
+Instance
+--------
+
+WellRESTed also allows you to pass an instance of a handler directly. This may be useful for smaller handlers that don't require many dependencies, although registering by service name or factory function is usually better.
+
+.. code-block:: php
+
+    $widgetHandler = new WidgetHandler(new MyDependency());
+
+    $router->register("GET,PUT,DELETE", "/widgets/{id}", $widgetHandler);
+
+.. warning::
+
+    This is simple, but has a significant disadvantage over the other options because each handler used this way will be loaded and instantiated, even if it's not needed to handle the current request. You may find this approach useful for testing, but avoid if for production code.
+
 Array
 -----
 
 The final approach is to provide a sequence of middleware and a handler as an ``array``.
 
-For example, imagine if we had a Pimple_ container with these services:
+For example, imagine if we have these services in the DI container:
 
-.. code-block:: php
-
-    $c['authMiddleware'] // Ensures the user is logged in
-    $c['cacheMiddleware'] // Provides a cached response if able
-    $c['widgetHandler']  // Provides a widget representation
+* ``AuthMiddleware::class``: Locates the end user making the request
+* ``CacheMiddleware::class``: Provides a cached response if able
+* ``WidgetHandler::class``: Provides a widget representation
 
 We could provide these as a sequence by using an ``array``.
 
 .. code-block:: php
 
     $router->register('GET', '/widgets/{id}', [
-        $c['authMiddleware'],
-        $c['cacheMiddleware'],
-        $c['widgetHandler']
+        AuthMiddleware::class,
+        CacheMiddleware::class,
+        WidgetHandler::class
     ]);
 
 .. _Dependency Injection: dependency-injection.html
 .. _Pimple: https://pimple.symfony.com/
+.. _PSR-11 Adapter: https://github.com/silexphp/Pimple#the-psr-11-container-class
 .. _PSR-11: https://www.php-fig.org/psr/psr-11/
 .. _PSR-15: https://www.php-fig.org/psr/psr-15/

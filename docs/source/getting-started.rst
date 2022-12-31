@@ -42,7 +42,7 @@ Our handler will create and return a response with the status code set to ``200`
     $server = new Server();
 
     // Add this handler to the server.
-    $server->add(new HelloHandler());
+    $server->add(HelloHandler::class);
 
     // Read the request sent to the server and use it to output a response.
     $server->respond();
@@ -70,7 +70,7 @@ For this, we need a router_. A router_ examines the request and sends the reques
 
     // Create a router to map methods and endpoints to handlers.
     $router = $server->createRouter();
-    $router->register('GET', '/hello', new HelloHandler());
+    $router->register('GET', '/hello', HelloHandler::class);
     $server->add($router);
 
     // Read the request sent to the server and use it to output a response.
@@ -108,10 +108,10 @@ Routes can be static (like the one above that matches only ``/hello``), or they 
     $server = new Server();
     $router = $server->createRouter();
 
-    // Register the middleware for an exact match to /hello
-    $router->register("GET", "/hello", $hello);
+    // Register the handler for an exact match to /hello
+    $router->register("GET", "/hello", HelloHandler::class);
     // Register to match a pattern with a variable.
-    $router->register("GET", "/hello/{name}", $hello);
+    $router->register("GET", "/hello/{name}", HelloHandler::class);
     $server->add($router);
 
     $server->respond();
@@ -149,21 +149,23 @@ Middleware allows you to compose your application in multiple pieces. In the exa
 
     // Add the header-adding middleware to the server first so that it will
     // forward requests on to the router.
-    $server->add(new CustomHeaderMiddleware());
+    $server->add(CustomHeaderMiddleware::class);
 
     // Create a router to map methods and endpoints to handlers.
     $router = $server->createRouter();
 
-    $handler = new HelloHandler();
-    // Register a route to the handler without a variable in the path.
-    $router->register('GET', '/hello', $handler);
-    // Register a route that reads a "name" from the path.
-    // This will make the "name" request attribute available to the handler.
-    $router->register('GET', '/hello/{name}', $handler);
+    $router->register('GET', '/hello', HelloHandler::class);
+    $router->register('GET', '/hello/{name}', HelloHandler::class);
     $server->add($router);
 
     // Read the request from the client, dispatch, and output.
     $server->respond();
 
-.. _middleware: middleware.html
+
+.. note::
+
+    In these examples, we registered the handlers and middleware by passing the fully qualified class name (FQCN) of the handler or middleware. For classes that do not have any constructor parameters, this works fine. WellRESTed will instatiate them automatically when they're needed.
+
+    In real-world applications, your handlers and middleware will usually require constructor arguments. WellRESTed has a number of ways to help you register these, often without needing to instatiate any objects until they are needed. These include using a :ref:`Dependency Injection` and passing the service name (usually the FQCN again), as well as passing "factory functions" that instatiate and return the handler. See :ref:`Using Handlers and Middleware` for details.
+
 .. _router: router.html
