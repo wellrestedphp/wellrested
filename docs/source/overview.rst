@@ -10,14 +10,14 @@ The recommended method for installing WellRESTed is to use Composer_. Add an ent
 
     {
       "require": {
-         "wellrested/wellrested": "^5"
+         "wellrested/wellrested": "^6"
       }
    }
 
 Requirements
 ^^^^^^^^^^^^
 
-- PHP 7.3
+- PHP 8.1
 
 License
 ^^^^^^^
@@ -26,7 +26,7 @@ Licensed using the `MIT license <http://opensource.org/licenses/MIT>`_.
 
     The MIT License (MIT)
 
-    Copyright (c) 2021 PJ Dietz
+    Copyright (c) 2022 PJ Dietz
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

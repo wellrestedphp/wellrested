@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Routing\Route;
 
-use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * @internal
  */
 class RouteFactory
 {
-    private $dispatcher;
+    use ServerReferenceTrait;
 
-    public function __construct(DispatcherInterface $dispatcher)
+    public function __construct(Server $server)
     {
-        $this->dispatcher = $dispatcher;
+        $this->setServer($server);
     }
 
     /**
@@ -29,25 +32,26 @@ class RouteFactory
      */
     public function create(string $target): Route
     {
-        if ($target[0] === '/') {
+        $server = $this->getServer();
 
+        if ($target[0] === '/') {
             // Possible static, prefix, or template
 
             // PrefixRoutes end with *
             if (substr($target, -1) === '*') {
-                return new PrefixRoute($target, new MethodMap($this->dispatcher));
+                return new PrefixRoute($target, new MethodMap($server));
             }
 
             // TemplateRoutes contain {variable}
             if (preg_match(TemplateRoute::URI_TEMPLATE_EXPRESSION_RE, $target)) {
-                return new TemplateRoute($target, new MethodMap($this->dispatcher));
+                return new TemplateRoute($target, new MethodMap($server));
             }
 
             // StaticRoute
-            return new StaticRoute($target, new MethodMap($this->dispatcher));
+            return new StaticRoute($target, new MethodMap($server));
         }
 
         // Regex
-        return new RegexRoute($target, new MethodMap($this->dispatcher));
+        return new RegexRoute($target, new MethodMap($server));
     }
 }

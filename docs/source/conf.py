@@ -12,6 +12,7 @@ lexers['php-annotations'] = PhpLexer(startinline=True, linenos=1)
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -25,9 +26,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'WellRESTed'
-copyright = u'2021, PJ Dietz'
-version = '5.0.0'
-release = '5.0.0'
+copyright = u'2022, PJ Dietz'
+version = '6.0.0'
+release = '6.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

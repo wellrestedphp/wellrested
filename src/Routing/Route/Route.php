@@ -109,4 +109,10 @@ abstract class Route implements MiddlewareInterface
         $map = $this->methodMap;
         return $map($request, $response, $next);
     }
+
+    /** @return array<string, mixed> */
+    public function getMethods(): array
+    {
+        return $this->methodMap->getMethods();
+    }
 }

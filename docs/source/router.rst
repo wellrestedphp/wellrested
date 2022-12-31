@@ -1,19 +1,20 @@
 Router
 ======
 
-A router is a type of middleware that organizes the components of a site by associating HTTP methods and paths with handlers and middleware. When the router receives a request, it examines the path components of the request's URI, determines which "route" matches, and dispatches the associated handler. The dispatched handler is then responsible for reacting to the request and providing a response.
+A router organizes the components of a site by associating HTTP methods and paths with handlers and middleware. When the router receives a request, it examines the target path of the request's URI, determines which "route" matches, and dispatches the associated handler. The dispatched handler is then responsible for reacting to the request and providing a response.
 
 Basic Usage
 ^^^^^^^^^^^
 
-Typically, you will want to use the ``WellRESTed\Server::createRouter`` method to create a ``Router``.
+Use the ``Server::createRouter`` method to instantiate a new ``Router``. Then, use ``Server::add`` to add the ``Router`` to the ``Server``.
 
 .. code-block:: php
 
     $server = new WellRESTed\Server();
     $router = $server->createRouter();
+    $server->add($router);
 
-Suppose ``$catHandler`` is a handler that you want to dispatch whenever a client makes a ``GET`` request to the path ``/cats/``. Use the ``register`` method map it to that path and method.
+Map routes to handlers using the ``Router::register`` method.
 
 .. code-block:: php
 
@@ -286,20 +287,24 @@ A ``POST`` request to ``/cats/12`` will provide:
 Error Responses
 ^^^^^^^^^^^^^^^
 
-Then a router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
+404 Not Found
+-------------
 
-When a router is unable to match the route, it will delegate to the next middleware.
+When the router does not have any routes that match the request's path, it will respond with a ``404 Not Found`` response by default.
 
-.. note::
+However, you can configure a ``Router`` to delegate to the next middleware by calling the ``Router::continueOnNotFound`` method, See :ref:`Router-specific Middleware` for an example using muliple routers.
 
-    When no route matches, the Router will delegate to the next middleware in the server. This is a change from previous versions of WellRESTed where there Router would return a 404 Not Found response. This new behaviour allows a servers to have multiple routers.
+405 Method Not Allowed
+----------------------
+
+When a router is able to locate a route that matches the path, but that route doesn't support the request's method, the router will respond ``405 Method Not Allowed``.
 
 Router-specific Middleware
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 WellRESTed allows a Router to have a set of middleware to dispatch whenever it finds a route that matches. This middleware runs before the handler for the matched route, and only when a route matches.
 
-This feature allows you to build a site where some sections use certain middleware and other do not. For example, suppose your site has a public section that does not require authentication and a private section that does. We can use a different router for each section, and provide authentication middleware on only the router for the private area.
+This allows you to build a site where some sections use certain middleware and other do not. For example, suppose your site has a public section that does not require authentication and a private section that does. You can use a different router for each section, and provide authentication middleware on only the router for the private area.
 
 .. code-block:: php
 
@@ -309,7 +314,7 @@ This feature allows you to build a site where some sections use certain middlewa
     $public = $server->createRouter();
     $public->register('GET', '/', $homeHandler);
     $public->register('GET', '/about', $homeHandler);
-    // Set the router call the next middleware when no route matches.
+    // Set the router to call the next middleware when no route matches.
     $public->continueOnNotFound();
     $server->add($public);
 

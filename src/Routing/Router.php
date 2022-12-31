@@ -1,70 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Routing;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\Dispatcher;
-use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
 use WellRESTed\Routing\Route\Route;
-use WellRESTed\Routing\Route\RouteFactory;
+use WellRESTed\Routing\Route\RouteMap;
+use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 class Router implements MiddlewareInterface
 {
-    /** @var string|null Attribute name for matched path variables */
-    private $pathVariablesAttributeName;
-    /** @var DispatcherInterface */
-    private $dispatcher;
-    /** @var RouteFactory */
-    private $factory;
-    /** @var Route[] Array of Route objects */
-    private $routes;
-    /** @var Route[] Hash array mapping exact paths to routes */
-    private $staticRoutes;
-    /** @var Route[] Hash array mapping path prefixes to routes */
-    private $prefixRoutes;
-    /** @var Route[] Hash array mapping path prefixes to routes */
-    private $patternRoutes;
+    use ServerReferenceTrait;
+
+    private RouteMap $routeMap;
+
     /** @var mixed[] List array of middleware */
-    private $stack;
+    private array $middleware;
+
     /** @var bool Call the next middleware when no route matches */
-    private $continueOnNotFound = false;
+    private bool $continueOnNotFound = false;
 
     /**
      * Create a new Router.
      *
-     * By default, when a route containing path variables matches, the path
-     * variables are stored individually as attributes on the
-     * ServerRequestInterface.
+     * Use Server::createRouter to instantiate a new Router rather than calling
+     * this constructor directly.
      *
-     * When $pathVariablesAttributeName is set, a single attribute will be
-     * stored with the name. The value will be an array containing all of the
-     * path variables.
-     *
-     * Use Server->createRouter to instantiate a new Router rather than calling
-     * this constructor manually.
-     *
-     * @param string|null $pathVariablesAttributeName
-     *     Attribute name for matched path variables. A null value sets
-     *     attributes directly.
-     * @param DispatcherInterface|null $dispatcher
-     *     Instance to use for dispatching middleware and handlers.
-     * @param RouteFactory|null $routeFactory
+     * @param Server $server
+     *     The server that created this instance.
      */
-    public function __construct(
-        ?string $pathVariablesAttributeName = null,
-        ?DispatcherInterface $dispatcher = null,
-        ?RouteFactory $routeFactory = null
-    ) {
-        $this->pathVariablesAttributeName = $pathVariablesAttributeName;
-        $this->dispatcher = $dispatcher ?? new Dispatcher();
-        $this->factory = $routeFactory ?? new RouteFactory($this->dispatcher);
-        $this->routes = [];
-        $this->staticRoutes = [];
-        $this->prefixRoutes = [];
-        $this->patternRoutes = [];
-        $this->stack = [];
+    public function __construct(Server $server)
+    {
+        $this->setServer($server);
+        $this->routeMap = new RouteMap($server);
+        $this->middleware = [];
     }
 
     /**
@@ -78,47 +51,106 @@ class Router implements MiddlewareInterface
         ResponseInterface $response,
         $next
     ): ResponseInterface {
-        $path = $this->getPath($request->getRequestTarget());
+        $route = $this->routeMap->getRoute($request);
 
-        $route = $this->getStaticRoute($path);
-        if ($route) {
-            return $this->dispatch($route, $request, $response, $next);
-        }
-
-        $route = $this->getPrefixRoute($path);
-        if ($route) {
-            return $this->dispatch($route, $request, $response, $next);
-        }
-
-        // Try each of the routes.
-        foreach ($this->patternRoutes as $route) {
-            if ($route->matchesRequestTarget($path)) {
-                $pathVariables = $route->getPathVariables();
-                if ($this->pathVariablesAttributeName) {
-                    $request = $request->withAttribute($this->pathVariablesAttributeName, $pathVariables);
-                } else {
-                    foreach ($pathVariables as $name => $value) {
-                        $request = $request->withAttribute($name, $value);
-                    }
-                }
-                return $this->dispatch($route, $request, $response, $next);
+        if (!$route) {
+            $result = $this->getTrailingSlashRoute($request, $response);
+            if ($result instanceof Route) {
+                $route = $result;
+            } elseif ($result instanceof ResponseInterface) {
+                return $result;
             }
         }
 
-        if (!$this->continueOnNotFound) {
-            return $response->withStatus(404);
+        if ($route) {
+            $request = $this->withPathVriables($request, $route);
+            return $this->dispatch($route, $request, $response, $next);
         }
 
-        return $next($request, $response);
+        if ($this->continueOnNotFound) {
+            return $next($request, $response);
+        }
+
+        return $response->withStatus(404);
     }
 
-    private function getPath(string $requestTarget): string
-    {
-        $queryStart = strpos($requestTarget, '?');
-        if ($queryStart === false) {
-            return $requestTarget;
+    /**
+     * Retry a request with an added trailing slash.
+     *
+     * The return type varies based on the traliling slash mode.
+     *   - null: STRICT (or adding a traliling slash does not match a route)
+     *   - Route: LOOSE
+     *   - ResponseInterface: REDIRECT
+     */
+    private function getTrailingSlashRoute(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ): Route|ResponseInterface|null {
+        $mode = $this->getServer()->getTrailingSlashMode();
+        if ($mode === TrailingSlashMode::STRICT) {
+            return null;
         }
-        return substr($requestTarget, 0, $queryStart);
+
+        $slashRequest = $this->getTrailingSlashRequest($request);
+
+        $slashRoute = $this->routeMap->getRoute($slashRequest);
+        if (!$slashRoute) {
+            return null;
+        }
+
+        return match ($mode) {
+            TrailingSlashMode::STRICT => null,
+            TrailingSlashMode::LOOSE => $slashRoute,
+            TrailingSlashMode::REDIRECT => $this->getRedirectResponse(
+                $response,
+                $slashRequest->getRequestTarget()
+            ),
+        };
+    }
+
+    private function getTrailingSlashRequest(
+        ServerRequestInterface $request
+    ): ServerRequestInterface {
+        $path = $request->getRequestTarget();
+        $query = '';
+        if (str_contains($path, '?')) {
+            [$path, $query] = explode('?', $path);
+        }
+
+        $retryTarget = (str_ends_with($path, '/'))
+            ? substr($path, 0, -1)
+            : $path . '/';
+
+        if ($query) {
+            $retryTarget .= '?' . $query;
+        }
+
+        return $request->withRequestTarget($retryTarget);
+    }
+
+    private function getRedirectResponse(
+        ResponseInterface $response,
+        string $location
+    ): ResponseInterface {
+        return $response
+            ->withStatus(301)
+            ->withHeader('Location', $location);
+    }
+
+    private function withPathVriables(
+        ServerRequestInterface $request,
+        Route $route
+    ): ServerRequestInterface {
+        $vars = $route->getPathVariables();
+        $name = $this->getServer()->getPathVariablesAttributeName();
+        if ($name) {
+            $request = $request->withAttribute($name, $vars);
+        } else {
+            foreach ($vars as $name => $value) {
+                $request = $request->withAttribute($name, $value);
+            }
+        }
+        return $request;
     }
 
     private function dispatch(
@@ -127,12 +159,13 @@ class Router implements MiddlewareInterface
         ResponseInterface $response,
         callable $next
     ): ResponseInterface {
-        if (!$this->stack) {
+        if (!$this->middleware) {
             return $route($request, $response, $next);
         }
-        $stack = array_merge($this->stack, [$route]);
-        return $this->dispatcher->dispatch(
-            $stack,
+        $dispatchables = [...$this->middleware, $route];
+        $dispatcher = $this->getServer()->getDispatcher();
+        return $dispatcher->dispatch(
+            $dispatchables,
             $request,
             $response,
             $next
@@ -160,6 +193,7 @@ class Router implements MiddlewareInterface
      *     - Psr\Http\Server\MiddlewareInterface
      *     - WellRESTed\MiddlewareInterface
      *     - Psr\Http\Message\ResponseInterface
+     * - A string matching the name of a service in the depdency container.
      * - A string containing the fully qualified class name of a class
      *     implementing one of the interfaces listed above.
      * - A callable that returns an instance implementing one of the
@@ -176,9 +210,14 @@ class Router implements MiddlewareInterface
      */
     public function register(string $method, string $target, $dispatchable): Router
     {
-        $route = $this->getRouteForTarget($target);
-        $route->register($method, $dispatchable);
+        $this->routeMap->register($method, $target, $dispatchable);
         return $this;
+    }
+
+    /** @return array<string, Route> Map of routes by target */
+    public function getRoutes(): array
+    {
+        return $this->routeMap->getRoutes();
     }
 
     /**
@@ -200,8 +239,14 @@ class Router implements MiddlewareInterface
      */
     public function add($middleware): Router
     {
-        $this->stack[] = $middleware;
+        $this->middleware[] = $middleware;
         return $this;
+    }
+
+    /** @return mixed[] Middleware to run before the matched route */
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
     }
 
     /**
@@ -214,77 +259,5 @@ class Router implements MiddlewareInterface
     {
         $this->continueOnNotFound = true;
         return $this;
-    }
-
-    private function getRouteForTarget(string $target): Route
-    {
-        if (isset($this->routes[$target])) {
-            $route = $this->routes[$target];
-        } else {
-            $route = $this->factory->create($target);
-            $this->registerRouteForTarget($route, $target);
-        }
-        return $route;
-    }
-
-    private function registerRouteForTarget(Route $route, string $target): void
-    {
-        // Store the route to the hash indexed by original target.
-        $this->routes[$target] = $route;
-
-        // Store the route to the array of routes for its type.
-        switch ($route->getType()) {
-            case Route::TYPE_STATIC:
-                $this->staticRoutes[$route->getTarget()] = $route;
-                break;
-            case Route::TYPE_PREFIX:
-                $this->prefixRoutes[rtrim($route->getTarget(), '*')] = $route;
-                break;
-            case Route::TYPE_PATTERN:
-                $this->patternRoutes[] = $route;
-                break;
-        }
-    }
-
-    private function getStaticRoute(string $requestTarget): ?Route
-    {
-        if (isset($this->staticRoutes[$requestTarget])) {
-            return $this->staticRoutes[$requestTarget];
-        }
-        return null;
-    }
-
-    private function getPrefixRoute(string $requestTarget): ?Route
-    {
-        // Find all prefixes that match the start of this path.
-        $prefixes = array_keys($this->prefixRoutes);
-        $matches = array_filter(
-            $prefixes,
-            function ($prefix) use ($requestTarget) {
-                return $this->startsWith($requestTarget, $prefix);
-            }
-        );
-
-        if (!$matches) {
-            return null;
-        }
-
-        // If there are multiple matches, sort them to find the one with the
-        // longest string length.
-        if (count($matches) > 1) {
-            $compareByLength = function (string $a, string $b): int {
-                return strlen($b) - strlen($a);
-            };
-            usort($matches, $compareByLength);
-        }
-
-        $bestMatch = array_values($matches)[0];
-        return $this->prefixRoutes[$bestMatch];
-    }
-
-    private function startsWith(string $haystack, string $needle): bool
-    {
-        $length = strlen($needle);
-        return substr($haystack, 0, $length) === $needle;
     }
 }

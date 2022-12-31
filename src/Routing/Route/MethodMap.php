@@ -1,28 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Routing\Route;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\MiddlewareInterface;
+use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
  * @internal
  */
 class MethodMap implements MiddlewareInterface
 {
-    /** @var DispatcherInterface */
-    private $dispatcher;
-    /** @var array */
-    private $map;
+    use ServerReferenceTrait;
+
+    /** @var array<string, mixed> */
+    private array $methods;
 
     // -------------------------------------------------------------------------
 
-    public function __construct(DispatcherInterface $dispatcher)
+    public function __construct(Server $server)
     {
-        $this->map = [];
-        $this->dispatcher = $dispatcher;
+        $this->setServer($server);
+        $this->methods = [];
     }
 
     /**
@@ -47,7 +50,7 @@ class MethodMap implements MiddlewareInterface
         $methods = explode(',', $method);
         $methods = array_map('trim', $methods);
         foreach ($methods as $method) {
-            $this->map[$method] = $dispatchable;
+            $this->methods[$method] = $dispatchable;
         }
     }
 
@@ -67,18 +70,18 @@ class MethodMap implements MiddlewareInterface
     ) {
         $method = $request->getMethod();
         // Dispatch middleware registered with the explicitly matching method.
-        if (isset($this->map[$method])) {
-            $middleware = $this->map[$method];
+        if (isset($this->methods[$method])) {
+            $middleware = $this->methods[$method];
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // For HEAD, dispatch GET by default.
-        if ($method === 'HEAD' && isset($this->map['GET'])) {
-            $middleware = $this->map['GET'];
+        if ($method === 'HEAD' && isset($this->methods['GET'])) {
+            $middleware = $this->methods['GET'];
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Dispatch * middleware, if registered.
-        if (isset($this->map['*'])) {
-            $middleware = $this->map['*'];
+        if (isset($this->methods['*'])) {
+            $middleware = $this->methods['*'];
             return $this->dispatchMiddleware($middleware, $request, $response, $next);
         }
         // Respond describing the allowed methods, either as a 405 response or
@@ -104,7 +107,7 @@ class MethodMap implements MiddlewareInterface
      */
     private function getAllowedMethods(): array
     {
-        $methods = array_keys($this->map);
+        $methods = array_keys($this->methods);
         // Add HEAD if GET is allowed and HEAD is not present.
         if (in_array('GET', $methods) && !in_array('HEAD', $methods)) {
             $methods[] = 'HEAD';
@@ -129,6 +132,13 @@ class MethodMap implements MiddlewareInterface
         ResponseInterface $response,
         $next
     ) {
-        return $this->dispatcher->dispatch($middleware, $request, $response, $next);
+        $dispatcher = $this->getServer()->getDispatcher();
+        return $dispatcher->dispatch($middleware, $request, $response, $next);
+    }
+
+    /** @return array<string, mixed> */
+    public function getMethods(): array
+    {
+        return $this->methods;
     }
 }

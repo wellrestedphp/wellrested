@@ -1,36 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Dispatching;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use WellRESTed\MiddlewareInterface;
+use WellRESTed\Server;
+use WellRESTed\ServerReferenceTrait;
 
 /**
- * Dispatches an ordered sequence of middleware.
+ * Ordered sequence of middleware and handlers.
  */
-class DispatchStack implements DispatchStackInterface
+class MiddlewareQueue implements MiddlewareInterface
 {
-    /** @var mixed[] */
-    private $stack;
-    /** @var DispatcherInterface */
-    private $dispatcher;
+    use ServerReferenceTrait;
 
-    public function __construct(DispatcherInterface $dispatcher)
+    /** @var mixed[] */
+    private array $middleware;
+
+    public function __construct(Server $server, array $dispatchables = [])
     {
-        $this->dispatcher = $dispatcher;
-        $this->stack = [];
+        $this->setServer($server);
+        $this->middleware = $dispatchables;
     }
 
     /**
      * Push a new middleware onto the stack.
      *
-     * @param mixed $middleware Middleware to dispatch in sequence
+     * @param mixed $dispatchable Middleware to dispatch in sequence
      * @return static
      */
-    public function add($middleware)
+    public function add($dispatchable)
     {
-        $this->stack[] = $middleware;
+        $this->middleware[] = $dispatchable;
         return $this;
+    }
+
+    /** @return mixed[] Middleware to dispatch in sequence */
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
     }
 
     /**
@@ -41,12 +52,8 @@ class DispatchStack implements DispatchStackInterface
      * Each middleware, when dispatched, receives a $next callable that, when
      * called, will dispatch the following middleware in the sequence.
      *
-     * When the stack is dispatched empty, or when all middleware in the stack
-     * call the $next argument they were passed, this method will call the
-     * $next it received.
-     *
-     * When any middleware in the stack returns a response without calling its
-     * $next, the stack will not call the $next it received.
+     * When any dispatchale in the queue returns a response without calling its
+     * $next, the queue will not call the $next it received.
      *
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
@@ -58,7 +65,7 @@ class DispatchStack implements DispatchStackInterface
         ResponseInterface $response,
         $next
     ) {
-        $dispatcher = $this->dispatcher;
+        $dispatcher = $this->getServer()->getDispatcher();
 
         // This flag will be set to true when the last middleware calls $next.
         $stackCompleted = false;
@@ -78,7 +85,7 @@ class DispatchStack implements DispatchStackInterface
         // Each callable will take $request and $response parameters, and will
         // contain a dispatcher, the associated middleware, and a $next function
         // that serves as the link to the next middleware in the chain.
-        foreach (array_reverse($this->stack) as $middleware) {
+        foreach (array_reverse($this->middleware) as $middleware) {
             $chain = function (
                 ServerRequestInterface $request,
                 ResponseInterface $response

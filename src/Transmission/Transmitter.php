@@ -57,7 +57,6 @@ class Transmitter implements TransmitterInterface
         ServerRequestInterface $request,
         ResponseInterface $response
     ): ResponseInterface {
-
         // Add Content-length header to the response when all of these are true:
         //
         // - Response does not have a Content-length header

@@ -93,10 +93,6 @@ To use this dispatcher, create an instance implementing ``WellRESTed\Dispatching
     $server = new WellRESTed\Server();
     $server->setDispatcher(new MyApi\CustomDispatcher());
 
-.. warning::
-
-    When you supply a custom Dispatcher, be sure to call ``Server::setDispatcher`` before you create any routers with ``Server::createRouter`` to allow the ``Server`` to pass you customer ``Dispatcher`` on to the newly created ``Router``.
-
 .. _PSR-7: https://www.php-fig.org/psr/psr-7/
 .. _Handlers and Middleware: handlers-and-middleware.html
 .. _Request Attributes: messages.html#attributes

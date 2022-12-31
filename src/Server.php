@@ -1,52 +1,65 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
+use WellRESTed\Dispatching\MiddlewareQueue;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequestMarshaller;
 use WellRESTed\Routing\Router;
+use WellRESTed\Routing\TrailingSlashMode;
 use WellRESTed\Transmission\Transmitter;
 use WellRESTed\Transmission\TransmitterInterface;
 
 class Server
 {
-    /** @var mixed[] */
-    private $attributes = [];
-    /** @var DispatcherInterface */
-    private $dispatcher;
-    /** @var string|null attribute name for matched path variables */
-    private $pathVariablesAttributeName = null;
-    /** @var ServerRequestInterface|null */
-    private $request = null;
-    /** @var ResponseInterface */
-    private $response;
-    /** @var TransmitterInterface */
-    private $transmitter;
-    /** @var mixed[] List array of middleware */
-    private $stack;
+    private ?ContainerInterface $container = null;
+
+    private ?string $pathVariablesAttributeName = null;
+
+    private TrailingSlashMode $trailingSlashMode = TrailingSlashMode::STRICT;
+
+    /** @var array<string, mixed> */
+    private array $attributes = [];
+
+    private ?DispatcherInterface $dispatcher = null;
+
+    private ?ServerRequestInterface $request = null;
+
+    private ResponseInterface $response;
+
+    private TransmitterInterface $transmitter;
+
+    private MiddlewareQueue $middlewareQueue;
 
     public function __construct()
     {
-        $this->stack = [];
+        $this->middlewareQueue = new MiddlewareQueue($this);
         $this->response = new Response();
-        $this->dispatcher = new Dispatcher();
         $this->transmitter = new Transmitter();
     }
 
     /**
-     * Push a new middleware onto the stack.
+     * Push a new middleware onto the queue.
      *
      * @param mixed $middleware Middleware to dispatch in sequence
-     * @return Server
+     * @return self
      */
-    public function add($middleware): Server
+    public function add($middleware): self
     {
-        $this->stack[] = $middleware;
+        $this->middlewareQueue->add($middleware);
         return $this;
+    }
+
+    public function getMiddleware(): array
+    {
+        return $this->middlewareQueue->getMiddleware();
     }
 
     /**
@@ -56,17 +69,15 @@ class Server
      */
     public function createRouter(): Router
     {
-        return new Router(
-            $this->pathVariablesAttributeName,
-            $this->dispatcher
-        );
+        $router = new Router($this);
+        return $router;
     }
 
     /**
      * Perform the request-response cycle.
      *
      * This method reads a server request, dispatches the request through the
-     * server's stack of middleware, and outputs the response via a Transmitter.
+     * server's queue of middleware, and outputs the response via a Transmitter.
      */
     public function respond(): void
     {
@@ -82,12 +93,10 @@ class Server
             return $resp;
         };
 
-        $response = $this->response;
-
-        $response = $this->dispatcher->dispatch(
-            $this->stack,
+        $response = call_user_func(
+            $this->middlewareQueue,
             $request,
-            $response,
+            $this->response,
             $next
         );
 
@@ -98,40 +107,71 @@ class Server
     /* Configuration */
 
     /**
-     * @param array $attributes
-     * @return Server
+     * @param array<string, mixed> $attributes
+     * @return self
      */
-    public function setAttributes(array $attributes): Server
+    public function setAttributes(array $attributes): self
     {
         $this->attributes = $attributes;
         return $this;
     }
 
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
+    }
+
+    public function setContainer(?ContainerInterface $container): self
+    {
+        $this->container = $container;
+        return $this;
+    }
+
     /**
      * @param DispatcherInterface $dispatcher
-     * @return Server
+     * @return self
      */
-    public function setDispatcher(DispatcherInterface $dispatcher): Server
+    public function setDispatcher(DispatcherInterface $dispatcher): self
     {
         $this->dispatcher = $dispatcher;
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @return Server
-     */
-    public function setPathVariablesAttributeName(string $name): Server
+    public function getDispatcher(): DispatcherInterface
+    {
+        if (!$this->dispatcher) {
+            $this->dispatcher = new Dispatcher($this);
+        }
+        return $this->dispatcher;
+    }
+
+    public function getPathVariablesAttributeName(): ?string
+    {
+        return $this->pathVariablesAttributeName;
+    }
+
+    public function setPathVariablesAttributeName(?string $name): self
     {
         $this->pathVariablesAttributeName = $name;
         return $this;
     }
 
+    public function getTrailingSlashMode(): TrailingSlashMode
+    {
+        return $this->trailingSlashMode;
+    }
+
+    public function setTrailingSlashMode(TrailingSlashMode $mode): self
+    {
+        $this->trailingSlashMode = $mode;
+        return $this;
+    }
+
     /**
      * @param ServerRequestInterface $request
-     * @return Server
+     * @return self
      */
-    public function setRequest(ServerRequestInterface $request): Server
+    public function setRequest(ServerRequestInterface $request): self
     {
         $this->request = $request;
         return $this;
@@ -139,9 +179,9 @@ class Server
 
     /**
      * @param ResponseInterface $response
-     * @return Server
+     * @return self
      */
-    public function setResponse(ResponseInterface $response): Server
+    public function setResponse(ResponseInterface $response): self
     {
         $this->response = $response;
         return $this;
@@ -149,16 +189,13 @@ class Server
 
     /**
      * @param TransmitterInterface $transmitter
-     * @return Server
+     * @return self
      */
-    public function setTransmitter(TransmitterInterface $transmitter): Server
+    public function setTransmitter(TransmitterInterface $transmitter): self
     {
         $this->transmitter = $transmitter;
         return $this;
     }
-
-    // -------------------------------------------------------------------------
-    /* Defaults */
 
     private function getRequest(): ServerRequestInterface
     {

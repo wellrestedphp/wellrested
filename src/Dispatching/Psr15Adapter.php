@@ -7,12 +7,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * Adapter to allow use of PSR-15 Middleware with double pass implementations.
+ * Adapter for using PSR-15 Middleware with double pass implementations.
  */
-class DispatcherDelegate implements RequestHandlerInterface
+class Psr15Adapter implements RequestHandlerInterface
 {
-    /** @var ResponseInterface */
-    private $response;
+    private ResponseInterface $response;
     /** @var callable */
     private $next;
 

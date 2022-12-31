@@ -1,34 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Routing\Route;
 
-use WellRESTed\Dispatching\Dispatcher;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
-use WellRESTed\Test\Doubles\MiddlewareMock;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Server;
+use WellRESTed\Test\Doubles\MiddlewareDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class MethodMapTest extends TestCase
 {
-    private $dispatcher;
-    private $request;
-    private $response;
-    private $next;
-    private $middleware;
+    private ServerRequestInterface $request;
+    private ResponseInterface $response;
+    private NextDouble $next;
+    private MiddlewareDouble $middleware;
+    private Server $server;
 
     protected function setUp(): void
     {
         $this->request = new ServerRequest();
         $this->response = new Response();
-        $this->next = new NextMock();
-        $this->middleware = new MiddlewareMock();
-        $this->dispatcher = new Dispatcher();
+        $this->next = new NextDouble();
+        $this->middleware = new MiddlewareDouble();
+        $this->server = new Server();
     }
 
     private function getMethodMap(): MethodMap
     {
-        return new MethodMap($this->dispatcher);
+        return new MethodMap($this->server);
     }
 
     // -------------------------------------------------------------------------
@@ -48,8 +52,8 @@ class MethodMapTest extends TestCase
     {
         $this->request = $this->request->withMethod('get');
 
-        $middlewareUpper = new MiddlewareMock();
-        $middlewareLower = new MiddlewareMock();
+        $middlewareUpper = new MiddlewareDouble();
+        $middlewareLower = new MiddlewareDouble();
 
         $map = $this->getMethodMap();
         $map->register('GET', $middlewareUpper);
@@ -205,5 +209,19 @@ class MethodMapTest extends TestCase
             }
         }
         $this->assertTrue(true);
+    }
+
+    public function testReturnsArrayWithEntryForEachMethod(): void
+    {
+        // Arrange
+        $map = $this->getMethodMap();
+        $map->register('GET,POST', $this->middleware);
+
+        // Act
+        $methods = $map->getMethods();
+
+        // Assert
+        $this->assertArrayHasKey('GET', $methods);
+        $this->assertArrayHasKey('POST', $methods);
     }
 }

@@ -1,45 +1,53 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WellRESTed\Dispatching;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Message\Response;
 use WellRESTed\Message\ServerRequest;
 use WellRESTed\MiddlewareInterface;
-use WellRESTed\Test\Doubles\NextMock;
+use WellRESTed\Server;
+use WellRESTed\Test\Doubles\ContainerDouble;
+use WellRESTed\Test\Doubles\HandlerDouble;
+use WellRESTed\Test\Doubles\NextDouble;
 use WellRESTed\Test\TestCase;
 
 class DispatcherTest extends TestCase
 {
-    /** @var ServerRequestInterface */
-    private $request;
-    /** @var ResponseInterface */
-    private $response;
-    /** @var NextMock */
-    private $next;
-    /** @var ResponseInterface */
-    private $stubResponse;
+    private ServerRequestInterface $request;
+    private ResponseInterface $response;
+    private NextDouble $next;
+    private ResponseInterface $stubResponse;
+    private Server $server;
+    private Dispatcher $dispatcher;
 
     protected function setUp(): void
     {
         $this->request = new ServerRequest();
-        $this->response = new Response();
-        $this->next = new NextMock();
+        $this->response = new Response(500);
+        $this->next = new NextDouble();
         $this->stubResponse = new Response();
+        $this->server = new Server();
+        $this->dispatcher = new Dispatcher($this->server);
     }
 
     /**
      * Dispatch the provided dispatchable using the class under test and the
      * ivars $request, $response, and $next. Return the response.
-     * @param $dispatchable
+     * @param mixed $dispatchable
      * @return ResponseInterface
      */
-    private function dispatch($dispatchable): ResponseInterface
-    {
-        $dispatcher = new Dispatcher();
-        return $dispatcher->dispatch(
+    private function dispatch(
+        mixed $dispatchable,
+        ?ContainerInterface $container = null
+    ): ResponseInterface {
+        $this->server->setContainer($container);
+        return $this->dispatcher->dispatch(
             $dispatchable,
             $this->request,
             $this->response,
@@ -52,41 +60,73 @@ class DispatcherTest extends TestCase
 
     public function testDispatchesPsr15Handler(): void
     {
+        // Arrange
         $handler = new HandlerDouble($this->stubResponse);
+        // Act
         $response = $this->dispatch($handler);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
     public function testDispatchesPsr15HandlerFromFactory(): void
     {
+        // Arrange
         $factory = function () {
             return new HandlerDouble($this->stubResponse);
         };
-
+        // Act
         $response = $this->dispatch($factory);
+        // Assert
+        $this->assertSame($this->stubResponse, $response);
+    }
+
+    public function testDispatchesPsr15HandlerFromContainer(): void
+    {
+        // Arrange
+        $handler = new HandlerDouble($this->stubResponse);
+        $container = new ContainerDouble(['service' => $handler]);
+        // Act
+        $response = $this->dispatch('service', $container);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
     // -------------------------------------------------------------------------
     // PSR-15 Middleware
 
-    public function testDispatchesPsr15MiddlewareWithDelegate(): void
+    public function testDispatchesPsr15Middleware(): void
     {
+        // Arrange
         $this->next->upstreamResponse = $this->stubResponse;
         $middleware = new MiddlewareDouble();
-
+        // Act
         $response = $this->dispatch($middleware);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
-    public function testDispatchesPsr15MiddlewareFromFactoryWithDelegate(): void
+    public function testDispatchesPsr15MiddlewareFromFactory(): void
     {
+        // Arrange
         $this->next->upstreamResponse = $this->stubResponse;
         $factory = function () {
             return new MiddlewareDouble();
         };
-
+        // Act
         $response = $this->dispatch($factory);
+        // Assert
+        $this->assertSame($this->stubResponse, $response);
+    }
+
+    public function testDispatchesPsr15MiddlewareFromContainer(): void
+    {
+        // Arrange
+        $this->next->upstreamResponse = $this->stubResponse;
+        $middleware = new MiddlewareDouble();
+        $container = new ContainerDouble(['service' => $middleware]);
+        // Act
+        $response = $this->dispatch('service', $container);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
@@ -95,23 +135,40 @@ class DispatcherTest extends TestCase
 
     public function testDispatchesDoublePassMiddlewareCallable(): void
     {
+        // Arrange
         $doublePass = function ($request, $response, $next) {
             return $next($request, $this->stubResponse);
         };
-
+        // Act
         $response = $this->dispatch($doublePass);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
     public function testDispatchesDoublePassMiddlewareCallableFromFactory(): void
     {
+        // Arrange
         $factory = function () {
             return function ($request, $response, $next) {
                 return $next($request, $this->stubResponse);
             };
         };
-
+        // Act
         $response = $this->dispatch($factory);
+        // Assert
+        $this->assertSame($this->stubResponse, $response);
+    }
+
+    public function testDispatchesDoublePassMiddlewareCallableFromContainer(): void
+    {
+        // Arrange
+        $doublePass = function ($request, $response, $next) {
+            return $next($request, $this->stubResponse);
+        };
+        $container = new ContainerDouble(['service' => $doublePass]);
+        // Act
+        $response = $this->dispatch('service', $container);
+        // Assert
         $this->assertSame($this->stubResponse, $response);
     }
 
@@ -120,37 +177,102 @@ class DispatcherTest extends TestCase
 
     public function testDispatchesDoublePassMiddlewareInstance(): void
     {
+        // Arrange
         $doublePass = new DoublePassMiddlewareDouble();
+        // Act
         $response = $this->dispatch($doublePass);
+        // Assert
         $this->assertEquals(200, $response->getStatusCode());
     }
 
     public function testDispatchesDoublePassMiddlewareInstanceFromFactory(): void
     {
+        // Arrange
         $factory = function () {
             return new DoublePassMiddlewareDouble();
         };
+        // Act
         $response = $this->dispatch($factory);
+        // Assert
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testDispatchesDoublePassMiddlewareInstanceFromContainer(): void
+    {
+        // Arrange
+        $doublePass = new DoublePassMiddlewareDouble();
+        $container = new ContainerDouble(['service' => $doublePass]);
+        // Act
+        $response = $this->dispatch('service', $container);
+        // Assert
         $this->assertEquals(200, $response->getStatusCode());
     }
 
     // -------------------------------------------------------------------------
     // String
 
-    public function testDispatchesInstanceFromStringName(): void
+    public function testDispatchesStringByInsantiatingFromStringValue(): void
     {
+        // Act
         $response = $this->dispatch(DoublePassMiddlewareDouble::class);
+        // Assert
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testDispatchesStringFromContainerInsteadOfValueWhenAble(): void
+    {
+        // Arrange
+        $handler = new HandlerDouble($this->stubResponse);
+        $serviceName = DoublePassMiddlewareDouble::class;
+        $container = new ContainerDouble([$serviceName => $handler]);
+        // Act
+        $response = $this->dispatch($serviceName, $container);
+        // Assert
+        $this->assertSame($this->stubResponse, $response);
     }
 
     // -------------------------------------------------------------------------
     // Arrays
 
-    public function testDispatchesArrayAsDispatchStack(): void
+    public function testDispatchesArrayInOrder(): void
     {
-        $doublePass = new DoublePassMiddlewareDouble();
-        $response = $this->dispatch([$doublePass]);
-        $this->assertEquals(200, $response->getStatusCode());
+        // Arrange
+
+        // Each middleware will add its "name" to this array.
+        $callOrder = [];
+        $middleware1 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'first';
+            return $next($request, $response);
+        };
+        $middleware2 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'second';
+            return $next($request, $response);
+        };
+        $middleware3 = function ($request, $response, $next) use (&$callOrder) {
+            $callOrder[] = 'third';
+            return $next($request, $response);
+        };
+
+        // Act
+        $this->dispatch([$middleware1, $middleware2, $middleware3]);
+
+        // Assert
+        $this->assertEquals(['first', 'second', 'third'], $callOrder);
+    }
+
+    public function testDispatchesArrayWithServicesFromContainer(): void
+    {
+        // Arrange
+        $middleware = new MiddlewareDouble();
+        $handler = new HandlerDouble($this->stubResponse);
+        $container = new ContainerDouble([
+            'middleware' => $middleware,
+            'handler' => $handler
+        ]);
+        // Act
+        $response = $this->dispatch(['middleware', 'handler'], $container);
+        // Assert
+        $this->assertSame($this->stubResponse, $response);
     }
 
     public function testThrowsExceptionWhenUnableToDispatch(): void
@@ -178,27 +300,6 @@ class DoublePassMiddlewareDouble implements MiddlewareInterface
     ) {
         $response = $response->withStatus(200);
         return $next($request, $response);
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-/**
- * PSR-15 Handler that returns a ResponseInterface stub
- */
-class HandlerDouble implements RequestHandlerInterface
-{
-    /** @var ResponseInterface */
-    private $response;
-
-    public function __construct(ResponseInterface $response)
-    {
-        $this->response = $response;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        return $this->response;
     }
 }
 

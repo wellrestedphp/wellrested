@@ -6,13 +6,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use WellRESTed\MiddlewareInterface;
 
-class MiddlewareMock implements MiddlewareInterface
+class MiddlewareDouble implements MiddlewareInterface
 {
-    public $called = false;
-    public $callCount = 0;
-    public $request = null;
-    public $response = null;
-    public $propagate = true;
+    public bool $called = false;
+    public int $callCount = 0;
+    public ?ServerRequestInterface $request = null;
+    public ?ResponseInterface $response = null;
+    public bool $propagate = true;
 
     public function __invoke(
         ServerRequestInterface $request,
