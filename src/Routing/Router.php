@@ -92,9 +92,6 @@ class Router implements MiddlewareInterface
         }
 
         $slashRequest = $this->getTrailingSlashRequest($request);
-        if (!$slashRequest) {
-            return null;
-        }
 
         $slashRoute = $this->routeMap->getRoute($slashRequest);
         if (!$slashRoute) {
@@ -113,18 +110,17 @@ class Router implements MiddlewareInterface
 
     private function getTrailingSlashRequest(
         ServerRequestInterface $request
-    ): ?ServerRequestInterface {
+    ): ServerRequestInterface {
         $path = $request->getRequestTarget();
         $query = '';
         if (str_contains($path, '?')) {
             [$path, $query] = explode('?', $path);
         }
 
-        if (str_ends_with($path, '/')) {
-            return null;
-        }
+        $retryTarget = (str_ends_with($path, '/'))
+            ? substr($path, 0, -1)
+            : $path . '/';
 
-        $retryTarget = $path . '/';
         if ($query) {
             $retryTarget .= '?' . $query;
         }

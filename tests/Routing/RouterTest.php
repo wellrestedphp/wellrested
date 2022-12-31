@@ -152,17 +152,18 @@ class RouterTest extends TestCase
     /** @dataProvider trailingSlashProvider */
     public function testRequestReturnsExpectedResponse(
         int $expected,
-        string $path,
+        string $route,
+        string $target,
         TrailingSlashMode $mode,
         string $location = ''
     ): void {
         // Arrange
         $handler = new HandlerDouble(new Response(200));
-        $this->router->register('GET', '/path/', $handler);
+        $this->router->register('GET', $route, $handler);
         $this->server->setTrailingSlashMode($mode);
 
         // Act
-        $this->request = $this->request->withRequestTarget($path);
+        $this->request = $this->request->withRequestTarget($target);
         $response = $this->dispatch();
 
         // Assert
@@ -173,19 +174,22 @@ class RouterTest extends TestCase
     public function trailingSlashProvider(): array
     {
         return [
-            'Strict: missing slash'    => [404, '/path',       TrailingSlashMode::STRICT],
-            'Strict: exact match'      => [200, '/path/',      TrailingSlashMode::STRICT],
-            'Strict: no match'         => [404, '/nope',       TrailingSlashMode::STRICT],
+            'Strict: missing slash'    => [404, '/path/', '/path',       TrailingSlashMode::STRICT],
+            'Strict: extra slash'      => [404, '/path',  '/path/',      TrailingSlashMode::STRICT],
+            'Strict: exact match'      => [200, '/path/', '/path/',      TrailingSlashMode::STRICT],
+            'Strict: no match'         => [404, '/path/', '/nope',       TrailingSlashMode::STRICT],
 
-            'Loose: missing slash'     => [200, '/path',       TrailingSlashMode::LOOSE],
-            'Loose: exact match'       => [200, '/path/',      TrailingSlashMode::LOOSE],
-            'Losse: no match'          => [404, '/nope',       TrailingSlashMode::LOOSE],
+            'Loose: missing slash'     => [200, '/path/', '/path',       TrailingSlashMode::LOOSE],
+            'Loose: extra slash'       => [200, '/path',  '/path/',      TrailingSlashMode::LOOSE],
+            'Loose: exact match'       => [200, '/path/', '/path/',      TrailingSlashMode::LOOSE],
+            'Losse: no match'          => [404, '/path/', '/nope',       TrailingSlashMode::LOOSE],
 
-            'Redirect: missing slash'  => [301, '/path',       TrailingSlashMode::REDIRECT, '/path/'],
-            'Redirect: exact match'    => [200, '/path/',      TrailingSlashMode::REDIRECT],
-            'Redirect: no match'       => [404, '/nope',       TrailingSlashMode::REDIRECT],
-            'Redirect: no match slash' => [404, '/nope/',      TrailingSlashMode::REDIRECT],
-            'Redirect: query'          => [301, '/path?query', TrailingSlashMode::REDIRECT, '/path/?query']
+            'Redirect: missing slash'  => [301, '/path/', '/path',       TrailingSlashMode::REDIRECT, '/path/'],
+            'Redirect: extra slash'    => [301, '/path',  '/path/',      TrailingSlashMode::REDIRECT, '/path'],
+            'Redirect: exact match'    => [200, '/path/', '/path/',      TrailingSlashMode::REDIRECT],
+            'Redirect: no match'       => [404, '/path/', '/nope',       TrailingSlashMode::REDIRECT],
+            'Redirect: no match slash' => [404, '/path/', '/nope/',      TrailingSlashMode::REDIRECT],
+            'Redirect: query'          => [301, '/path/', '/path?query', TrailingSlashMode::REDIRECT, '/path/?query']
         ];
     }
 
