@@ -7,6 +7,7 @@ namespace WellRESTed;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use WellRESTed\Dispatching\Dispatcher;
 use WellRESTed\Dispatching\DispatcherInterface;
 use WellRESTed\Dispatching\MiddlewareQueue;
@@ -17,7 +18,7 @@ use WellRESTed\Routing\TrailingSlashMode;
 use WellRESTed\Transmission\Transmitter;
 use WellRESTed\Transmission\TransmitterInterface;
 
-class Server
+class Server implements RequestHandlerInterface
 {
     private ?ContainerInterface $container = null;
 
@@ -86,6 +87,13 @@ class Server
             $request = $request->withAttribute($name, $value);
         }
 
+        $response = $this->handle($request);
+
+        $this->transmitter->transmit($request, $response);
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
         $next = function (
             ServerRequestInterface $rqst,
             ResponseInterface $resp
@@ -93,14 +101,12 @@ class Server
             return $resp;
         };
 
-        $response = call_user_func(
+        return call_user_func(
             $this->middlewareQueue,
             $request,
             $this->response,
             $next
         );
-
-        $this->transmitter->transmit($request, $response);
     }
 
     // -------------------------------------------------------------------------
