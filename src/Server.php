@@ -63,14 +63,18 @@ class Server implements RequestHandlerInterface
         return $this->middlewareQueue->getMiddleware();
     }
 
-    /**
-     * Return a new Router that uses the server's configuration.
-     *
-     * @return Router
-     */
+    /** Return a new Router that uses the server's configuration. */
     public function createRouter(): Router
     {
         $router = new Router($this);
+        return $router;
+    }
+
+    /** Return a new Router and add it to the Server's middleware queue */
+    public function addRouter(): Router
+    {
+        $router = $this->createRouter();
+        $this->add($router);
         return $router;
     }
 
