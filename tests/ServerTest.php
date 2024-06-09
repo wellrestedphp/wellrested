@@ -147,7 +147,7 @@ class ServerTest extends TestCase
         $this->server->setDispatcher($dispatcher->reveal());
 
         // Create a new router that should get the custom dispatcher.
-        $router = $this->server->createRouter();
+        $router = $this->server->addRouter();
         $router->register('GET', '/', 'middleware');
 
         // Act
